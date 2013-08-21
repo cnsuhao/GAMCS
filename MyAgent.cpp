@@ -225,7 +225,7 @@ void MyAgent::LinkStates(struct m_State *pmst, ExAction eat, Action act, struct 
     {
         if (f->nstate->st == mst->st &&
                 f->act == act &&
-                f->eat == eat)
+                f->eat == eat)              //
         {
             struct m_ExAction *ea = Eat2Struct(eat, pmst);
             ea->count++;
@@ -270,14 +270,14 @@ void MyAgent::LinkStates(struct m_State *pmst, ExAction eat, Action act, struct 
     if (ac == NULL)         // action not exist, add a new one to atlist of pmst and calculate it's payoff
     {
         struct m_Action *nac = NewAc(act);
-        nac->payoff = CalActPayoff(nac->act, pmst);
+        nac->payoff = 0.0; //CalActPayoff(nac->act, pmst);
         nac->next = pmst->atlist;
         pmst->atlist = nac;
     }
-    else                    // simply update payoff if exists
-        ac->payoff = CalActPayoff(ac->act, pmst);
+//    else                    // simply update payoff if exists
+//        ac->payoff = CalActPayoff(ac->act, pmst);
 
-    UpdateState(mst);       // update the new linked state's payoff recursively
+    UpdateState(pmst);       // update previous state's payoff recursively
     return;
 }
 
@@ -349,6 +349,14 @@ void MyAgent::UpdateState(struct m_State *mst)
     else
         dbgprt("Payoff no changes, smaller than %.1f\n", threshold);
 
+    /* update actions' payoff */
+    struct m_Action *ac, *nac;
+    for (ac=mst->atlist; ac!=NULL; ac=nac)
+    {
+        ac->payoff = CalActPayoff(ac->act, mst);
+        nac = ac->next;
+    }
+
     return;
 }
 
@@ -388,11 +396,12 @@ float MyAgent::CalActPayoff(Action act, struct m_State *mst)
 vector<Action> MyAgent::BestActions(struct m_State *mst, vector<Action> acts)
 {
     dbgprt("BestActions(): Find best actions\n");
-    float max_payoff = -9999999.9;
+    float max_payoff = -999999999.9;
     float ori_payoff = 0.0;
     float payoff;
     vector<Action> max_acts;
 
+    max_acts.clear();
     for (vector<Action>::iterator act = acts.begin();
     act!=acts.end(); ++act)
     {
@@ -413,12 +422,6 @@ vector<Action> MyAgent::BestActions(struct m_State *mst, vector<Action> acts)
     }
 
     return max_acts;
-}
-
-ExAction MyAgent::CalExAction(State st, State pst, Action act)
-{
-    ExAction eat = st - pst - act;
-    return eat;
 }
 
 void MyAgent::SaveState(struct m_State *mst, State st)
@@ -452,16 +455,17 @@ void MyAgent::SaveState(struct m_State *mst, State st)
             head = mst;
             state_num++;
 
-            ExAction eat = CalExAction(st, pre_in, pre_out);
+            ExAction eat = Agent::CalExAction(pre_in, st, pre_out);
             LinkStates(pmst, eat, pre_out, mst);
         }
         else    // mst already exists, update the count and link it to the previous state (LinkStates will handle it if the link already exists.)
         {
             mst->count++;
-            ExAction eat = CalExAction(st, pre_in, pre_out);
+            ExAction eat = Agent::CalExAction(pre_in, st, pre_out);
             LinkStates(pmst, eat, pre_out, mst);
         }
     }
+
     return;
 }
 

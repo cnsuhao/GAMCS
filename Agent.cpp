@@ -48,3 +48,14 @@ float Agent::OriginalPayoff(State st)
 {
     return 1;
 }
+
+State Agent::ActionEffect(State st, Action act)
+{
+    return st + act;
+}
+
+ExAction Agent::CalExAction(State pst, State st, Action act)
+{
+    State ost = ActionEffect(pst, act);
+    return st - ost;
+}
