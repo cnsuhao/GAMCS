@@ -16,8 +16,6 @@ class Robot1
         R1Agent ra;
         State position;
 
-        void SendStateInfo(struct State_Info *);
-        void RecvStateInfo(struct State_Info *);
         State GetCurrentState();
         void DoAction(Action);
 };

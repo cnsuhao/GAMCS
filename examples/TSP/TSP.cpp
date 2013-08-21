@@ -38,6 +38,7 @@ void TSP::DoAction(Action act)
 
 void TSP::Run()
 {
+    int i = 0;
 repeat:
     while(1)
     {
@@ -49,13 +50,14 @@ repeat:
 
         struct State_Info *stif = ta.GetStateInfo(cs);
         if (stif != NULL)
-            printf("Gain: %0.2f\n", stif->payoff);
+            ta.PrintStateInfo(stif);
         printf("Action: %ld\n\n", act);
+        i++;
 
     }
 
-    printf("=========================================\n");
-    getchar();
+    printf("i: %d =========================================\n", i);
+//    getchar();
     route = 0x01;
     ta.Init();
     goto repeat;

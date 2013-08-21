@@ -56,7 +56,7 @@ class MyAgent : public Agent
         virtual ~MyAgent();
 
         virtual struct State_Info *GetStateInfo(State);                 /**< implementing GetStateInfo function */
-        virtual void MergeStateInfo(struct State_Info *);               /**< implementing MergeStateInfo function */
+        virtual int MergeStateInfo(struct State_Info *);               /**< implementing MergeStateInfo function */
         void PrintStateInfo(struct State_Info *);
     protected:
         virtual vector<Action> MaxPayoffRule(State, vector<Action>);    /**< implementing maximun payoff rule */

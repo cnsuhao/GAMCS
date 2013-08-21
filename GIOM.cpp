@@ -13,7 +13,7 @@ GIOM::GIOM(int n, int m)
     //ctor
     N = n;
     M = m;
-    srand(time(NULL));          // random seed
+    srand(4);          // random seed
 }
 
 GIOM::~GIOM()

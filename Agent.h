@@ -38,9 +38,10 @@ struct State_Info
     float original_payoff;                      /**< original payoff */
     float payoff;                               /**< payoff */
     unsigned long count;                        /**< count of experiencing times */
+    int length;
     vector<struct Action_Info> actions_info;    /**< information of actions containing in this state */
-    vector<struct pLink> plinks;                /**< information of backward links of this state */
     vector<struct ExAction_Info> belief;        /**< information of exacts containing in this state */
+    vector<struct pLink> plinks;                /**< information of backward links of this state */
 };
 
 class Agent : public PFTGIOM
@@ -52,7 +53,7 @@ class Agent : public PFTGIOM
         virtual ~Agent();
         /* These two functions are implementation dependant, declared as pure virtual functions */
         virtual struct State_Info *GetStateInfo(State) = 0;         /**<  organize the information of specfic state from memory */
-        virtual void MergeStateInfo(struct State_Info *) = 0;       /**<  merge recieved state information to memory */
+        virtual int MergeStateInfo(struct State_Info *) = 0;       /**<  merge recieved state information to memory */
     protected:
         virtual vector<Action> Restrict(State, vector<Action>);     /**< reimplement restrict using maximun payoff rule  */
 

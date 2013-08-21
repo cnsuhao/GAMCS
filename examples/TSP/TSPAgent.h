@@ -3,7 +3,6 @@
 
 #include <fstream>
 #include "../../MyAgent.h"
-#include "common.h"
 
 struct City
 {
