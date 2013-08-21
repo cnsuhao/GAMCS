@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="libagent" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Robot1">
+				<Option output="examples/Robot1/rb1" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="TSP">
+				<Option output="examples/TSP/tsp" prefix_auto="1" extension_auto="1" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
+				<Compiler>
+					<Add option="-Wall" />
+					<Add option="-pg" />
+					<Add option="-g" />
+				</Compiler>
+				<Linker>
+					<Add option="-pg" />
+				</Linker>
+			</Target>
+			<Target title="SimGroup">
+				<Option output="libagent" prefix_auto="1" extension_auto="1" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-fexceptions" />
+		</Compiler>
+		<Unit filename="Agent.cpp" />
+		<Unit filename="Agent.h" />
+		<Unit filename="Entity.cpp">
+			<Option target="Robot1" />
+		</Unit>
+		<Unit filename="Entity.h">
+			<Option target="Robot1" />
+		</Unit>
+		<Unit filename="GIOM.cpp" />
+		<Unit filename="GIOM.h" />
+		<Unit filename="MyAgent.cpp" />
+		<Unit filename="MyAgent.h" />
+		<Unit filename="PFTGIOM.cpp" />
+		<Unit filename="PFTGIOM.h" />
+		<Unit filename="TSPAgent.h" />
+		<Unit filename="examples/Group/Individual.cpp">
+			<Option target="Robot1" />
+			<Option target="SimGroup" />
+		</Unit>
+		<Unit filename="examples/Group/Individual.h">
+			<Option target="Robot1" />
+			<Option target="SimGroup" />
+		</Unit>
+		<Unit filename="examples/Group/SimGroup.cpp">
+			<Option target="Robot1" />
+			<Option target="SimGroup" />
+		</Unit>
+		<Unit filename="examples/Group/SimGroup.h">
+			<Option target="Robot1" />
+			<Option target="SimGroup" />
+		</Unit>
+		<Unit filename="examples/Robot1/R1Agent.cpp">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="examples/Robot1/R1Agent.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="examples/Robot1/Robot1.cpp">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="examples/Robot1/Robot1.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="examples/TSP/TSP.cpp" />
+		<Unit filename="examples/TSP/TSP.h" />
+		<Unit filename="examples/TSP/TSPAgent.cpp" />
+		<Unit filename="examples/TSP/TSPAgent.h" />
+		<Extensions>
+			<envvars />
+			<code_completion />
+			<lib_finder disable_auto="1" />
+			<debugger />
+			<DoxyBlocks>
+				<comment_style block="0" line="0" />
+				<doxyfile_project />
+				<doxyfile_build />
+				<doxyfile_warnings />
+				<doxyfile_output />
+				<doxyfile_dot />
+				<general />
+			</DoxyBlocks>
+			<wxsmith version="1">
+				<gui name="wxWidgets" src="" main="" init_handlers="necessary" language="CPP" />
+			</wxsmith>
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

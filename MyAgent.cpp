@@ -554,13 +554,9 @@ struct State_Info *MyAgent::GetStateInfo(State st)
         return NULL;
     }
 
-    struct State_Info *stif = (struct State_Info *)malloc(sizeof(struct State_Info));
-    stif->st = mst->st;
-    stif->original_payoff = mst->original_payoff;
-    stif->payoff = mst->payoff;
-    stif->count = mst->count;
-
-    stif->actions_info.clear();
+    vector<struct Action_Info> vai;
+    int ai_count = 0;
+    vai.clear();
     struct Action_Info acif;
     struct m_Action *ac, *nac;
     for (ac=mst->atlist; ac!=NULL; ac=nac)
@@ -569,24 +565,30 @@ struct State_Info *MyAgent::GetStateInfo(State st)
         float payoff = ac->payoff;
         acif.act = act;
         acif.payoff = payoff;
-        stif->actions_info.push_back(acif);
+        vai.push_back(acif);
+        ai_count++;
 
         nac = ac->next;
     }
 
-    stif->belief.clear();
+    vector<struct ExAction_Info> vbf;
+    int bf_count = 0;
+    vbf.clear();
     struct ExAction_Info eatif;
     struct m_ExAction *ea, *nea;
     for (ea=mst->ealist; ea!=NULL; ea=nea)
     {
         eatif.eat = ea->eat;
         eatif.count = ea->count;
-        stif->belief.push_back(eatif);
+        vbf.push_back(eatif);
+        bf_count++;
 
         nea = ea->next;
     }
 
-    stif->plinks.clear();
+    vector<struct pLink> vlk;
+    int lk_count = 0;
+    vlk.clear();
     struct pLink plk;
     struct m_BackArcState *bas, *nbas;
     for (bas=mst->blist; bas!=NULL; bas=nbas)
@@ -602,23 +604,43 @@ struct State_Info *MyAgent::GetStateInfo(State st)
             {
                 plk.peat = fas->eat;
                 plk.pact = fas->act;
-                stif->plinks.push_back(plk);
-
+                vlk.push_back(plk);
+                lk_count++;
             }
             nfas = fas->next;
         }
         nbas = bas->next;
     }
 
+    /* create state information with continous space */
+    int st_size = sizeof(State) + sizeof(float) + sizeof(float) + sizeof(unsigned long) + \
+                    sizeof(vector<struct Action_Info>) + sizeof(vector<struct ExAction_Info>) + sizeof(vector<struct pLink>) +\
+                    ai_count*sizeof(struct Action_Info) + bf_count*sizeof(struct ExAction_Info) + lk_count*sizeof(struct pLink);
+
+    struct State_Info *stif = (struct State_Info *)malloc(st_size);
+    if (sizeof(*stif) != st_size)
+        printf("size doesn't match!\n");
+    stif->st = mst->st;
+    stif->original_payoff = mst->original_payoff;
+    stif->payoff = mst->payoff;
+    stif->count = mst->count;
+    stif->length = st_size;
+    stif->actions_info = vai;
+    stif->belief = vbf;
+    stif->plinks = vlk;
+
     return stif;
 }
 
-void MyAgent::MergeStateInfo(struct State_Info *stif)
+int MyAgent::MergeStateInfo(struct State_Info *stif)
 {
     struct m_State *mst = SearchState(stif->st);
+    int better = 0;         // if sender's info is better than mine
 
     if (mst == NULL)        // 态不存在，新建一个完全复制
     {
+        better = 1;         // anything is better than nothing
+
         mst = NewState(stif->st);
         /* 加入内存中 */
         mst->next = head;
@@ -664,7 +686,10 @@ void MyAgent::MergeStateInfo(struct State_Info *stif)
     else            // mst态已存在，合并
     {
         if (stif->payoff > mst->payoff)     // 取收益更大值
+        {
             mst->payoff = stif->payoff;
+            better = 1;
+        }
 
         for (vector<struct Action_Info>::iterator acif = stif->actions_info.begin();
         acif != stif->actions_info.end(); ++acif)
@@ -675,6 +700,7 @@ void MyAgent::MergeStateInfo(struct State_Info *stif)
                 if (mac->act == (*acif).act && mac->payoff < (*acif).payoff)  // 取收益更大的
                 {
                     mac->payoff = (*acif).payoff;
+                    better = 1;
                     break;
                 }
                 nmac = mac->next;
@@ -682,6 +708,7 @@ void MyAgent::MergeStateInfo(struct State_Info *stif)
             // 新的act，新建一个
             if (mac == NULL)
             {
+                better = 1;
                 struct m_Action *nmac = (struct m_Action *)malloc(sizeof(struct m_Action));
                 nmac->act = (*acif).act;
                 nmac->payoff = (*acif).payoff;
@@ -709,6 +736,7 @@ void MyAgent::MergeStateInfo(struct State_Info *stif)
             // 新的eat，新建一个
             if (meat == NULL)
             {
+                better = 1;
                 struct m_ExAction *neat = (struct m_ExAction *)malloc(sizeof(struct m_ExAction));
                 neat->eat = (*exif).eat;
                 neat->count = (*exif).count;
@@ -728,7 +756,7 @@ void MyAgent::MergeStateInfo(struct State_Info *stif)
         }
 
     }
-    return;
+    return better;
 }
 
 void MyAgent::PrintStateInfo(struct State_Info *stif)
