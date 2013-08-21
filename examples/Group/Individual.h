@@ -3,27 +3,36 @@
 
 #include <pthread.h>
 #include <signal.h>
-#include "../../MyAgent.h"
-#include "../../Entity.h"
-#include "SimGroup.h"
+#include "R1Agent.h"
+#include "../../SimGroup.h"
 
-class Individual : public Entity
+class Individual
 {
     public:
-        Individual(int);
+        Individual(int i);
         virtual ~Individual();
 
-        void Run();
+        int ThreadRun();
         void SetFreq(int);
+        void JoinGroup(SimGroup);
     protected:
+        void Run();
     private:
         int id;
         int freq;
-        My
+        R1Agent ra;
+        State position;
 
-        void SignalHandler(int);
-        void SendStateInfo();
+        void SendStateInfo(State);
         void RecvStateInfo();
+
+        State GetCurrentState();
+        void DoAction(Action);
+
+        static void* hook(void* args) {
+        reinterpret_cast<Individual*>(args)->Run();
+        return NULL;
+        }
 };
 
 #endif // INDIVIDUAL_H
