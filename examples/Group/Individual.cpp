@@ -8,10 +8,11 @@
 ***********************************************************************/
 #include "Individual.h"
 
-Individual::Individual(int i)
+Individual::Individual(int i):ra(15,2,0.8,0.01,"mem_file"), grp("")
 {
     id = i;
-    signal(SIGUSR1, SignalHandler);
+    freq = 20;
+    position = 5;
 }
 
 Individual::~Individual()
@@ -19,13 +20,13 @@ Individual::~Individual()
     //dtor
 }
 
-void Individual::SendStateInfo()
+void Individual::SendStateInfo(State st)
 {
-    struct State_Info *si = agent.GetStateInfo(current_state);       // can be NULL
+    struct State_Info *si = ra.GetStateInfo(st);       // can be NULL
     if (si == NULL)
         return;
 
-    SimGroup::Send(id, si, si->length);
+    grp.Send(id, si, si->length);
 
     free(si);           // freed??
     return;
@@ -34,17 +35,18 @@ void Individual::SendStateInfo()
 
 void Individual::RecvStateInfo()
 {
-    char buf[1028];
 
-    while(SimGroup::Recv(id, buf, 1028) != 0)
+    char buf[2048];
+
+    while(grp.Recv(id, buf, 2048) != 0)
     {
         struct State_Info *stif = (struct State_Info *)buf;
 
-        int better = agent.MergeStateInfo(stif);
+        int better = ra.MergeStateInfo(stif);
         if (better == 0)                // send out my information if it is better
         {
-            struct State_Info *stif = agent.GetStateInfo(stif->st);
-            SimGroup::Send(id, stif, stif->length);
+            struct State_Info *stif = ra.GetStateInfo(stif->st);
+            grp.Send(id, stif, stif->length);
             free(stif);               // freed?
         }
     }
@@ -57,16 +59,17 @@ void Individual::SetFreq(int fq)
     return;
 }
 
-int Individual::GetID()
+void Individual::JoinGroup(SimGroup sg)
 {
-    return id;
+    grp = sg;
+    return;
 }
 
-void Individual::SignalHandler(int sig)
+int Individual::ThreadRun()
 {
-    if (sig == SIGUSR1)
-        RecvStateInfo();
-    return;
+        pthread_t tid;
+        pthread_create(&tid, NULL, hook, this);
+        return tid;
 }
 
 void Individual::Run()
@@ -74,20 +77,41 @@ void Individual::Run()
     int count = 0;
     while(1)
     {
+        RecvStateInfo();
+
         State cs = GetCurrentState();
-        current_state = cs;
-        Action act = agent.Process(cs);
+        printf("Id: %d, Current state: %ld\n", id, cs);
+        Action act = ra.Process(cs);
         if (act == -1)
             break;
         DoAction(act);
 
         if (count >= freq)
         {
-            SendStateInfo();
+            SendStateInfo(cs);
             count = 0;
         }
         else
             count++;
     }
+    return;
+}
+
+State Individual::GetCurrentState()
+{
+    return position;
+}
+
+void Individual::DoAction(Action act)
+{
+    if (act == 1)
+        position -= 1;
+    else if (act == 2)
+        position += 1;
+
+    if (position > 15)
+        position = 15;
+    if (position < 1)
+        position = 1;
     return;
 }

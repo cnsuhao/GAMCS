@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
+#include <fstream>
 
 using namespace std;
 
@@ -25,12 +26,6 @@ struct Frame
     struct Frame *next;
 };
 
-struct NeighInfo
-{
-    int id;
-    struct Neigh *neigh;
-};
-
 struct Neigh
 {
     int id;
@@ -40,16 +35,15 @@ struct Neigh
 class SimGroup
 {
     public:
-        SimGroup(string);
+        SimGroup(char *);
         virtual ~SimGroup();
 
-        static int Send(int, void *, size_t);
-        static int Recv(int, void *, size_t);
-
-        void GroupRun();
+        int Send(int, void *, size_t);
+        int Recv(int, void *, size_t);
+        int NumOfMembers();
     protected:
     private:
-        string configfile;
+        char *topofile;
         int member_num;
 
         void BuildNeighs();
@@ -58,8 +52,7 @@ class SimGroup
         void Notify(int);
 
         struct Channel channels[MAX_MEMBER];
-        struct NeighInfo neighlist[MAX_MEMBER];
-        pthread_t ThreadID[MAX_MEMBER];
+        struct Neigh *neighlist[MAX_MEMBER];
 };
 
 #endif // SIMGROUP_H
