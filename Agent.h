@@ -57,6 +57,8 @@ class Agent : public PFTGIOM
         virtual vector<Action> Restrict(State, vector<Action>);     /**< reimplement restrict using maximun payoff rule  */
 
         virtual vector<Action> MaxPayoffRule(State, vector<Action>) = 0;        /**< implementation of maximun payoff rule */
+        virtual State ActionEffect(State, Action);
+        ExAction CalExAction(State, State, Action);
         virtual float OriginalPayoff(State);                        /**< get original payoffs of each state, 1 by default */
         float discount_rate;                                        /**< discount rate (0<,<1)when calculate state payoff */
     private:
