@@ -10,7 +10,11 @@
 
 int SimGroup::Send(int id, void *buffer, size_t length)
 {
-    printf("Id: %d, send...\n", id);
+    printf("*************************** Id: %d, Send:********************************\n", id);
+    struct State_Info *si = (struct State_Info *)buffer;
+    MyAgent::PrintStateInfo(si);
+    printf("---------------------------- Send -----------------------------\n\n");
+
     if (length > 2048)
     {
         printf("data length exceeds 2048!\n");
@@ -36,7 +40,6 @@ int SimGroup::Send(int id, void *buffer, size_t length)
 
 int SimGroup::Recv(int id, void *buffer, size_t length)
 {
-    printf("Id: %d, recv...\n", id);
 
     struct Channel *chan = GetChannel(id);
     size_t re;
@@ -49,6 +52,11 @@ int SimGroup::Recv(int id, void *buffer, size_t length)
         chan->frame = chan->frame->next;
         free(tmp);
         re = length;
+
+        printf("++++++++++++++++++++++++ Id: %d, Recv: ++++++++++++++++++++++++\n", id);
+        struct State_Info *si = (struct State_Info *)buffer;
+        MyAgent::PrintStateInfo(si);
+        printf("|||||||||||||||||||||||||||||| Recv ||||||||||||||||||||||||||||||||||\n\n");
     }
     else
         re = 0;
@@ -113,7 +121,7 @@ void SimGroup::BuildNeighs()
         while(p)
         {
             p = strtok(NULL, delim);
-            if (p)
+            if (p && atoi(p) != index)          // exclude self
             {
                 struct Neigh *nneigh = (struct Neigh *)malloc(sizeof(struct Neigh));
                 nneigh->id = atoi(p);

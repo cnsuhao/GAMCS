@@ -29,10 +29,10 @@ class GIOM
         /** Default destructor */
         virtual ~GIOM();
         virtual Output Process(Input);
+        float RectEntropy();                                        /**< calculate entropy of this GIOM */
     protected:
         virtual vector<Output> OutList(Input);                      /**< get the outputs in correspond with specfic input */
         virtual vector<Output> Restrict(Input, vector<Output>);     /**< restrict the outputs */
-        float RectEntropy();                                        /**< calculate entropy of this GIOM */
         /* I:N/O:M */
         int N;                                                      /**< number of inputs */
         int M;                                                      /**< number of outputs of one input */

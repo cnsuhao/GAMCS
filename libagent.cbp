@@ -30,22 +30,33 @@
 				</Linker>
 			</Target>
 			<Target title="SimGroup">
-				<Option output="libagent" prefix_auto="1" extension_auto="1" />
+				<Option output="examples/Group/group" prefix_auto="1" extension_auto="1" />
 				<Option type="0" />
 				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-Wall" />
+					<Add option="-pg" />
+					<Add option="-g" />
+				</Compiler>
+				<Linker>
+					<Add option="-pg" />
+				</Linker>
 			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
+		<Linker>
+			<Add library="pthread" />
+		</Linker>
 		<Unit filename="Agent.cpp" />
 		<Unit filename="Agent.h" />
 		<Unit filename="Entity.cpp">
-			<Option target="Robot1" />
+			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="Entity.h">
-			<Option target="Robot1" />
+			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="GIOM.cpp" />
 		<Unit filename="GIOM.h" />
@@ -53,39 +64,54 @@
 		<Unit filename="MyAgent.h" />
 		<Unit filename="PFTGIOM.cpp" />
 		<Unit filename="PFTGIOM.h" />
-		<Unit filename="TSPAgent.h" />
+		<Unit filename="SimGroup.cpp">
+			<Option target="SimGroup" />
+		</Unit>
+		<Unit filename="SimGroup.h">
+			<Option target="SimGroup" />
+		</Unit>
+		<Unit filename="TSPAgent.h">
+			<Option target="TSP" />
+		</Unit>
 		<Unit filename="examples/Group/Individual.cpp">
-			<Option target="Robot1" />
 			<Option target="SimGroup" />
 		</Unit>
 		<Unit filename="examples/Group/Individual.h">
-			<Option target="Robot1" />
 			<Option target="SimGroup" />
 		</Unit>
-		<Unit filename="examples/Group/SimGroup.cpp">
-			<Option target="Robot1" />
+		<Unit filename="examples/Group/R1Agent.cpp">
 			<Option target="SimGroup" />
 		</Unit>
-		<Unit filename="examples/Group/SimGroup.h">
-			<Option target="Robot1" />
+		<Unit filename="examples/Group/R1Agent.h">
+			<Option target="SimGroup" />
+		</Unit>
+		<Unit filename="examples/Group/main.cpp">
 			<Option target="SimGroup" />
 		</Unit>
 		<Unit filename="examples/Robot1/R1Agent.cpp">
-			<Option target="&lt;{~None~}&gt;" />
+			<Option target="Robot1" />
 		</Unit>
 		<Unit filename="examples/Robot1/R1Agent.h">
-			<Option target="&lt;{~None~}&gt;" />
+			<Option target="Robot1" />
 		</Unit>
 		<Unit filename="examples/Robot1/Robot1.cpp">
-			<Option target="&lt;{~None~}&gt;" />
+			<Option target="Robot1" />
 		</Unit>
 		<Unit filename="examples/Robot1/Robot1.h">
-			<Option target="&lt;{~None~}&gt;" />
+			<Option target="Robot1" />
 		</Unit>
-		<Unit filename="examples/TSP/TSP.cpp" />
-		<Unit filename="examples/TSP/TSP.h" />
-		<Unit filename="examples/TSP/TSPAgent.cpp" />
-		<Unit filename="examples/TSP/TSPAgent.h" />
+		<Unit filename="examples/TSP/TSP.cpp">
+			<Option target="TSP" />
+		</Unit>
+		<Unit filename="examples/TSP/TSP.h">
+			<Option target="TSP" />
+		</Unit>
+		<Unit filename="examples/TSP/TSPAgent.cpp">
+			<Option target="TSP" />
+		</Unit>
+		<Unit filename="examples/TSP/TSPAgent.h">
+			<Option target="TSP" />
+		</Unit>
 		<Extensions>
 			<envvars />
 			<code_completion />

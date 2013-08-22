@@ -395,7 +395,8 @@ float MyAgent::CalActPayoff(Action act, struct m_State *mst)
 
 vector<Action> MyAgent::BestActions(struct m_State *mst, vector<Action> acts)
 {
-    dbgprt("BestActions(): Find best actions\n");
+    printf("BestActions()============\n");
+
     float max_payoff = -999999999.9;
     float ori_payoff = 0.0;
     float payoff;
@@ -406,6 +407,7 @@ vector<Action> MyAgent::BestActions(struct m_State *mst, vector<Action> acts)
     act!=acts.end(); ++act)
     {
         struct m_Action *mac = Act2Struct(*act, mst);
+
         if (mac != NULL)
             payoff = mac->payoff;
         else
@@ -416,16 +418,20 @@ vector<Action> MyAgent::BestActions(struct m_State *mst, vector<Action> acts)
             max_acts.clear();
             max_acts.push_back(*act);
             max_payoff = payoff;
+
         }
         else if (payoff == max_payoff)
             max_acts.push_back(*act);
     }
+    printf("Exit BestActions()...........\n");
 
     return max_acts;
 }
 
 void MyAgent::SaveState(struct m_State *mst, State st)
 {
+    printf("SaveState() ...........\n");
+
     if (pre_in == -1)  // previous state doesn't exist, it's the first time
     {
         if (mst == NULL)  // first time without memory, create the state and save it to memory
@@ -465,6 +471,7 @@ void MyAgent::SaveState(struct m_State *mst, State st)
             LinkStates(pmst, eat, pre_out, mst);
         }
     }
+    printf("Exit SaveState() ...........\n");
 
     return;
 }
@@ -522,15 +529,12 @@ void MyAgent::RemoveState(struct m_State *mst)
 
 vector<Action> MyAgent::MaxPayoffRule(State st, vector<Action> acts)
 {
-//    printf("State: %d + Action: %d ===> State: %d ", pre_in, pre_out, st);
-    dbgprt("MaxPayoffRule(): State: %d\n", st);
+    printf("MaxPayoffRule(): State: %d\n", st);
     struct m_State *mst = SearchState(st);
     vector<Action> re;
 
     if (mst == NULL)        // first time to encounter this state, we know nothing about it, so do nothing
     {
-//        printf("\n");
-        dbgprt("State first occur\n");
         re = acts;
     }
     else                    // we have memory about this state, find the best action of it
@@ -540,6 +544,8 @@ vector<Action> MyAgent::MaxPayoffRule(State st, vector<Action> acts)
     }
 
     SaveState(mst, st);     // save the state to our memory
+    printf("Exit MaxPayoffRule()...........\n");
+
     return re;
 }
 
@@ -554,58 +560,90 @@ struct State_Info *MyAgent::GetStateInfo(State st)
         return NULL;
     }
 
-    vector<struct Action_Info> vai;
-    int ai_count = 0;
-    vai.clear();
-    struct Action_Info acif;
+    /* Action information */
+    int ai_len = 0;
+    int max_len = 50;
+    struct Action_Info tmp_atif[max_len];
+
     struct m_Action *ac, *nac;
     for (ac=mst->atlist; ac!=NULL; ac=nac)
     {
         Action act = ac->act;
         float payoff = ac->payoff;
-        acif.act = act;
-        acif.payoff = payoff;
-        vai.push_back(acif);
-        ai_count++;
+        if (ai_len < max_len)
+        {
+            tmp_atif[ai_len].act = act;
+            tmp_atif[ai_len].payoff = payoff;
+        }
+        else
+        {
+            max_len += 50;
+            tmp_atif = realloc(tmp_atif, max_len);
 
+            tmp_atif[ai_len].act = act;
+            tmp_atif[ai_len].payoff = payoff;
+        }
+        ai_len++;
         nac = ac->next;
     }
 
-    vector<struct ExAction_Info> vbf;
-    int bf_count = 0;
-    vbf.clear();
-    struct ExAction_Info eatif;
+    /* ExAction information */
+    int ea_len = 0;
+    max_len = 50;
+    struct ExAction_Info tmp_etif[max_len];
+
     struct m_ExAction *ea, *nea;
     for (ea=mst->ealist; ea!=NULL; ea=nea)
     {
-        eatif.eat = ea->eat;
-        eatif.count = ea->count;
-        vbf.push_back(eatif);
-        bf_count++;
+        if (ea_len < max_len)
+        {
+            tmp_etif[ea_len].eat = ea->eat;
+            tmp_etif[ea_len].count = ea->count;
+        }
+        else
+        {
+            max_len += 50;
+            tmp_etif = realloc(tmp_etif, max_len);
 
+            tmp_etif[ea_len].eat = ea->eat;
+            tmp_etif[ea_len].count = ea->count;
+        }
+        ea_len++;
         nea = ea->next;
     }
 
-    vector<struct pLink> vlk;
-    int lk_count = 0;
-    vlk.clear();
-    struct pLink plk;
+    /* links information */
+    int lk_len = 0;
+    max_len = 50;
+    struct pLink tmp_lk[max_len];
+
     struct m_BackArcState *bas, *nbas;
     for (bas=mst->blist; bas!=NULL; bas=nbas)
     {
-        plk.pst = bas->pstate->st;
         struct m_State *pmst = SearchState(plk.pst);
         if (pmst == NULL)
-            ERROR("Memory conflict!\n");
+            ERROR("GetStateInfo(): Memory conrupt!\n");
         struct m_ForwardArcState *fas, *nfas;
         for (fas=pmst->flist; fas!=NULL; fas=nfas)
         {
             if (fas->nstate->st == mst->st)
             {
-                plk.peat = fas->eat;
-                plk.pact = fas->act;
-                vlk.push_back(plk);
-                lk_count++;
+                if (lk_len < max_len)
+                {
+                    tmp_lk[lk_len].pst = bas->pstate->st;
+                    tmp_lk[lk_len].peat = fas->eat;
+                    tmp_lk[lk_len].pact = fas->act;
+                }
+                else
+                {
+                    max_len += 50;
+                    tmp_lk = realloc(tmp_lk, max_len);
+
+                    tmp_lk[lk_len].pst = bas->pstate->st;
+                    tmp_lk[lk_len].peat = fas->eat;
+                    tmp_lk[lk_len].pact = fas->act;
+                }
+                lk_len++;
             }
             nfas = fas->next;
         }
@@ -613,36 +651,34 @@ struct State_Info *MyAgent::GetStateInfo(State st)
     }
 
     /* create state information with continous space */
-    int st_size = sizeof(State) + sizeof(float) + sizeof(float) + sizeof(unsigned long) + \
-                    sizeof(vector<struct Action_Info>) + sizeof(vector<struct ExAction_Info>) + sizeof(vector<struct pLink>) +\
-                    ai_count*sizeof(struct Action_Info) + bf_count*sizeof(struct ExAction_Info) + lk_count*sizeof(struct pLink);
+
 
     struct State_Info *stif = (struct State_Info *)malloc(st_size);
-    if (sizeof(*stif) != st_size)
-        printf("size doesn't match!\n");
     stif->st = mst->st;
     stif->original_payoff = mst->original_payoff;
     stif->payoff = mst->payoff;
     stif->count = mst->count;
     stif->length = st_size;
-    stif->actions_info = vai;
-    stif->belief = vbf;
+    stif->actions_info = vai;   // seg fault
+    stif->belief = vbf;         // memmove() segement fault
     stif->plinks = vlk;
 
-    return stif;
+    return stif;                // raise() Abort
 }
 
 int MyAgent::MergeStateInfo(struct State_Info *stif)
 {
+    printf("MergeStateInfo ....:\n");
+
     struct m_State *mst = SearchState(stif->st);
     int better = 0;         // if sender's info is better than mine
 
-    if (mst == NULL)        // 态不存在，新建一个完全复制
+    if (mst == NULL)        // if it's new, copy it in memory
     {
         better = 1;         // anything is better than nothing
 
         mst = NewState(stif->st);
-        /* 加入内存中 */
+        /* Add to memory */
         mst->next = head;
         head = mst;
         state_num++;
@@ -651,6 +687,7 @@ int MyAgent::MergeStateInfo(struct State_Info *stif)
         mst->original_payoff = stif->original_payoff;
         mst->count = stif->count;
 
+        /* Actions information */
         for (vector<struct Action_Info>::iterator acif = stif->actions_info.begin();
         acif != stif->actions_info.end(); ++acif)
         {
@@ -662,6 +699,7 @@ int MyAgent::MergeStateInfo(struct State_Info *stif)
             mst->atlist = mac;
         }
 
+        /* ExActions information */
         for (vector<struct ExAction_Info>::iterator exif = stif->belief.begin();
         exif != stif->belief.end(); ++exif)
         {
@@ -673,40 +711,42 @@ int MyAgent::MergeStateInfo(struct State_Info *stif)
             mst->ealist = meat;
         }
 
+        /* links information */
         for (vector<struct pLink>::iterator link = stif->plinks.begin();
         link != stif->plinks.end(); ++link)
         {
             State pst = (*link).pst;
-            struct m_State *pmst = SearchState(pst);
-            if (pmst != NULL)
+            struct m_State *pmst = SearchState(pst);            // find if the previous state exists
+            if (pmst != NULL)                                   // if so, make the link, otherwise do nothing
                 LinkStates(pmst, (*link).peat, (*link).pact, mst);
         }
 
     }
-    else            // mst态已存在，合并
+    else            // state already exists, merge the recieved one with it
     {
-        if (stif->payoff > mst->payoff)     // 取收益更大值
+        if (stif->payoff > mst->payoff)     // choose the bigger one
         {
             mst->payoff = stif->payoff;
-            better = 1;
+            better = 1;                     // mark it better
         }
 
-        for (vector<struct Action_Info>::iterator acif = stif->actions_info.begin();
+        /* actions information */
+        for (vector<struct Action_Info>::iterator acif = stif->actions_info.begin();        // for every action recieved, compare it with my own version
         acif != stif->actions_info.end(); ++acif)
         {
             struct m_Action *mac, *nmac;
             for (mac=mst->atlist; mac!=NULL; mac=nmac)
             {
-                if (mac->act == (*acif).act && mac->payoff < (*acif).payoff)  // 取收益更大的
+                if ((mac->act == (*acif).act) && (mac->payoff < (*acif).payoff))  // choose the bigger
                 {
                     mac->payoff = (*acif).payoff;
                     better = 1;
-                    break;
+                    break;                                                        // one action should occur only once, break if we found one
                 }
                 nmac = mac->next;
             }
-            // 新的act，新建一个
-            if (mac == NULL)
+
+            if (mac == NULL)            // no corresponding action found in my own state, it's a new one, create it.
             {
                 better = 1;
                 struct m_Action *nmac = (struct m_Action *)malloc(sizeof(struct m_Action));
@@ -718,14 +758,15 @@ int MyAgent::MergeStateInfo(struct State_Info *stif)
             }
         }
 
-        mst->count += stif->count;       // 计数相加
+        mst->count += stif->count;       // Add up the counts of state
+        /* ExActions */
         for (vector<struct ExAction_Info>::iterator exif = stif->belief.begin();
         exif != stif->belief.end(); ++exif)
         {
             struct m_ExAction *meat, *nmeat;
             for (meat=mst->ealist; meat!=NULL; meat=nmeat)
             {
-                if (meat->eat == (*exif).eat) // 计数相加
+                if (meat->eat == (*exif).eat) // add up exact counts
                 {
                     meat->count += (*exif).count;
                     break;
@@ -733,7 +774,7 @@ int MyAgent::MergeStateInfo(struct State_Info *stif)
                 nmeat = meat->next;
             }
 
-            // 新的eat，新建一个
+            // new eat, create one
             if (meat == NULL)
             {
                 better = 1;
@@ -746,6 +787,7 @@ int MyAgent::MergeStateInfo(struct State_Info *stif)
             }
         }
 
+        /* links, make the link if previous state exists */
         for (vector<struct pLink>::iterator link = stif->plinks.begin();
         link != stif->plinks.end(); ++link)
         {
@@ -756,6 +798,7 @@ int MyAgent::MergeStateInfo(struct State_Info *stif)
         }
 
     }
+    printf("exit MergeStateInfo==============\n");
     return better;
 }
 

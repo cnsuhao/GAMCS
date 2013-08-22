@@ -8,11 +8,14 @@
 ***********************************************************************/
 #include "Individual.h"
 
-Individual::Individual(int i):ra(15,2,0.8,0.01,"mem_file"), grp("")
+Individual::Individual(int i, SimGroup *gp)
 {
     id = i;
-    freq = 20;
+    printf("My id: %d\n", id);
+    freq = 5;
     position = 5;
+    ra = new R1Agent(15,2,0.8,0.01,"mem_file");
+    grp = gp;
 }
 
 Individual::~Individual()
@@ -22,11 +25,14 @@ Individual::~Individual()
 
 void Individual::SendStateInfo(State st)
 {
-    struct State_Info *si = ra.GetStateInfo(st);       // can be NULL
+    struct State_Info *si = ra->GetStateInfo(st);       // can be NULL
     if (si == NULL)
+    {
+        printf("si == NULL\n");
         return;
+    }
 
-    grp.Send(id, si, si->length);
+    grp->Send(id, si, si->length);
 
     free(si);           // freed??
     return;
@@ -38,16 +44,19 @@ void Individual::RecvStateInfo()
 
     char buf[2048];
 
-    while(grp.Recv(id, buf, 2048) != 0)
+    while(grp->Recv(id, buf, 2048) != 0)
     {
         struct State_Info *stif = (struct State_Info *)buf;
 
-        int better = ra.MergeStateInfo(stif);
+        int better = ra->MergeStateInfo(stif);
         if (better == 0)                // send out my information if it is better
         {
-            struct State_Info *stif = ra.GetStateInfo(stif->st);
-            grp.Send(id, stif, stif->length);
-            free(stif);               // freed?
+            struct State_Info *stif = ra->GetStateInfo(stif->st);
+            if (stif != NULL)
+            {
+                grp->Send(id, stif, stif->length);
+                free(stif);               // freed?
+            }
         }
     }
     return;
@@ -59,35 +68,32 @@ void Individual::SetFreq(int fq)
     return;
 }
 
-void Individual::JoinGroup(SimGroup sg)
-{
-    grp = sg;
-    return;
-}
-
 int Individual::ThreadRun()
 {
         pthread_t tid;
         pthread_create(&tid, NULL, hook, this);
+
         return tid;
 }
 
 void Individual::Run()
 {
+
     int count = 0;
     while(1)
     {
+        printf("========================== Thread: %ld ==========================\n", (long)syscall(224));
         RecvStateInfo();
-
         State cs = GetCurrentState();
         printf("Id: %d, Current state: %ld\n", id, cs);
-        Action act = ra.Process(cs);
+        Action act = ra->Process(cs);
         if (act == -1)
             break;
         DoAction(act);
 
         if (count >= freq)
         {
+            printf("Send in Run()......\n");
             SendStateInfo(cs);
             count = 0;
         }
