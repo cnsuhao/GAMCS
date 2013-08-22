@@ -49,13 +49,13 @@ void Individual::RecvStateInfo()
         struct State_Info *stif = (struct State_Info *)buf;
 
         int better = ra->MergeStateInfo(stif);
-        if (better == 0)                // send out my information if it is better
+        if (better == 0)                // send out my information if it is not better
         {
-            struct State_Info *stif = ra->GetStateInfo(stif->st);
-            if (stif != NULL)
+            struct State_Info *si = ra->GetStateInfo(stif->st);
+            if (si != NULL)
             {
-                grp->Send(id, stif, stif->length);
-                free(stif);               // freed?
+                grp->Send(id, si, si->length);
+                free(si);               // freed?
             }
         }
     }
