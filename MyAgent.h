@@ -57,7 +57,7 @@ class MyAgent : public Agent
 
         virtual struct State_Info *GetStateInfo(State);                 /**< implementing GetStateInfo function */
         virtual int MergeStateInfo(struct State_Info *);               /**< implementing MergeStateInfo function */
-        void PrintStateInfo(struct State_Info *);
+        static void PrintStateInfo(struct State_Info *);
     protected:
         virtual vector<Action> MaxPayoffRule(State, vector<Action>);    /**< implementing maximun payoff rule */
         float threshold;                                                /**< threshold used in payoff updating */

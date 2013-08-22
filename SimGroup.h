@@ -8,6 +8,7 @@
 #include <string.h>
 #include <signal.h>
 #include <fstream>
+#include "MyAgent.h"
 
 using namespace std;
 
@@ -15,7 +16,6 @@ using namespace std;
 
 struct Channel
 {
-    int id;
     pthread_mutex_t mutex;
     struct Frame *frame;
 };

@@ -31,6 +31,24 @@ struct ExAction_Info
     unsigned long count;    /**< count of experiencing times */
 };
 
+struct ActionInfos
+{
+    int len;
+    struct Action_Info atifs[0];
+};
+
+struct ExActionInfos
+{
+    int len;
+    struct ExAction_Info exifs[0];
+};
+
+struct pLinks
+{
+    int len;
+    struct pLink lks[0];
+};
+
 /* State information, this struct can be used to communicate with other agents */
 struct State_Info
 {
@@ -38,10 +56,10 @@ struct State_Info
     float original_payoff;                      /**< original payoff */
     float payoff;                               /**< payoff */
     unsigned long count;                        /**< count of experiencing times */
-    int length;
-    vector<struct Action_Info> actions_info;    /**< information of actions containing in this state */
-    vector<struct ExAction_Info> belief;        /**< information of exacts containing in this state */
-    vector<struct pLink> plinks;                /**< information of backward links of this state */
+    int stif_size;
+    struct Action_Info atifs[0];    /**< information of actions containing in this state */
+    struct ExAction_Info belief[0];        /**< information of exacts containing in this state */
+    struct pLink lks[0];                /**< information of backward links of this state */
 };
 
 class Agent : public PFTGIOM

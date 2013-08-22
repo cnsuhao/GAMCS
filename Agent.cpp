@@ -34,6 +34,7 @@ Agent::~Agent()
 
 vector<Action> Agent::Restrict(State st, vector<Action> acts)
 {
+    printf("enter Agent Restrict -------------------------\n\n");
     return MaxPayoffRule(st, acts);
 }
 

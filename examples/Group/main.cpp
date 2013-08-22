@@ -8,12 +8,15 @@ int main(void)
     int num = grp.NumOfMembers();
     int i;
     pthread_t tids[num];
+    Individual *indvs[num];
+
     for (i=0; i<num; i++)
     {
         printf("i: %d\n", i);
-        Individual indv(i);
-        tids[i] = indv.ThreadRun();
+        indvs[0] = new Individual(i, &grp);
+        tids[i] = indvs[0]->ThreadRun();
     }
-    printf("exit------------------\n");
-    sleep(10);
+
+    for (i=0; i<num; i++)
+        pthread_join(tids[i], NULL);
 }
