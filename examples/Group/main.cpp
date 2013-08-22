@@ -17,6 +17,10 @@ int main(void)
         tids[i] = indvs[0]->ThreadRun();
     }
 
-    for (i=0; i<num; i++)
-        pthread_join(tids[i], NULL);
+    sleep(20);
+//    for (i=0; i<num; i++)
+//    {
+//        printf("tid%d: %d\n", i, tids[i]);
+//        pthread_join(tids[i], NULL);
+//    }
 }

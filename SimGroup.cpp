@@ -27,7 +27,7 @@ int SimGroup::Send(int id, void *buffer, size_t length)
         struct Channel *chan = GetChannel(*it);
         pthread_mutex_lock(&chan->mutex);
 
-        struct Frame *fr = (struct Frame *)malloc(sizeof(struct Frame));
+        struct Frame *fr = (struct Frame *)malloc(sizeof(struct Frame));    // buggy!
         memcpy(fr->data, buffer, length);
         fr->next = chan->frame;
         chan->frame = fr;
