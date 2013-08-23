@@ -775,33 +775,40 @@ int MyAgent::MergeStateInfo(struct State_Info *stif)
             }
         }
 
-        mst->count += stif->count;       // Add up the counts of state
-        /* ExActions */
-        for (i=0; i<stif->eat_num; i++)
+        /* counts */
+        if (mst->count < stif->count)       // more experienced
         {
-            struct m_ExAction *meat, *nmeat;
-            for (meat=mst->ealist; meat!=NULL; meat=nmeat)
+            better = 1;
+
+            mst->count = stif->count;       // state count
+
+            /* ExActions */
+            for (i=0; i<stif->eat_num; i++)
             {
-                if (meat->eat == eaif[i].eat) // add up exact counts
+                struct m_ExAction *meat, *nmeat;
+                for (meat=mst->ealist; meat!=NULL; meat=nmeat)
                 {
-                    meat->count += eaif[i].count;
-                    break;
+                    if (meat->eat == eaif[i].eat)
+                    {
+                        meat->count = eaif[i].count;        // use the recieved eat count
+                        break;
+                    }
+                    nmeat = meat->next;
                 }
-                nmeat = meat->next;
-            }
 
-            // new eat, create one
-            if (meat == NULL)
-            {
-                better = 1;
-                struct m_ExAction *neat = (struct m_ExAction *)malloc(sizeof(struct m_ExAction));
-                neat->eat = eaif[i].eat;
-                neat->count = eaif[i].count;
+                // new eat, create one
+                if (meat == NULL)
+                {
+                    better = 1;
+                    struct m_ExAction *neat = (struct m_ExAction *)malloc(sizeof(struct m_ExAction));
+                    neat->eat = eaif[i].eat;
+                    neat->count = eaif[i].count;
 
-                neat->next = mst->ealist;
-                mst->ealist = neat;
+                    neat->next = mst->ealist;
+                    mst->ealist = neat;
+                }
             }
-        }
+        } //if
 
         /* links, make the link if previous state exists */
         for (i=0; i<stif->lk_num; i++)
