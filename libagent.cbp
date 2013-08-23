@@ -52,6 +52,10 @@
 		</Linker>
 		<Unit filename="Agent.cpp" />
 		<Unit filename="Agent.h" />
+		<Unit filename="Database.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Database.h" />
 		<Unit filename="Entity.cpp">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>

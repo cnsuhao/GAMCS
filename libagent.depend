@@ -2,15 +2,16 @@
 1377137929 source:/home/andy/Code/MyWork/libagent/Agent.cpp
 	"Agent.h"
 
-1377063834 /home/andy/Code/MyWork/libagent/Agent.h
+1377217586 /home/andy/Code/MyWork/libagent/Agent.h
 	"PFTGIOM.h"
 
 1376905294 /home/andy/Code/MyWork/libagent/PFTGIOM.h
 	"GIOM.h"
 
-1377139719 /home/andy/Code/MyWork/libagent/GIOM.h
+1377217586 /home/andy/Code/MyWork/libagent/GIOM.h
 	<vector>
 	<string>
+	<string.h>
 	<stdlib.h>
 	<unistd.h>
 	<math.h>
@@ -45,7 +46,7 @@
 1376903351 source:/home/andy/Code/MyWork/libagent/PFTGIOM.cpp
 	"PFTGIOM.h"
 
-1377167579 source:/home/andy/Code/MyWork/libagent/examples/Group/Individual.cpp
+1377217586 source:/home/andy/Code/MyWork/libagent/examples/Group/Individual.cpp
 	"Individual.h"
 
 1377154322 /home/andy/Code/MyWork/libagent/examples/Group/Individual.h
@@ -164,7 +165,7 @@
 	<fstream>
 	"MyAgent.h"
 
-1377155650 source:/home/andy/Code/MyWork/libagent/examples/Group/main.cpp
+1377217586 source:/home/andy/Code/MyWork/libagent/examples/Group/main.cpp
 	<pthread.h>
 	"../../SimGroup.h"
 	"Individual.h"
@@ -172,7 +173,7 @@
 1377150518 source:/home/andy/Code/MyWork/libagent/examples/Group/R1Agent.cpp
 	"R1Agent.h"
 
-1377154739 source:/home/andy/Code/MyWork/libagent/SimGroup.cpp
+1377217586 source:/home/andy/Code/MyWork/libagent/SimGroup.cpp
 	"SimGroup.h"
 
 1376901544 source:/home/andy/Code/MyWork/libagent/examples/Robot1/R1Agent.cpp
