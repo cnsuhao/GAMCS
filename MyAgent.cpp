@@ -8,20 +8,135 @@
 ***********************************************************************/
 #include "MyAgent.h"
 
+int MyAgent::CheckLink(struct m_State *pmst, Action act, ExAction eat, struct m_State *mst)
+{
+    struct m_ForwardArcState *fas, *nfas;
+    for (fas=pmst->flist; fas!=NULL; fas=nfas)
+    {
+        if (fas->act == act && fas->eat == eat && fas->nstate == mst)
+            return 1;
+
+        nfas = fas->next;
+    }
+
+    return 0;
+}
+
+struct m_State *MyAgent::LoadState(State st)
+{
+    struct m_State *mst = SearchState(st);
+    if (mst == NULL)
+    {
+        struct State_Info *stif = db_fetch_state_info(st);
+        if (stif == NULL)       // should not happen, database conrrupted!!
+            return NULL;
+        mst = NewState(st);
+
+        mst->st = stif->st;
+        mst->original_payoff = stif->original_payoff;
+        mst->payoff = stif->payoff;
+        mst->count = stif->count;
+
+        mst->next = head;
+        head = mst;
+        state_num++;
+
+        unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
+        unsigned long ea_len = stif->eat_num * sizeof(struct ExAction_Info);
+
+        unsigned char *p = (unsigned char *)stif;
+        p += sizeof(struct State_Info);
+        struct Action_Info *atif = (struct Action_Info *)p;
+
+        p += ai_len;
+        struct ExAction_Info *eaif = (struct ExAction_Info *)p;
+
+        p += ea_len;
+        struct pLink *lk = (struct pLink *)p;
+
+        int i;
+        /* build actions list */
+        for (i=0; i<stif->act_num; i++)
+        {
+            struct m_Action *mac = NewAc(atif[i].act);
+            mac->payoff = atif[i].payoff;
+
+            mac->next = mst->atlist;
+            mst->atlist = mac;
+        }
+        /* build exactions list */
+        for (i=0; i<stif->eat_num; i++)
+        {
+            struct m_ExAction *mea = NewEa(eaif[i].eat);
+            mea->count = eaif[i].count;
+
+            mea->next = mst->ealist;
+            mst->ealist = mea;
+        }
+
+        /* build previous states' forward lists */
+        for (i=0; i<stif->lk_num; i++)
+        {
+            struct m_State *pmst = LoadState(lk[i].pst);
+            /* build backward list */
+            struct m_BackArcState *mbas = NewBas();
+            mbas->pstate = pmst;
+
+            mbas->next = mst->blist;
+            mst->blist = mbas;
+
+            if (CheckLink(pmst, lk[i].peat, lk[i].pact, mst) == 1)      // already linked, break loop
+                continue;
+
+            struct m_ForwardArcState *mfas = NewFas(lk[i].peat, lk[i].pact);
+            mfas->nstate = mst;
+
+            mfas->next = pmst->flist;
+            pmst->flist = mfas;
+        }
+
+        free(stif);
+    }
+    return mst;
+}
+
 void MyAgent::LoadMemory()
 {
+    int re = database_connect("localhost", "root", "890127", (char *)mem_name.c_str());
+    if (re == 0)
+    {
+        State st;
+        while((st = db_next_state()) != -1)
+            LoadState(st);
+    }
+
+    database_close();
     return;
 }
 
 void MyAgent::DumpMemory()
 {
+    int re = database_connect("localhost", "root", "890127", (char *)mem_name.c_str());
+    if (re == 0)
+    {
+        struct m_State *mst, *nmst;
+        for (mst=head; mst!=NULL; mst=nmst)
+        {
+            struct State_Info *stif = GetStateInfo(mst->st);
+            db_add_state_info(stif);
+            free(stif);
+            nmst = mst->next;
+        }
+    }
+
+    database_close();
     return;
 }
 
 MyAgent::MyAgent(int n, int m):Agent(n, m)
 {
     //ctor
-    mem_file = "MyAgent.mem";
+    mem_name = "MyAgent";
     threshold = 0.01;
 
     state_num = arc_num = 0;
@@ -32,7 +147,7 @@ MyAgent::MyAgent(int n, int m):Agent(n, m)
 
 MyAgent::MyAgent(int n, int m, float dr):Agent(n, m, dr)
 {
-    mem_file = "MyAgent.mem";
+    mem_name = "MyAgent";
     threshold = 0.01;
 
     state_num = arc_num = 0;
@@ -41,9 +156,9 @@ MyAgent::MyAgent(int n, int m, float dr):Agent(n, m, dr)
     LoadMemory();
 }
 
-MyAgent::MyAgent(int n, int m, float dr, float th, string memfile):Agent(n, m, dr)
+MyAgent::MyAgent(int n, int m, float dr, float th, string memname):Agent(n, m, dr)
 {
-    mem_file = memfile;
+    mem_name = memname;
     threshold = th;
 
     state_num = arc_num = 0;
@@ -124,7 +239,7 @@ void MyAgent::FreeState(struct m_State *mst)
         FreeBas(bas);
     }
 
-    return FreeState(mst);
+    return free(mst);
 }
 
 struct m_ForwardArcState *MyAgent::NewFas(ExAction eat, Action act)
