@@ -42,18 +42,31 @@
 					<Add option="-pg" />
 				</Linker>
 			</Target>
+			<Target title="test">
+				<Option output="test" prefix_auto="1" extension_auto="1" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Linker>
+					<Add library="mysqlclient" />
+				</Linker>
+			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
+			<Add option="-pg" />
+			<Add option="-g" />
 			<Add option="-fexceptions" />
 		</Compiler>
 		<Linker>
+			<Add option="-pg" />
 			<Add library="pthread" />
+			<Add library="mysqlclient" />
 		</Linker>
 		<Unit filename="Agent.cpp" />
 		<Unit filename="Agent.h" />
-		<Unit filename="Database.c">
-			<Option compilerVar="CC" />
+		<Unit filename="Database.cpp">
+			<Option target="Robot1" />
+			<Option target="test" />
 		</Unit>
 		<Unit filename="Database.h" />
 		<Unit filename="Entity.cpp">
@@ -115,6 +128,9 @@
 		</Unit>
 		<Unit filename="examples/TSP/TSPAgent.h">
 			<Option target="TSP" />
+		</Unit>
+		<Unit filename="test.cpp">
+			<Option target="test" />
 		</Unit>
 		<Extensions>
 			<envvars />

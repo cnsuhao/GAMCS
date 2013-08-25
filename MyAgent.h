@@ -2,6 +2,7 @@
 #define MYAGENT_H
 
 #include "Agent.h"
+#include "Database.h"
 
 enum m_STmark {SAVED, NEW, MODIFIED, DELETED};
 
@@ -62,11 +63,14 @@ class MyAgent : public Agent
         virtual vector<Action> MaxPayoffRule(State, vector<Action>);    /**< implementing maximun payoff rule */
         float threshold;                                                /**< threshold used in payoff updating */
     private:
-        string mem_file;                /**< memory file name used when saving memory to disk */
+        string mem_name;                /**< memory file name used when saving memory to disk */
         int state_num;                  /**< number of states in current memory */
         int arc_num;                    /**< number of arcs */
 
         struct m_State *head;           /**< memory point */
+
+        struct m_State *LoadState(State);
+        int CheckLink(struct m_State *, Action , ExAction , struct m_State *);
 
         void LoadMemory();              /**< load memory from a file */
         void DumpMemory();              /**< save memory to a file  */

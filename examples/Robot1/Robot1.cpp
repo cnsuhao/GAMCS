@@ -8,6 +8,8 @@
 ***********************************************************************/
 #include "Robot1.h"
 
+int q = 0;
+
 Robot1::~Robot1()
 {
     //dtor
@@ -15,7 +17,7 @@ Robot1::~Robot1()
 
 void Robot1::Run()
 {
-    while(1)
+    while(!q)
     {
         State cs = GetCurrentState();
         printf("Current state: %ld\n", cs);
@@ -48,8 +50,15 @@ void Robot1::DoAction(Action act)
     return;
 }
 
+void quit(int signo)
+{
+    printf("Quit decently\n");
+    q = 1;
+}
+
 int main(void)
 {
+    signal(SIGINT, quit);
     Robot1 rb;
     rb.Run();
 }

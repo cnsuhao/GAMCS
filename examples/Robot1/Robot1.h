@@ -1,12 +1,13 @@
 #ifndef ROBOT1_H
 #define ROBOT1_H
+#include <signal.h>
 #include "R1Agent.h"
 
 class Robot1
 {
     public:
         /** Default constructor */
-        Robot1():ra(20,2,0.8,0.01,"mem_file"), position(2){}
+        Robot1():ra(20,2,0.8,0.01,"MyAgent"), position(2){}
         /** Default destructor */
         virtual ~Robot1();
 
