@@ -12,6 +12,8 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
+					<Add option="-Wextra" />
+					<Add option="-Wall" />
 					<Add option="-g" />
 					<Add option="-D_DEBUG_" />
 				</Compiler>
@@ -39,6 +41,7 @@
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
+					<Add option="-Wextra" />
 					<Add option="-Wall" />
 					<Add option="-pg" />
 					<Add option="-g" />
@@ -105,9 +108,6 @@
 		</Unit>
 		<Unit filename="SimGroup.h">
 			<Option target="SimGroup" />
-		</Unit>
-		<Unit filename="TSPAgent.h">
-			<Option target="TSP" />
 		</Unit>
 		<Unit filename="examples/Group/Individual.cpp">
 			<Option target="SimGroup" />
