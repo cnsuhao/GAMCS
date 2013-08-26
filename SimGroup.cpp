@@ -8,6 +8,34 @@
 ***********************************************************************/
 #include "SimGroup.h"
 
+void SimGroup::Include(Entity *ent)
+{
+    ent->SetSendFunc(this->Send);
+    ent->SetRecvFunc(this->Recv);
+
+    entities.push_back(ent);
+    member_num++;
+    return;
+}
+
+void SimGroup::Run()
+{
+    BuildNeighs();
+
+    for (vector<Entity *>::iterator pentity=entities.begin(); pentity!=entities.end(); ++pentity)
+    {
+        pthread_t tid = *pentity->ThreadRun();
+        tids.push_back(tid);
+    }
+
+    for (vector<pthread_t>::iterator it=tids.begin(); it!=tids.end(); ++it)
+    {
+        pthread_join(*it, NULL);
+    }
+
+    return;
+}
+
 int SimGroup::Send(int id, void *buffer, size_t length)
 {
     printf("*************************** Id: %d, Send:********************************\n", id);
@@ -66,12 +94,20 @@ int SimGroup::Recv(int id, void *buffer, size_t length)
 
 }
 
-SimGroup::SimGroup(char *topo)
+void SimGroup::SetTopo(char *tf)
+{
+    topofile = tf;
+    return;
+}
+
+SimGroup::SimGroup(int i)
 {
     //ctor
-    topofile = topo;
-
-    BuildNeighs();
+    id = i;
+    topofile = NULL;
+    member_num = 0;
+    entities.clear();
+    tids.clear();
 }
 
 SimGroup::~SimGroup()
@@ -101,11 +137,17 @@ vector<int> SimGroup::GetNeighs(int id)
 void SimGroup::BuildNeighs()
 {
     int num = 0;
+    if (topofile == NULL)
+    {
+        dbgprt("topofile is NULL!\n");
+        return;
+    }
+
     fstream tf(topofile);
 
     if (!tf.is_open())
     {
-        printf("cant open topofile!\n");
+        dbgprt("can't open topofile!\n");
         return;
     }
 
@@ -133,9 +175,4 @@ void SimGroup::BuildNeighs()
     }
     member_num = num;
     return;
-}
-
-int SimGroup::NumOfMembers()
-{
-    return member_num;
 }

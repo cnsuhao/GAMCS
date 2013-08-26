@@ -10,25 +10,14 @@
 
 int q = 0;
 
+Robot1::Robot1(int i):Entity(i)
+{
+    position = 2;
+}
+
 Robot1::~Robot1()
 {
     //dtor
-}
-
-void Robot1::Run()
-{
-    while(!q)
-    {
-        State cs = GetCurrentState();
-        printf("Current state: %ld\n", cs);
-        struct State_Info *stif = ra.GetStateInfo(cs);
-        if (stif != NULL)
-            ra.PrintStateInfo(stif);
-        Action act = ra.Process(cs);
-        if (act == -1)
-            break;
-        DoAction(act);
-    }
 }
 
 State Robot1::GetCurrentState()
@@ -56,9 +45,9 @@ void quit(int signo)
     q = 1;
 }
 
-int main(void)
-{
-    signal(SIGINT, quit);
-    Robot1 rb;
-    rb.Run();
-}
+//int main(void)
+//{
+//    signal(SIGINT, quit);
+//    Robot1 rb;
+//    rb.Run();
+//}

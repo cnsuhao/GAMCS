@@ -9,6 +9,7 @@
 #include <signal.h>
 #include <fstream>
 #include "MyAgent.h"
+#include "Entity.h"
 
 using namespace std;
 
@@ -38,11 +39,14 @@ class SimGroup
         SimGroup(char *);
         virtual ~SimGroup();
 
+        void SetTopo(char *);
+        void Include(Entity *);
+        void Run();
+    protected:
         int Send(int, void *, size_t);
         int Recv(int, void *, size_t);
-        int NumOfMembers();
-    protected:
-    private:
+
+        int id;
         char *topofile;
         int member_num;
 
@@ -53,6 +57,10 @@ class SimGroup
 
         struct Channel channels[MAX_MEMBER];
         struct Neigh *neighlist[MAX_MEMBER];
+
+        vector<Entity *> entities;
+        vector<pthread_t> tids;
+    private:
 };
 
 #endif // SIMGROUP_H

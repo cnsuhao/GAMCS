@@ -1,20 +1,18 @@
 #ifndef ROBOT1_H
 #define ROBOT1_H
 #include <signal.h>
-#include "R1Agent.h"
+#include "../../Entity.h"
 
-class Robot1
+class Robot1 : public Entity
 {
     public:
         /** Default constructor */
-        Robot1():ra(20,2,0.8,0.01,"MyAgent"), position(2){}
+        Robot1(int);
         /** Default destructor */
         virtual ~Robot1();
 
-        void Run();
     protected:
     private:
-        R1Agent ra;
         State position;
 
         State GetCurrentState();
