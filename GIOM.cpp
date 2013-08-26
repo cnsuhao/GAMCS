@@ -81,7 +81,7 @@ Output GIOM::Process(Input in)
  *
  */
 
-float GIOM::RectEntropy()
+float GIOM::Entropy()
 {
     return 0.0;
 }

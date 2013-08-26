@@ -8,26 +8,12 @@
 ***********************************************************************/
 #include "MyAgent.h"
 
-int MyAgent::CheckLink(struct m_State *pmst, Action act, ExAction eat, struct m_State *mst)
-{
-    struct m_ForwardArcState *fas, *nfas;
-    for (fas=pmst->flist; fas!=NULL; fas=nfas)
-    {
-        if (fas->act == act && fas->eat == eat && fas->nstate == mst)
-            return 1;
-
-        nfas = fas->next;
-    }
-
-    return 0;
-}
-
 struct m_State *MyAgent::LoadState(State st)
 {
     struct m_State *mst = SearchState(st);
     if (mst == NULL)
     {
-        struct State_Info *stif = db_fetch_state_info(st);
+        struct State_Info *stif = DBFetchStateInfo(st);
         if (stif == NULL)       // should not happen, database conrrupted!!
             return NULL;
         mst = NewState(st);
@@ -36,7 +22,7 @@ struct m_State *MyAgent::LoadState(State st)
         mst->original_payoff = stif->original_payoff;
         mst->payoff = stif->payoff;
         mst->count = stif->count;
-
+        /* Add to memory */
         mst->next = head;
         head = mst;
         state_num++;
@@ -74,7 +60,7 @@ struct m_State *MyAgent::LoadState(State st)
             mst->ealist = mea;
         }
 
-        /* build previous states' forward lists */
+        /* build current state's backward list and previous state's forward lists */
         for (i=0; i<stif->lk_num; i++)
         {
             struct m_State *pmst = LoadState(lk[i].pst);
@@ -84,9 +70,6 @@ struct m_State *MyAgent::LoadState(State st)
 
             mbas->next = mst->blist;
             mst->blist = mbas;
-
-            if (CheckLink(pmst, lk[i].peat, lk[i].pact, mst) == 1)      // already linked, break loop
-                continue;
 
             struct m_ForwardArcState *mfas = NewFas(lk[i].peat, lk[i].pact);
             mfas->nstate = mst;
@@ -100,77 +83,88 @@ struct m_State *MyAgent::LoadState(State st)
     return mst;
 }
 
-void MyAgent::LoadMemory()
+void MyAgent::InitMemory()
 {
-    int re = database_connect("localhost", "root", "890127", (char *)mem_name.c_str());
+    if (db_name.empty())
+        return;
+
+    int re = DBConnect();
     if (re == 0)
     {
         State st;
-        while((st = db_next_state()) != -1)
-            LoadState(st);
+        vector<unsigned long> states;
+        states.clear();
+        while((st = DBNextState()) != -1)
+        {
+           printf("State: %ld\n", st);
+            states.push_back(st);
+        }
+
+        for (vector<unsigned long>::iterator it = states.begin(); it!=states.end(); ++it)
+        {
+            LoadState(*it);
+        }
     }
 
-    database_close();
+    DBClose();
     return;
 }
 
-void MyAgent::DumpMemory()
+void MyAgent::SaveMemory()
 {
-    int re = database_connect("localhost", "root", "890127", (char *)mem_name.c_str());
+    int re = DBConnect();
     if (re == 0)
     {
         struct m_State *mst, *nmst;
         for (mst=head; mst!=NULL; mst=nmst)
         {
             struct State_Info *stif = GetStateInfo(mst->st);
-            db_add_state_info(stif);
+            DBAddStateInfo(stif);
             free(stif);
             nmst = mst->next;
         }
     }
 
-    database_close();
+    DBClose();
     return;
 }
 
 MyAgent::MyAgent(int n, int m):Agent(n, m)
 {
     //ctor
-    mem_name = "MyAgent";
     threshold = 0.01;
 
     state_num = arc_num = 0;
     head = NULL;
 
-    LoadMemory();
+    db_con = NULL;
+    db_server = "";
+    db_user = "";
+    db_password = "";
+    db_name = "";
+    db_table = "StateInfo";
 }
 
-MyAgent::MyAgent(int n, int m, float dr):Agent(n, m, dr)
+MyAgent::MyAgent(int n, int m, float dr, float th):Agent(n, m, dr)
 {
-    mem_name = "MyAgent";
-    threshold = 0.01;
-
-    state_num = arc_num = 0;
-    head = NULL;
-
-    LoadMemory();
-}
-
-MyAgent::MyAgent(int n, int m, float dr, float th, string memname):Agent(n, m, dr)
-{
-    mem_name = memname;
     threshold = th;
 
     state_num = arc_num = 0;
     head = NULL;
 
-    LoadMemory();
+    db_con = NULL;
+    db_server = "";
+    db_user = "";
+    db_password = "";
+    db_name = "";
+    db_table = "StateInfo";
 }
 
 MyAgent::~MyAgent()
 {
     //dtor
-    DumpMemory();
+    if (!db_name.empty())
+        SaveMemory();
     FreeMemory();
 }
 
@@ -968,5 +962,266 @@ void MyAgent::PrintStateInfo(struct State_Info *stif)
     }
     printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n");
 
+    return;
+}
+
+void MyAgent::SetDBArgs(string srv, string usr, string passwd, string db)
+{
+    db_server = srv;
+    db_user = usr;
+    db_password = passwd;
+    db_name = db;
+    return;
+}
+
+int MyAgent::DBConnect()
+{
+    db_con = mysql_init(NULL);
+
+    if (db_con == NULL)
+    {
+        fprintf(stderr, "%s\n", mysql_error(db_con));
+        return -1;
+    }
+
+    if (mysql_real_connect(db_con, db_server.c_str(), db_user.c_str(), db_password.c_str(), db_name.c_str(),
+                           0, NULL, 0) == NULL)
+    {
+        fprintf(stderr, "%s\n", mysql_error(db_con));
+        return -1;
+    }
+
+    /* create table if not exists */
+    char tb_string[256];
+    sprintf(tb_string, "CREATE TABLE IF NOT EXISTS %s.%s(State BIGINT PRIMARY KEY, OriPayoff FLOAT, Payoff FLOAT, Count BIGINT, ActInfos BLOB, ExActInfos BLOB, pLinks BLOB) \
+            ENGINE INNODB ", db_name.c_str(), db_table.c_str());
+    if (mysql_query(db_con, tb_string))
+    {
+        fprintf(stderr, "%s\n", mysql_error(db_con));
+        return -1;
+    }
+
+
+    return 0;
+}
+
+void MyAgent::DBClose()
+{
+    return mysql_close(db_con);
+}
+
+State MyAgent::DBNextState()
+{
+    static unsigned long offset = 0;
+    char query_str[256];
+    sprintf(query_str, "SELECT * FROM %s LIMIT %ld, 1", db_table.c_str(), offset);
+
+    if (mysql_query(db_con, query_str))
+    {
+        fprintf(stderr, "%s\n", mysql_error(db_con));
+        return -1;
+    }
+
+    MYSQL_RES *result = mysql_store_result(db_con);
+
+    if (result == NULL)
+    {
+        printf("no result!\n");
+        return -1;
+    }
+
+    MYSQL_ROW row = mysql_fetch_row(result);
+    unsigned long *lengths = mysql_fetch_lengths(result);
+
+    if (lengths == NULL)
+    {
+        return -1;
+    }
+    State rs = atol(row[0]);
+    offset++;
+
+    mysql_free_result(result);          // free result
+    return rs;
+}
+
+struct State_Info *MyAgent::DBFetchStateInfo(State st)
+{
+    char query_string[256];
+    sprintf(query_string, "SELECT * FROM %s WHERE State=%ld", db_table.c_str(), st);
+
+    if (mysql_query(db_con, query_string))
+    {
+        fprintf(stderr, "%s\n", mysql_error(db_con));
+        return NULL;
+    }
+
+    MYSQL_RES *result = mysql_store_result(db_con);
+
+    if (result == NULL)
+    {
+        printf("no result!\n");
+        return NULL;
+    }
+
+    MYSQL_ROW row = mysql_fetch_row(result);
+    int num_fields = mysql_num_fields(result);
+    if (num_fields != 7)
+    {
+        printf("Fields don't match!\n");
+        return NULL;
+    }
+    unsigned long *lengths = mysql_fetch_lengths(result);
+
+    if (lengths == NULL)
+    {
+        printf("lengths is null\n");
+        return NULL;
+    }
+
+    unsigned long total_len = 0;
+
+    unsigned long ai_len = lengths[4];
+    unsigned long ea_len = lengths[5];
+    unsigned long lk_len = lengths[6];
+    total_len = sizeof(unsigned long)*2 + sizeof(float)*2 + sizeof(int)*4 + ai_len + ea_len + lk_len;
+
+    struct State_Info *stif = (struct State_Info *)malloc(total_len);
+    stif->st = atol(row[0]);
+    stif->original_payoff = atof(row[1]);
+    stif->payoff = atof(row[2]);
+    stif->count = atol(row[3]);
+    stif->length = total_len;
+
+    stif->act_num = ai_len / sizeof(struct Action_Info);
+    stif->eat_num = ea_len / sizeof(struct ExAction_Info);
+    stif->lk_num = lk_len / sizeof(struct pLink);
+
+    unsigned char *p = (unsigned char *)stif;
+    p += sizeof(struct State_Info);
+    memcpy(p, row[4], ai_len);
+
+    p += ai_len;
+    memcpy(p, row[5], ea_len);
+
+    p += ea_len;
+    memcpy(p, row[6], lk_len);
+
+    mysql_free_result(result);          // free result
+    return stif;
+}
+
+int MyAgent::DBSearchState(State st)
+{
+    char query_string[256];
+    sprintf(query_string, "SELECT * FROM %s WHERE State=%ld", db_table.c_str(), st);
+
+    if (mysql_query(db_con, query_string))
+    {
+        fprintf(stderr, "%s\n", mysql_error(db_con));
+        return 0;
+    }
+
+    MYSQL_RES *result = mysql_store_result(db_con);
+
+    int re;
+    if (result == NULL)
+        re = 0;
+    else
+        re = 1;
+
+    mysql_free_result(result);          // free result
+    return re;
+}
+
+void MyAgent::DBAddStateInfo(struct State_Info *stif)
+{
+    char str[256];
+    sprintf(str, "INSERT INTO %s(State, OriPayoff, Payoff, Count, ActInfos, ExActInfos, pLinks) VALUES(%ld, %.2f, %.2f, %ld, '%%s', '%%s', '%%s')",
+            db_table.c_str(), stif->st, stif->original_payoff, stif->payoff, stif->count);
+    size_t str_len = strlen(str);
+
+    unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
+    unsigned long ea_len = stif->eat_num * sizeof(struct ExAction_Info);
+    unsigned long lk_len = stif->lk_num * sizeof(struct pLink);
+
+    unsigned char *p = (unsigned char *)stif;
+    p += sizeof(struct State_Info);
+    struct Action_Info *atif = (struct Action_Info *)p;
+
+    p += ai_len;
+    struct ExAction_Info *eaif = (struct ExAction_Info *)p;
+
+    p += ea_len;
+    struct pLink *lk = (struct pLink *)p;
+
+    char ai_chunk[2*ai_len +1];
+    mysql_real_escape_string(db_con, ai_chunk, (char *)atif, ai_len);
+    char ea_chunk[2*ea_len +1];
+    mysql_real_escape_string(db_con, ea_chunk, (char *)eaif, ea_len);
+    char lk_chunk[2*lk_len +1];
+    mysql_real_escape_string(db_con, lk_chunk, (char *)lk, lk_len);
+
+    char query[str_len + 2*(ai_len+ea_len+lk_len)+1];
+    int len = snprintf(query, str_len + 2*(ai_len+ea_len+lk_len)+1, str, ai_chunk, ea_chunk, lk_chunk);
+
+    if (mysql_real_query(db_con, query, len))
+    {
+        fprintf(stderr, "%s\n", mysql_error(db_con));
+        return;
+    }
+
+    return;
+}
+
+void MyAgent::DBUpdateStateInfo(struct State_Info *stif)
+{
+    char str[256];
+    sprintf(str, "UPDATE %s SET OriPayoff=%.2f, Payoff=%.2f, Count=%ld, ActInfos='%%s', ExActInfos='%%s', pLinks='%%s' WHERE State=%ld",
+            db_table.c_str(), stif->original_payoff, stif->payoff, stif->count, stif->st);
+    size_t str_len = strlen(str);
+
+    unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
+    unsigned long ea_len = stif->eat_num * sizeof(struct ExAction_Info);
+    unsigned long lk_len = stif->lk_num * sizeof(struct pLink);
+
+    unsigned char *p = (unsigned char *)stif;
+    p += sizeof(struct State_Info);
+    struct Action_Info *atif = (struct Action_Info *)p;
+
+    p += ai_len;
+    struct ExAction_Info *eaif = (struct ExAction_Info *)p;
+
+    p += ea_len;
+    struct pLink *lk = (struct pLink *)p;
+
+    char ai_chunk[2*ai_len +1];
+    mysql_real_escape_string(db_con, ai_chunk, (char *)atif, ai_len);
+    char ea_chunk[2*ea_len +1];
+    mysql_real_escape_string(db_con, ea_chunk, (char *)eaif, ea_len);
+    char lk_chunk[2*lk_len +1];
+    mysql_real_escape_string(db_con, lk_chunk, (char *)lk, lk_len);
+
+    char query[str_len + 2*(ai_len+ea_len+lk_len)+1];
+    int len = snprintf(query, str_len + 2*(ai_len+ea_len+lk_len)+1, str, ai_chunk, ea_chunk, lk_chunk);
+
+    if (mysql_real_query(db_con, query, len))
+    {
+        fprintf(stderr, "%s\n", mysql_error(db_con));
+        return;
+    }
+
+    return;
+}
+
+void MyAgent::DBDeleteState(State st)
+{
+    char query_string[256];
+    sprintf(query_string, "DELETE  FROM %s WHERE State=%ld", db_table.c_str(), st);
+
+    if (mysql_query(db_con, query_string))
+    {
+        fprintf(stderr, "%s\n", mysql_error(db_con));
+        return;
+    }
     return;
 }

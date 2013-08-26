@@ -1,6 +1,7 @@
 #ifndef MYAGENT_H
 #define MYAGENT_H
 
+#include <mysql/mysql.h>
 #include "Agent.h"
 #include "Database.h"
 
@@ -52,28 +53,41 @@ class MyAgent : public Agent
 {
     public:
         MyAgent(int, int);
-        MyAgent(int, int, float);
-        MyAgent(int, int, float, float, string);
+        MyAgent(int, int, float, float);
         virtual ~MyAgent();
 
         virtual struct State_Info *GetStateInfo(State);                 /**< implementing GetStateInfo function */
         virtual int MergeStateInfo(struct State_Info *);               /**< implementing MergeStateInfo function */
         static void PrintStateInfo(struct State_Info *);
+        void InitMemory();              /**< load memory from a file */
+        void SetDBArgs(string, string, string, string);
     protected:
         virtual vector<Action> MaxPayoffRule(State, vector<Action>);    /**< implementing maximun payoff rule */
         float threshold;                                                /**< threshold used in payoff updating */
-    private:
-        string mem_name;                /**< memory file name used when saving memory to disk */
         int state_num;                  /**< number of states in current memory */
         int arc_num;                    /**< number of arcs */
+
+        MYSQL *db_con;
+        string db_server;
+        string db_user;
+        string db_password;
+        string db_name;
+        string db_table;
+
+        int DBConnect();
+        void DBClose();
+        State DBNextState();
+        struct State_Info *DBFetchStateInfo(State);
+        int DBSearchState(State);
+        void DBAddStateInfo(struct State_Info *);
+        void DBUpdateStateInfo(struct State_Info *);
+        void DBDeleteState(State);
 
         struct m_State *head;           /**< memory point */
 
         struct m_State *LoadState(State);
-        int CheckLink(struct m_State *, Action , ExAction , struct m_State *);
+        void SaveMemory();              /**< save memory to a file  */
 
-        void LoadMemory();              /**< load memory from a file */
-        void DumpMemory();              /**< save memory to a file  */
         void FreeMemory();              /**< free all space of memory in computer memory*/
 
         void SaveState(struct m_State *, State);        /**< save current state to memory */
@@ -104,7 +118,7 @@ class MyAgent : public Agent
         ExAction CalExAction(State, State, Action);         /**< construct a exact identity from previous state, current state and previous action */
         float CalStatePayoff(struct m_State *);             /**< calculate payoff of a state */
         float CalActPayoff(Action, struct m_State *);       /**< calculate payoff of an action */
-
+    private:
 };
 
 #endif // MYAGENT_H
