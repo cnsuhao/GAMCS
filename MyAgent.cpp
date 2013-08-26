@@ -18,6 +18,7 @@ struct m_State *MyAgent::LoadState(State st)
             return NULL;
         mst = NewState(st);
 
+        mst->mark = SAVED;      // it's SAVED when just load
         mst->st = stif->st;
         mst->original_payoff = stif->original_payoff;
         mst->payoff = stif->payoff;
@@ -88,6 +89,7 @@ void MyAgent::InitMemory()
     if (db_name.empty())
         return;
 
+    dbgprt("Initializing Memory...\n");
     int re = DBConnect();
     if (re == 0)
     {
@@ -112,15 +114,27 @@ void MyAgent::InitMemory()
 
 void MyAgent::SaveMemory()
 {
+    dbgprt("Saving Memory...\n");
     int re = DBConnect();
     if (re == 0)
     {
         struct m_State *mst, *nmst;
         for (mst=head; mst!=NULL; mst=nmst)
         {
-            struct State_Info *stif = GetStateInfo(mst->st);
-            DBAddStateInfo(stif);
-            free(stif);
+            if (mst->mark == NEW)
+            {
+                struct State_Info *stif = GetStateInfo(mst->st);
+                DBAddStateInfo(stif);
+                free(stif);
+            }
+            else if (mst->mark == MODIFIED)
+            {
+                struct State_Info *stif = GetStateInfo(mst->st);
+                DBUpdateStateInfo(stif);
+                free(stif);
+            }
+            mst->mark = SAVED;
+
             nmst = mst->next;
         }
     }
@@ -338,6 +352,7 @@ void MyAgent::LinkStates(struct m_State *pmst, ExAction eat, Action act, struct 
         {
             struct m_ExAction *ea = Eat2Struct(eat, pmst);
             ea->count++;
+            UpdateState(pmst);       // update previous state's payoff recursively
             return;
         }
 
@@ -440,7 +455,7 @@ void MyAgent::UpdateState(struct m_State *mst)
 {
     /* update state's payoff */
     float payoff = CalStatePayoff(mst);
-    dbgprt("UpdateState(): mstate: %d, payoff:%.1f\n", mst->st, payoff);
+    dbgprt("UpdateState(): mstate: %ld, payoff:%.1f\n", mst->st, payoff);
 
     if (fabsf(mst->payoff - payoff) > threshold)            // compare with threshold, update if the diff exceeds threshold
     {
@@ -466,6 +481,8 @@ void MyAgent::UpdateState(struct m_State *mst)
         nac = ac->next;
     }
 
+    if (mst->mark == SAVED)
+        mst->mark = MODIFIED;           // set mark to modified
     return;
 }
 
@@ -498,7 +515,7 @@ float MyAgent::CalActPayoff(Action act, struct m_State *mst)
         }
         nea = ea->next;
     }
-    dbgprt("CalActPayoff(): state: %d, act: %d, payoff:%.1f\n", mst->st, act, payoff);
+    dbgprt("CalActPayoff(): state: %ld, act: %ld, payoff:%.1f\n", mst->st, act, payoff);
     return payoff;
 }
 
@@ -548,6 +565,8 @@ void MyAgent::SaveState(struct m_State *mst, State st)
         else             // state found in memory, simply update its count
         {
             mst->count++;
+            if (mst->mark == SAVED)
+                mst->mark = MODIFIED;
         }
     }
     else            // previous state exists
@@ -570,6 +589,8 @@ void MyAgent::SaveState(struct m_State *mst, State st)
         else    // mst already exists, update the count and link it to the previous state (LinkStates will handle it if the link already exists.)
         {
             mst->count++;
+            if (mst->mark == SAVED)
+                mst->mark = MODIFIED;
             ExAction eat = Agent::CalExAction(pre_in, st, pre_out);
             LinkStates(pmst, eat, pre_out, mst);
         }
@@ -654,7 +675,7 @@ struct State_Info *MyAgent::GetStateInfo(State st)
 
     if (mst == NULL)
     {
-        dbgprt("State: %d not found!\n", st);
+        dbgprt("State: %ld not found!\n", st);
         return NULL;
     }
 
@@ -927,6 +948,9 @@ int MyAgent::MergeStateInfo(struct State_Info *stif)
             if (pmst != NULL)
                 LinkStates(pmst, lk[i].peat, lk[i].pact, mst);
         }
+
+        if (better == 1 && mst->mark == SAVED)                // no modification to my state if the recieved one is worse!
+            mst->mark = MODIFIED;
     }
     return better;
 }
@@ -1135,6 +1159,7 @@ int MyAgent::DBSearchState(State st)
 
 void MyAgent::DBAddStateInfo(struct State_Info *stif)
 {
+    dbgprt("DBAddStateInfo.....\n");
     char str[256];
     sprintf(str, "INSERT INTO %s(State, OriPayoff, Payoff, Count, ActInfos, ExActInfos, pLinks) VALUES(%ld, %.2f, %.2f, %ld, '%%s', '%%s', '%%s')",
             db_table.c_str(), stif->st, stif->original_payoff, stif->payoff, stif->count);
@@ -1164,6 +1189,7 @@ void MyAgent::DBAddStateInfo(struct State_Info *stif)
     char query[str_len + 2*(ai_len+ea_len+lk_len)+1];
     int len = snprintf(query, str_len + 2*(ai_len+ea_len+lk_len)+1, str, ai_chunk, ea_chunk, lk_chunk);
 
+    dbgprt("query: %s\n", query);
     if (mysql_real_query(db_con, query, len))
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
@@ -1175,6 +1201,7 @@ void MyAgent::DBAddStateInfo(struct State_Info *stif)
 
 void MyAgent::DBUpdateStateInfo(struct State_Info *stif)
 {
+    dbgprt("DBUpdateStateInfo.....\n");
     char str[256];
     sprintf(str, "UPDATE %s SET OriPayoff=%.2f, Payoff=%.2f, Count=%ld, ActInfos='%%s', ExActInfos='%%s', pLinks='%%s' WHERE State=%ld",
             db_table.c_str(), stif->original_payoff, stif->payoff, stif->count, stif->st);
@@ -1203,6 +1230,8 @@ void MyAgent::DBUpdateStateInfo(struct State_Info *stif)
 
     char query[str_len + 2*(ai_len+ea_len+lk_len)+1];
     int len = snprintf(query, str_len + 2*(ai_len+ea_len+lk_len)+1, str, ai_chunk, ea_chunk, lk_chunk);
+
+    dbgprt("query: %s\n", query);
 
     if (mysql_real_query(db_con, query, len))
     {

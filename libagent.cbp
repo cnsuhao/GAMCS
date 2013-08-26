@@ -13,7 +13,11 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
+					<Add option="-D_DEBUG_" />
 				</Compiler>
+				<Linker>
+					<Add library="mysqlclient" />
+				</Linker>
 			</Target>
 			<Target title="TSP">
 				<Option output="examples/TSP/tsp" prefix_auto="1" extension_auto="1" />
@@ -24,6 +28,7 @@
 					<Add option="-Wall" />
 					<Add option="-pg" />
 					<Add option="-g" />
+					<Add option="-D_DEBUG_" />
 				</Compiler>
 				<Linker>
 					<Add option="-pg" />
@@ -37,6 +42,7 @@
 					<Add option="-Wall" />
 					<Add option="-pg" />
 					<Add option="-g" />
+					<Add option="-D_DEBUG_" />
 				</Compiler>
 				<Linker>
 					<Add option="-pg" />
@@ -46,6 +52,9 @@
 				<Option output="test" prefix_auto="1" extension_auto="1" />
 				<Option type="0" />
 				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-D_DEBUG_" />
+				</Compiler>
 				<Linker>
 					<Add library="mysqlclient" />
 				</Linker>
@@ -65,18 +74,28 @@
 		<Unit filename="Agent.cpp" />
 		<Unit filename="Agent.h" />
 		<Unit filename="Database.cpp">
-			<Option target="Robot1" />
 			<Option target="test" />
 		</Unit>
-		<Unit filename="Database.h" />
+		<Unit filename="Database.h">
+			<Option target="TSP" />
+			<Option target="test" />
+		</Unit>
 		<Unit filename="Entity.cpp">
-			<Option target="&lt;{~None~}&gt;" />
+			<Option target="Robot1" />
+			<Option target="SimGroup" />
 		</Unit>
 		<Unit filename="Entity.h">
-			<Option target="&lt;{~None~}&gt;" />
+			<Option target="Robot1" />
+			<Option target="SimGroup" />
 		</Unit>
 		<Unit filename="GIOM.cpp" />
 		<Unit filename="GIOM.h" />
+		<Unit filename="Group.cpp">
+			<Option target="SimGroup" />
+		</Unit>
+		<Unit filename="Group.h">
+			<Option target="SimGroup" />
+		</Unit>
 		<Unit filename="MyAgent.cpp" />
 		<Unit filename="MyAgent.h" />
 		<Unit filename="PFTGIOM.cpp" />
@@ -115,6 +134,9 @@
 			<Option target="Robot1" />
 		</Unit>
 		<Unit filename="examples/Robot1/Robot1.h">
+			<Option target="Robot1" />
+		</Unit>
+		<Unit filename="examples/Robot1/rb1.cpp">
 			<Option target="Robot1" />
 		</Unit>
 		<Unit filename="examples/TSP/TSP.cpp">

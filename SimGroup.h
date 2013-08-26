@@ -8,8 +8,8 @@
 #include <string.h>
 #include <signal.h>
 #include <fstream>
+#include "Group.h"
 #include "MyAgent.h"
-#include "Entity.h"
 
 using namespace std;
 
@@ -33,22 +33,20 @@ struct Neigh
     struct Neigh *next;
 };
 
-class SimGroup
+class SimGroup : public Group
 {
     public:
-        SimGroup(char *);
+        SimGroup(int);
         virtual ~SimGroup();
 
-        void SetTopo(char *);
-        void Include(Entity *);
-        void Run();
-    protected:
+        void LoadTopo(string);
+        int NumOfMembers();
+
         int Send(int, void *, size_t);
         int Recv(int, void *, size_t);
-
-        int id;
-        char *topofile;
-        int member_num;
+    protected:
+    private:
+        string topofile;
 
         void BuildNeighs();
         vector<int> GetNeighs(int);
@@ -57,10 +55,6 @@ class SimGroup
 
         struct Channel channels[MAX_MEMBER];
         struct Neigh *neighlist[MAX_MEMBER];
-
-        vector<Entity *> entities;
-        vector<pthread_t> tids;
-    private:
 };
 
 #endif // SIMGROUP_H

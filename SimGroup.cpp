@@ -8,40 +8,12 @@
 ***********************************************************************/
 #include "SimGroup.h"
 
-void SimGroup::Include(Entity *ent)
-{
-    ent->SetSendFunc(this->Send);
-    ent->SetRecvFunc(this->Recv);
-
-    entities.push_back(ent);
-    member_num++;
-    return;
-}
-
-void SimGroup::Run()
-{
-    BuildNeighs();
-
-    for (vector<Entity *>::iterator pentity=entities.begin(); pentity!=entities.end(); ++pentity)
-    {
-        pthread_t tid = *pentity->ThreadRun();
-        tids.push_back(tid);
-    }
-
-    for (vector<pthread_t>::iterator it=tids.begin(); it!=tids.end(); ++it)
-    {
-        pthread_join(*it, NULL);
-    }
-
-    return;
-}
-
 int SimGroup::Send(int id, void *buffer, size_t length)
 {
     printf("*************************** Id: %d, Send:********************************\n", id);
     struct State_Info *si = (struct State_Info *)buffer;
     MyAgent::PrintStateInfo(si);
-    printf("---------------------------- Send -----------------------------\n\n");
+    printf("------------------------------ Send --------------------------------------\n\n");
 
     if (length > 2048)
     {
@@ -81,7 +53,7 @@ int SimGroup::Recv(int id, void *buffer, size_t length)
         free(tmp);
         re = length;
 
-        printf("++++++++++++++++++++++++ Id: %d, Recv: ++++++++++++++++++++++++\n", id);
+        printf("+++++++++++++++++++++++++++ Id: %d, Recv: +++++++++++++++++++++++++++\n", id);
         struct State_Info *si = (struct State_Info *)buffer;
         MyAgent::PrintStateInfo(si);
         printf("|||||||||||||||||||||||||||||| Recv ||||||||||||||||||||||||||||||||||\n\n");
@@ -94,9 +66,10 @@ int SimGroup::Recv(int id, void *buffer, size_t length)
 
 }
 
-void SimGroup::SetTopo(char *tf)
+void SimGroup::LoadTopo(string tf)
 {
     topofile = tf;
+    BuildNeighs();
     return;
 }
 
@@ -104,10 +77,8 @@ SimGroup::SimGroup(int i)
 {
     //ctor
     id = i;
-    topofile = NULL;
+    topofile = "";
     member_num = 0;
-    entities.clear();
-    tids.clear();
 }
 
 SimGroup::~SimGroup()
@@ -137,17 +108,17 @@ vector<int> SimGroup::GetNeighs(int id)
 void SimGroup::BuildNeighs()
 {
     int num = 0;
-    if (topofile == NULL)
+    if (topofile.empty())
     {
         dbgprt("topofile is NULL!\n");
         return;
     }
 
-    fstream tf(topofile);
+    fstream tf(topofile.c_str());
 
     if (!tf.is_open())
     {
-        dbgprt("can't open topofile!\n");
+        dbgprt("can't open topofile: %s!\n", topofile.c_str());
         return;
     }
 
@@ -173,6 +144,12 @@ void SimGroup::BuildNeighs()
         }
         num++;
     }
+
     member_num = num;
     return;
+}
+
+int SimGroup::NumOfMembers()
+{
+    return member_num;
 }

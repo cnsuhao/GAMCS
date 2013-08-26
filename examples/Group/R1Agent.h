@@ -6,10 +6,9 @@
 class R1Agent : public MyAgent
 {
 public:
-    R1Agent(int, int, float, float, string);
+    R1Agent(int, int, float, float);
     virtual ~R1Agent();
 
-    void DoNothing();
 protected:
 //    virtual vector<Action> OutList(State);
     virtual float OriginalPayoff(State);
