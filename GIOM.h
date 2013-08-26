@@ -35,8 +35,8 @@ class GIOM
         virtual vector<Output> OutList(Input);                      /**< get the outputs in correspond with specfic input */
         virtual vector<Output> Restrict(Input, vector<Output>);     /**< restrict the outputs */
         /* I:N/O:M */
-        int N;                                                      /**< number of inputs */
-        int M;                                                      /**< number of outputs of one input */
+        unsigned long N;                                                      /**< number of inputs */
+        unsigned long M;                                                      /**< number of outputs of one input */
     private:
 };
 

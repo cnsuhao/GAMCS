@@ -3,7 +3,6 @@
 
 #include <mysql/mysql.h>
 #include "Agent.h"
-#include "Database.h"
 
 enum m_STmark {SAVED, NEW, MODIFIED};
 
@@ -49,6 +48,15 @@ struct m_State {
     struct m_State *next;
 };
 
+struct m_Memory_Info {
+    unsigned long N;
+    unsigned long M;
+    float discount_rate;
+    float threshold;
+    unsigned long state_num;
+    unsigned long lk_num;
+};
+
 class MyAgent : public Agent
 {
     public:
@@ -64,15 +72,16 @@ class MyAgent : public Agent
     protected:
         virtual vector<Action> MaxPayoffRule(State, vector<Action>);    /**< implementing maximun payoff rule */
         float threshold;                                                /**< threshold used in payoff updating */
-        int state_num;                  /**< number of states in current memory */
-        int arc_num;                    /**< number of arcs */
+        unsigned long state_num;                  /**< number of states in current memory */
+        unsigned long lk_num;                    /**< number of arcs */
 
         MYSQL *db_con;
         string db_server;
         string db_user;
         string db_password;
         string db_name;
-        string db_table;
+        string db_t_stateinfo;
+        string db_t_meminfo;
 
         int DBConnect();
         void DBClose();
@@ -82,6 +91,8 @@ class MyAgent : public Agent
         void DBAddStateInfo(struct State_Info *);
         void DBUpdateStateInfo(struct State_Info *);
         void DBDeleteState(State);
+        void DBAddMemoryInfo();
+        struct m_Memory_Info *DBFetchMemoryInfo();
 
         struct m_State *head;           /**< memory point */
 

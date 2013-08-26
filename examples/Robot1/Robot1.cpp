@@ -8,8 +8,6 @@
 ***********************************************************************/
 #include "Robot1.h"
 
-int q = 0;
-
 Robot1::Robot1(int i):Entity(i)
 {
     position = 2;
@@ -38,16 +36,3 @@ void Robot1::DoAction(Action act)
         position = 1;
     return;
 }
-
-void quit(int signo)
-{
-    printf("Quit decently\n");
-    q = 1;
-}
-
-//int main(void)
-//{
-//    signal(SIGINT, quit);
-//    Robot1 rb;
-//    rb.Run();
-//}

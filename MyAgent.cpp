@@ -26,7 +26,6 @@ struct m_State *MyAgent::LoadState(State st)
         /* Add to memory */
         mst->next = head;
         head = mst;
-        state_num++;
 
         unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
         unsigned long ea_len = stif->eat_num * sizeof(struct ExAction_Info);
@@ -93,6 +92,20 @@ void MyAgent::InitMemory()
     int re = DBConnect();
     if (re == 0)
     {
+        /* load memory information */
+        struct m_Memory_Info *memif = DBFetchMemoryInfo();
+        if (memif != NULL)
+        {
+            N = memif->N;
+            M = memif->M;
+            discount_rate = memif->discount_rate;
+            threshold = memif->threshold;
+            state_num = memif->state_num;
+            lk_num = memif->lk_num;
+            free(memif);
+        }
+
+        /* load states information */
         State st;
         vector<unsigned long> states;
         states.clear();
@@ -118,6 +131,10 @@ void MyAgent::SaveMemory()
     int re = DBConnect();
     if (re == 0)
     {
+        /* save memory information */
+        DBAddMemoryInfo();
+
+        /* save states information */
         struct m_State *mst, *nmst;
         for (mst=head; mst!=NULL; mst=nmst)
         {
@@ -148,7 +165,7 @@ MyAgent::MyAgent(int n, int m):Agent(n, m)
     //ctor
     threshold = 0.01;
 
-    state_num = arc_num = 0;
+    state_num = lk_num = 0;
     head = NULL;
 
     db_con = NULL;
@@ -156,14 +173,15 @@ MyAgent::MyAgent(int n, int m):Agent(n, m)
     db_user = "";
     db_password = "";
     db_name = "";
-    db_table = "StateInfo";
+    db_t_stateinfo = "StateInfo";
+    db_t_meminfo = "MemoryInfo";
 }
 
 MyAgent::MyAgent(int n, int m, float dr, float th):Agent(n, m, dr)
 {
     threshold = th;
 
-    state_num = arc_num = 0;
+    state_num = lk_num = 0;
     head = NULL;
 
     db_con = NULL;
@@ -171,7 +189,8 @@ MyAgent::MyAgent(int n, int m, float dr, float th):Agent(n, m, dr)
     db_user = "";
     db_password = "";
     db_name = "";
-    db_table = "StateInfo";
+    db_t_stateinfo = "StateInfo";
+    db_t_meminfo = "MemoryInfo";
 }
 
 MyAgent::~MyAgent()
@@ -372,7 +391,7 @@ void MyAgent::LinkStates(struct m_State *pmst, ExAction eat, Action act, struct 
     bas->next = mst->blist;
     mst->blist = bas;
 
-    arc_num++;       // update total arc number
+    lk_num++;       // update total arc number
     /* A link is a combination of eaction AND aciton, either of them not exist means link doesn't exist.
     *  So we have to identify exactly which of them doesn't exist.
     */
@@ -1018,13 +1037,20 @@ int MyAgent::DBConnect()
     /* create table if not exists */
     char tb_string[256];
     sprintf(tb_string, "CREATE TABLE IF NOT EXISTS %s.%s(State BIGINT PRIMARY KEY, OriPayoff FLOAT, Payoff FLOAT, Count BIGINT, ActInfos BLOB, ExActInfos BLOB, pLinks BLOB) \
-            ENGINE INNODB ", db_name.c_str(), db_table.c_str());
+            ENGINE INNODB ", db_name.c_str(), db_t_stateinfo.c_str());
     if (mysql_query(db_con, tb_string))
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
         return -1;
     }
 
+    sprintf(tb_string, "CREATE TABLE IF NOT EXISTS %s.%s(TimeStamp TIMESTAMP PRIMARY KEY, N BIGINT, M BIGINT, DiscountRate FLOAT, Threshold FLOAT, NumStates BIGINT, NumLinks BIGINT) \
+            ENGINE INNODB ", db_name.c_str(), db_t_meminfo.c_str());
+    if (mysql_query(db_con, tb_string))
+    {
+        fprintf(stderr, "%s\n", mysql_error(db_con));
+        return -1;
+    }
 
     return 0;
 }
@@ -1038,7 +1064,7 @@ State MyAgent::DBNextState()
 {
     static unsigned long offset = 0;
     char query_str[256];
-    sprintf(query_str, "SELECT * FROM %s LIMIT %ld, 1", db_table.c_str(), offset);
+    sprintf(query_str, "SELECT * FROM %s LIMIT %ld, 1", db_t_stateinfo.c_str(), offset);
 
     if (mysql_query(db_con, query_str))
     {
@@ -1071,7 +1097,7 @@ State MyAgent::DBNextState()
 struct State_Info *MyAgent::DBFetchStateInfo(State st)
 {
     char query_string[256];
-    sprintf(query_string, "SELECT * FROM %s WHERE State=%ld", db_table.c_str(), st);
+    sprintf(query_string, "SELECT * FROM %s WHERE State=%ld", db_t_stateinfo.c_str(), st);
 
     if (mysql_query(db_con, query_string))
     {
@@ -1137,7 +1163,7 @@ struct State_Info *MyAgent::DBFetchStateInfo(State st)
 int MyAgent::DBSearchState(State st)
 {
     char query_string[256];
-    sprintf(query_string, "SELECT * FROM %s WHERE State=%ld", db_table.c_str(), st);
+    sprintf(query_string, "SELECT * FROM %s WHERE State=%ld", db_t_stateinfo.c_str(), st);
 
     if (mysql_query(db_con, query_string))
     {
@@ -1162,7 +1188,7 @@ void MyAgent::DBAddStateInfo(struct State_Info *stif)
     dbgprt("DBAddStateInfo.....\n");
     char str[256];
     sprintf(str, "INSERT INTO %s(State, OriPayoff, Payoff, Count, ActInfos, ExActInfos, pLinks) VALUES(%ld, %.2f, %.2f, %ld, '%%s', '%%s', '%%s')",
-            db_table.c_str(), stif->st, stif->original_payoff, stif->payoff, stif->count);
+            db_t_stateinfo.c_str(), stif->st, stif->original_payoff, stif->payoff, stif->count);
     size_t str_len = strlen(str);
 
     unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
@@ -1204,7 +1230,7 @@ void MyAgent::DBUpdateStateInfo(struct State_Info *stif)
     dbgprt("DBUpdateStateInfo.....\n");
     char str[256];
     sprintf(str, "UPDATE %s SET OriPayoff=%.2f, Payoff=%.2f, Count=%ld, ActInfos='%%s', ExActInfos='%%s', pLinks='%%s' WHERE State=%ld",
-            db_table.c_str(), stif->original_payoff, stif->payoff, stif->count, stif->st);
+            db_t_stateinfo.c_str(), stif->original_payoff, stif->payoff, stif->count, stif->st);
     size_t str_len = strlen(str);
 
     unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
@@ -1245,7 +1271,7 @@ void MyAgent::DBUpdateStateInfo(struct State_Info *stif)
 void MyAgent::DBDeleteState(State st)
 {
     char query_string[256];
-    sprintf(query_string, "DELETE  FROM %s WHERE State=%ld", db_table.c_str(), st);
+    sprintf(query_string, "DELETE  FROM %s WHERE State=%ld", db_t_stateinfo.c_str(), st);
 
     if (mysql_query(db_con, query_string))
     {
@@ -1253,4 +1279,63 @@ void MyAgent::DBDeleteState(State st)
         return;
     }
     return;
+}
+
+void MyAgent::DBAddMemoryInfo()
+{
+    dbgprt("DBAddMemoryInfo.....\n");
+    char query_str[256];
+
+    sprintf(query_str, "INSERT INTO %s(TimeStamp, N, M, DiscountRate, Threshold, NumStates, NumLinks) VALUES(NULL, %ld, %ld, %.2f, %.2f, %ld, %ld)",
+            db_t_meminfo.c_str(), N, M, discount_rate, threshold, state_num, lk_num);
+
+    int len = strlen(query_str);
+    if (mysql_real_query(db_con, query_str, len))
+    {
+        fprintf(stderr, "%s\n", mysql_error(db_con));
+        return;
+    }
+    return;
+}
+
+struct m_Memory_Info *MyAgent::DBFetchMemoryInfo()
+{
+    char query_str[256];
+    sprintf(query_str, "SELECT * FROM %s ORDER BY TimeStamp DESC LIMIT 1", db_t_meminfo.c_str());
+
+    if (mysql_query(db_con, query_str))
+    {
+        fprintf(stderr, "%s\n", mysql_error(db_con));
+        return NULL;
+    }
+
+    MYSQL_RES *result = mysql_store_result(db_con);
+
+    if (result == NULL)
+    {
+        printf("no result!\n");
+        return NULL;
+    }
+
+    MYSQL_ROW row = mysql_fetch_row(result);
+    unsigned long *lengths = mysql_fetch_lengths(result);
+
+    if (lengths == NULL)
+    {
+        printf("lengths is null\n");
+        return NULL;
+    }
+
+    struct m_Memory_Info *memif = (struct m_Memory_Info *)malloc(sizeof(struct m_Memory_Info));
+    dbgprt("Memory TimeStamp: %s\n", row[0]);
+    memif->N = atol(row[1]);
+    memif->M = atol(row[2]);
+    memif->discount_rate = atof(row[3]);
+    memif->threshold = atof(row[4]);
+    memif->state_num = atol(row[5]);
+    memif->lk_num = atol(row[6]);
+
+    mysql_free_result(result);          // free result
+
+    return memif;
 }
