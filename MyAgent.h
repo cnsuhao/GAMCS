@@ -5,7 +5,7 @@
 #include "Agent.h"
 #include "Database.h"
 
-enum m_STmark {SAVED, NEW, MODIFIED, DELETED};
+enum m_STmark {SAVED, NEW, MODIFIED};
 
 /* exact information */
 struct m_ExAction {

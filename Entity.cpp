@@ -9,14 +9,28 @@
 #include "Entity.h"
 #include "MyAgent.h"
 
+int quit = 0;
+void SetQuit(int sig)
+{
+    if (sig == SIGINT)
+    {
+        dbgprt("Quit decently\n");
+        quit = 1;
+    }
+
+    return;
+}
+
+
 Entity::Entity(int i)
 {
     //ctor
     id = i;
     freq = 100;
     agent = NULL;
-    Send = NULL;
-    Recv = NULL;
+    group = NULL;
+
+    signal(SIGINT, SetQuit);
 }
 
 Entity::~Entity()
@@ -35,7 +49,7 @@ int Entity::ThreadRun()
 void Entity::Run()
 {
     int count = 0;
-    while(1)
+    while(!quit)
     {
         RecvStateInfo();
         State cs = GetCurrentState();
@@ -68,21 +82,15 @@ void Entity::SetAgent(MyAgent *agt)
     return;
 }
 
-void Entity::SetSendFunc(SEND_FUN sf)
+void Entity::SetGroup(SimGroup *grp)
 {
-    Send = sf;
-    return;
-}
-
-void Entity::SetRecvFunc(RECV_FUN rf)
-{
-    Recv = rf;
+    group = grp;
     return;
 }
 
 void Entity::SendStateInfo(State st)
 {
-    if (Send == NULL)
+    if (group == NULL)
         return;
 
     struct State_Info *si = agent->GetStateInfo(st);       // can be NULL
@@ -92,7 +100,7 @@ void Entity::SendStateInfo(State st)
         return;
     }
 
-    Send(id, si, si->length);
+    group->Send(id, si, si->length);
 
     free(si);           // freed??
     return;
@@ -100,12 +108,12 @@ void Entity::SendStateInfo(State st)
 
 void Entity::RecvStateInfo()
 {
-    if (Recv == NULL)
+    if (group == NULL)
         return;
 
     char buf[2048];
 
-    while(Recv(id, buf, 2048) != 0)
+    while(group->Recv(id, buf, 2048) != 0)
     {
         struct State_Info *stif = (struct State_Info *)buf;
 
@@ -115,7 +123,7 @@ void Entity::RecvStateInfo()
             struct State_Info *si = agent->GetStateInfo(stif->st);
             if (si != NULL)
             {
-                Send(id, si, si->length);
+                group->Send(id, si, si->length);
                 free(si);               // freed?
             }
         }
