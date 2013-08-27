@@ -79,8 +79,6 @@ struct m_State *MyAgent::LoadState(State st)
             mfas->next = pmst->flist;
             pmst->flist = mfas;
         }
-
-        free(stif);
     }
     return mst;
 }
