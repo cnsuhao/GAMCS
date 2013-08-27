@@ -98,19 +98,20 @@ void Avatar::RecvStateInfo()
     if (group == NULL)
         return;
 
-    char buf[SI_MAX_SIZE];
+    char re_buf[SI_MAX_SIZE];
+    char sd_buf[SI_MAX_SIZE];
 
-    while(group->Recv(id, buf, 2048) != 0)
+    while(group->Recv(id, re_buf, 2048) != 0)
     {
-        struct State_Info *stif = (struct State_Info *)buf;
-
+        struct State_Info *stif = (struct State_Info *)re_buf;
+        MyAgent::PrintStateInfo(stif);
         int better = agent->MergeStateInfo(stif);
         if (better == 0)                // send out my information if it is not better
         {
-            int len = agent->GetStateInfo(stif->st, buf);
+            int len = agent->GetStateInfo(stif->st, sd_buf);
             if (len != -1)
             {
-                group->Send(id, buf, len);
+                group->Send(id, sd_buf, len);
             }
         }
     }
