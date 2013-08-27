@@ -3,6 +3,8 @@
 
 #include "PFTGIOM.h"
 
+#define SI_MAX_SIZE 2048
+
 typedef Input State;                /**< for agent we call an input state */
 typedef Output Action;              /**< action for output */
 typedef unsigned long ExAction;     /**< environment action, "exact" for short */
@@ -41,7 +43,6 @@ struct State_Info
     int act_num;
     int eat_num;
     int lk_num;                        /**< count of experiencing times */
-    int length;
     struct Action_Info atifs[0];    /**< information of actions containing in this state */
     struct ExAction_Info belief[0];        /**< information of exacts containing in this state */
     struct pLink lks[0];                /**< information of backward links of this state */
@@ -55,7 +56,7 @@ class Agent : public PFTGIOM
 
         virtual ~Agent();
         /* These two functions are implementation dependant, declared as pure virtual functions */
-        virtual struct State_Info *GetStateInfo(State) = 0;         /**<  organize the information of specfic state from memory */
+        virtual int GetStateInfo(State, void *) = 0;         /**<  organize the information of specfic state from memory */
         virtual int MergeStateInfo(struct State_Info *) = 0;       /**<  merge recieved state information to memory */
     protected:
         virtual vector<Action> Restrict(State, vector<Action>);     /**< reimplement restrict using maximun payoff rule  */
