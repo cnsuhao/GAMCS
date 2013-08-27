@@ -30,8 +30,8 @@ void Robot1::DoAction(Action act)
     else if (act == 2)
         position += 1;
 
-    if (position > 15)
-        position = 15;
+    if (position > 200)
+        position = 200;
     if (position < 1)
         position = 1;
     return;

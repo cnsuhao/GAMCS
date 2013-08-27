@@ -6,12 +6,12 @@
 *
 *	@Modify date:
 ***********************************************************************/
-#include "Entity.h"
+#include "Avatar.h"
 #include "MyAgent.h"
 
-int Entity::quit = 0;
+int Avatar::quit = 0;
 
-Entity::Entity(int i)
+Avatar::Avatar(int i)
 {
     //ctor
     id = i;
@@ -20,12 +20,12 @@ Entity::Entity(int i)
     group = NULL;
 }
 
-Entity::~Entity()
+Avatar::~Avatar()
 {
     //dtor
 }
 
-int Entity::ThreadRun()
+int Avatar::ThreadRun()
 {
     pthread_t tid;
     pthread_create(&tid, NULL, hook, this);
@@ -33,7 +33,7 @@ int Entity::ThreadRun()
     return tid;
 }
 
-void Entity::Run()
+void Avatar::Run()
 {
     int count = 0;
     while(!quit)
@@ -54,29 +54,29 @@ void Entity::Run()
         else
             count++;
     }
-    dbgprt("Run() Exit!\n");
+    dbgmoreprt("Id: %d, Run() Exit!\n", id);
     return;
 }
 
-void Entity::SetFreq(int fq)
+void Avatar::SetFreq(int fq)
 {
     freq = fq;
     return;
 }
 
-void Entity::SetAgent(Agent *agt)
+void Avatar::SetAgent(Agent *agt)
 {
     agent = agt;
     return;
 }
 
-void Entity::SetGroup(Group *grp)
+void Avatar::SetGroup(Group *grp)
 {
     group = grp;
     return;
 }
 
-void Entity::SendStateInfo(State st)
+void Avatar::SendStateInfo(State st)
 {
     if (group == NULL)
         return;
@@ -84,7 +84,7 @@ void Entity::SendStateInfo(State st)
     struct State_Info *si = agent->GetStateInfo(st);       // can be NULL
     if (si == NULL)
     {
-        printf("si == NULL\n");
+        dbgmoreprt("si == NULL\n");
         return;
     }
 
@@ -94,7 +94,7 @@ void Entity::SendStateInfo(State st)
     return;
 }
 
-void Entity::RecvStateInfo()
+void Avatar::RecvStateInfo()
 {
     if (group == NULL)
         return;
