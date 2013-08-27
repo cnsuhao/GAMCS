@@ -2,6 +2,8 @@
 #define MYAGENT_H
 
 #include <mysql/mysql.h>
+#include <assert.h>
+#include <float.h>
 #include "Agent.h"
 
 enum m_STmark {SAVED, NEW, MODIFIED};
@@ -68,6 +70,7 @@ class MyAgent : public Agent
         virtual int MergeStateInfo(struct State_Info *);               /**< implementing MergeStateInfo function */
         static void PrintStateInfo(struct State_Info *);
         void InitMemory();              /**< load memory from a file */
+        void SaveMemory();              /**< save memory to a file  */
         void SetDBArgs(string, string, string, string);
     protected:
         virtual vector<Action> MaxPayoffRule(State, vector<Action>);    /**< implementing maximun payoff rule */
@@ -97,7 +100,6 @@ class MyAgent : public Agent
         struct m_State *head;           /**< memory point */
 
         struct m_State *LoadState(State);
-        void SaveMemory();              /**< save memory to a file  */
 
         void FreeMemory();              /**< free all space of memory in computer memory*/
 

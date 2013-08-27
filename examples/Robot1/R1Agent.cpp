@@ -18,7 +18,7 @@ R1Agent::~R1Agent()
 
 float R1Agent::OriginalPayoff(State st)
 {
-    if (st == 9)
+    if (st == 196)
         return 1;
     else
         return 0;

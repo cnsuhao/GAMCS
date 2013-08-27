@@ -16,6 +16,7 @@ Individual::Individual(int i):Entity(i)
 Individual::~Individual()
 {
     //dtor
+    dbgprt("~Individual\n");
 }
 
 State Individual::GetCurrentState()

@@ -14,10 +14,10 @@ struct m_State *MyAgent::LoadState(State st)
     if (mst == NULL)
     {
         struct State_Info *stif = DBFetchStateInfo(st);
-        if (stif == NULL)       // should not happen, database conrrupted!!
-            return NULL;
-        mst = NewState(st);
+        if (stif == NULL)       // should not happen, otherwise database corrupted!!
+            ERROR("State: %ld should exist, but fetch from Database: %s returns NULL!\n", st, db_name.c_str());
 
+        mst = NewState(st);
         mst->mark = SAVED;      // it's SAVED when just load
         mst->st = stif->st;
         mst->original_payoff = stif->original_payoff;
@@ -127,6 +127,9 @@ void MyAgent::InitMemory()
 
 void MyAgent::SaveMemory()
 {
+    if (db_name.empty())
+        return;
+
     dbgprt("Saving Memory...\n");
     int re = DBConnect();
     if (re == 0)
@@ -196,6 +199,7 @@ MyAgent::MyAgent(int n, int m, float dr, float th):Agent(n, m, dr)
 MyAgent::~MyAgent()
 {
     //dtor
+    dbgprt("~MyAgent==========\n");
     if (!db_name.empty())
         SaveMemory();
     FreeMemory();
@@ -426,7 +430,7 @@ void MyAgent::LinkStates(struct m_State *pmst, ExAction eat, Action act, struct 
 
 float MyAgent::MaxPayoffInEat(ExAction eat, struct m_State *mst)
 {
-    float max_pf = -999999.0;
+    float max_pf = -FLT_MAX;
     struct m_State *nmst;
     struct m_ForwardArcState *fas, *nfas;
 
@@ -540,8 +544,8 @@ float MyAgent::CalActPayoff(Action act, struct m_State *mst)
 
 vector<Action> MyAgent::BestActions(struct m_State *mst, vector<Action> acts)
 {
-    float max_payoff = -999999999.9;
-    float ori_payoff = 0.0;
+    float max_payoff = -FLT_MAX;
+    float ori_payoff = 0.0;         // original payoff of actions
     float payoff;
     vector<Action> max_acts;
 
@@ -591,8 +595,7 @@ void MyAgent::SaveState(struct m_State *mst, State st)
     else            // previous state exists
     {
         struct m_State *pmst = SearchState(pre_in);
-        if (pmst == NULL)
-            ERROR("Previous state lost!\n");
+        assert(pmst != NULL);               //ERROR("Previous state lost!\n");
 
         if (mst == NULL)  // mst not exists, create the state, save it to memory, and link it to the previous state
         {
@@ -976,6 +979,9 @@ int MyAgent::MergeStateInfo(struct State_Info *stif)
 
 void MyAgent::PrintStateInfo(struct State_Info *stif)
 {
+    if (stif == NULL)
+        return;
+
     int i;
     printf("===================== State: %ld =========================\n", stif->st);
     printf("Original payoff: %.2f,\t Payoff: %.2f,\t Count: %ld\n", stif->original_payoff, stif->payoff, stif->count);
@@ -1027,13 +1033,23 @@ int MyAgent::DBConnect()
         return -1;
     }
 
-    if (mysql_real_connect(db_con, db_server.c_str(), db_user.c_str(), db_password.c_str(), db_name.c_str(),
+    if (mysql_real_connect(db_con, db_server.c_str(), db_user.c_str(), db_password.c_str(), NULL,
                            0, NULL, 0) == NULL)
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
         return -1;
     }
 
+    /* create database if not exists */
+    char db_string[128];
+    sprintf(db_string, "CREATE DATABASE IF NOT EXISTS %s", db_name.c_str());
+    if (mysql_query(db_con, db_string))
+    {
+        fprintf(stderr, "%s\n", mysql_error(db_con));
+        return -1;
+    }
+
+    mysql_select_db(db_con, db_name.c_str());               // use database
     /* create table if not exists */
     char tb_string[256];
     sprintf(tb_string, "CREATE TABLE IF NOT EXISTS %s.%s(State BIGINT PRIMARY KEY, OriPayoff FLOAT, Payoff FLOAT, Count BIGINT, ActInfos BLOB, ExActInfos BLOB, pLinks BLOB) \
@@ -1215,7 +1231,7 @@ void MyAgent::DBAddStateInfo(struct State_Info *stif)
     char query[str_len + 2*(ai_len+ea_len+lk_len)+1];
     int len = snprintf(query, str_len + 2*(ai_len+ea_len+lk_len)+1, str, ai_chunk, ea_chunk, lk_chunk);
 
-    dbgprt("query: %s\n", query);
+//    dbgprt("query: %s\n", query);
     if (mysql_real_query(db_con, query, len))
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
@@ -1257,7 +1273,7 @@ void MyAgent::DBUpdateStateInfo(struct State_Info *stif)
     char query[str_len + 2*(ai_len+ea_len+lk_len)+1];
     int len = snprintf(query, str_len + 2*(ai_len+ea_len+lk_len)+1, str, ai_chunk, ea_chunk, lk_chunk);
 
-    dbgprt("query: %s\n", query);
+//    dbgprt("query: %s\n", query);
 
     if (mysql_real_query(db_con, query, len))
     {

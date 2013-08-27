@@ -3,11 +3,11 @@
 #include "MyAgent.h"
 #include "SimGroup.h"
 
-class Entity
+class Avatar
 {
     public:
-        Entity(int);
-        virtual ~Entity();
+        Avatar(int);
+        virtual ~Avatar();
 
         void Run();
         int ThreadRun();
@@ -16,7 +16,7 @@ class Entity
         void SetGroup(Group *);
         void SetFreq(int);
 
-        static int quit;               /**< tell all Entity instances to quit */
+        static int quit;               /**< tell all Avatar instances to quit */
     protected:
         int id;
         int freq;
@@ -30,7 +30,7 @@ class Entity
         void RecvStateInfo();
 
         static void* hook(void* args) {
-            reinterpret_cast<Entity *>(args)->Run();
+            reinterpret_cast<Avatar *>(args)->Run();
             return NULL;
         }
     private:
