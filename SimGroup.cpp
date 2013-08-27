@@ -10,14 +10,16 @@
 
 int SimGroup::Send(int id, void *buffer, size_t length)
 {
-    printf("*************************** Id: %d, Send:********************************\n", id);
+    dbgprt("*************************** Id: %d, Send ********************************\n", id);
     struct State_Info *si = (struct State_Info *)buffer;
+    #ifdef _DEBUG_
     MyAgent::PrintStateInfo(si);
-    printf("------------------------------ Send --------------------------------------\n\n");
+    #endif // _DEBUG_
+    dbgprt("------------------------------ Send End----------------------------------\n\n");
 
     if (length > 2048)
     {
-        printf("data length exceeds 2048!\n");
+        dbgprt("Send(): data length exceeds 2048, not Send!\n");
         return 0;
     }
     vector<int> neighs = GetNeighs(id);
@@ -53,10 +55,12 @@ int SimGroup::Recv(int id, void *buffer, size_t length)
         free(tmp);
         re = length;
 
-        printf("+++++++++++++++++++++++++++ Id: %d, Recv: +++++++++++++++++++++++++++\n", id);
+        dbgprt("+++++++++++++++++++++++++++ Id: %d, Recv: +++++++++++++++++++++++++++\n", id);
         struct State_Info *si = (struct State_Info *)buffer;
+        #ifdef _DEBUG_
         MyAgent::PrintStateInfo(si);
-        printf("|||||||||||||||||||||||||||||| Recv ||||||||||||||||||||||||||||||||||\n\n");
+        #endif // _DEBUG_
+        dbgprt("|||||||||||||||||||||||||||||| Recv End |||||| |||||||||||||||||||||||\n\n");
     }
     else
         re = 0;
@@ -118,8 +122,7 @@ void SimGroup::BuildNeighs()
 
     if (!tf.is_open())
     {
-        dbgprt("can't open topofile: %s!\n", topofile.c_str());
-        return;
+        ERROR("Group: %d can't open topofile: %s!\n", id, topofile.c_str());
     }
 
     char line[1024];

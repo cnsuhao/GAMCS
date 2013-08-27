@@ -6,9 +6,9 @@
 #include <pthread.h>
 #include <signal.h>
 #include "R1Agent.h"
-#include "../../Entity.h"
+#include "../../Avatar.h"
 
-class Individual : public Entity
+class Individual : public Avatar
 {
     public:
         Individual(int i);

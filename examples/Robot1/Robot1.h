@@ -1,9 +1,9 @@
 #ifndef ROBOT1_H
 #define ROBOT1_H
 #include <signal.h>
-#include "../../Entity.h"
+#include "../../Avatar.h"
 
-class Robot1 : public Entity
+class Robot1 : public Avatar
 {
     public:
         /** Default constructor */

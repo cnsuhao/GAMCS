@@ -88,10 +88,10 @@ void MyAgent::InitMemory()
     if (db_name.empty())
         return;
 
-    dbgprt("Initializing Memory...\n");
     int re = DBConnect();
     if (re == 0)
     {
+        printf("Initializing Memory from Database: %s .", db_name.c_str());
         /* load memory information */
         struct m_Memory_Info *memif = DBFetchMemoryInfo();
         if (memif != NULL)
@@ -104,23 +104,23 @@ void MyAgent::InitMemory()
             lk_num = memif->lk_num;
             free(memif);
         }
-
+        printf("..");
         /* load states information */
         State st;
-        vector<unsigned long> states;
-        states.clear();
-        while((st = DBNextState()) != -1)
+        unsigned long index = 0;
+        while((st = DBStateByIndex(index)) != -1)
         {
-           printf("State: %ld\n", st);
-            states.push_back(st);
-        }
-
-        for (vector<unsigned long>::iterator it = states.begin(); it!=states.end(); ++it)
-        {
-            LoadState(*it);
+            dbgmoreprt("DB: %s, LoadState: %ld\n", db_name.c_str(), st);
+            LoadState(st);
+            index++;
+            printf(".");
         }
     }
-
+    else
+    {
+        fprintf(stderr, "%s\n", mysql_error(db_con));
+    }
+    printf("\n");
     DBClose();
     return;
 }
@@ -130,35 +130,38 @@ void MyAgent::SaveMemory()
     if (db_name.empty())
         return;
 
-    dbgprt("Saving Memory...\n");
+    printf("Saving Memory to DataBase: %s .", db_name.c_str());
     int re = DBConnect();
     if (re == 0)
     {
         /* save memory information */
         DBAddMemoryInfo();
-
+        printf("..");
         /* save states information */
         struct m_State *mst, *nmst;
         for (mst=head; mst!=NULL; mst=nmst)
         {
             if (mst->mark == NEW)
             {
+                dbgmoreprt("DB: %s, State: %ld, Mark: %d\n", db_name.c_str(),mst->st, mst->mark);
                 struct State_Info *stif = GetStateInfo(mst->st);
                 DBAddStateInfo(stif);
                 free(stif);
             }
             else if (mst->mark == MODIFIED)
             {
+                dbgmoreprt("DB: %s, State: %ld, Mark: %d\n", db_name.c_str(),mst->st, mst->mark);
                 struct State_Info *stif = GetStateInfo(mst->st);
                 DBUpdateStateInfo(stif);
                 free(stif);
             }
+            printf(".");
             mst->mark = SAVED;
 
             nmst = mst->next;
         }
     }
-
+    printf("\n");
     DBClose();
     return;
 }
@@ -199,7 +202,7 @@ MyAgent::MyAgent(int n, int m, float dr, float th):Agent(n, m, dr)
 MyAgent::~MyAgent()
 {
     //dtor
-    dbgprt("~MyAgent==========\n");
+    dbgmoreprt("Enter ~MyAgent()\n");
     if (!db_name.empty())
         SaveMemory();
     FreeMemory();
@@ -459,6 +462,8 @@ float MyAgent::Prob(struct m_ExAction *ea, struct m_State *mst)
 
 float MyAgent::CalStatePayoff(struct m_State *mst)
 {
+    dbgmoreprt("CalStatePayoff(): State: %ld, count: %ld\n", mst->st, mst->count);
+
     float u0 = mst->original_payoff;
     float pf = u0, tmp;
 
@@ -466,10 +471,13 @@ float MyAgent::CalStatePayoff(struct m_State *mst)
 
     for (ea = mst->ealist; ea != NULL; ea = nea)
     {
+        dbgmoreprt("=============== Ealist ===================\n");
+        dbgmoreprt("eid: %ld, count: %ld\n", ea->eat, ea->count);
         tmp = Prob(ea, mst) * MaxPayoffInEat(ea->eat, mst);
         pf += tmp * discount_rate;
         nea = ea->next;
     }
+    dbgmoreprt("=============== Ealist End ===================\n");
 
     return pf;
 }
@@ -478,12 +486,12 @@ void MyAgent::UpdateState(struct m_State *mst)
 {
     /* update state's payoff */
     float payoff = CalStatePayoff(mst);
-    dbgprt("UpdateState(): mstate: %ld, payoff:%.1f\n", mst->st, payoff);
+    dbgmoreprt("UpdateState(): State: %ld, payoff:%.1f\n", mst->st, payoff);
 
     if (fabsf(mst->payoff - payoff) > threshold)            // compare with threshold, update if the diff exceeds threshold
     {
         mst->payoff  = payoff;
-        dbgprt("To payoff: %.1f\n", payoff);
+        dbgmoreprt("Change to payoff: %.1f\n", payoff);
 
         /* update backward recursively */
         struct m_BackArcState *bas, *nbas;
@@ -494,8 +502,9 @@ void MyAgent::UpdateState(struct m_State *mst)
         }
     }
     else
-        dbgprt("Payoff no changes, smaller than %.1f\n", threshold);
-
+    {
+        dbgmoreprt("Payoff no changes, smaller than %.1f\n", threshold);
+    }
     /* update actions' payoff */
     struct m_Action *ac, *nac;
     for (ac=mst->atlist; ac!=NULL; ac=nac)
@@ -538,7 +547,7 @@ float MyAgent::CalActPayoff(Action act, struct m_State *mst)
         }
         nea = ea->next;
     }
-    dbgprt("CalActPayoff(): state: %ld, act: %ld, payoff:%.1f\n", mst->st, act, payoff);
+    dbgmoreprt("CalActPayoff(): state: %ld, act: %ld, payoff:%.1f\n", mst->st, act, payoff);
     return payoff;
 }
 
@@ -633,7 +642,7 @@ void MyAgent::FreeMemory()
 
 void MyAgent::RemoveState(struct m_State *mst)
 {
-    dbgprt("remove state\n");
+//    dbgprt("remove state\n");
     if (mst == NULL)
         ERROR("Cant remove state, state is NULL\n");
     if (mst->blist != NULL)
@@ -697,7 +706,7 @@ struct State_Info *MyAgent::GetStateInfo(State st)
 
     if (mst == NULL)
     {
-        dbgprt("State: %ld not found!\n", st);
+        dbgprt("GetStateInfo(): State: %ld not found!\n", st);
         return NULL;
     }
 
@@ -763,7 +772,7 @@ struct State_Info *MyAgent::GetStateInfo(State st)
     {
         struct m_State *pmst = SearchState(bas->pstate->st);
         if (pmst == NULL)
-            ERROR("GetStateInfo(): Memory conrupt!\n");
+            ERROR("GetStateInfo(): blist indicates a previous state existing, but search memory returns NULL!\n");
         struct m_ForwardArcState *fas, *nfas;
         for (fas=pmst->flist; fas!=NULL; fas=nfas)
         {
@@ -885,17 +894,24 @@ int MyAgent::MergeStateInfo(struct State_Info *stif)
             State pst = lk[i].pst;
             struct m_State *pmst = SearchState(pst);            // find if the previous state exists
             if (pmst != NULL)                                   // if so, make the link, otherwise do nothing
+            {
+                pmst->count++;                                  // as if we were coming from pmst, increase its count
                 LinkStates(pmst, lk[i].peat, lk[i].pact, mst);
+            }
 
         }
-    }
+    } // mst == NULL
     else            // state already exists, merge the recieved one with it
     {
-        if (stif->payoff > mst->payoff)     // choose the bigger one
+        if (stif->count <= mst->count)               // experience matters
         {
-            mst->payoff = stif->payoff;
-            better = 1;                     // mark it better
+            better = 0;
+            return better;
         }
+
+        better = 1;
+        /* stif->count > mst->count */
+        mst->payoff = stif->payoff;
 
         /* actions information */
         for (i=0; i<stif->act_num; i++)
@@ -905,11 +921,7 @@ int MyAgent::MergeStateInfo(struct State_Info *stif)
             {
                 if ((mac->act == atif[i].act))
                 {
-                    if (mac->payoff < atif[i].payoff)       // choose the bigger
-                    {
-                        mac->payoff = atif[i].payoff;
-                        better = 1;
-                    }
+                    mac->payoff = atif[i].payoff;
                     break;                 // one action should occur only once, break if we found one
                 }
                 nmac = mac->next;
@@ -917,7 +929,6 @@ int MyAgent::MergeStateInfo(struct State_Info *stif)
 
             if (mac == NULL)            // no corresponding action found in my own state, it's a new one, create it.
             {
-                better = 1;
                 struct m_Action *nmac = (struct m_Action *)malloc(sizeof(struct m_Action));
                 nmac->act = atif[i].act;
                 nmac->payoff = atif[i].payoff;
@@ -926,41 +937,40 @@ int MyAgent::MergeStateInfo(struct State_Info *stif)
                 mst->atlist = nmac;
             }
         }
+        /* ExActions */
+        long delta_count = 0;
 
-        /* counts */
-        if (mst->count < stif->count)       // more experienced
+        for (i = 0; i < stif->eat_num; i++)
         {
-            better = 1;
+            struct m_ExAction *meat, *nmeat;
 
-            mst->count = stif->count;       // state count
-
-            /* ExActions */
-            for (i=0; i<stif->eat_num; i++)
+            for (meat = mst->ealist; meat != NULL; meat = nmeat)
             {
-                struct m_ExAction *meat, *nmeat;
-                for (meat=mst->ealist; meat!=NULL; meat=nmeat)
+                if (meat->eat == eaif[i].eat)
                 {
-                    if (meat->eat == eaif[i].eat)
-                    {
-                        meat->count = eaif[i].count;        // use the recieved eat count
-                        break;
-                    }
-                    nmeat = meat->next;
+                    delta_count += (eaif[i].count - meat->count);     // negative is ok
+                    meat->count = eaif[i].count;        // use the recieved eat count
+                    break;
                 }
 
-                // new eat, create one
-                if (meat == NULL)
-                {
-                    better = 1;
-                    struct m_ExAction *neat = (struct m_ExAction *)malloc(sizeof(struct m_ExAction));
-                    neat->eat = eaif[i].eat;
-                    neat->count = eaif[i].count;
-
-                    neat->next = mst->ealist;
-                    mst->ealist = neat;
-                }
+                nmeat = meat->next;
             }
-        } //if
+
+            // new eat, create one
+            if (meat == NULL)
+            {
+                struct m_ExAction *neat = (struct m_ExAction *)malloc(sizeof(struct m_ExAction));
+                neat->eat = eaif[i].eat;
+                neat->count = eaif[i].count;
+
+                neat->next = mst->ealist;
+                mst->ealist = neat;
+
+                delta_count += eaif[i].count;
+            }
+        }
+
+        mst->count += delta_count;              // update state count
 
         /* links, make the link if previous state exists */
         for (i=0; i<stif->lk_num; i++)
@@ -968,12 +978,15 @@ int MyAgent::MergeStateInfo(struct State_Info *stif)
             State pst = lk[i].pst;
             struct m_State *pmst = SearchState(pst);
             if (pmst != NULL)
+            {
+                pmst->count++;
                 LinkStates(pmst, lk[i].peat, lk[i].pact, mst);
+            }
         }
 
-        if (better == 1 && mst->mark == SAVED)                // no modification to my state if the recieved one is worse!
-            mst->mark = MODIFIED;
     }
+    if (better == 1 && mst->mark == SAVED)                // no modification to my state if the recieved one is worse!
+        mst->mark = MODIFIED;
     return better;
 }
 
@@ -983,7 +996,7 @@ void MyAgent::PrintStateInfo(struct State_Info *stif)
         return;
 
     int i;
-    printf("===================== State: %ld =========================\n", stif->st);
+    printf("======================= State: %ld ===========================\n", stif->st);
     printf("Original payoff: %.2f,\t Payoff: %.2f,\t Count: %ld\n", stif->original_payoff, stif->payoff, stif->count);
     printf("--------------------- Actions, Num: %d -----------------------\n", stif->act_num);
     unsigned char *p = (unsigned char *)stif;
@@ -1076,11 +1089,10 @@ void MyAgent::DBClose()
     return mysql_close(db_con);
 }
 
-State MyAgent::DBNextState()
+State MyAgent::DBStateByIndex(unsigned long index)
 {
-    static unsigned long offset = 0;
     char query_str[256];
-    sprintf(query_str, "SELECT * FROM %s LIMIT %ld, 1", db_t_stateinfo.c_str(), offset);
+    sprintf(query_str, "SELECT * FROM %s LIMIT %ld, 1", db_t_stateinfo.c_str(), index);
 
     if (mysql_query(db_con, query_str))
     {
@@ -1092,7 +1104,7 @@ State MyAgent::DBNextState()
 
     if (result == NULL)
     {
-        printf("no result!\n");
+        dbgmoreprt("DBStateByIndex(): result == NULL!\n");
         return -1;
     }
 
@@ -1101,10 +1113,10 @@ State MyAgent::DBNextState()
 
     if (lengths == NULL)
     {
+        dbgmoreprt("DBStateByIndex(): lengths is null\n");
         return -1;
     }
     State rs = atol(row[0]);
-    offset++;
 
     mysql_free_result(result);          // free result
     return rs;
@@ -1125,7 +1137,7 @@ struct State_Info *MyAgent::DBFetchStateInfo(State st)
 
     if (result == NULL)
     {
-        printf("no result!\n");
+        dbgmoreprt("DBFetchStateInfo(): result == NULL!\n");
         return NULL;
     }
 
@@ -1133,14 +1145,14 @@ struct State_Info *MyAgent::DBFetchStateInfo(State st)
     int num_fields = mysql_num_fields(result);
     if (num_fields != 7)
     {
-        printf("Fields don't match!\n");
+        dbgmoreprt("DBFetchStateInfo(): Fields don't match!\n");
         return NULL;
     }
     unsigned long *lengths = mysql_fetch_lengths(result);
 
     if (lengths == NULL)
     {
-        printf("lengths is null\n");
+        dbgmoreprt("DBFetchStateInfo(): lengths is null\n");
         return NULL;
     }
 
@@ -1201,7 +1213,6 @@ int MyAgent::DBSearchState(State st)
 
 void MyAgent::DBAddStateInfo(struct State_Info *stif)
 {
-    dbgprt("DBAddStateInfo.....\n");
     char str[256];
     sprintf(str, "INSERT INTO %s(State, OriPayoff, Payoff, Count, ActInfos, ExActInfos, pLinks) VALUES(%ld, %.2f, %.2f, %ld, '%%s', '%%s', '%%s')",
             db_t_stateinfo.c_str(), stif->st, stif->original_payoff, stif->payoff, stif->count);
@@ -1243,7 +1254,6 @@ void MyAgent::DBAddStateInfo(struct State_Info *stif)
 
 void MyAgent::DBUpdateStateInfo(struct State_Info *stif)
 {
-    dbgprt("DBUpdateStateInfo.....\n");
     char str[256];
     sprintf(str, "UPDATE %s SET OriPayoff=%.2f, Payoff=%.2f, Count=%ld, ActInfos='%%s', ExActInfos='%%s', pLinks='%%s' WHERE State=%ld",
             db_t_stateinfo.c_str(), stif->original_payoff, stif->payoff, stif->count, stif->st);
@@ -1273,8 +1283,6 @@ void MyAgent::DBUpdateStateInfo(struct State_Info *stif)
     char query[str_len + 2*(ai_len+ea_len+lk_len)+1];
     int len = snprintf(query, str_len + 2*(ai_len+ea_len+lk_len)+1, str, ai_chunk, ea_chunk, lk_chunk);
 
-//    dbgprt("query: %s\n", query);
-
     if (mysql_real_query(db_con, query, len))
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
@@ -1299,7 +1307,6 @@ void MyAgent::DBDeleteState(State st)
 
 void MyAgent::DBAddMemoryInfo()
 {
-    dbgprt("DBAddMemoryInfo.....\n");
     char query_str[256];
 
     sprintf(query_str, "INSERT INTO %s(TimeStamp, N, M, DiscountRate, Threshold, NumStates, NumLinks) VALUES(NULL, %ld, %ld, %.2f, %.2f, %ld, %ld)",
@@ -1329,7 +1336,7 @@ struct m_Memory_Info *MyAgent::DBFetchMemoryInfo()
 
     if (result == NULL)
     {
-        printf("no result!\n");
+        dbgmoreprt("DBFetchMemoryInfo(): result == NULL!\n");
         return NULL;
     }
 
@@ -1338,12 +1345,12 @@ struct m_Memory_Info *MyAgent::DBFetchMemoryInfo()
 
     if (lengths == NULL)
     {
-        printf("lengths is null\n");
+        dbgmoreprt("DBFetchMemoryInfo(): lengths is null\n");
         return NULL;
     }
 
     struct m_Memory_Info *memif = (struct m_Memory_Info *)malloc(sizeof(struct m_Memory_Info));
-    dbgprt("Memory TimeStamp: %s\n", row[0]);
+    dbgprt("DB: %s, Memory TimeStamp: %s\n", db_name.c_str(), row[0]);
     memif->N = atol(row[1]);
     memif->M = atol(row[2]);
     memif->discount_rate = atof(row[3]);

@@ -8,7 +8,7 @@
 ***********************************************************************/
 #include "Individual.h"
 
-Individual::Individual(int i):Entity(i)
+Individual::Individual(int i):Avatar(i)
 {
     position = 5;
 }
@@ -16,7 +16,7 @@ Individual::Individual(int i):Entity(i)
 Individual::~Individual()
 {
     //dtor
-    dbgprt("~Individual\n");
+    dbgmoreprt("~Individual\n");
 }
 
 State Individual::GetCurrentState()
