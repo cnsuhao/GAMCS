@@ -81,16 +81,15 @@ void Avatar::SendStateInfo(State st)
     if (group == NULL)
         return;
 
-    struct State_Info *si = agent->GetStateInfo(st);       // can be NULL
-    if (si == NULL)
+    char si_buffer[SI_MAX_SIZE];
+    int len = agent->GetStateInfo(st, si_buffer);       // the st may not exist
+    if (len == -1)
     {
-        dbgmoreprt("si == NULL\n");
         return;
     }
 
-    group->Send(id, si, si->length);
+    group->Send(id, si_buffer, len);
 
-    free(si);           // freed??
     return;
 }
 
@@ -99,7 +98,7 @@ void Avatar::RecvStateInfo()
     if (group == NULL)
         return;
 
-    char buf[2048];
+    char buf[SI_MAX_SIZE];
 
     while(group->Recv(id, buf, 2048) != 0)
     {
@@ -108,11 +107,10 @@ void Avatar::RecvStateInfo()
         int better = agent->MergeStateInfo(stif);
         if (better == 0)                // send out my information if it is not better
         {
-            struct State_Info *si = agent->GetStateInfo(stif->st);
-            if (si != NULL)
+            int len = agent->GetStateInfo(stif->st, buf);
+            if (len != -1)
             {
-                group->Send(id, si, si->length);
-                free(si);               // freed?
+                group->Send(id, buf, len);
             }
         }
     }

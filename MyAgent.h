@@ -66,7 +66,7 @@ class MyAgent : public Agent
         MyAgent(int, int, float, float);
         virtual ~MyAgent();
 
-        virtual struct State_Info *GetStateInfo(State);                 /**< implementing GetStateInfo function */
+        virtual int GetStateInfo(State, void *);                 /**< implementing GetStateInfo function */
         virtual int MergeStateInfo(struct State_Info *);               /**< implementing MergeStateInfo function */
         static void PrintStateInfo(struct State_Info *);
         void InitMemory();              /**< load memory from a file */
@@ -89,7 +89,7 @@ class MyAgent : public Agent
         int DBConnect();
         void DBClose();
         State DBStateByIndex(unsigned long);
-        struct State_Info *DBFetchStateInfo(State);
+        int DBFetchStateInfo(State, void *);
         int DBSearchState(State);
         void DBAddStateInfo(struct State_Info *);
         void DBUpdateStateInfo(struct State_Info *);

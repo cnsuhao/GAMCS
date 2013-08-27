@@ -13,10 +13,12 @@ struct m_State *MyAgent::LoadState(State st)
     struct m_State *mst = SearchState(st);
     if (mst == NULL)
     {
-        struct State_Info *stif = DBFetchStateInfo(st);
-        if (stif == NULL)       // should not happen, otherwise database corrupted!!
+        char si_buf[SI_MAX_SIZE];
+        int len = DBFetchStateInfo(st, si_buf);
+        if (len == -1)       // should not happen, otherwise database corrupted!!
             ERROR("State: %ld should exist, but fetch from Database: %s returns NULL!\n", st, db_name.c_str());
 
+        struct State_Info *stif = (struct State_Info *)si_buf;
         mst = NewState(st);
         mst->mark = SAVED;      // it's SAVED when just load
         mst->st = stif->st;
@@ -138,22 +140,21 @@ void MyAgent::SaveMemory()
         DBAddMemoryInfo();
         printf("..");
         /* save states information */
+        char si_buf[SI_MAX_SIZE];
         struct m_State *mst, *nmst;
         for (mst=head; mst!=NULL; mst=nmst)
         {
             if (mst->mark == NEW)
             {
                 dbgmoreprt("DB: %s, State: %ld, Mark: %d\n", db_name.c_str(),mst->st, mst->mark);
-                struct State_Info *stif = GetStateInfo(mst->st);
-                DBAddStateInfo(stif);
-                free(stif);
+                GetStateInfo(mst->st, si_buf);
+                DBAddStateInfo((struct State_Info *)si_buf);
             }
             else if (mst->mark == MODIFIED)
             {
                 dbgmoreprt("DB: %s, State: %ld, Mark: %d\n", db_name.c_str(),mst->st, mst->mark);
-                struct State_Info *stif = GetStateInfo(mst->st);
-                DBUpdateStateInfo(stif);
-                free(stif);
+                GetStateInfo(mst->st, si_buf);
+                DBUpdateStateInfo((struct State_Info *)si_buf);
             }
             printf(".");
             mst->mark = SAVED;
@@ -699,7 +700,7 @@ vector<Action> MyAgent::MaxPayoffRule(State st, vector<Action> acts)
     return re;
 }
 
-struct State_Info *MyAgent::GetStateInfo(State st)
+int MyAgent::GetStateInfo(State st, void *buffer)
 {
     struct m_State *mst;
     mst = SearchState(st);
@@ -707,66 +708,60 @@ struct State_Info *MyAgent::GetStateInfo(State st)
     if (mst == NULL)
     {
         dbgprt("GetStateInfo(): State: %ld not found!\n", st);
-        return NULL;
+        return -1;
     }
 
+    unsigned char *ptr = (unsigned char *)buffer;
+    struct State_Info stif;
+    stif.st = st;
+    stif.original_payoff = mst->original_payoff;
+    stif.payoff = mst->payoff;
+    stif.count = mst->count;
+
+    int act_num = 0;
+    int eat_num = 0;
+    int lk_num = 0;
     /* Action information */
-    int ai_len = 0;
-    int max_len = 50;
-    struct Action_Info *tmp_atif = (struct Action_Info *)malloc(max_len*sizeof(struct Action_Info));
+    ptr += sizeof(struct State_Info);
+    struct Action_Info acif;
 
     struct m_Action *ac, *nac;
     for (ac=mst->atlist; ac!=NULL; ac=nac)
     {
-        Action act = ac->act;
-        float payoff = ac->payoff;
-        if (ai_len < max_len)
+        acif.act = ac->act;
+        acif.payoff = ac->payoff;
+        memcpy(ptr, &acif, sizeof(struct Action_Info));
+        ptr += sizeof(struct Action_Info);
+        act_num++;
+        if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)
         {
-            tmp_atif[ai_len].act = act;
-            tmp_atif[ai_len].payoff = payoff;
+            dbgprt("WARNNING: StateInfo size exceeds SI_MAX_SIZE!\n");
+            goto finish;
         }
-        else
-        {
-            max_len += 50;
-            tmp_atif = (struct Action_Info *)realloc(tmp_atif, max_len*sizeof(struct Action_Info));
 
-            tmp_atif[ai_len].act = act;
-            tmp_atif[ai_len].payoff = payoff;
-        }
-        ai_len++;
         nac = ac->next;
     }
 
     /* ExAction information */
-    int ea_len = 0;
-    max_len = 50;
-    struct ExAction_Info *tmp_etif = (struct ExAction_Info *)malloc(max_len*sizeof(struct ExAction_Info));
-
+    struct ExAction_Info eaif;
     struct m_ExAction *ea, *nea;
     for (ea=mst->ealist; ea!=NULL; ea=nea)
     {
-        if (ea_len < max_len)
+        eaif.count = ea->count;
+        eaif.eat = ea->eat;
+        memcpy(ptr, &eaif, sizeof(struct ExAction_Info));
+        ptr += sizeof(struct ExAction_Info);
+        eat_num++;
+        if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)
         {
-            tmp_etif[ea_len].eat = ea->eat;
-            tmp_etif[ea_len].count = ea->count;
+            dbgprt("WARNNING: StateInfo size exceeds SI_MAX_SIZE!\n");
+            goto finish;
         }
-        else
-        {
-            max_len += 50;
-            tmp_etif = (struct ExAction_Info *)realloc(tmp_etif, max_len*sizeof(struct ExAction_Info));
-
-            tmp_etif[ea_len].eat = ea->eat;
-            tmp_etif[ea_len].count = ea->count;
-        }
-        ea_len++;
         nea = ea->next;
     }
 
     /* links information */
-    int lk_len = 0;
-    max_len = 50;
-    struct pLink *tmp_lk = (struct pLink *)malloc(max_len*sizeof(struct pLink));
-
+    struct pLink lk;
     struct m_BackArcState *bas, *nbas;
     for (bas=mst->blist; bas!=NULL; bas=nbas)
     {
@@ -778,61 +773,33 @@ struct State_Info *MyAgent::GetStateInfo(State st)
         {
             if (fas->nstate->st == mst->st)
             {
-                if (lk_len < max_len)
+                lk.pst = bas->pstate->st;
+                lk.pact = fas->act;
+                lk.peat = fas->eat;
+                memcpy(ptr, &lk, sizeof(struct pLink));
+                ptr += sizeof(struct pLink);
+                lk_num++;
+                if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)
                 {
-                    tmp_lk[lk_len].pst = bas->pstate->st;
-                    tmp_lk[lk_len].peat = fas->eat;
-                    tmp_lk[lk_len].pact = fas->act;
+                    dbgprt("WARNNING: StateInfo size exceeds SI_MAX_SIZE!\n");
+                    goto finish;
                 }
-                else
-                {
-                    max_len += 50;
-                    tmp_lk = (struct pLink *)realloc(tmp_lk, max_len*sizeof(struct pLink));
-
-                    tmp_lk[lk_len].pst = bas->pstate->st;
-                    tmp_lk[lk_len].peat = fas->eat;
-                    tmp_lk[lk_len].pact = fas->act;
-                }
-                lk_len++;
             }
             nfas = fas->next;
         }
         nbas = bas->next;
     }
 
+finish:
     /* create state information with continous space */
-    int len = sizeof(struct State_Info) + ai_len*sizeof(struct Action_Info) +\
-                ea_len*sizeof(struct ExAction_Info) + lk_len*sizeof(struct pLink);
+    stif.act_num = act_num;
+    stif.eat_num = eat_num;
+    stif.lk_num = lk_num;
 
-    struct State_Info *stif = (struct State_Info *)malloc(len);
-    stif->st = mst->st;
-    stif->original_payoff = mst->original_payoff;
-    stif->payoff = mst->payoff;
-    stif->count = mst->count;
-    stif->length = len;
-    stif->act_num = ai_len;
-    stif->eat_num = ea_len;
-    stif->lk_num = lk_len;
-
-    unsigned char *p = (unsigned char *)stif;
-    p += sizeof(struct State_Info);
-    len = ai_len * sizeof(struct Action_Info);
-    memcpy(p, tmp_atif, len);
-    free(tmp_atif);
-
-    p += len;
-    len = ea_len * sizeof(struct ExAction_Info);
-    memcpy(p, tmp_etif, len);
-    free(tmp_etif);
-
-    p += len;
-    len = lk_len * sizeof(struct pLink);
-    memcpy(p, tmp_lk, len);
-    free(tmp_lk);
-
-    return stif;
+    memcpy(buffer, &stif, sizeof(struct State_Info));
+    int length = ptr - (unsigned char *)buffer;
+    return length;
 }
-
 
 int MyAgent::MergeStateInfo(struct State_Info *stif)
 {
@@ -1122,7 +1089,7 @@ State MyAgent::DBStateByIndex(unsigned long index)
     return rs;
 }
 
-struct State_Info *MyAgent::DBFetchStateInfo(State st)
+int MyAgent::DBFetchStateInfo(State st, void *buffer)
 {
     char query_string[256];
     sprintf(query_string, "SELECT * FROM %s WHERE State=%ld", db_t_stateinfo.c_str(), st);
@@ -1130,7 +1097,7 @@ struct State_Info *MyAgent::DBFetchStateInfo(State st)
     if (mysql_query(db_con, query_string))
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
-        return NULL;
+        return -1;
     }
 
     MYSQL_RES *result = mysql_store_result(db_con);
@@ -1138,7 +1105,7 @@ struct State_Info *MyAgent::DBFetchStateInfo(State st)
     if (result == NULL)
     {
         dbgmoreprt("DBFetchStateInfo(): result == NULL!\n");
-        return NULL;
+        return -1;
     }
 
     MYSQL_ROW row = mysql_fetch_row(result);
@@ -1146,46 +1113,63 @@ struct State_Info *MyAgent::DBFetchStateInfo(State st)
     if (num_fields != 7)
     {
         dbgmoreprt("DBFetchStateInfo(): Fields don't match!\n");
-        return NULL;
+        return -1;
     }
     unsigned long *lengths = mysql_fetch_lengths(result);
 
     if (lengths == NULL)
     {
         dbgmoreprt("DBFetchStateInfo(): lengths is null\n");
-        return NULL;
+        return -1;
     }
 
-    unsigned long total_len = 0;
+    unsigned char *ptr = (unsigned char *)buffer;
 
     unsigned long ai_len = lengths[4];
     unsigned long ea_len = lengths[5];
     unsigned long lk_len = lengths[6];
-    total_len = sizeof(unsigned long)*2 + sizeof(float)*2 + sizeof(int)*4 + ai_len + ea_len + lk_len;
 
-    struct State_Info *stif = (struct State_Info *)malloc(total_len);
-    stif->st = atol(row[0]);
-    stif->original_payoff = atof(row[1]);
-    stif->payoff = atof(row[2]);
-    stif->count = atol(row[3]);
-    stif->length = total_len;
+    struct State_Info stif;
+    stif.st = atol(row[0]);
+    stif.original_payoff = atof(row[1]);
+    stif.payoff = atof(row[2]);
+    stif.count = atol(row[3]);
 
-    stif->act_num = ai_len / sizeof(struct Action_Info);
-    stif->eat_num = ea_len / sizeof(struct ExAction_Info);
-    stif->lk_num = lk_len / sizeof(struct pLink);
+    stif.act_num = ai_len / sizeof(struct Action_Info);
+    stif.eat_num = ea_len / sizeof(struct ExAction_Info);
+    stif.lk_num = lk_len / sizeof(struct pLink);
 
-    unsigned char *p = (unsigned char *)stif;
-    p += sizeof(struct State_Info);
-    memcpy(p, row[4], ai_len);
+    memcpy(ptr, &stif, sizeof(struct State_Info));
 
-    p += ai_len;
-    memcpy(p, row[5], ea_len);
+    ptr += sizeof(struct State_Info);
+    memcpy(ptr, row[4], ai_len);
+    if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)
+    {
+        dbgprt("WARNNING: StateInfo size exceeds SI_MAX_SIZE!\n");
+        goto finish;
+    }
 
-    p += ea_len;
-    memcpy(p, row[6], lk_len);
+    ptr += ai_len;
+    memcpy(ptr, row[5], ea_len);
+    if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)          // CHECK NEEDED
+    {
+        dbgprt("WARNNING: StateInfo size exceeds SI_MAX_SIZE!\n");
+        goto finish;
+    }
+
+    ptr += ea_len;
+    memcpy(ptr, row[6], lk_len);
+    if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)
+    {
+        dbgprt("WARNNING: StateInfo size exceeds SI_MAX_SIZE!\n");
+        goto finish;
+    }
 
     mysql_free_result(result);          // free result
-    return stif;
+
+finish:
+    int length = ptr - (unsigned char *)buffer;
+    return length;
 }
 
 int MyAgent::DBSearchState(State st)
