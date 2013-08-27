@@ -13,7 +13,7 @@ GIOM::GIOM(int n, int m)
     //ctor
     N = n;
     M = m;
-    srand(2);          // random seed
+    srand(time(NULL));          // random seed
 }
 
 GIOM::~GIOM()
@@ -52,7 +52,7 @@ vector<Output> GIOM::OutList(Input in)
  */
 vector<Output> GIOM::Restrict(Input in, vector<Output> outlist)
 {
-    printf("enter GIOM restrict =========================\n\n");
+    dbgmoreprt("enter GIOM restrict\n\n");
     return outlist;
 }
 

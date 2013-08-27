@@ -88,7 +88,7 @@ class MyAgent : public Agent
 
         int DBConnect();
         void DBClose();
-        State DBNextState();
+        State DBStateByIndex(unsigned long);
         struct State_Info *DBFetchStateInfo(State);
         int DBSearchState(State);
         void DBAddStateInfo(struct State_Info *);

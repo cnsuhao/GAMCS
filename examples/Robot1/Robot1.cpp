@@ -8,7 +8,7 @@
 ***********************************************************************/
 #include "Robot1.h"
 
-Robot1::Robot1(int i):Entity(i)
+Robot1::Robot1(int i):Avatar(i)
 {
     position = 2;
 }

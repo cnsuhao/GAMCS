@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1377491776 source:/home/andy/Code/MyWork/libagent/Agent.cpp
+1377589687 source:/home/andy/Code/MyWork/libagent/Agent.cpp
 	"Agent.h"
 
 1377491782 /home/andy/Code/MyWork/libagent/Agent.h
@@ -8,7 +8,7 @@
 1376905294 /home/andy/Code/MyWork/libagent/PFTGIOM.h
 	"GIOM.h"
 
-1377562151 /home/andy/Code/MyWork/libagent/GIOM.h
+1377588907 /home/andy/Code/MyWork/libagent/GIOM.h
 	<vector>
 	<string>
 	<string.h>
@@ -31,7 +31,7 @@
 	<fstream>
 	"../../MyAgent.h"
 
-1377571584 /home/andy/Code/MyWork/libagent/MyAgent.h
+1377586777 /home/andy/Code/MyWork/libagent/MyAgent.h
 	<mysql/mysql.h>
 	<assert.h>
 	<float.h>
@@ -40,25 +40,25 @@
 1377044836 source:/home/andy/Code/MyWork/libagent/examples/TSP/TSPAgent.cpp
 	"TSPAgent.h"
 
-1377495555 source:/home/andy/Code/MyWork/libagent/GIOM.cpp
+1377590291 source:/home/andy/Code/MyWork/libagent/GIOM.cpp
 	"GIOM.h"
 
-1377572000 source:/home/andy/Code/MyWork/libagent/MyAgent.cpp
+1377590203 source:/home/andy/Code/MyWork/libagent/MyAgent.cpp
 	"MyAgent.h"
 
 1376903351 source:/home/andy/Code/MyWork/libagent/PFTGIOM.cpp
 	"PFTGIOM.h"
 
-1377570191 source:/home/andy/Code/MyWork/libagent/examples/Group/Individual.cpp
+1377589646 source:/home/andy/Code/MyWork/libagent/examples/Group/Individual.cpp
 	"Individual.h"
 
-1377508163 /home/andy/Code/MyWork/libagent/examples/Group/Individual.h
+1377572746 /home/andy/Code/MyWork/libagent/examples/Group/Individual.h
 	<unistd.h>
 	<sys/syscall.h>
 	<pthread.h>
 	<signal.h>
 	"R1Agent.h"
-	"../../Entity.h"
+	"../../Avatar.h"
 
 1377572190 /home/andy/Code/MyWork/libagent/Entity.h
 	"MyAgent.h"
@@ -173,29 +173,29 @@
 	"Group.h"
 	"MyAgent.h"
 
-1377571703 source:/home/andy/Code/MyWork/libagent/examples/Group/main.cpp
+1377573375 source:/home/andy/Code/MyWork/libagent/examples/Group/main.cpp
 	<pthread.h>
 	"../../SimGroup.h"
 	"Individual.h"
 
-1377570100 source:/home/andy/Code/MyWork/libagent/examples/Group/R1Agent.cpp
+1377589666 source:/home/andy/Code/MyWork/libagent/examples/Group/R1Agent.cpp
 	"R1Agent.h"
 
-1377511486 source:/home/andy/Code/MyWork/libagent/SimGroup.cpp
+1377590017 source:/home/andy/Code/MyWork/libagent/SimGroup.cpp
 	"SimGroup.h"
 
-1377565284 source:/home/andy/Code/MyWork/libagent/examples/Robot1/R1Agent.cpp
+1377570092 source:/home/andy/Code/MyWork/libagent/examples/Robot1/R1Agent.cpp
 	"R1Agent.h"
 
 1377497289 /home/andy/Code/MyWork/libagent/examples/Robot1/R1Agent.h
 	"../../MyAgent.h"
 
-1377565316 source:/home/andy/Code/MyWork/libagent/examples/Robot1/Robot1.cpp
+1377572731 source:/home/andy/Code/MyWork/libagent/examples/Robot1/Robot1.cpp
 	"Robot1.h"
 
-1377499788 /home/andy/Code/MyWork/libagent/examples/Robot1/Robot1.h
+1377572723 /home/andy/Code/MyWork/libagent/examples/Robot1/Robot1.h
 	<signal.h>
-	"../../Entity.h"
+	"../../Avatar.h"
 
 1377518066 source:/home/andy/Coding/libagent/examples/Robot1/R1Agent.cpp
 	"R1Agent.h"
@@ -268,4 +268,12 @@
 1377518066 source:/home/andy/Coding/libagent/examples/Robot1/rb1.cpp
 	"R1Agent.h"
 	"Robot1.h"
+
+1377589742 source:/home/andy/Code/MyWork/libagent/Avatar.cpp
+	"Avatar.h"
+	"MyAgent.h"
+
+1377572712 /home/andy/Code/MyWork/libagent/Avatar.h
+	"MyAgent.h"
+	"SimGroup.h"
 

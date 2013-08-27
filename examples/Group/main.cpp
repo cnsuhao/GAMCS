@@ -5,7 +5,9 @@
 void signal_handler(int sig)
 {
     if (sig == SIGINT)
-        Entity::quit = 1;
+    {
+        Individual::quit = 1;
+    }
     return;
 }
 
@@ -39,13 +41,11 @@ int main(void)
         tids[i] = indvs[i]->ThreadRun();
     }
 
-
-    sleep(10);
-    Entity::quit = 1;
-    for (i=0; i<num; i++)
+    for(i=0; i<num; i++)
     {
         pthread_join(tids[i], NULL);
-        ras[i]->SaveMemory();
+        delete ras[i];
     }
+
     return 0;
 }

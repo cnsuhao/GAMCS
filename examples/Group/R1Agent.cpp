@@ -10,12 +10,12 @@
 
 R1Agent::R1Agent(int n, int m, float dr, float th):MyAgent(n, m, dr, th)
 {
-    printf("R1Agent construct\n");
+    dbgmoreprt("Enter R1Agent construct\n");
 }
 
 R1Agent::~R1Agent()
 {
-    dbgprt("~R1Agent\n");
+    dbgmoreprt("~R1Agent\n");
 }
 
 float R1Agent::OriginalPayoff(State st)

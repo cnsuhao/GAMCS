@@ -15,6 +15,12 @@
 #define dbgprt(fmt,...)
 #endif
 
+#ifdef _DEBUG_MORE_
+#define dbgmoreprt(fmt,...)  do{printf("DBG-MORE-PRINT:");printf(fmt,##__VA_ARGS__);}while(0)
+#else
+#define dbgmoreprt(fmt,...)
+#endif
+
 #define ERROR(fmt, ...) do{printf("ERROR:");printf(fmt, ##__VA_ARGS__);exit(-1);}while(0)
 
 typedef unsigned long Input;            /**< input identity */
