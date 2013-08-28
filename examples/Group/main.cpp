@@ -44,6 +44,7 @@ int main(void)
     for(i=0; i<num; i++)
     {
         pthread_join(tids[i], NULL);
+        delete indvs[i];
         delete ras[i];
     }
 

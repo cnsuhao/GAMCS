@@ -13,7 +13,7 @@
 
 using namespace std;
 
-#define MAX_MEMBER 20
+#define MAX_MEMBER 1000
 #define CHANNEL_SIZE 10
 
 struct Msg
@@ -27,7 +27,7 @@ struct Channel
     pthread_mutex_t mutex;
     int ptr;
     int msg_num;
-    struct Msg msg[CHANNEL_SIZE];
+    struct Msg *msg;
 };
 
 struct Neigh

@@ -10,7 +10,7 @@ class Avatar
         virtual ~Avatar();
 
         void Run();
-        int ThreadRun();
+        pthread_t ThreadRun();
 
         void SetAgent(Agent *);
         void SetGroup(Group *);
