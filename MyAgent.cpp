@@ -700,6 +700,12 @@ vector<Action> MyAgent::MaxPayoffRule(State st, vector<Action> acts)
 
 int MyAgent::GetStateInfo(State st, void *buffer)
 {
+    if (buffer == NULL)
+    {
+        dbgprt("GetStateInfo(): incoming buffer is NULL!\n");
+        return -1;
+    }
+
     struct m_State *mst;
     mst = SearchState(st);
 

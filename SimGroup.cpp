@@ -114,6 +114,9 @@ SimGroup::~SimGroup()
 
         /* destroy mutex */
         pthread_mutex_destroy(&(channels[*it].mutex));
+
+        /* free Msg of channels */
+        free(channels[*it].msg);
     }
 
     nodes.clear();
@@ -170,6 +173,7 @@ void SimGroup::BuildNeighsChannels()
             if (p && atoi(p) != node)          // exclude self
             {
                 struct Neigh *nneigh = (struct Neigh *)malloc(sizeof(struct Neigh));
+                assert(nneigh != NULL);
                 nneigh->id = atoi(p);
                 nneigh->next = neighlist[node];
                 neighlist[node] = nneigh;
@@ -182,6 +186,8 @@ void SimGroup::BuildNeighsChannels()
     /* initialize channels */
     for (vector<int>::iterator it = nodes.begin(); it!=nodes.end(); ++it)
     {
+        channels[*it].msg = (struct Msg *)malloc(sizeof(struct Msg) * CHANNEL_SIZE);
+        assert(channels[*it].msg != NULL);
         pthread_mutex_init(&(channels[*it].mutex), NULL);
         channels[*it].msg_num = 0;
         channels[*it].ptr = CHANNEL_SIZE - 1;

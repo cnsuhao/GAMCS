@@ -25,7 +25,7 @@ Avatar::~Avatar()
     //dtor
 }
 
-int Avatar::ThreadRun()
+pthread_t Avatar::ThreadRun()
 {
     pthread_t tid;
     pthread_create(&tid, NULL, hook, this);
