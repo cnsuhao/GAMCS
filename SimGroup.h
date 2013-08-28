@@ -13,18 +13,21 @@
 
 using namespace std;
 
-#define MAX_MEMBER 1000
+#define MAX_MEMBER 20
+#define CHANNEL_SIZE 10
+
+struct Msg
+{
+    int sender_id;
+    char data[SI_MAX_SIZE];
+};
 
 struct Channel
 {
     pthread_mutex_t mutex;
-    struct Frame *frame;
-};
-
-struct Frame
-{
-    char data[2048];
-    struct Frame *next;
+    int ptr;
+    int msg_num;
+    struct Msg msg[CHANNEL_SIZE];
 };
 
 struct Neigh
@@ -48,11 +51,12 @@ class SimGroup : public Group
     private:
         string topofile;
 
-        void BuildNeighs();
+        void BuildNeighsChannels();
         vector<int> GetNeighs(int);
         struct Channel *GetChannel(int);
         void Notify(int);
 
+        vector<int> nodes;
         struct Channel channels[MAX_MEMBER];
         struct Neigh *neighlist[MAX_MEMBER];
 };

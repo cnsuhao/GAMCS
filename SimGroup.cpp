@@ -10,34 +10,40 @@
 
 int SimGroup::Send(int id, void *buffer, size_t length)
 {
-    dbgprt("*************************** Id: %d, Send ********************************\n", id);
-    struct State_Info *si = (struct State_Info *)buffer;
-    #ifdef _DEBUG_
-    MyAgent::PrintStateInfo(si);
-    #endif // _DEBUG_
-    dbgprt("------------------------------ Send End----------------------------------\n\n");
-
-    if (length > 2048)
+    size_t re;
+    if (length > SI_MAX_SIZE)
     {
         dbgprt("Send(): data length exceeds 2048, not Send!\n");
-        return 0;
+        re = 0;
     }
-    vector<int> neighs = GetNeighs(id);
-    for (vector<int>::iterator it = neighs.begin();
-    it != neighs.end(); ++it)
+    else
     {
-        struct Channel *chan = GetChannel(*it);
-        pthread_mutex_lock(&chan->mutex);
+        dbgprt("*************************** Id: %d, Send ********************************\n", id);
+        struct State_Info_Header *si = (struct State_Info_Header *)buffer;
+        #ifdef _DEBUG_
+        MyAgent::PrintStateInfo(si);
+        #endif // _DEBUG_
+        dbgprt("------------------------------ Send End----------------------------------\n\n");
 
-        struct Frame *fr = (struct Frame *)malloc(sizeof(struct Frame));    // buggy!
-        memcpy(fr->data, buffer, length);
-        fr->next = chan->frame;
-        chan->frame = fr;
+        vector<int> neighs = GetNeighs(id);
+        for (vector<int>::iterator it = neighs.begin();
+        it != neighs.end(); ++it)
+        {
+            struct Channel *chan = GetChannel(*it);
+            pthread_mutex_lock(&chan->mutex);
 
-        pthread_mutex_unlock(&chan->mutex);
+            if (chan->ptr == 0) chan->ptr = CHANNEL_SIZE - 1;   // make room for new msg
+            else chan->ptr -= 1;
+            memcpy(chan->msg[chan->ptr].data, buffer, length);
+            chan->msg[chan->ptr].sender_id = id;
 
+            if (chan->msg_num < CHANNEL_SIZE) chan->msg_num++;  // maximum num is CHANNEL_SIZE
+
+            pthread_mutex_unlock(&chan->mutex);
+            re = length;
+        }
     }
-    return length;
+    return re;
 }
 
 int SimGroup::Recv(int id, void *buffer, size_t length)
@@ -47,33 +53,36 @@ int SimGroup::Recv(int id, void *buffer, size_t length)
     size_t re;
     pthread_mutex_lock(&chan->mutex);
 
-    if (chan->frame != NULL)
+    if (chan->msg_num == 0)
     {
-        memcpy(buffer, chan->frame->data, length);
-        struct Frame *tmp = chan->frame;
-        chan->frame = chan->frame->next;
-        free(tmp);
+        re = 0;
+    }
+    else
+    {
+        memcpy(buffer, chan->msg[chan->ptr].data, length);
+        int sid = chan->msg[chan->ptr].sender_id;
+        chan->msg_num--;
+        if (chan->ptr == CHANNEL_SIZE -1) chan->ptr = 0;
+        else chan->ptr += 1;
+
         re = length;
 
-        dbgprt("+++++++++++++++++++++++++++ Id: %d, Recv: +++++++++++++++++++++++++++\n", id);
-        struct State_Info *si = (struct State_Info *)buffer;
+        dbgprt("++++++++++++++++++++++++ Id: %d, Recv from: %d ++++++++++++++++++++++++\n", id, sid);
+        struct State_Info_Header *si = (struct State_Info_Header *)buffer;
         #ifdef _DEBUG_
         MyAgent::PrintStateInfo(si);
         #endif // _DEBUG_
         dbgprt("|||||||||||||||||||||||||||||| Recv End |||||| |||||||||||||||||||||||\n\n");
     }
-    else
-        re = 0;
 
     pthread_mutex_unlock(&chan->mutex);
     return re;
-
 }
 
 void SimGroup::LoadTopo(string tf)
 {
     topofile = tf;
-    BuildNeighs();
+    BuildNeighsChannels();
     return;
 }
 
@@ -83,11 +92,31 @@ SimGroup::SimGroup(int i)
     id = i;
     topofile = "";
     member_num = 0;
+    nodes.clear();
+    for (int i=0; i<MAX_MEMBER; i++)
+    {
+        neighlist[i] = NULL;
+    }
 }
 
 SimGroup::~SimGroup()
 {
     //dtor
+    for (vector<int>::iterator it = nodes.begin(); it!=nodes.end(); ++it)
+    {
+        /* free neighlist */
+        struct Neigh *neigh = NULL, *nneigh = NULL;
+        for (neigh=neighlist[*it]; neigh!=NULL; neigh=nneigh)
+        {
+            nneigh = neigh->next;
+            free(neigh);
+        }
+
+        /* destroy mutex */
+        pthread_mutex_destroy(&(channels[*it].mutex));
+    }
+
+    nodes.clear();
 }
 
 struct Channel *SimGroup::GetChannel(int id)
@@ -109,9 +138,8 @@ vector<int> SimGroup::GetNeighs(int id)
     return neighs;
 }
 
-void SimGroup::BuildNeighs()
+void SimGroup::BuildNeighsChannels()
 {
-    int num = 0;
     if (topofile.empty())
     {
         dbgprt("topofile is NULL!\n");
@@ -125,6 +153,7 @@ void SimGroup::BuildNeighs()
         ERROR("Group: %d can't open topofile: %s!\n", id, topofile.c_str());
     }
 
+    /* parse file and build neighlist */
     char line[1024];
     const char *delim = ": ";
     while (!tf.eof())
@@ -133,22 +162,31 @@ void SimGroup::BuildNeighs()
         char *p = strtok(line, delim);
         if (!p)
             break;
-        int index = atoi(p);
+        int node = atoi(p);
+        nodes.push_back(node);
         while(p)
         {
             p = strtok(NULL, delim);
-            if (p && atoi(p) != index)          // exclude self
+            if (p && atoi(p) != node)          // exclude self
             {
                 struct Neigh *nneigh = (struct Neigh *)malloc(sizeof(struct Neigh));
                 nneigh->id = atoi(p);
-                nneigh->next = neighlist[index];
-                neighlist[index] = nneigh;
+                nneigh->next = neighlist[node];
+                neighlist[node] = nneigh;
             }
         }
-        num++;
     }
 
-    member_num = num;
+    member_num = nodes.size();
+
+    /* initialize channels */
+    for (vector<int>::iterator it = nodes.begin(); it!=nodes.end(); ++it)
+    {
+        pthread_mutex_init(&(channels[*it].mutex), NULL);
+        channels[*it].msg_num = 0;
+        channels[*it].ptr = CHANNEL_SIZE - 1;
+    }
+
     return;
 }
 

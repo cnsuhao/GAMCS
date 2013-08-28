@@ -103,8 +103,7 @@ void Avatar::RecvStateInfo()
 
     while(group->Recv(id, re_buf, 2048) != 0)
     {
-        struct State_Info *stif = (struct State_Info *)re_buf;
-        MyAgent::PrintStateInfo(stif);
+        struct State_Info_Header *stif = (struct State_Info_Header *)re_buf;
         int better = agent->MergeStateInfo(stif);
         if (better == 0)                // send out my information if it is not better
         {

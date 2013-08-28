@@ -67,8 +67,8 @@ class MyAgent : public Agent
         virtual ~MyAgent();
 
         virtual int GetStateInfo(State, void *);                 /**< implementing GetStateInfo function */
-        virtual int MergeStateInfo(struct State_Info *);               /**< implementing MergeStateInfo function */
-        static void PrintStateInfo(struct State_Info *);
+        virtual int MergeStateInfo(struct State_Info_Header *);               /**< implementing MergeStateInfo function */
+        static void PrintStateInfo(struct State_Info_Header *);
         void InitMemory();              /**< load memory from a file */
         void SaveMemory();              /**< save memory to a file  */
         void SetDBArgs(string, string, string, string);
@@ -91,8 +91,8 @@ class MyAgent : public Agent
         State DBStateByIndex(unsigned long);
         int DBFetchStateInfo(State, void *);
         int DBSearchState(State);
-        void DBAddStateInfo(struct State_Info *);
-        void DBUpdateStateInfo(struct State_Info *);
+        void DBAddStateInfo(struct State_Info_Header *);
+        void DBUpdateStateInfo(struct State_Info_Header *);
         void DBDeleteState(State);
         void DBAddMemoryInfo();
         struct m_Memory_Info *DBFetchMemoryInfo();
