@@ -34,7 +34,7 @@ struct ExAction_Info
 };
 
 /* State information, this struct can be used to communicate with other agents */
-struct State_Info
+struct State_Info_Header
 {
     State st;                                   /**< state identity */
     float original_payoff;                      /**< original payoff */
@@ -43,9 +43,6 @@ struct State_Info
     int act_num;
     int eat_num;
     int lk_num;                        /**< count of experiencing times */
-    struct Action_Info atifs[0];    /**< information of actions containing in this state */
-    struct ExAction_Info belief[0];        /**< information of exacts containing in this state */
-    struct pLink lks[0];                /**< information of backward links of this state */
 };
 
 class Agent : public PFTGIOM
@@ -57,7 +54,7 @@ class Agent : public PFTGIOM
         virtual ~Agent();
         /* These two functions are implementation dependant, declared as pure virtual functions */
         virtual int GetStateInfo(State, void *) = 0;         /**<  organize the information of specfic state from memory */
-        virtual int MergeStateInfo(struct State_Info *) = 0;       /**<  merge recieved state information to memory */
+        virtual int MergeStateInfo(struct State_Info_Header *) = 0;       /**<  merge recieved state information to memory */
     protected:
         virtual vector<Action> Restrict(State, vector<Action>);     /**< reimplement restrict using maximun payoff rule  */
 

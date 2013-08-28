@@ -22,6 +22,8 @@ float R1Agent::OriginalPayoff(State st)
 {
     if (st == 9)
         return 1;
+    else if (st == 13)
+        return 2;
     else
         return 0;
 }

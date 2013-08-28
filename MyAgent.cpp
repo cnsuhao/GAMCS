@@ -18,7 +18,7 @@ struct m_State *MyAgent::LoadState(State st)
         if (len == -1)       // should not happen, otherwise database corrupted!!
             ERROR("State: %ld should exist, but fetch from Database: %s returns NULL!\n", st, db_name.c_str());
 
-        struct State_Info *stif = (struct State_Info *)si_buf;
+        struct State_Info_Header *stif = (struct State_Info_Header *)si_buf;
         mst = NewState(st);
         mst->mark = SAVED;      // it's SAVED when just load
         mst->st = stif->st;
@@ -33,7 +33,7 @@ struct m_State *MyAgent::LoadState(State st)
         unsigned long ea_len = stif->eat_num * sizeof(struct ExAction_Info);
 
         unsigned char *p = (unsigned char *)stif;
-        p += sizeof(struct State_Info);
+        p += sizeof(struct State_Info_Header);
         struct Action_Info *atif = (struct Action_Info *)p;
 
         p += ai_len;
@@ -146,13 +146,13 @@ void MyAgent::SaveMemory()
             {
                 dbgmoreprt("DB: %s, State: %ld, Mark: %d\n", db_name.c_str(),mst->st, mst->mark);
                 GetStateInfo(mst->st, si_buf);
-                DBAddStateInfo((struct State_Info *)si_buf);
+                DBAddStateInfo((struct State_Info_Header *)si_buf);
             }
             else if (mst->mark == MODIFIED)
             {
                 dbgmoreprt("DB: %s, State: %ld, Mark: %d\n", db_name.c_str(),mst->st, mst->mark);
                 GetStateInfo(mst->st, si_buf);
-                DBUpdateStateInfo((struct State_Info *)si_buf);
+                DBUpdateStateInfo((struct State_Info_Header *)si_buf);
             }
             printf(".");
             mst->mark = SAVED;
@@ -710,7 +710,7 @@ int MyAgent::GetStateInfo(State st, void *buffer)
     }
 
     unsigned char *ptr = (unsigned char *)buffer;
-    struct State_Info stif;
+    struct State_Info_Header stif;
     stif.st = st;
     stif.original_payoff = mst->original_payoff;
     stif.payoff = mst->payoff;
@@ -720,7 +720,7 @@ int MyAgent::GetStateInfo(State st, void *buffer)
     int eat_num = 0;
     int lk_num = 0;
     /* Action information */
-    ptr += sizeof(struct State_Info);
+    ptr += sizeof(struct State_Info_Header);
     struct Action_Info acif;
 
     struct m_Action *ac, *nac;
@@ -794,15 +794,15 @@ finish:
     stif.eat_num = eat_num;
     stif.lk_num = lk_num;
 
-    memcpy(buffer, &stif, sizeof(struct State_Info));
+    memcpy(buffer, &stif, sizeof(struct State_Info_Header));
     int length = ptr - (unsigned char *)buffer;
     return length;
 }
 
-int MyAgent::MergeStateInfo(struct State_Info *stif)
+int MyAgent::MergeStateInfo(struct State_Info_Header *stif)
 {
     unsigned char *p = (unsigned char *)stif;
-    p += sizeof(struct State_Info);
+    p += sizeof(struct State_Info_Header);
     struct Action_Info *atif = (struct Action_Info *)p;
 
     int len = stif->act_num * sizeof(struct Action_Info);
@@ -955,7 +955,7 @@ int MyAgent::MergeStateInfo(struct State_Info *stif)
     return better;
 }
 
-void MyAgent::PrintStateInfo(struct State_Info *stif)
+void MyAgent::PrintStateInfo(struct State_Info_Header *stif)
 {
     if (stif == NULL)
         return;
@@ -965,7 +965,7 @@ void MyAgent::PrintStateInfo(struct State_Info *stif)
     printf("Original payoff: %.2f,\t Payoff: %.2f,\t Count: %ld\n", stif->original_payoff, stif->payoff, stif->count);
     printf("--------------------- Actions, Num: %d -----------------------\n", stif->act_num);
     unsigned char *p = (unsigned char *)stif;
-    p += sizeof(struct State_Info);
+    p += sizeof(struct State_Info_Header);
     struct Action_Info *atif = (struct Action_Info *)p;
     for (i=0; i< stif->act_num; i++)
     {
@@ -1079,6 +1079,7 @@ State MyAgent::DBStateByIndex(unsigned long index)
     if (lengths == NULL)
     {
         dbgmoreprt("DBStateByIndex(): lengths is null\n");
+        mysql_free_result(result);
         return -1;
     }
     State rs = atol(row[0]);
@@ -1127,7 +1128,7 @@ int MyAgent::DBFetchStateInfo(State st, void *buffer)
     unsigned long ea_len = lengths[5];
     unsigned long lk_len = lengths[6];
 
-    struct State_Info stif;
+    struct State_Info_Header stif;
     stif.st = atol(row[0]);
     stif.original_payoff = atof(row[1]);
     stif.payoff = atof(row[2]);
@@ -1137,9 +1138,9 @@ int MyAgent::DBFetchStateInfo(State st, void *buffer)
     stif.eat_num = ea_len / sizeof(struct ExAction_Info);
     stif.lk_num = lk_len / sizeof(struct pLink);
 
-    memcpy(ptr, &stif, sizeof(struct State_Info));
+    memcpy(ptr, &stif, sizeof(struct State_Info_Header));
 
-    ptr += sizeof(struct State_Info);
+    ptr += sizeof(struct State_Info_Header);
     memcpy(ptr, row[4], ai_len);
     if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)
     {
@@ -1193,7 +1194,7 @@ int MyAgent::DBSearchState(State st)
     return re;
 }
 
-void MyAgent::DBAddStateInfo(struct State_Info *stif)
+void MyAgent::DBAddStateInfo(struct State_Info_Header *stif)
 {
     char str[256];
     sprintf(str, "INSERT INTO %s(State, OriPayoff, Payoff, Count, ActInfos, ExActInfos, pLinks) VALUES(%ld, %.2f, %.2f, %ld, '%%s', '%%s', '%%s')",
@@ -1205,7 +1206,7 @@ void MyAgent::DBAddStateInfo(struct State_Info *stif)
     unsigned long lk_len = stif->lk_num * sizeof(struct pLink);
 
     unsigned char *p = (unsigned char *)stif;
-    p += sizeof(struct State_Info);
+    p += sizeof(struct State_Info_Header);
     struct Action_Info *atif = (struct Action_Info *)p;
 
     p += ai_len;
@@ -1234,7 +1235,7 @@ void MyAgent::DBAddStateInfo(struct State_Info *stif)
     return;
 }
 
-void MyAgent::DBUpdateStateInfo(struct State_Info *stif)
+void MyAgent::DBUpdateStateInfo(struct State_Info_Header *stif)
 {
     char str[256];
     sprintf(str, "UPDATE %s SET OriPayoff=%.2f, Payoff=%.2f, Count=%ld, ActInfos='%%s', ExActInfos='%%s', pLinks='%%s' WHERE State=%ld",
@@ -1246,7 +1247,7 @@ void MyAgent::DBUpdateStateInfo(struct State_Info *stif)
     unsigned long lk_len = stif->lk_num * sizeof(struct pLink);
 
     unsigned char *p = (unsigned char *)stif;
-    p += sizeof(struct State_Info);
+    p += sizeof(struct State_Info_Header);
     struct Action_Info *atif = (struct Action_Info *)p;
 
     p += ai_len;
@@ -1328,6 +1329,7 @@ struct m_Memory_Info *MyAgent::DBFetchMemoryInfo()
     if (lengths == NULL)
     {
         dbgmoreprt("DBFetchMemoryInfo(): lengths is null\n");
+        mysql_free_result(result);
         return NULL;
     }
 

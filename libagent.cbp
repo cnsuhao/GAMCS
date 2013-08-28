@@ -45,7 +45,6 @@
 					<Add option="-Wall" />
 					<Add option="-pg" />
 					<Add option="-g" />
-					<Add option="-D_DEBUG_" />
 				</Compiler>
 				<Linker>
 					<Add option="-pg" />
@@ -62,6 +61,14 @@
 					<Add library="mysqlclient" />
 				</Linker>
 			</Target>
+			<Target title="R of SimGroup">
+				<Option output="examples/Group/group" prefix_auto="1" extension_auto="1" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O3" />
+				</Compiler>
+			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
@@ -76,28 +83,17 @@
 		</Linker>
 		<Unit filename="Agent.cpp" />
 		<Unit filename="Agent.h" />
-		<Unit filename="Database.cpp">
-			<Option target="test" />
-		</Unit>
-		<Unit filename="Database.h">
-			<Option target="TSP" />
-			<Option target="test" />
-		</Unit>
-		<Unit filename="Entity.cpp">
-			<Option target="Robot1" />
-			<Option target="SimGroup" />
-		</Unit>
-		<Unit filename="Entity.h">
-			<Option target="Robot1" />
-			<Option target="SimGroup" />
-		</Unit>
+		<Unit filename="Avatar.cpp" />
+		<Unit filename="Avatar.h" />
 		<Unit filename="GIOM.cpp" />
 		<Unit filename="GIOM.h" />
 		<Unit filename="Group.cpp">
 			<Option target="SimGroup" />
+			<Option target="R of SimGroup" />
 		</Unit>
 		<Unit filename="Group.h">
 			<Option target="SimGroup" />
+			<Option target="R of SimGroup" />
 		</Unit>
 		<Unit filename="MyAgent.cpp" />
 		<Unit filename="MyAgent.h" />
@@ -105,24 +101,31 @@
 		<Unit filename="PFTGIOM.h" />
 		<Unit filename="SimGroup.cpp">
 			<Option target="SimGroup" />
+			<Option target="R of SimGroup" />
 		</Unit>
 		<Unit filename="SimGroup.h">
 			<Option target="SimGroup" />
+			<Option target="R of SimGroup" />
 		</Unit>
 		<Unit filename="examples/Group/Individual.cpp">
 			<Option target="SimGroup" />
+			<Option target="R of SimGroup" />
 		</Unit>
 		<Unit filename="examples/Group/Individual.h">
 			<Option target="SimGroup" />
+			<Option target="R of SimGroup" />
 		</Unit>
 		<Unit filename="examples/Group/R1Agent.cpp">
 			<Option target="SimGroup" />
+			<Option target="R of SimGroup" />
 		</Unit>
 		<Unit filename="examples/Group/R1Agent.h">
 			<Option target="SimGroup" />
+			<Option target="R of SimGroup" />
 		</Unit>
 		<Unit filename="examples/Group/main.cpp">
 			<Option target="SimGroup" />
+			<Option target="R of SimGroup" />
 		</Unit>
 		<Unit filename="examples/Robot1/R1Agent.cpp">
 			<Option target="Robot1" />
