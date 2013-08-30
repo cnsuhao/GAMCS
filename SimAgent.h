@@ -108,7 +108,7 @@ class SimAgent : public Agent
         struct m_State *cur_mst;
         State cur_st;
 
-        struct m_State *LoadState(State);
+        void LoadState(State);
 
         void FreeMemory();              /**< free all space of memory in computer memory*/
 
