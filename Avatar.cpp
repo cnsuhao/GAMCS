@@ -7,7 +7,6 @@
 *	@Modify date:
 ***********************************************************************/
 #include "Avatar.h"
-#include "MyAgent.h"
 
 int Avatar::quit = 0;
 
@@ -18,6 +17,8 @@ Avatar::Avatar(int i)
     freq = 100;
     agent = NULL;
     group = NULL;
+    pre_st = -1;
+    pre_act = -1;
 }
 
 Avatar::~Avatar()
@@ -39,12 +40,23 @@ void Avatar::Run()
     while(!quit)
     {
         RecvStateInfo();
+
         State cs = GetCurrentState();
         printf("Id: %d, Current state: %ld\n", id, cs);
-        Action act = agent->Process(cs);
+        vector<Action> acts = ActionList(cs);
+
+        Action act = agent->Process(cs, acts);
+
+        float oripayoff = OriginalPayoff(cs);
+        State es = ExpectedState();
+        agent->Update(oripayoff, es);
+
         if (act == -1)
             break;
         DoAction(act);
+
+        pre_st = cs;
+        pre_act = act;
 
         if (count >= freq)
         {
@@ -64,13 +76,13 @@ void Avatar::SetFreq(int fq)
     return;
 }
 
-void Avatar::SetAgent(Agent *agt)
+void Avatar::ConnectAgent(Agent *agt)
 {
     agent = agt;
     return;
 }
 
-void Avatar::SetGroup(Group *grp)
+void Avatar::JoinGroup(Group *grp)
 {
     group = grp;
     return;
@@ -115,5 +127,18 @@ void Avatar::RecvStateInfo()
         }
     }
     return;
+}
+
+/** \brief Get original payoff of each state.
+ *  Return 1 for every state.
+ * \param st state identity
+ * \return original payoff of st
+ *
+ */
+
+float Avatar::OriginalPayoff(State st)
+{
+    UNUSED(st);
+    return 1.0;
 }
 

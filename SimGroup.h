@@ -8,18 +8,20 @@
 #include <string.h>
 #include <signal.h>
 #include <fstream>
+#include <assert.h>
 #include "Group.h"
-#include "MyAgent.h"
+#include "Debug.h"
 
 using namespace std;
 
 #define MAX_MEMBER 1000
 #define CHANNEL_SIZE 10
+#define DATA_SIZE 2048
 
 struct Msg
 {
     int sender_id;
-    char data[SI_MAX_SIZE];
+    char data[DATA_SIZE];
 };
 
 struct Channel

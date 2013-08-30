@@ -30,9 +30,45 @@ void Robot1::DoAction(Action act)
     else if (act == 2)
         position += 1;
 
-    if (position > 200)
-        position = 200;
+    if (position > 20)
+        position = 20;
     if (position < 1)
         position = 1;
     return;
+}
+
+/** \brief Get all outputs of each possible input.
+ * By default, for a "I:N/O:M" it will return outputs with values from 1 to M for each input.
+ *
+ * \param in input identity
+ * \return all possible outputs for the input
+ *
+ */
+
+vector<Action> Robot1::ActionList(State st)
+{
+    UNUSED(st);
+    vector<Action> acts;
+    acts.clear();
+    acts.push_back(1);
+    acts.push_back(2);
+
+    return acts;
+}
+
+State Robot1::ExpectedState()
+{
+    if (pre_act == 1)
+        return pre_st-1;
+    else // pre_act == 2
+        return pre_st+1;
+}
+
+
+float Robot1::OriginalPayoff(State st)
+{
+    if (st == 15)
+        return 1;
+    else
+        return 0;
 }

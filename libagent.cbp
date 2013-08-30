@@ -85,20 +85,23 @@
 		<Unit filename="Agent.h" />
 		<Unit filename="Avatar.cpp" />
 		<Unit filename="Avatar.h" />
+		<Unit filename="Debug.h" />
 		<Unit filename="GIOM.cpp" />
 		<Unit filename="GIOM.h" />
 		<Unit filename="Group.cpp">
 			<Option target="SimGroup" />
 			<Option target="R of SimGroup" />
+			<Option target="Robot1" />
 		</Unit>
 		<Unit filename="Group.h">
 			<Option target="SimGroup" />
 			<Option target="R of SimGroup" />
+			<Option target="Robot1" />
 		</Unit>
-		<Unit filename="MyAgent.cpp" />
-		<Unit filename="MyAgent.h" />
 		<Unit filename="PFTGIOM.cpp" />
 		<Unit filename="PFTGIOM.h" />
+		<Unit filename="SimAgent.cpp" />
+		<Unit filename="SimAgent.h" />
 		<Unit filename="SimGroup.cpp">
 			<Option target="SimGroup" />
 			<Option target="R of SimGroup" />
@@ -115,23 +118,9 @@
 			<Option target="SimGroup" />
 			<Option target="R of SimGroup" />
 		</Unit>
-		<Unit filename="examples/Group/R1Agent.cpp">
-			<Option target="SimGroup" />
-			<Option target="R of SimGroup" />
-		</Unit>
-		<Unit filename="examples/Group/R1Agent.h">
-			<Option target="SimGroup" />
-			<Option target="R of SimGroup" />
-		</Unit>
 		<Unit filename="examples/Group/main.cpp">
 			<Option target="SimGroup" />
 			<Option target="R of SimGroup" />
-		</Unit>
-		<Unit filename="examples/Robot1/R1Agent.cpp">
-			<Option target="Robot1" />
-		</Unit>
-		<Unit filename="examples/Robot1/R1Agent.h">
-			<Option target="Robot1" />
 		</Unit>
 		<Unit filename="examples/Robot1/Robot1.cpp">
 			<Option target="Robot1" />
