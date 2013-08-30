@@ -1051,7 +1051,7 @@ int SimAgent::DBConnect()
     /* create table if not exists */
     char tb_string[256];
     sprintf(tb_string, "CREATE TABLE IF NOT EXISTS %s.%s(State BIGINT PRIMARY KEY, OriPayoff FLOAT, Payoff FLOAT, Count BIGINT, ActInfos BLOB, ExActInfos BLOB, pLinks BLOB) \
-            ENGINE INNODB ", db_name.c_str(), db_t_stateinfo.c_str());
+            ENGINE MyISAM ", db_name.c_str(), db_t_stateinfo.c_str());
     if (mysql_query(db_con, tb_string))
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
@@ -1059,7 +1059,7 @@ int SimAgent::DBConnect()
     }
 
     sprintf(tb_string, "CREATE TABLE IF NOT EXISTS %s.%s(TimeStamp TIMESTAMP PRIMARY KEY, DiscountRate FLOAT, Threshold FLOAT, NumStates BIGINT, NumLinks BIGINT, LastState BIGINT, LastAction BIGINT) \
-            ENGINE INNODB ", db_name.c_str(), db_t_meminfo.c_str());
+            ENGINE MyISAM ", db_name.c_str(), db_t_meminfo.c_str());
     if (mysql_query(db_con, tb_string))
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));

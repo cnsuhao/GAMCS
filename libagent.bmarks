@@ -1,117 +1,116 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <BrowseTracker_layout_file>
-	<ActiveTarget name="SimGroup" />
+	<ActiveTarget name="Robot1" />
 	<File name="examples/TSP/TSP.cpp" open="0" top="0" tabpos="2">
-		<Cursor position="520" topLine="33" />
-	</File>
-	<File name="Agent.h" open="1" top="0" tabpos="7">
-		<Cursor position="72" topLine="0" />
+		<Cursor position="410" topLine="32" />
 		<BrowseMarks positions="" />
 		<Book_Marks positions="" />
 	</File>
-	<File name="examples/Group/main.cpp" open="1" top="1" tabpos="13">
-		<Cursor position="968" topLine="12" />
+	<File name="SimAgent.cpp" open="1" top="1" tabpos="5">
+		<Cursor position="14937" topLine="87" />
+		<BrowseMarks positions="322" />
+		<Book_Marks positions="" />
+	</File>
+	<File name="examples/TSP/TSPAgent.h" open="0" top="0" tabpos="4">
+		<Cursor position="536" topLine="0" />
+	</File>
+	<File name="PFTGIOM.cpp" open="0" top="0" tabpos="12">
+		<Cursor position="1090" topLine="17" />
+	</File>
+	<File name="Agent.h" open="1" top="0" tabpos="3">
+		<Cursor position="1516" topLine="0" />
 		<BrowseMarks positions="" />
 		<Book_Marks positions="" />
 	</File>
-	<File name="examples/Group/Individual.cpp" open="1" top="0" tabpos="4">
-		<Cursor position="1110" topLine="0" />
-		<BrowseMarks positions="278" />
-		<Book_Marks positions="" />
+	<File name="SimGroup.cpp" open="0" top="0" tabpos="10">
+		<Cursor position="2080" topLine="33" />
+		<BrowseMarks positions="1367" />
+		<Book_Marks positions="1451" />
 	</File>
-	<File name="examples/TSP/TSPAgent.cpp" open="0" top="0" tabpos="5">
-		<Cursor position="638" topLine="77" />
-		<BrowseMarks positions="2490" />
-	</File>
-	<File name="SimGroup.h" open="1" top="0" tabpos="6">
-		<Cursor position="502" topLine="0" />
-		<BrowseMarks positions="" />
-		<Book_Marks positions="" />
+	<File name="examples/Robot1/Robot1.h" open="0" top="0" tabpos="12">
+		<Cursor position="294" topLine="0" />
 	</File>
 	<File name="Group.h" open="0" top="0" tabpos="9">
 		<Cursor position="173" topLine="0" />
 		<BrowseMarks positions="256" />
 	</File>
-	<File name="SimGroup.cpp" open="1" top="0" tabpos="5">
-		<Cursor position="4485" topLine="160" />
-		<BrowseMarks positions="1367" />
-		<Book_Marks positions="1451" />
+	<File name="SimAgent.h" open="1" top="0" tabpos="4">
+		<Cursor position="1829" topLine="70" />
+		<BrowseMarks positions="" />
+		<Book_Marks positions="" />
 	</File>
-	<File name="Avatar.cpp" open="1" top="0" tabpos="3">
-		<Cursor position="268" topLine="21" />
+	<File name="SimGroup.h" open="0" top="0" tabpos="14">
+		<Cursor position="131" topLine="0" />
+		<BrowseMarks positions="" />
+		<Book_Marks positions="" />
+	</File>
+	<File name="Avatar.h" open="0" top="0" tabpos="15">
+		<Cursor position="226" topLine="0" />
 		<BrowseMarks positions="" />
 		<Book_Marks positions="" />
 	</File>
 	<File name="examples/TSP/TSP.h" open="0" top="0" tabpos="1">
 		<Cursor position="105" topLine="0" />
 	</File>
-	<File name="examples/Robot1/Robot1.h" open="0" top="0" tabpos="12">
-		<Cursor position="294" topLine="0" />
+	<File name="test.cpp" open="1" top="0" tabpos="6">
+		<Cursor position="1413" topLine="15" />
 		<BrowseMarks positions="" />
 		<Book_Marks positions="" />
 	</File>
-	<File name="examples/Robot1/Robot1.cpp" open="1" top="0" tabpos="2">
-		<Cursor position="1245" topLine="33" />
+	<File name="GIOM.h" open="1" top="0" tabpos="1">
+		<Cursor position="816" topLine="0" />
 		<BrowseMarks positions="" />
 		<Book_Marks positions="" />
 	</File>
-	<File name="SimAgent.h" open="1" top="0" tabpos="11">
-		<Cursor position="1815" topLine="54" />
+	<File name="examples/Robot1/Robot1.cpp" open="1" top="0" tabpos="13">
+		<Cursor position="420" topLine="34" />
 		<BrowseMarks positions="" />
 		<Book_Marks positions="" />
-	</File>
-	<File name="GIOM.cpp" open="1" top="0" tabpos="9">
-		<Cursor position="1197" topLine="32" />
-		<BrowseMarks positions="" />
-		<Book_Marks positions="" />
-	</File>
-	<File name="examples/Robot1/rb1.cpp" open="1" top="0" tabpos="1">
-		<Cursor position="197" topLine="0" />
-		<BrowseMarks positions="" />
-		<Book_Marks positions="" />
-	</File>
-	<File name="examples/TSP/TSPAgent.h" open="0" top="0" tabpos="4">
-		<Cursor position="536" topLine="0" />
 	</File>
 	<File name="Debug.h" open="0" top="0" tabpos="0">
 		<Cursor position="485" topLine="0" />
 	</File>
-	<File name="PFTGIOM.cpp" open="1" top="0" tabpos="10">
-		<Cursor position="387" topLine="17" />
+	<File name="examples/TSP/TSPAgent.cpp" open="0" top="0" tabpos="5">
+		<Cursor position="2061" topLine="74" />
+		<BrowseMarks positions="2490" />
+		<Book_Marks positions="" />
+	</File>
+	<File name="Avatar.cpp" open="1" top="0" tabpos="8">
+		<Cursor position="2293" topLine="104" />
 		<BrowseMarks positions="" />
 		<Book_Marks positions="" />
 	</File>
-	<File name="Avatar.h" open="1" top="0" tabpos="4">
-		<Cursor position="72" topLine="5" />
+	<File name="GIOM.cpp" open="1" top="0" tabpos="11">
+		<Cursor position="662" topLine="33" />
 		<BrowseMarks positions="" />
 		<Book_Marks positions="" />
 	</File>
-	<File name="SimAgent.cpp" open="1" top="0" tabpos="1">
-		<Cursor position="4677" topLine="140" />
+	<File name="examples/Group/Individual.cpp" open="0" top="0" tabpos="9">
+		<Cursor position="776" topLine="15" />
+		<BrowseMarks positions="278" />
+		<Book_Marks positions="" />
+	</File>
+	<File name="examples/Robot1/rb1.cpp" open="1" top="0" tabpos="16">
+		<Cursor position="224" topLine="0" />
 		<BrowseMarks positions="" />
 		<Book_Marks positions="" />
 	</File>
-	<File name="PFTGIOM.h" open="1" top="0" tabpos="10">
-		<Cursor position="596" topLine="0" />
+	<File name="PFTGIOM.h" open="0" top="0" tabpos="2">
+		<Cursor position="370" topLine="0" />
 		<BrowseMarks positions="" />
 		<Book_Marks positions="" />
 	</File>
 	<File name="examples/Group/Individual.h" open="0" top="0" tabpos="3">
 		<Cursor position="129" topLine="0" />
-		<BrowseMarks positions="" />
-		<Book_Marks positions="" />
 	</File>
-	<File name="GIOM.h" open="1" top="0" tabpos="8">
-		<Cursor position="105" topLine="0" />
-		<BrowseMarks positions="" />
-		<Book_Marks positions="" />
-	</File>
-	<File name="test.cpp" open="0" top="0" tabpos="6">
-		<Cursor position="1413" topLine="0" />
-	</File>
-	<File name="Agent.cpp" open="1" top="0" tabpos="7">
-		<Cursor position="264" topLine="0" />
+	<File name="Agent.cpp" open="0" top="0" tabpos="6">
+		<Cursor position="772" topLine="0" />
 		<BrowseMarks positions="484" />
 		<Book_Marks positions="0,0" />
+	</File>
+	<File name="examples/Group/main.cpp" open="0" top="0" tabpos="7">
+		<Cursor position="858" topLine="13" />
+		<BrowseMarks positions="" />
+		<Book_Marks positions="" />
 	</File>
 </BrowseTracker_layout_file>
