@@ -11,6 +11,8 @@
 GIOM::GIOM()
 {
     //ctor
+    cur_in = -1;
+    cur_out = -1;
     srand(time(NULL));          // random seed
 }
 

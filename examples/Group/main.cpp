@@ -33,7 +33,7 @@ int main(void)
         indvs[i] = new Individual(i);
 
         sas[i] = new SimAgent(0.8, 0.01);
-        sprintf(str, "MyAgent%d", i);
+        sprintf(str, "Indiv%d", i);
         sas[i]->SetDBArgs("localhost", "root", "890127", str);
         sas[i]->InitMemory();
 

@@ -11,8 +11,8 @@ void signal_handler(int sig)
 int main(void)
 {
     signal(SIGINT, signal_handler);
-    SimAgent ma(0.8, 0.01);
-    ma.SetDBArgs("localhost", "root", "890127", "MyAgent");
+    SimAgent ma(0.9, 0.01);
+    ma.SetDBArgs("localhost", "root", "890127", "Robot1");
     ma.InitMemory();
 
     Robot1 rb1(1);

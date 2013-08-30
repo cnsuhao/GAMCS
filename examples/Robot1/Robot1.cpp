@@ -50,8 +50,8 @@ vector<Action> Robot1::ActionList(State st)
     UNUSED(st);
     vector<Action> acts;
     acts.clear();
-    acts.push_back(1);
     acts.push_back(2);
+    acts.push_back(1);
 
     return acts;
 }

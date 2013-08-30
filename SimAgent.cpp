@@ -28,6 +28,7 @@ struct m_State *SimAgent::LoadState(State st)
         /* Add to memory */
         mst->next = head;
         head = mst;
+        states_map.insert(StatesMap::value_type(mst->st, mst));
 
         unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
         unsigned long ea_len = stif->eat_num * sizeof(struct ExAction_Info);
@@ -92,10 +93,12 @@ void SimAgent::InitMemory()
     if (re == 0)
     {
         printf("Initializing Memory from Database: %s .", db_name.c_str());
+        fflush(stdout);
         /* load memory information */
         struct m_Memory_Info *memif = DBFetchMemoryInfo();
         if (memif != NULL)
         {
+            /* last_st and last_act are not used yet */
             discount_rate = memif->discount_rate;
             threshold = memif->threshold;
             state_num = memif->state_num;
@@ -103,6 +106,7 @@ void SimAgent::InitMemory()
             free(memif);
         }
         printf("..");
+        fflush(stdout);
         /* load states information */
         State st;
         unsigned long index = 0;
@@ -112,6 +116,7 @@ void SimAgent::InitMemory()
             LoadState(st);
             index++;
             printf(".");
+            fflush(stdout);
         }
     }
     else
@@ -129,12 +134,14 @@ void SimAgent::SaveMemory()
         return;
 
     printf("Saving Memory to DataBase: %s .", db_name.c_str());
+    fflush(stdout);
     int re = DBConnect();
     if (re == 0)
     {
         /* save memory information */
         DBAddMemoryInfo();
         printf("..");
+        fflush(stdout);
         /* save states information */
         char si_buf[SI_MAX_SIZE];
         struct m_State *mst, *nmst;
@@ -153,6 +160,7 @@ void SimAgent::SaveMemory()
                 DBUpdateStateInfo((struct State_Info_Header *)si_buf);
             }
             printf(".");
+            fflush(stdout);
             mst->mark = SAVED;
 
             nmst = mst->next;
@@ -168,6 +176,7 @@ SimAgent::SimAgent():Agent()
     //ctor
     state_num = lk_num = 0;
     head = NULL;
+    states_map.clear();
 
     db_con = NULL;
     db_server = "";
@@ -176,12 +185,16 @@ SimAgent::SimAgent():Agent()
     db_name = "";
     db_t_stateinfo = "StateInfo";
     db_t_meminfo = "MemoryInfo";
+
+    cur_mst = NULL;
+    cur_st = -1;
 }
 
 SimAgent::SimAgent(float dr, float th):Agent(dr, th)
 {
     state_num = lk_num = 0;
     head = NULL;
+    states_map.clear();
 
     db_con = NULL;
     db_server = "";
@@ -190,6 +203,9 @@ SimAgent::SimAgent(float dr, float th):Agent(dr, th)
     db_name = "";
     db_t_stateinfo = "StateInfo";
     db_t_meminfo = "MemoryInfo";
+
+    cur_mst = NULL;
+    cur_st = -1;
 }
 
 SimAgent::~SimAgent()
@@ -203,17 +219,11 @@ SimAgent::~SimAgent()
 
 struct m_State *SimAgent::SearchState(State st) const
 {
-    struct m_State *mst, *nmst;
-
-    for (mst = head; mst != NULL; mst = nmst)
-    {
-        if (mst->st == st)
-            return mst;
-
-        nmst = mst->next;
-    }
-
-    return NULL;
+    StatesMap::const_iterator it = states_map.find(st);
+    if (it != states_map.end())     // found
+        return (struct m_State *)(it->second);
+    else
+        return NULL;
 }
 
 struct m_State *SimAgent::NewState(State st)
@@ -587,6 +597,8 @@ void SimAgent::UpdateMemory(float oripayoff, State expst)
 
             cur_mst->next = head;
             head = cur_mst;
+
+            states_map.insert(StatesMap::value_type(cur_mst->st, cur_mst));          // insert to map
             state_num++;        // update global state number
         }
         else             // state found in memory, simply update its count
@@ -609,6 +621,7 @@ void SimAgent::UpdateMemory(float oripayoff, State expst)
 
             cur_mst->next = head;
             head = cur_mst;
+            states_map.insert(StatesMap::value_type(cur_mst->st, cur_mst));
             state_num++;
 
             ExAction eat = cur_st - expst;              // calcuate exaction
@@ -635,6 +648,7 @@ void SimAgent::FreeMemory()
         nmst = mst->next;
         FreeState(mst);
     }
+    states_map.clear();
 }
 
 void SimAgent::RemoveState(struct m_State *mst)
@@ -830,6 +844,7 @@ int SimAgent::MergeStateInfo(struct State_Info_Header *stif)
         /* Add to memory */
         mst->next = head;
         head = mst;
+        states_map.insert(StatesMap::value_type(mst->st, mst));
         state_num++;
 
         mst->payoff = stif->payoff;
@@ -1043,7 +1058,7 @@ int SimAgent::DBConnect()
         return -1;
     }
 
-    sprintf(tb_string, "CREATE TABLE IF NOT EXISTS %s.%s(TimeStamp TIMESTAMP PRIMARY KEY, DiscountRate FLOAT, Threshold FLOAT, NumStates BIGINT, NumLinks BIGINT) \
+    sprintf(tb_string, "CREATE TABLE IF NOT EXISTS %s.%s(TimeStamp TIMESTAMP PRIMARY KEY, DiscountRate FLOAT, Threshold FLOAT, NumStates BIGINT, NumLinks BIGINT, LastState BIGINT, LastAction BIGINT) \
             ENGINE INNODB ", db_name.c_str(), db_t_meminfo.c_str());
     if (mysql_query(db_con, tb_string))
     {
@@ -1297,8 +1312,8 @@ void SimAgent::DBAddMemoryInfo()
 {
     char query_str[256];
 
-    sprintf(query_str, "INSERT INTO %s(TimeStamp, DiscountRate, Threshold, NumStates, NumLinks) VALUES(NULL, %.2f, %.2f, %ld, %ld)",
-            db_t_meminfo.c_str(), discount_rate, threshold, state_num, lk_num);
+    sprintf(query_str, "INSERT INTO %s(TimeStamp, DiscountRate, Threshold, NumStates, NumLinks, LastState, LastAction) VALUES(NULL, %.2f, %.2f, %ld, %ld, %ld, %ld)",
+            db_t_meminfo.c_str(), discount_rate, threshold, state_num, lk_num, pre_in, pre_out);
 
     int len = strlen(query_str);
     if (mysql_real_query(db_con, query_str, len))
@@ -1344,6 +1359,8 @@ struct m_Memory_Info *SimAgent::DBFetchMemoryInfo()
     memif->threshold = atof(row[2]);
     memif->state_num = atol(row[3]);
     memif->lk_num = atol(row[4]);
+    memif->last_st = atol(row[5]);
+    memif->last_act = atol(row[6]);
 
     mysql_free_result(result);          // free result
 
