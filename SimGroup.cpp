@@ -11,20 +11,21 @@
 int SimGroup::Send(int id, void *buffer, size_t length)
 {
     size_t re;
-    if (length > SI_MAX_SIZE)
+    if (length > DATA_SIZE)
     {
-        dbgprt("Send(): data length exceeds 2048, not Send!\n");
+        dbgprt("Send(): data length exceeds %d, not send!\n", DATA_SIZE);
         re = 0;
     }
     else
     {
-        dbgprt("*************************** Id: %d, Send ********************************\n", id);
+        #ifdef _DEBUG_
+        printf("*************************** Id: %d, Send ********************************\n", id);
         struct State_Info_Header *si = (struct State_Info_Header *)buffer;
         #ifdef _DEBUG_
         MyAgent::PrintStateInfo(si);
         #endif // _DEBUG_
-        dbgprt("------------------------------ Send End----------------------------------\n\n");
-
+        printf("------------------------------ Send End----------------------------------\n\n");
+        #endif
         vector<int> neighs = GetNeighs(id);
         for (vector<int>::iterator it = neighs.begin();
         it != neighs.end(); ++it)
@@ -48,6 +49,11 @@ int SimGroup::Send(int id, void *buffer, size_t length)
 
 int SimGroup::Recv(int id, void *buffer, size_t length)
 {
+    if (length > DATA_SIZE)
+    {
+        dbgprt("Recv(): requested data length exceeds %d!\n", DATA_SIZE);
+        return 0;
+    }
 
     struct Channel *chan = GetChannel(id);
     size_t re;
@@ -61,18 +67,20 @@ int SimGroup::Recv(int id, void *buffer, size_t length)
     {
         memcpy(buffer, chan->msg[chan->ptr].data, length);
         int sid = chan->msg[chan->ptr].sender_id;
+        UNUSED(sid);
         chan->msg_num--;
         if (chan->ptr == CHANNEL_SIZE -1) chan->ptr = 0;
         else chan->ptr += 1;
 
         re = length;
-
-        dbgprt("++++++++++++++++++++++++ Id: %d, Recv from: %d ++++++++++++++++++++++++\n", id, sid);
+#ifdef _DEBUG_
+        printf("++++++++++++++++++++++++ Id: %d, Recv from: %d ++++++++++++++++++++++++\n", id, sid);
         struct State_Info_Header *si = (struct State_Info_Header *)buffer;
         #ifdef _DEBUG_
         MyAgent::PrintStateInfo(si);
         #endif // _DEBUG_
-        dbgprt("|||||||||||||||||||||||||||||| Recv End |||||| |||||||||||||||||||||||\n\n");
+        printf("|||||||||||||||||||||||||||||| Recv End |||||| |||||||||||||||||||||||\n\n");
+#endif
     }
 
     pthread_mutex_unlock(&chan->mutex);

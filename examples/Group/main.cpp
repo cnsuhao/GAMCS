@@ -1,5 +1,6 @@
 #include <pthread.h>
 #include "../../SimGroup.h"
+#include "../../SimAgent.h"
 #include "Individual.h"
 
 void signal_handler(int sig)
@@ -23,7 +24,7 @@ int main(void)
     int num = grp.NumOfMembers();
     int i;
     pthread_t tids[num];
-    R1Agent *ras[num];
+    SimAgent *sas[num];
     Individual *indvs[num];
 
     for (i=0; i<num; i++)
@@ -31,13 +32,13 @@ int main(void)
         printf("i: %d\n", i);
         indvs[i] = new Individual(i);
 
-        ras[i] = new R1Agent(15, 2, 0.8, 0.01);
+        sas[i] = new SimAgent(0.8, 0.01);
         sprintf(str, "MyAgent%d", i);
-        ras[i]->SetDBArgs("localhost", "root", "890127", str);
-        ras[i]->InitMemory();
+        sas[i]->SetDBArgs("localhost", "root", "890127", str);
+        sas[i]->InitMemory();
 
-        indvs[i]->SetAgent(ras[i]);
-        indvs[i]->SetGroup(&grp);
+        indvs[i]->ConnectAgent(sas[i]);
+        indvs[i]->JoinGroup(&grp);
         tids[i] = indvs[i]->ThreadRun();
     }
 
@@ -45,7 +46,7 @@ int main(void)
     {
         pthread_join(tids[i], NULL);
         delete indvs[i];
-        delete ras[i];
+        delete sas[i];
     }
 
     return 0;

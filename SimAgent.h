@@ -51,31 +51,32 @@ struct m_State {
 };
 
 struct m_Memory_Info {
-    unsigned long N;
-    unsigned long M;
     float discount_rate;
     float threshold;
     unsigned long state_num;
     unsigned long lk_num;
 };
 
-class MyAgent : public Agent
+class SimAgent : public Agent
 {
     public:
-        MyAgent(int, int);
-        MyAgent(int, int, float, float);
-        virtual ~MyAgent();
+        SimAgent();
+        SimAgent(float, float);
+        virtual ~SimAgent();
 
-        virtual int GetStateInfo(State, void *);                 /**< implementing GetStateInfo function */
+        virtual int GetStateInfo(State, void *) const;                 /**< implementing GetStateInfo function */
         virtual int MergeStateInfo(struct State_Info_Header *);               /**< implementing MergeStateInfo function */
         static void PrintStateInfo(struct State_Info_Header *);
+        void SetDBArgs(string, string, string, string);
         void InitMemory();              /**< load memory from a file */
         void SaveMemory();              /**< save memory to a file  */
-        void SetDBArgs(string, string, string, string);
+
     protected:
         virtual vector<Action> MaxPayoffRule(State, vector<Action>);    /**< implementing maximun payoff rule */
-        float threshold;                                                /**< threshold used in payoff updating */
-        unsigned long state_num;                  /**< number of states in current memory */
+        void UpdateMemory(float, State);
+
+    private:
+       unsigned long state_num;                  /**< number of states in current memory */
         unsigned long lk_num;                    /**< number of arcs */
 
         MYSQL *db_con;
@@ -98,17 +99,18 @@ class MyAgent : public Agent
         struct m_Memory_Info *DBFetchMemoryInfo();
 
         struct m_State *head;           /**< memory point */
+        struct m_State *cur_mst;
+        State cur_st;
 
         struct m_State *LoadState(State);
 
         void FreeMemory();              /**< free all space of memory in computer memory*/
 
-        void SaveState(struct m_State *, State);        /**< save current state to memory */
         void RemoveState(struct m_State *);             /**< remove "root" state */
 
         void LinkStates(struct m_State *, ExAction, Action, struct m_State *);  /**< link two states in memory with specfic exact and action */
         vector<Action> BestActions(struct m_State *, vector<Action>);           /**< find the best action of a state */
-        struct m_State *SearchState(State);             /**< search state in memory by its identity */
+        struct m_State *SearchState(State) const;             /**< search state in memory by its identity */
         void UpdateState(struct m_State *);             /**< update state payoff backward recursively */
 
         struct m_State *NewState(State);                /**< create a new state struct in memory */
@@ -131,7 +133,6 @@ class MyAgent : public Agent
         ExAction CalExAction(State, State, Action);         /**< construct a exact identity from previous state, current state and previous action */
         float CalStatePayoff(struct m_State *);             /**< calculate payoff of a state */
         float CalActPayoff(Action, struct m_State *);       /**< calculate payoff of an action */
-    private:
 };
 
 #endif // MYAGENT_H

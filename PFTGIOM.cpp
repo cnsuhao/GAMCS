@@ -8,7 +8,7 @@
 ***********************************************************************/
 #include "PFTGIOM.h"
 
-PFTGIOM::PFTGIOM(int n, int m):GIOM(n, m)
+PFTGIOM::PFTGIOM():GIOM()
 {
     //ctor
     pre_in = -1;
@@ -27,13 +27,20 @@ PFTGIOM::~PFTGIOM()
  *
  */
 
-Output PFTGIOM::Process(Input in)
+Output PFTGIOM::Process(Input in, vector<Output> outlist)
 {
-    Output out = GIOM::Process(in);
-    /* update in time sequence */
-    pre_in = in;
-    pre_out = out;
+    Output out = GIOM::Process(in, outlist);
     return out;
+}
+
+void PFTGIOM::Update()
+{
+    /* update time sequence */
+    pre_in = cur_in;
+    pre_out = cur_out;
+
+    GIOM::Update();
+    return;
 }
 
 /** \brief Reimplement Restrict function.
@@ -46,5 +53,6 @@ Output PFTGIOM::Process(Input in)
 
 vector<Output> PFTGIOM::Restrict(Input in, vector<Output> outlist)
 {
+    UNUSED(in);
     return outlist;
 }

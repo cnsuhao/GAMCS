@@ -1,7 +1,7 @@
 #ifndef ENTITY_H
 #define ENTITY_H
-#include "MyAgent.h"
-#include "SimGroup.h"
+#include "Agent.h"
+#include "Group.h"
 
 class Avatar
 {
@@ -12,8 +12,8 @@ class Avatar
         void Run();
         pthread_t ThreadRun();
 
-        void SetAgent(Agent *);
-        void SetGroup(Group *);
+        void ConnectAgent(Agent *);
+        void JoinGroup(Group *);
         void SetFreq(int);
 
         static int quit;               /**< tell all Avatar instances to quit */
@@ -23,11 +23,17 @@ class Avatar
         Agent *agent;
         Group *group;
 
+        State pre_st;
+        Action pre_act;
+
         virtual State GetCurrentState() = 0;
         virtual void DoAction(Action) = 0;
+        virtual vector<Action> ActionList(State) = 0;
+        virtual State ExpectedState() = 0;
+        virtual float OriginalPayoff(State);
 
-        void SendStateInfo(State);
-        void RecvStateInfo();
+        virtual void SendStateInfo(State);
+        virtual void RecvStateInfo();
 
         static void* hook(void* args) {
             reinterpret_cast<Avatar *>(args)->Run();

@@ -8,39 +8,15 @@
 ***********************************************************************/
 #include "GIOM.h"
 
-GIOM::GIOM(int n, int m)
+GIOM::GIOM()
 {
     //ctor
-    N = n;
-    M = m;
     srand(time(NULL));          // random seed
 }
 
 GIOM::~GIOM()
 {
     //dtor
-}
-
-/** \brief Get all outputs of each possible input.
- * By default, for a "I:N/O:M" it will return outputs with values from 1 to M for each input.
- *
- * \param in input identity
- * \return all possible outputs for the input
- *
- */
-
-vector<Output> GIOM::OutList(Input in)
-{
-    vector<Output> outs(M, 0);
-    // 1~M
-    int i = 1;
-    for (vector<Output>::iterator iter = outs.begin();
-    iter != outs.end(); ++iter)
-    {
-        *iter = i;
-        i++;
-    }
-    return outs;
 }
 
 /** \brief Restrict capacity for the GIOM.
@@ -52,6 +28,7 @@ vector<Output> GIOM::OutList(Input in)
  */
 vector<Output> GIOM::Restrict(Input in, vector<Output> outlist)
 {
+    UNUSED(in);
     dbgmoreprt("enter GIOM restrict\n\n");
     return outlist;
 }
@@ -63,16 +40,18 @@ vector<Output> GIOM::Restrict(Input in, vector<Output> outlist)
  *
  */
 
-Output GIOM::Process(Input in)
+Output GIOM::Process(Input in, vector<Output> outlist)
 {
-    vector<Output> outlist;
-    outlist = OutList(in);
-    vector<Output> ro = Restrict(in, outlist);
-    if (ro.empty())
+    vector<Output> restricited_outputs = Restrict(in, outlist);
+    if (restricited_outputs.empty())
         return -1;
-    int sz = ro.size();
+    int sz = restricited_outputs.size();
     int index = rand() % (sz);
-    return ro[index];
+    Output out = restricited_outputs[index];
+
+    cur_in = in;
+    cur_out = out;
+    return out;
 }
 
 /** \brief Calculate the entropy of this GIOM under current restrict
@@ -84,4 +63,11 @@ Output GIOM::Process(Input in)
 float GIOM::Entropy()
 {
     return 0.0;
+}
+
+void GIOM::Update()
+{
+    cur_in = -1;
+    cur_out = -1;
+    return;
 }

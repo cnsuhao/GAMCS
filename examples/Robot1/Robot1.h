@@ -17,6 +17,9 @@ class Robot1 : public Avatar
 
         State GetCurrentState();
         void DoAction(Action);
+        vector<Action> ActionList(State);
+        State ExpectedState();
+        float OriginalPayoff(State);
 };
 
 #endif // ROBOT1_H

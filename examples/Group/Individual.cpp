@@ -37,3 +37,33 @@ void Individual::DoAction(Action act)
         position = 1;
     return;
 }
+
+vector<Action> Individual::ActionList(State st)
+{
+    UNUSED(st);
+    vector<Action> acts;
+    acts.clear();
+    acts.push_back(1);
+    acts.push_back(2);
+
+    return acts;
+}
+
+
+State Individual::ExpectedState()
+{
+    if (pre_act == 1)
+        return pre_st-1;
+    else // pre_act == 2
+        return pre_st+1;
+}
+
+float Individual::OriginalPayoff(State st)
+{
+    if (st == 9)
+        return 1;
+    else if (st == 13)
+        return 2;
+    else
+        return 0;
+}

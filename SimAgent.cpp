@@ -6,9 +6,9 @@
 *
 *	@Modify date:
 ***********************************************************************/
-#include "MyAgent.h"
+#include "SimAgent.h"
 
-struct m_State *MyAgent::LoadState(State st)
+struct m_State *SimAgent::LoadState(State st)
 {
     struct m_State *mst = SearchState(st);
     if (mst == NULL)
@@ -83,7 +83,7 @@ struct m_State *MyAgent::LoadState(State st)
     return mst;
 }
 
-void MyAgent::InitMemory()
+void SimAgent::InitMemory()
 {
     if (db_name.empty())
         return;
@@ -96,8 +96,6 @@ void MyAgent::InitMemory()
         struct m_Memory_Info *memif = DBFetchMemoryInfo();
         if (memif != NULL)
         {
-            N = memif->N;
-            M = memif->M;
             discount_rate = memif->discount_rate;
             threshold = memif->threshold;
             state_num = memif->state_num;
@@ -125,7 +123,7 @@ void MyAgent::InitMemory()
     return;
 }
 
-void MyAgent::SaveMemory()
+void SimAgent::SaveMemory()
 {
     if (db_name.empty())
         return;
@@ -165,11 +163,9 @@ void MyAgent::SaveMemory()
     return;
 }
 
-MyAgent::MyAgent(int n, int m):Agent(n, m)
+SimAgent::SimAgent():Agent()
 {
     //ctor
-    threshold = 0.01;
-
     state_num = lk_num = 0;
     head = NULL;
 
@@ -182,10 +178,8 @@ MyAgent::MyAgent(int n, int m):Agent(n, m)
     db_t_meminfo = "MemoryInfo";
 }
 
-MyAgent::MyAgent(int n, int m, float dr, float th):Agent(n, m, dr)
+SimAgent::SimAgent(float dr, float th):Agent(dr, th)
 {
-    threshold = th;
-
     state_num = lk_num = 0;
     head = NULL;
 
@@ -198,16 +192,16 @@ MyAgent::MyAgent(int n, int m, float dr, float th):Agent(n, m, dr)
     db_t_meminfo = "MemoryInfo";
 }
 
-MyAgent::~MyAgent()
+SimAgent::~SimAgent()
 {
     //dtor
-    dbgmoreprt("Enter ~MyAgent()\n");
+    dbgmoreprt("Enter ~SimAgent()\n");
     if (!db_name.empty())
         SaveMemory();
     FreeMemory();
 }
 
-struct m_State *MyAgent::SearchState(State st)
+struct m_State *SimAgent::SearchState(State st) const
 {
     struct m_State *mst, *nmst;
 
@@ -222,11 +216,11 @@ struct m_State *MyAgent::SearchState(State st)
     return NULL;
 }
 
-struct m_State *MyAgent::NewState(State st)
+struct m_State *SimAgent::NewState(State st)
 {
     struct m_State *mst = (struct m_State *)malloc(sizeof(struct m_State));
     mst->st = st;
-    mst->original_payoff = OriginalPayoff(st);
+    mst->original_payoff = 1.0;                 // 1.0 as default
     mst->payoff = mst->original_payoff;         // set payoff to original payoff, it's important!
     mst->count = 1;
     mst->flist = NULL;
@@ -238,7 +232,7 @@ struct m_State *MyAgent::NewState(State st)
     return mst;
 }
 
-void MyAgent::FreeState(struct m_State *mst)
+void SimAgent::FreeState(struct m_State *mst)
 {
     /* free atlist */
     struct m_Action *ac, *nac;
@@ -275,7 +269,7 @@ void MyAgent::FreeState(struct m_State *mst)
     return free(mst);
 }
 
-struct m_ForwardArcState *MyAgent::NewFas(ExAction eat, Action act)
+struct m_ForwardArcState *SimAgent::NewFas(ExAction eat, Action act)
 {
     struct m_ForwardArcState *fas = (struct m_ForwardArcState *)malloc(sizeof(struct m_ForwardArcState));
 
@@ -286,12 +280,12 @@ struct m_ForwardArcState *MyAgent::NewFas(ExAction eat, Action act)
     return fas;
 }
 
-void MyAgent::FreeFas(struct m_ForwardArcState *fas)
+void SimAgent::FreeFas(struct m_ForwardArcState *fas)
 {
     return free(fas);
 }
 
-struct m_BackArcState *MyAgent::NewBas()
+struct m_BackArcState *SimAgent::NewBas()
 {
     struct m_BackArcState *bas = (struct m_BackArcState *)malloc(sizeof(struct m_BackArcState));
     bas->pstate = NULL;
@@ -299,12 +293,12 @@ struct m_BackArcState *MyAgent::NewBas()
     return bas;
 }
 
-void MyAgent::FreeBas(struct m_BackArcState *bas)
+void SimAgent::FreeBas(struct m_BackArcState *bas)
 {
     return free(bas);
 }
 
-struct m_Action* MyAgent::Act2Struct(Action act, struct m_State *mst)
+struct m_Action* SimAgent::Act2Struct(Action act, struct m_State *mst)
 {
     struct m_Action *ac, *nac;
 
@@ -319,7 +313,7 @@ struct m_Action* MyAgent::Act2Struct(Action act, struct m_State *mst)
     return NULL;
 }
 
-struct m_ExAction* MyAgent::Eat2Struct(ExAction eat, struct m_State *mst)
+struct m_ExAction* SimAgent::Eat2Struct(ExAction eat, struct m_State *mst)
 {
     struct m_ExAction *ea, *nea;
 
@@ -334,7 +328,7 @@ struct m_ExAction* MyAgent::Eat2Struct(ExAction eat, struct m_State *mst)
     return NULL;
 }
 
-struct m_ExAction *MyAgent::NewEa(ExAction eat)
+struct m_ExAction *SimAgent::NewEa(ExAction eat)
 {
     struct m_ExAction *ea = (struct m_ExAction *)malloc(sizeof(struct m_ExAction));
 
@@ -344,12 +338,12 @@ struct m_ExAction *MyAgent::NewEa(ExAction eat)
     return ea;
 }
 
-void MyAgent::FreeEa(struct m_ExAction *ea)
+void SimAgent::FreeEa(struct m_ExAction *ea)
 {
     return free(ea);
 }
 
-struct m_Action *MyAgent::NewAc(Action act)
+struct m_Action *SimAgent::NewAc(Action act)
 {
     struct m_Action *ac = (struct m_Action *)malloc(sizeof(struct m_Action));
 
@@ -359,12 +353,12 @@ struct m_Action *MyAgent::NewAc(Action act)
     return ac;
 }
 
-void MyAgent::FreeAc(struct m_Action *ac)
+void SimAgent::FreeAc(struct m_Action *ac)
 {
     return free(ac);
 }
 
-void MyAgent::LinkStates(struct m_State *pmst, ExAction eat, Action act, struct m_State *mst)
+void SimAgent::LinkStates(struct m_State *pmst, ExAction eat, Action act, struct m_State *mst)
 {
     /* check if the link already exists, if so simply update the count of eaction */
     struct m_ForwardArcState *f, *nf;
@@ -430,7 +424,7 @@ void MyAgent::LinkStates(struct m_State *pmst, ExAction eat, Action act, struct 
     return;
 }
 
-float MyAgent::MaxPayoffInEat(ExAction eat, struct m_State *mst)
+float SimAgent::MaxPayoffInEat(ExAction eat, struct m_State *mst)
 {
     float max_pf = -FLT_MAX;
     struct m_State *nmst;
@@ -452,14 +446,14 @@ float MyAgent::MaxPayoffInEat(ExAction eat, struct m_State *mst)
     return max_pf;
 }
 
-float MyAgent::Prob(struct m_ExAction *ea, struct m_State *mst)
+float SimAgent::Prob(struct m_ExAction *ea, struct m_State *mst)
 {
     float eacount = ea->count;
     float stcount = mst->count;
     return eacount / stcount;
 }
 
-float MyAgent::CalStatePayoff(struct m_State *mst)
+float SimAgent::CalStatePayoff(struct m_State *mst)
 {
     dbgmoreprt("CalStatePayoff(): State: %ld, count: %ld\n", mst->st, mst->count);
 
@@ -481,7 +475,7 @@ float MyAgent::CalStatePayoff(struct m_State *mst)
     return pf;
 }
 
-void MyAgent::UpdateState(struct m_State *mst)
+void SimAgent::UpdateState(struct m_State *mst)
 {
     /* update state's payoff */
     float payoff = CalStatePayoff(mst);
@@ -517,7 +511,7 @@ void MyAgent::UpdateState(struct m_State *mst)
     return;
 }
 
-struct m_State *MyAgent::StateByEatAct(ExAction eat, Action act, struct m_State *mst)
+struct m_State *SimAgent::StateByEatAct(ExAction eat, Action act, struct m_State *mst)
 {
     struct m_ForwardArcState *fas, *nfas;
     for (fas=mst->flist; fas!=NULL; fas=nfas)
@@ -529,7 +523,7 @@ struct m_State *MyAgent::StateByEatAct(ExAction eat, Action act, struct m_State 
     return NULL;
 }
 
-float MyAgent::CalActPayoff(Action act, struct m_State *mst)
+float SimAgent::CalActPayoff(Action act, struct m_State *mst)
 {
     float ori_payoff = 0.0;             // original payoff of actions
     float payoff = ori_payoff;
@@ -550,7 +544,7 @@ float MyAgent::CalActPayoff(Action act, struct m_State *mst)
     return payoff;
 }
 
-vector<Action> MyAgent::BestActions(struct m_State *mst, vector<Action> acts)
+vector<Action> SimAgent::BestActions(struct m_State *mst, vector<Action> acts)
 {
     float max_payoff = -FLT_MAX;
     float ori_payoff = 0.0;         // original payoff of actions
@@ -581,23 +575,25 @@ vector<Action> MyAgent::BestActions(struct m_State *mst, vector<Action> acts)
     return max_acts;
 }
 
-void MyAgent::SaveState(struct m_State *mst, State st)
+void SimAgent::UpdateMemory(float oripayoff, State expst)
 {
     if (pre_in == -1)  // previous state doesn't exist, it's the first time
     {
-        if (mst == NULL)  // first time without memory, create the state and save it to memory
+        if (cur_mst == NULL)  // first time without memory, create the state and save it to memory
         {
-            mst = NewState(st);
+            cur_mst = NewState(cur_st);
+            cur_mst->original_payoff = oripayoff;
+            cur_mst->payoff = oripayoff;
 
-            mst->next = head;
-            head = mst;
+            cur_mst->next = head;
+            head = cur_mst;
             state_num++;        // update global state number
         }
         else             // state found in memory, simply update its count
         {
-            mst->count++;
-            if (mst->mark == SAVED)
-                mst->mark = MODIFIED;
+            cur_mst->count++;
+            if (cur_mst->mark == SAVED)
+                cur_mst->mark = MODIFIED;
         }
     }
     else            // previous state exists
@@ -605,30 +601,32 @@ void MyAgent::SaveState(struct m_State *mst, State st)
         struct m_State *pmst = SearchState(pre_in);
         assert(pmst != NULL);               //ERROR("Previous state lost!\n");
 
-        if (mst == NULL)  // mst not exists, create the state, save it to memory, and link it to the previous state
+        if (cur_mst == NULL)  // mst not exists, create the state, save it to memory, and link it to the previous state
         {
-            mst = NewState(st);
+            cur_mst = NewState(cur_st);
+            cur_mst->original_payoff = oripayoff;
+            cur_mst->payoff = oripayoff;
 
-            mst->next = head;
-            head = mst;
+            cur_mst->next = head;
+            head = cur_mst;
             state_num++;
 
-            ExAction eat = Agent::CalExAction(pre_in, st, pre_out);
-            LinkStates(pmst, eat, pre_out, mst);
+            ExAction eat = cur_st - expst;              // calcuate exaction
+            LinkStates(pmst, eat, pre_out, cur_mst);
         }
         else    // mst already exists, update the count and link it to the previous state (LinkStates will handle it if the link already exists.)
         {
-            mst->count++;
-            if (mst->mark == SAVED)
-                mst->mark = MODIFIED;
-            ExAction eat = Agent::CalExAction(pre_in, st, pre_out);
-            LinkStates(pmst, eat, pre_out, mst);
+            cur_mst->count++;
+            if (cur_mst->mark == SAVED)
+                cur_mst->mark = MODIFIED;
+            ExAction eat = cur_st - expst;
+            LinkStates(pmst, eat, pre_out, cur_mst);
         }
     }
     return;
 }
 
-void MyAgent::FreeMemory()
+void SimAgent::FreeMemory()
 {
     // free all states in turn
     struct m_State *mst, *nmst;
@@ -639,7 +637,7 @@ void MyAgent::FreeMemory()
     }
 }
 
-void MyAgent::RemoveState(struct m_State *mst)
+void SimAgent::RemoveState(struct m_State *mst)
 {
 //    dbgprt("remove state\n");
     if (mst == NULL)
@@ -679,7 +677,7 @@ void MyAgent::RemoveState(struct m_State *mst)
     return FreeState(mst);
 }
 
-vector<Action> MyAgent::MaxPayoffRule(State st, vector<Action> acts)
+vector<Action> SimAgent::MaxPayoffRule(State st, vector<Action> acts)
 {
     struct m_State *mst = SearchState(st);
     vector<Action> re;
@@ -694,11 +692,12 @@ vector<Action> MyAgent::MaxPayoffRule(State st, vector<Action> acts)
         re = BestActions(mst, acts);
     }
 
-    SaveState(mst, st);     // save the state to our memory
+    cur_mst = mst;
+    cur_st = st;
     return re;
 }
 
-int MyAgent::GetStateInfo(State st, void *buffer)
+int SimAgent::GetStateInfo(State st, void *buffer) const
 {
     if (buffer == NULL)
     {
@@ -805,7 +804,7 @@ finish:
     return length;
 }
 
-int MyAgent::MergeStateInfo(struct State_Info_Header *stif)
+int SimAgent::MergeStateInfo(struct State_Info_Header *stif)
 {
     unsigned char *p = (unsigned char *)stif;
     p += sizeof(struct State_Info_Header);
@@ -961,7 +960,7 @@ int MyAgent::MergeStateInfo(struct State_Info_Header *stif)
     return better;
 }
 
-void MyAgent::PrintStateInfo(struct State_Info_Header *stif)
+void SimAgent::PrintStateInfo(struct State_Info_Header *stif)
 {
     if (stif == NULL)
         return;
@@ -998,7 +997,7 @@ void MyAgent::PrintStateInfo(struct State_Info_Header *stif)
     return;
 }
 
-void MyAgent::SetDBArgs(string srv, string usr, string passwd, string db)
+void SimAgent::SetDBArgs(string srv, string usr, string passwd, string db)
 {
     db_server = srv;
     db_user = usr;
@@ -1007,7 +1006,7 @@ void MyAgent::SetDBArgs(string srv, string usr, string passwd, string db)
     return;
 }
 
-int MyAgent::DBConnect()
+int SimAgent::DBConnect()
 {
     db_con = mysql_init(NULL);
 
@@ -1044,7 +1043,7 @@ int MyAgent::DBConnect()
         return -1;
     }
 
-    sprintf(tb_string, "CREATE TABLE IF NOT EXISTS %s.%s(TimeStamp TIMESTAMP PRIMARY KEY, N BIGINT, M BIGINT, DiscountRate FLOAT, Threshold FLOAT, NumStates BIGINT, NumLinks BIGINT) \
+    sprintf(tb_string, "CREATE TABLE IF NOT EXISTS %s.%s(TimeStamp TIMESTAMP PRIMARY KEY, DiscountRate FLOAT, Threshold FLOAT, NumStates BIGINT, NumLinks BIGINT) \
             ENGINE INNODB ", db_name.c_str(), db_t_meminfo.c_str());
     if (mysql_query(db_con, tb_string))
     {
@@ -1055,12 +1054,12 @@ int MyAgent::DBConnect()
     return 0;
 }
 
-void MyAgent::DBClose()
+void SimAgent::DBClose()
 {
     return mysql_close(db_con);
 }
 
-State MyAgent::DBStateByIndex(unsigned long index)
+State SimAgent::DBStateByIndex(unsigned long index)
 {
     char query_str[256];
     sprintf(query_str, "SELECT * FROM %s LIMIT %ld, 1", db_t_stateinfo.c_str(), index);
@@ -1094,7 +1093,7 @@ State MyAgent::DBStateByIndex(unsigned long index)
     return rs;
 }
 
-int MyAgent::DBFetchStateInfo(State st, void *buffer)
+int SimAgent::DBFetchStateInfo(State st, void *buffer)
 {
     char query_string[256];
     sprintf(query_string, "SELECT * FROM %s WHERE State=%ld", db_t_stateinfo.c_str(), st);
@@ -1177,7 +1176,7 @@ finish:
     return length;
 }
 
-int MyAgent::DBSearchState(State st)
+int SimAgent::DBSearchState(State st)
 {
     char query_string[256];
     sprintf(query_string, "SELECT * FROM %s WHERE State=%ld", db_t_stateinfo.c_str(), st);
@@ -1200,7 +1199,7 @@ int MyAgent::DBSearchState(State st)
     return re;
 }
 
-void MyAgent::DBAddStateInfo(struct State_Info_Header *stif)
+void SimAgent::DBAddStateInfo(struct State_Info_Header *stif)
 {
     char str[256];
     sprintf(str, "INSERT INTO %s(State, OriPayoff, Payoff, Count, ActInfos, ExActInfos, pLinks) VALUES(%ld, %.2f, %.2f, %ld, '%%s', '%%s', '%%s')",
@@ -1241,7 +1240,7 @@ void MyAgent::DBAddStateInfo(struct State_Info_Header *stif)
     return;
 }
 
-void MyAgent::DBUpdateStateInfo(struct State_Info_Header *stif)
+void SimAgent::DBUpdateStateInfo(struct State_Info_Header *stif)
 {
     char str[256];
     sprintf(str, "UPDATE %s SET OriPayoff=%.2f, Payoff=%.2f, Count=%ld, ActInfos='%%s', ExActInfos='%%s', pLinks='%%s' WHERE State=%ld",
@@ -1281,7 +1280,7 @@ void MyAgent::DBUpdateStateInfo(struct State_Info_Header *stif)
     return;
 }
 
-void MyAgent::DBDeleteState(State st)
+void SimAgent::DBDeleteState(State st)
 {
     char query_string[256];
     sprintf(query_string, "DELETE  FROM %s WHERE State=%ld", db_t_stateinfo.c_str(), st);
@@ -1294,12 +1293,12 @@ void MyAgent::DBDeleteState(State st)
     return;
 }
 
-void MyAgent::DBAddMemoryInfo()
+void SimAgent::DBAddMemoryInfo()
 {
     char query_str[256];
 
-    sprintf(query_str, "INSERT INTO %s(TimeStamp, N, M, DiscountRate, Threshold, NumStates, NumLinks) VALUES(NULL, %ld, %ld, %.2f, %.2f, %ld, %ld)",
-            db_t_meminfo.c_str(), N, M, discount_rate, threshold, state_num, lk_num);
+    sprintf(query_str, "INSERT INTO %s(TimeStamp, DiscountRate, Threshold, NumStates, NumLinks) VALUES(NULL, %.2f, %.2f, %ld, %ld)",
+            db_t_meminfo.c_str(), discount_rate, threshold, state_num, lk_num);
 
     int len = strlen(query_str);
     if (mysql_real_query(db_con, query_str, len))
@@ -1310,7 +1309,7 @@ void MyAgent::DBAddMemoryInfo()
     return;
 }
 
-struct m_Memory_Info *MyAgent::DBFetchMemoryInfo()
+struct m_Memory_Info *SimAgent::DBFetchMemoryInfo()
 {
     char query_str[256];
     sprintf(query_str, "SELECT * FROM %s ORDER BY TimeStamp DESC LIMIT 1", db_t_meminfo.c_str());
@@ -1341,12 +1340,10 @@ struct m_Memory_Info *MyAgent::DBFetchMemoryInfo()
 
     struct m_Memory_Info *memif = (struct m_Memory_Info *)malloc(sizeof(struct m_Memory_Info));
     dbgprt("DB: %s, Memory TimeStamp: %s\n", db_name.c_str(), row[0]);
-    memif->N = atol(row[1]);
-    memif->M = atol(row[2]);
-    memif->discount_rate = atof(row[3]);
-    memif->threshold = atof(row[4]);
-    memif->state_num = atol(row[5]);
-    memif->lk_num = atol(row[6]);
+    memif->discount_rate = atof(row[1]);
+    memif->threshold = atof(row[2]);
+    memif->state_num = atol(row[3]);
+    memif->lk_num = atol(row[4]);
 
     mysql_free_result(result);          // free result
 

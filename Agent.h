@@ -48,21 +48,22 @@ struct State_Info_Header
 class Agent : public PFTGIOM
 {
     public:
-        Agent(int ,int);
-        Agent(int ,int, float);
+        Agent();
+        Agent(float, float);
 
         virtual ~Agent();
         /* These two functions are implementation dependant, declared as pure virtual functions */
-        virtual int GetStateInfo(State, void *) = 0;         /**<  organize the information of specfic state from memory */
+        virtual int GetStateInfo(State, void *) const = 0;         /**<  organize the information of specfic state from memory */
         virtual int MergeStateInfo(struct State_Info_Header *) = 0;       /**<  merge recieved state information to memory */
+        void Update(float, State);
     protected:
-        virtual vector<Action> Restrict(State, vector<Action>);     /**< reimplement restrict using maximun payoff rule  */
+        float discount_rate;                                        /**< discount rate (0<,<1)when calculate state payoff */
+        float threshold;                                                /**< threshold used in payoff updating */
+
+        vector<Action> Restrict(State, vector<Action>);     /**< reimplement restrict using maximun payoff rule  */
 
         virtual vector<Action> MaxPayoffRule(State, vector<Action>) = 0;        /**< implementation of maximun payoff rule */
-        virtual State ActionEffect(State, Action) = 0;
-        ExAction CalExAction(State, State, Action);
-        virtual float OriginalPayoff(State);                        /**< get original payoffs of each state, 1 by default */
-        float discount_rate;                                        /**< discount rate (0<,<1)when calculate state payoff */
+        virtual void UpdateMemory(float, State) = 0;
     private:
 };
 

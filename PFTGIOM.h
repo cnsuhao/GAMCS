@@ -6,9 +6,10 @@
 class PFTGIOM : public GIOM
 {
     public:
-        PFTGIOM(int, int);
+        PFTGIOM();
         virtual ~PFTGIOM();
-        virtual Output Process(Input);          // reimplement Process, add time sequence functionality to the process
+        Output Process(Input, vector<Output>);          // reimplement Process, add time sequence functionality to the process
+        void Update();
     protected:
         virtual vector<Output> Restrict(Input, vector<Output>);     // reimplement Restrict
         /* bring in the time sequence feature */

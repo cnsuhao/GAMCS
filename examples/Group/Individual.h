@@ -5,7 +5,6 @@
 #include <sys/syscall.h>
 #include <pthread.h>
 #include <signal.h>
-#include "R1Agent.h"
 #include "../../Avatar.h"
 
 class Individual : public Avatar
@@ -21,6 +20,9 @@ class Individual : public Avatar
 
         State GetCurrentState();
         void DoAction(Action);
+        vector<Action> ActionList(State);
+        State ExpectedState();
+        float OriginalPayoff(State);
 };
 
 #endif // INDIVIDUAL_H

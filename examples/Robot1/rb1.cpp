@@ -1,5 +1,5 @@
-#include "R1Agent.h"
 #include "Robot1.h"
+#include "../../SimAgent.h"
 
 void signal_handler(int sig)
 {
@@ -11,11 +11,11 @@ void signal_handler(int sig)
 int main(void)
 {
     signal(SIGINT, signal_handler);
-    R1Agent ra(200, 2, 0.8, 0.01);
-    ra.SetDBArgs("localhost", "root", "890127", "MyAgent");
-    ra.InitMemory();
+    SimAgent ma(0.8, 0.01);
+    ma.SetDBArgs("localhost", "root", "890127", "MyAgent");
+    ma.InitMemory();
 
     Robot1 rb1(1);
-    rb1.SetAgent(&ra);
+    rb1.ConnectAgent(&ma);
     rb1.Run();
 }

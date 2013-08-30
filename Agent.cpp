@@ -8,15 +8,17 @@
 ***********************************************************************/
 #include "Agent.h"
 
-Agent::Agent(int n, int m):PFTGIOM(n, m)
+Agent::Agent():PFTGIOM()
 {
     //ctor
     discount_rate = 0.8;
+    threshold = 0.01;
 }
 
-Agent::Agent(int n, int m, float dr):PFTGIOM(n, m)
+Agent::Agent(float dr, float th):PFTGIOM()
 {
     discount_rate = dr;
+    threshold = th;
 }
 
 Agent::~Agent()
@@ -38,20 +40,9 @@ vector<Action> Agent::Restrict(State st, vector<Action> acts)
     return MaxPayoffRule(st, acts);
 }
 
-/** \brief Get original payoff of each state.
- *  Return 1 for every state.
- * \param st state identity
- * \return original payoff of st
- *
- */
-
-float Agent::OriginalPayoff(State st)
+void Agent::Update(float oripayoff, State expst)
 {
-    return 1;
-}
-
-ExAction Agent::CalExAction(State pst, State st, Action act)
-{
-    State ost = ActionEffect(pst, act);
-    return st - ost;
+    UpdateMemory(oripayoff, expst);
+    PFTGIOM::Update();
+    return;
 }
