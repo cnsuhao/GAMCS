@@ -4,7 +4,10 @@
 #include <mysql/mysql.h>
 #include <assert.h>
 #include <float.h>
+#include <unordered_map>
 #include "Agent.h"
+
+typedef unordered_map<State, void *> StatesMap;
 
 enum m_STmark {SAVED, NEW, MODIFIED};
 
@@ -55,6 +58,8 @@ struct m_Memory_Info {
     float threshold;
     unsigned long state_num;
     unsigned long lk_num;
+    State last_st;
+    Action last_act;
 };
 
 class SimAgent : public Agent
@@ -99,6 +104,7 @@ class SimAgent : public Agent
         struct m_Memory_Info *DBFetchMemoryInfo();
 
         struct m_State *head;           /**< memory point */
+        StatesMap states_map;
         struct m_State *cur_mst;
         State cur_st;
 

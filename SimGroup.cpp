@@ -104,6 +104,7 @@ SimGroup::SimGroup(int i)
     for (int i=0; i<MAX_MEMBER; i++)
     {
         neighlist[i] = NULL;
+        channels[i].msg = NULL;
     }
 }
 
