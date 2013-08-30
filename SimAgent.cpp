@@ -8,80 +8,96 @@
 ***********************************************************************/
 #include "SimAgent.h"
 
-struct m_State *SimAgent::LoadState(State st)
+void SimAgent::LoadState(State st)
 {
+    printf("LoadState(): %ld\n", st);
+    char si_buf[SI_MAX_SIZE];
     struct m_State *mst = SearchState(st);
     if (mst == NULL)
     {
-        char si_buf[SI_MAX_SIZE];
-        int len = DBFetchStateInfo(st, si_buf);
-        if (len == -1)       // should not happen, otherwise database corrupted!!
-            ERROR("State: %ld should exist, but fetch from Database: %s returns NULL!\n", st, db_name.c_str());
-
-        struct State_Info_Header *stif = (struct State_Info_Header *)si_buf;
         mst = NewState(st);
-        mst->mark = SAVED;      // it's SAVED when just load
-        mst->st = stif->st;
-        mst->original_payoff = stif->original_payoff;
-        mst->payoff = stif->payoff;
-        mst->count = stif->count;
         /* Add to memory */
         mst->next = head;
         head = mst;
         states_map.insert(StatesMap::value_type(mst->st, mst));
-
-        unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
-        unsigned long ea_len = stif->eat_num * sizeof(struct ExAction_Info);
-
-        unsigned char *p = (unsigned char *)stif;
-        p += sizeof(struct State_Info_Header);
-        struct Action_Info *atif = (struct Action_Info *)p;
-
-        p += ai_len;
-        struct ExAction_Info *eaif = (struct ExAction_Info *)p;
-
-        p += ea_len;
-        struct pLink *lk = (struct pLink *)p;
-
-        int i;
-        /* build actions list */
-        for (i=0; i<stif->act_num; i++)
-        {
-            struct m_Action *mac = NewAc(atif[i].act);
-            mac->payoff = atif[i].payoff;
-
-            mac->next = mst->atlist;
-            mst->atlist = mac;
-        }
-        /* build exactions list */
-        for (i=0; i<stif->eat_num; i++)
-        {
-            struct m_ExAction *mea = NewEa(eaif[i].eat);
-            mea->count = eaif[i].count;
-
-            mea->next = mst->ealist;
-            mst->ealist = mea;
-        }
-
-        /* build current state's backward list and previous state's forward lists */
-        for (i=0; i<stif->lk_num; i++)
-        {
-            struct m_State *pmst = LoadState(lk[i].pst);
-            /* build backward list */
-            struct m_BackArcState *mbas = NewBas();
-            mbas->pstate = pmst;
-
-            mbas->next = mst->blist;
-            mst->blist = mbas;
-
-            struct m_ForwardArcState *mfas = NewFas(lk[i].peat, lk[i].pact);
-            mfas->nstate = mst;
-
-            mfas->next = pmst->flist;
-            pmst->flist = mfas;
-        }
     }
-    return mst;
+
+    int len = DBFetchStateInfo(st, si_buf);
+    if (len == -1)       // should not happen, otherwise database corrupted!!
+        ERROR("State: %ld should exist, but fetch from Database: %s returns NULL!\n", st, db_name.c_str());
+
+    struct State_Info_Header *stif = (struct State_Info_Header *)si_buf;
+
+
+    mst->mark = SAVED;      // it's SAVED when just load
+    mst->st = stif->st;
+    mst->original_payoff = stif->original_payoff;
+    mst->payoff = stif->payoff;
+    mst->count = stif->count;
+
+
+    unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
+    unsigned long ea_len = stif->eat_num * sizeof(struct ExAction_Info);
+
+    unsigned char *p = (unsigned char *)stif;
+    p += sizeof(struct State_Info_Header);
+    struct Action_Info *atif = (struct Action_Info *)p;
+
+    p += ai_len;
+    struct ExAction_Info *eaif = (struct ExAction_Info *)p;
+
+    p += ea_len;
+    struct pLink *lk = (struct pLink *)p;
+
+    int i;
+    /* build actions list */
+    for (i=0; i<stif->act_num; i++)
+    {
+        struct m_Action *mac = NewAc(atif[i].act);
+        mac->payoff = atif[i].payoff;
+
+        mac->next = mst->atlist;
+        mst->atlist = mac;
+    }
+    /* build exactions list */
+    for (i=0; i<stif->eat_num; i++)
+    {
+        struct m_ExAction *mea = NewEa(eaif[i].eat);
+        mea->count = eaif[i].count;
+
+        mea->next = mst->ealist;
+        mst->ealist = mea;
+    }
+
+    /* build current state's backward list and previous state's forward lists */
+    for (i=0; i<stif->lk_num; i++)
+    {
+
+
+        struct m_State *pmst = SearchState(lk[i].pst);
+        if (pmst == NULL)
+        {
+            pmst = NewState(lk[i].pst);
+            /* Add to memory */
+            pmst->next = head;
+            head = pmst;
+            states_map.insert(StatesMap::value_type(pmst->st, pmst));
+        }
+        /* build mst's backward list */
+        struct m_BackArcState *mbas = NewBas();
+        mbas->pstate = pmst;
+
+        mbas->next = mst->blist;
+        mst->blist = mbas;
+        /* build pmst's forward list */
+        struct m_ForwardArcState *mfas = NewFas(lk[i].peat, lk[i].pact);
+        mfas->nstate = mst;
+
+        mfas->next = pmst->flist;
+        pmst->flist = mfas;
+    }
+
+    return;
 }
 
 void SimAgent::InitMemory()
