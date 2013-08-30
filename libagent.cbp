@@ -12,12 +12,15 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
+					<Add option="-std=c++11" />
 					<Add option="-Wextra" />
 					<Add option="-Wall" />
+					<Add option="-pg" />
 					<Add option="-g" />
 					<Add option="-D_DEBUG_" />
 				</Compiler>
 				<Linker>
+					<Add option="-pg" />
 					<Add library="mysqlclient" />
 				</Linker>
 			</Target>
@@ -41,6 +44,7 @@
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
+					<Add option="-std=c++11" />
 					<Add option="-Wextra" />
 					<Add option="-Wall" />
 					<Add option="-pg" />
@@ -55,9 +59,12 @@
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
+					<Add option="-pg" />
+					<Add option="-g" />
 					<Add option="-D_DEBUG_" />
 				</Compiler>
 				<Linker>
+					<Add option="-pg" />
 					<Add library="mysqlclient" />
 				</Linker>
 			</Target>
@@ -81,13 +88,48 @@
 			<Add library="pthread" />
 			<Add library="mysqlclient" />
 		</Linker>
-		<Unit filename="Agent.cpp" />
-		<Unit filename="Agent.h" />
-		<Unit filename="Avatar.cpp" />
-		<Unit filename="Avatar.h" />
-		<Unit filename="Debug.h" />
-		<Unit filename="GIOM.cpp" />
-		<Unit filename="GIOM.h" />
+		<Unit filename="Agent.cpp">
+			<Option target="Robot1" />
+			<Option target="TSP" />
+			<Option target="SimGroup" />
+			<Option target="R of SimGroup" />
+		</Unit>
+		<Unit filename="Agent.h">
+			<Option target="Robot1" />
+			<Option target="TSP" />
+			<Option target="SimGroup" />
+			<Option target="R of SimGroup" />
+		</Unit>
+		<Unit filename="Avatar.cpp">
+			<Option target="Robot1" />
+			<Option target="TSP" />
+			<Option target="SimGroup" />
+			<Option target="R of SimGroup" />
+		</Unit>
+		<Unit filename="Avatar.h">
+			<Option target="Robot1" />
+			<Option target="TSP" />
+			<Option target="SimGroup" />
+			<Option target="R of SimGroup" />
+		</Unit>
+		<Unit filename="Debug.h">
+			<Option target="Robot1" />
+			<Option target="TSP" />
+			<Option target="SimGroup" />
+			<Option target="R of SimGroup" />
+		</Unit>
+		<Unit filename="GIOM.cpp">
+			<Option target="Robot1" />
+			<Option target="TSP" />
+			<Option target="SimGroup" />
+			<Option target="R of SimGroup" />
+		</Unit>
+		<Unit filename="GIOM.h">
+			<Option target="Robot1" />
+			<Option target="TSP" />
+			<Option target="SimGroup" />
+			<Option target="R of SimGroup" />
+		</Unit>
 		<Unit filename="Group.cpp">
 			<Option target="SimGroup" />
 			<Option target="R of SimGroup" />
@@ -98,10 +140,30 @@
 			<Option target="R of SimGroup" />
 			<Option target="Robot1" />
 		</Unit>
-		<Unit filename="PFTGIOM.cpp" />
-		<Unit filename="PFTGIOM.h" />
-		<Unit filename="SimAgent.cpp" />
-		<Unit filename="SimAgent.h" />
+		<Unit filename="PFTGIOM.cpp">
+			<Option target="Robot1" />
+			<Option target="TSP" />
+			<Option target="SimGroup" />
+			<Option target="R of SimGroup" />
+		</Unit>
+		<Unit filename="PFTGIOM.h">
+			<Option target="Robot1" />
+			<Option target="TSP" />
+			<Option target="SimGroup" />
+			<Option target="R of SimGroup" />
+		</Unit>
+		<Unit filename="SimAgent.cpp">
+			<Option target="Robot1" />
+			<Option target="TSP" />
+			<Option target="SimGroup" />
+			<Option target="R of SimGroup" />
+		</Unit>
+		<Unit filename="SimAgent.h">
+			<Option target="Robot1" />
+			<Option target="TSP" />
+			<Option target="SimGroup" />
+			<Option target="R of SimGroup" />
+		</Unit>
 		<Unit filename="SimGroup.cpp">
 			<Option target="SimGroup" />
 			<Option target="R of SimGroup" />
