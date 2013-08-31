@@ -102,6 +102,7 @@ class SimAgent : public Agent
         void DBDeleteState(State);
         void DBAddMemoryInfo();
         struct m_Memory_Info *DBFetchMemoryInfo();
+        void PrintProcess(unsigned long, unsigned long, char *);
 
         struct m_State *head;           /**< memory point */
         StatesMap states_map;
