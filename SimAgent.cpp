@@ -10,7 +10,6 @@
 
 void SimAgent::LoadState(State st)
 {
-    printf("LoadState(): %ld\n", st);
     char si_buf[SI_MAX_SIZE];
     struct m_State *mst = SearchState(st);
     if (mst == NULL)
@@ -108,7 +107,8 @@ void SimAgent::InitMemory()
     int re = DBConnect();
     if (re == 0)
     {
-        printf("Initializing Memory from Database: %s .", db_name.c_str());
+        char label[64] = "Loading: ";
+        printf("Initializing Memory from Database: %s ", db_name.c_str());
         fflush(stdout);
         /* load memory information */
         struct m_Memory_Info *memif = DBFetchMemoryInfo();
@@ -121,8 +121,6 @@ void SimAgent::InitMemory()
             lk_num = memif->lk_num;
             free(memif);
         }
-        printf("..");
-        fflush(stdout);
         /* load states information */
         State st;
         unsigned long index = 0;
@@ -131,15 +129,13 @@ void SimAgent::InitMemory()
             dbgmoreprt("DB: %s, LoadState: %ld\n", db_name.c_str(), st);
             LoadState(st);
             index++;
-            printf(".");
-            fflush(stdout);
+            PrintProcess(index, state_num, label);
         }
     }
     else
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
     }
-    printf("\n");
     DBClose();
     return;
 }
@@ -149,18 +145,17 @@ void SimAgent::SaveMemory()
     if (db_name.empty())
         return;
 
-    printf("Saving Memory to DataBase: %s .", db_name.c_str());
-    fflush(stdout);
+    char label[64] = "Saving: ";
+    printf("Saving Memory to DataBase: %s ", db_name.c_str());
     int re = DBConnect();
     if (re == 0)
     {
         /* save memory information */
         DBAddMemoryInfo();
-        printf("..");
-        fflush(stdout);
         /* save states information */
         char si_buf[SI_MAX_SIZE];
         struct m_State *mst, *nmst;
+        unsigned long index = 0;
         for (mst=head; mst!=NULL; mst=nmst)
         {
             if (mst->mark == NEW)
@@ -175,14 +170,13 @@ void SimAgent::SaveMemory()
                 GetStateInfo(mst->st, si_buf);
                 DBUpdateStateInfo((struct State_Info_Header *)si_buf);
             }
-            printf(".");
-            fflush(stdout);
             mst->mark = SAVED;
 
+            index++;
+            PrintProcess(index, state_num, label);
             nmst = mst->next;
         }
     }
-    printf("\n");
     DBClose();
     return;
 }
@@ -1381,4 +1375,38 @@ struct m_Memory_Info *SimAgent::DBFetchMemoryInfo()
     mysql_free_result(result);          // free result
 
     return memif;
+}
+
+void SimAgent::PrintProcess(unsigned long current, unsigned long total, char *label)
+{
+    double prcnt;
+    int num_of_dots;
+    char buffer[80] = {0};
+    int width;
+    /* get term width */
+    FILE *fp;
+    prcnt=1.0*current/total;
+    fp = popen("stty size | cut -d\" \" -f2","r");
+    fgets(buffer, sizeof(buffer),fp);
+    pclose(fp);
+    width = atoi(buffer);
+
+    if ( width < 32)
+    {
+        printf("\e[1A%3d%% completed.\n", (int)(prcnt*100));
+    }
+    else
+    {
+        num_of_dots = width - 20;
+
+        char *pline_to_print = (char *)malloc( sizeof(char)*width );
+        int dots = (int)(num_of_dots*prcnt);
+
+        memset(pline_to_print,0,width);
+        memset(pline_to_print,'>',dots);
+        memset(pline_to_print+dots, ' ', num_of_dots - dots);
+        printf("\e[1A%s[%s] %3d%% \n", label, pline_to_print,(int)(prcnt*100));
+        free(pline_to_print);
+    }
+    return;
 }

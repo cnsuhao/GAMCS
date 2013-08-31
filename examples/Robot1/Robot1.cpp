@@ -30,8 +30,8 @@ void Robot1::DoAction(Action act)
     else if (act == 2)
         position += 1;
 
-    if (position > 20)
-        position = 20;
+    if (position > 2000)
+        position = 2000;
     if (position < 1)
         position = 1;
     return;
@@ -51,7 +51,7 @@ vector<Action> Robot1::ActionList(State st)
     vector<Action> acts;
     acts.clear();
     acts.push_back(2);
-    acts.push_back(1);
+    //acts.push_back(1);
 
     return acts;
 }
