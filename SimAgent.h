@@ -106,13 +106,14 @@ class SimAgent : public Agent
         void DBDeleteState(State);
         void DBAddMemoryInfo();
         struct m_Memory_Info *DBFetchMemoryInfo();
+        void PrintProcess(unsigned long, unsigned long, char *);
 
         struct m_State *head;           /**< memory head*/
         StatesMap states_map;           /**< hash map from state values to state struct */
         struct m_State *cur_mst;        /**< state struct for current state value */
         State cur_st;                   /**< current state value */
 
-        struct m_State *LoadState(State);   /**< fetch state struct by state value */
+        void LoadState(State);               /**< fetch state struct by state value */
 
         void FreeMemory();              /**< free all space of memory in computer memory*/
 
