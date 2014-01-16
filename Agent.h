@@ -3,14 +3,14 @@
 
 #include "PFTGIOM.h"
 
-#define SI_MAX_SIZE 2048
+#define SI_MAX_SIZE 2048        /**< maximum size of state information */
 
-typedef Input State;                /**< for agent we call an input state */
-typedef Output Action;              /**< action for output */
+typedef Input State;                /**< for agent we call an input as a state */
+typedef Output Action;              /**< action as output */
 typedef unsigned long ExAction;     /**< environment action, "exact" for short */
 
-/* backward link struct for a state
-*  pst + pact + peat = state concerned
+/** backward link struct for a state
+*  pst + pact + peat = current state
 */
 struct pLink
 {
@@ -19,52 +19,56 @@ struct pLink
     ExAction peat;      /**< previous exact */
 };
 
-/* action information */
+/** action information */
 struct Action_Info
 {
-    Action act;         /**< action identity */
+    Action act;         /**< action value */
     float payoff;       /**< action payoff  */
 };
 
-/* exact information */
+/** exact information */
 struct ExAction_Info
 {
-    ExAction eat;           /**< exact identity */
+    ExAction eat;           /**< environment action value */
     unsigned long count;    /**< count of experiencing times */
 };
 
-/* State information, this struct can be used to communicate with other agents */
+/** Header of state information, this struct can be used to communicate with other agents */
 struct State_Info_Header
 {
-    State st;                                   /**< state identity */
+    State st;                                   /**< state value */
     float original_payoff;                      /**< original payoff */
     float payoff;                               /**< payoff */
-    unsigned long count;
-    int act_num;
-    int eat_num;
-    int lk_num;                        /**< count of experiencing times */
+    unsigned long count;                        /**< times of travelling through this state */
+    int act_num;                                /**< number of actions which have been performed */
+    int eat_num;                                /**< number of environment actions which have been observed */
+    int lk_num;                                 /**< number of links to other states */
 };
 
+/**
+* Interface of an autonomous agent.
+*/
 class Agent : public PFTGIOM
 {
-    public:
-        Agent();
-        Agent(float, float);
+public:
+    Agent();
+    Agent(float, float);
 
-        virtual ~Agent();
-        /* These two functions are implementation dependant, declared as pure virtual functions */
-        virtual int GetStateInfo(State, void *) const = 0;         /**<  organize the information of specfic state from memory */
-        virtual int MergeStateInfo(struct State_Info_Header *) = 0;       /**<  merge recieved state information to memory */
-        void Update(float, State);
-    protected:
-        float discount_rate;                                        /**< discount rate (0<,<1)when calculate state payoff */
-        float threshold;                                                /**< threshold used in payoff updating */
+    virtual ~Agent();
 
-        vector<Action> Restrict(State, vector<Action>);     /**< reimplement restrict using maximun payoff rule  */
+    /** These two functions are implementation dependant, declared as pure virtual functions */
+    virtual int GetStateInfo(State, void *) const = 0;         /**<  collect information of specified state from memory */
+    virtual int MergeStateInfo(struct State_Info_Header *) = 0;       /**<  merge recieved state information into memory */
+    void Update(float, State);      /**< update inner states */
+protected:
+    float discount_rate;                                        /**< discount rate (0<,<1)when calculate state payoff */
+    float threshold;                                                /**< threshold used in payoff updating */
 
-        virtual vector<Action> MaxPayoffRule(State, vector<Action>) = 0;        /**< implementation of maximun payoff rule */
-        virtual void UpdateMemory(float, State) = 0;
-    private:
+    vector<Action> Restrict(State, vector<Action>);     /**< reimplement restrict using maximun payoff rule  */
+
+    virtual vector<Action> MaxPayoffRule(State, vector<Action>) = 0;        /**< implementation of maximun payoff rule */
+    virtual void UpdateMemory(float, State) = 0;    /**<  update memory recursively beginning from specified state */
+private:
 };
 
 #endif // AGENT_H
