@@ -3,6 +3,9 @@
 
 #include "GIOM.h"
 
+/**
+* Partial Feedback & Time Sequence General Input Output Model
+*/
 class PFTGIOM : public GIOM
 {
     public:
@@ -13,8 +16,8 @@ class PFTGIOM : public GIOM
     protected:
         virtual vector<Output> Restrict(Input, vector<Output>);     // reimplement Restrict
         /* bring in the time sequence feature */
-        Input pre_in;           /**< previous input */
-        Output pre_out;         /**< previous output */
+        Input pre_in;           /**< previous input value */
+        Output pre_out;         /**< previous output value */
     private:
 };
 

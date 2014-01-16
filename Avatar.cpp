@@ -51,7 +51,7 @@ void Avatar::Run()
         State es = ExpectedState();
         agent->Update(oripayoff, es);
 
-        if (act == -1)
+        if (act == INVALID_VALUE)
             break;
         DoAction(act);
 

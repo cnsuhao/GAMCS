@@ -8,16 +8,23 @@
 ***********************************************************************/
 #include "SimAgent.h"
 
+/** \brief Load a specified state from a previous memory stored in database.
+ * It's a recursive function, it will load all states directly or indirectly connected to this state to the computer memory.
+ * \param st state value
+ * \return state struct of st in computer memory
+ *
+ */
 struct m_State *SimAgent::LoadState(State st)
 {
-    struct m_State *mst = SearchState(st);
-    if (mst == NULL)
+    struct m_State *mst = SearchState(st);  // find if this state is already loaded in computer memory
+    if (mst == NULL)    // didn't find, get it from database
     {
         char si_buf[SI_MAX_SIZE];
-        int len = DBFetchStateInfo(st, si_buf);
+        int len = DBFetchStateInfo(st, si_buf);  // fetch state infomation from database, return the size
         if (len == -1)       // should not happen, otherwise database corrupted!!
             ERROR("State: %ld should exist, but fetch from Database: %s returns NULL!\n", st, db_name.c_str());
 
+        // build a new state struct from the fetched state information
         struct State_Info_Header *stif = (struct State_Info_Header *)si_buf;
         mst = NewState(st);
         mst->mark = SAVED;      // it's SAVED when just load
@@ -25,22 +32,22 @@ struct m_State *SimAgent::LoadState(State st)
         mst->original_payoff = stif->original_payoff;
         mst->payoff = stif->payoff;
         mst->count = stif->count;
-        /* Add to memory */
+        /* Add the new state to memory */
         mst->next = head;
         head = mst;
-        states_map.insert(StatesMap::value_type(mst->st, mst));
+        states_map.insert(StatesMap::value_type(mst->st, mst)); // don't forget to update the hash map
 
         unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
         unsigned long ea_len = stif->eat_num * sizeof(struct ExAction_Info);
 
-        unsigned char *p = (unsigned char *)stif;
-        p += sizeof(struct State_Info_Header);
+        unsigned char *p = (unsigned char *)stif;       // use point p to travel through different parts, and fetch information
+        p += sizeof(struct State_Info_Header);          // point to actions information
         struct Action_Info *atif = (struct Action_Info *)p;
 
-        p += ai_len;
+        p += ai_len;            // point to environment actions information
         struct ExAction_Info *eaif = (struct ExAction_Info *)p;
 
-        p += ea_len;
+        p += ea_len;            // point to links information
         struct pLink *lk = (struct pLink *)p;
 
         int i;
@@ -53,7 +60,7 @@ struct m_State *SimAgent::LoadState(State st)
             mac->next = mst->atlist;
             mst->atlist = mac;
         }
-        /* build exactions list */
+        /* build environment actions list */
         for (i=0; i<stif->eat_num; i++)
         {
             struct m_ExAction *mea = NewEa(eaif[i].eat);
@@ -66,7 +73,7 @@ struct m_State *SimAgent::LoadState(State st)
         /* build current state's backward list and previous state's forward lists */
         for (i=0; i<stif->lk_num; i++)
         {
-            struct m_State *pmst = LoadState(lk[i].pst);
+            struct m_State *pmst = LoadState(lk[i].pst);    // load state recursively
             /* build backward list */
             struct m_BackArcState *mbas = NewBas();
             mbas->pstate = pmst;
@@ -84,13 +91,17 @@ struct m_State *SimAgent::LoadState(State st)
     return mst;
 }
 
+/** \brief Initialize memory, if saved, loaded from database to computer memory, otherwise do nothing.
+ *
+ */
+
 void SimAgent::InitMemory()
 {
-    if (db_name.empty())
+    if (db_name.empty())    // no database specified, do nothing
         return;
 
-    int re = DBConnect();
-    if (re == 0)
+    int re = DBConnect();   // otherwise, load memory from database
+    if (re == 0)        // successfully connected
     {
         printf("Initializing Memory from Database: %s .", db_name.c_str());
         fflush(stdout);
@@ -98,50 +109,56 @@ void SimAgent::InitMemory()
         struct m_Memory_Info *memif = DBFetchMemoryInfo();
         if (memif != NULL)
         {
-            /* last_st and last_act are not used yet */
+            /*FIXME: last_st and last_act are not used yet */
+            // update memory struct
             discount_rate = memif->discount_rate;
             threshold = memif->threshold;
             state_num = memif->state_num;
             lk_num = memif->lk_num;
-            free(memif);
+            free(memif);    // free it, the memory struct are not a substaintial struct for running, it's just used to store meta-memory information
         }
         printf("..");
         fflush(stdout);
+
         /* load states information */
         State st;
-        unsigned long index = 0;
-        while((st = DBStateByIndex(index)) != -1)
+        unsigned long index = 0;    // load states from database one by one
+        while((st = DBStateByIndex(index)) != INVALID_VALUE)
         {
             dbgmoreprt("DB: %s, LoadState: %ld\n", db_name.c_str(), st);
             LoadState(st);
-            index++;
+            index++;    // next state
             printf(".");
             fflush(stdout);
         }
     }
-    else
+    else    // connect database failed!
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
     }
     printf("\n");
-    DBClose();
+    DBClose();      // it's done, close database
     return;
 }
 
+/** \brief Save current memroy to database, including states information and memory-level statistics.
+ *
+ */
 void SimAgent::SaveMemory()
 {
-    if (db_name.empty())
+    if (db_name.empty())    // no database specified, no need to save
         return;
 
     printf("Saving Memory to DataBase: %s .", db_name.c_str());
     fflush(stdout);
-    int re = DBConnect();
-    if (re == 0)
+    int re = DBConnect();       // connect to database
+    if (re == 0)                // connect successfully
     {
         /* save memory information */
         DBAddMemoryInfo();
         printf("..");
         fflush(stdout);
+
         /* save states information */
         char si_buf[SI_MAX_SIZE];
         struct m_State *mst, *nmst;
@@ -587,7 +604,7 @@ vector<Action> SimAgent::BestActions(struct m_State *mst, vector<Action> acts)
 
 void SimAgent::UpdateMemory(float oripayoff, State expst)
 {
-    if (pre_in == -1)  // previous state doesn't exist, it's the first time
+    if (pre_in == INVALID_VALUE)  // previous state doesn't exist, it's the first time
     {
         if (cur_mst == NULL)  // first time without memory, create the state and save it to memory
         {

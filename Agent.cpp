@@ -8,22 +8,16 @@
 ***********************************************************************/
 #include "Agent.h"
 
-Agent::Agent():PFTGIOM()
+Agent::Agent() : discount_rate(0.8), threshold(0.01)
 {
-    //ctor
-    discount_rate = 0.8;
-    threshold = 0.01;
 }
 
-Agent::Agent(float dr, float th):PFTGIOM()
+Agent::Agent(float dr, float th) : discount_rate(dr), threshold(th)
 {
-    discount_rate = dr;
-    threshold = th;
 }
 
 Agent::~Agent()
 {
-    //dtor
 }
 
 /** \brief Restrict capacity of an agent.
@@ -33,16 +27,18 @@ Agent::~Agent()
  * \return action distribution after appling maximun payoff restrict
  *
  */
-
 vector<Action> Agent::Restrict(State st, vector<Action> acts)
 {
-    dbgmoreprt("enter Agent Restrict\n\n");
     return MaxPayoffRule(st, acts);
 }
 
+/** \brief Update inner states.
+ *
+ */
+
 void Agent::Update(float oripayoff, State expst)
 {
-    UpdateMemory(oripayoff, expst);
+    UpdateMemory(oripayoff, expst); // update memory beginning from expst
     PFTGIOM::Update();
     return;
 }

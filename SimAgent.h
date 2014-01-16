@@ -7,25 +7,25 @@
 #include <unordered_map>
 #include "Agent.h"
 
-typedef unordered_map<State, void *> StatesMap;
+typedef unordered_map<State, void *> StatesMap; /**< hash map from state value to state struct */
 
-enum m_STmark {SAVED, NEW, MODIFIED};
+enum m_StMark {SAVED, NEW, MODIFIED};   /**< storage status of a state */
 
-/* exact information */
+/** implementation of environment action information */
 struct m_ExAction {
-    ExAction eat;               /**< exact identity */
+    ExAction eat;               /**< exact value */
     unsigned long count;        /**< exact count */
     struct m_ExAction *next;    /**< next struct */
 };
 
-/* action information */
+/** implementation of action information */
 struct m_Action {
-    Action act;                 /**< action identity */
+    Action act;                 /**< action value */
     float payoff;               /**< action payoff */
     struct m_Action *next;
 };
 
-/* forward link information */
+/** implementation of forward link information */
 struct m_ForwardArcState {
     ExAction eat;               /**< exact */
     Action act;                 /**< action */
@@ -33,35 +33,39 @@ struct m_ForwardArcState {
     struct m_ForwardArcState *next;
 };
 
-/* backward link information */
+/** implementation of backward link information */
 struct m_BackArcState {
     struct m_State *pstate;     /**< previous state */
     struct m_BackArcState *next;
 };
 
-/* state information */
+/** state information */
 struct m_State {
-    State st;                   /**< state identity */
+    State st;                   /**< state value */
     float payoff;               /**< state payoff */
     float original_payoff;      /**< original payoff of state */
     unsigned long count;        /**< state count */
-    enum m_STmark mark;         /**< mark used for saving memory to disk */
-    struct m_ExAction *ealist;  /**< eaacts of this state */
+    enum m_StMark mark;         /**< mark used for saving memory to disk */
+    struct m_ExAction *ealist;  /**< exacts of this state */
     struct m_Action *atlist;    /**< actions of this state */
     struct m_ForwardArcState *flist;    /**< forward links */
     struct m_BackArcState *blist;       /**< backward links */
     struct m_State *next;
 };
 
+/** memory information */
 struct m_Memory_Info {
-    float discount_rate;
-    float threshold;
-    unsigned long state_num;
-    unsigned long lk_num;
-    State last_st;
-    Action last_act;
+    float discount_rate;    /**< discount rate */
+    float threshold;        /**< threshold */
+    unsigned long state_num;    /**< total number of states in memroy */
+    unsigned long lk_num;       /**< total number of links between states in memory */
+    State last_st;      /**< last experienced state when saving memory */
+    Action last_act;    /**< last performed action when saving memory */
 };
 
+/**
+* Simulation of Agent, which uses computers to implement an agent.
+*/
 class SimAgent : public Agent
 {
     public:
@@ -71,29 +75,29 @@ class SimAgent : public Agent
 
         virtual int GetStateInfo(State, void *) const;                 /**< implementing GetStateInfo function */
         virtual int MergeStateInfo(struct State_Info_Header *);               /**< implementing MergeStateInfo function */
-        static void PrintStateInfo(struct State_Info_Header *);
-        void SetDBArgs(string, string, string, string);
-        void InitMemory();              /**< load memory from a file */
-        void SaveMemory();              /**< save memory to a file  */
+        static void PrintStateInfo(struct State_Info_Header *);         /**< print state information gracefully */
+        void SetDBArgs(string, string, string, string);                 /**< set database related arguments */
+        void InitMemory();              /**< load memory from database */
+        void SaveMemory();              /**< save memory to database */
 
     protected:
         virtual vector<Action> MaxPayoffRule(State, vector<Action>);    /**< implementing maximun payoff rule */
-        void UpdateMemory(float, State);
+        void UpdateMemory(float, State);            /**< update memory recursively beginning from a specified state */
 
     private:
-       unsigned long state_num;                  /**< number of states in current memory */
-        unsigned long lk_num;                    /**< number of arcs */
+       unsigned long state_num;                  /**< total number of states in memory */
+        unsigned long lk_num;                    /**< total number of links between states in memory */
 
-        MYSQL *db_con;
-        string db_server;
-        string db_user;
-        string db_password;
-        string db_name;
-        string db_t_stateinfo;
-        string db_t_meminfo;
+        MYSQL *db_con;      /**< database connection handler */
+        string db_server;   /**< database server address */
+        string db_user;     /**< database username */
+        string db_password; /**< database password */
+        string db_name;     /**< database name */
+        string db_t_stateinfo;  /**< table name for storing state information */
+        string db_t_meminfo;    /**< table name for storing memory information */
 
-        int DBConnect();
-        void DBClose();
+        int DBConnect();    /**< connect database */
+        void DBClose();     /**< close database */
         State DBStateByIndex(unsigned long);
         int DBFetchStateInfo(State, void *);
         int DBSearchState(State);
@@ -103,12 +107,12 @@ class SimAgent : public Agent
         void DBAddMemoryInfo();
         struct m_Memory_Info *DBFetchMemoryInfo();
 
-        struct m_State *head;           /**< memory point */
-        StatesMap states_map;
-        struct m_State *cur_mst;
-        State cur_st;
+        struct m_State *head;           /**< memory head*/
+        StatesMap states_map;           /**< hash map from state values to state struct */
+        struct m_State *cur_mst;        /**< state struct for current state value */
+        State cur_st;                   /**< current state value */
 
-        struct m_State *LoadState(State);
+        struct m_State *LoadState(State);   /**< fetch state struct by state value */
 
         void FreeMemory();              /**< free all space of memory in computer memory*/
 
