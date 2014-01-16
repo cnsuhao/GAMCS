@@ -445,14 +445,14 @@ void SimAgent::FreeAc(struct m_Action *ac)
  */
 void SimAgent::LinkStates(struct m_State *pmst, ExAction eat, Action act, struct m_State *mst)
 {
-    /* check if the link already exists, if so simply update the count of eaction */
+    /* check if the link already exists, if so simply update the count of environment action */
     struct m_ForwardArcState *f, *nf;
 
     for (f = pmst->flist; f != NULL; f = nf)
     {
         if (f->nstate->st == mst->st &&
                 f->act == act &&
-                f->eat == eat)              // two links equal if and only if their states equal, and actions equal, and environment action equal
+                f->eat == eat)   // two links equal if and only if their states equal, and actions equal, and environment action equal
         {
             struct m_ExAction *ea = Eat2Struct(eat, pmst);      // get the environment action struct
             ea->count++;        // inc count
@@ -466,19 +466,21 @@ void SimAgent::LinkStates(struct m_State *pmst, ExAction eat, Action act, struct
     /* link not exists, create a new link from pmst to mst */
     /* add mst to pmst's flist */
     struct m_ForwardArcState *fas = NewFas(eat, act);
-    fas->nstate = mst;
+    fas->nstate = mst;  // next state is mst
+    // add fas to pmst's flist
     fas->next = pmst->flist;
     pmst->flist = fas;
 
     /* add pmst to mst's blist */
     struct m_BackArcState *bas = NewBas();
-    bas->pstate = pmst;
+    bas->pstate = pmst;     // previous state is pmst
+    // add bas to mst's blist
     bas->next = mst->blist;
     mst->blist = bas;
 
-    lk_num++;       // update total arc number
-    /* A link is a combination of eaction AND aciton, either of them not exist means link doesn't exist.
-    *  So we have to identify exactly which of them doesn't exist.
+    lk_num++;       // update total link number
+    /* A link is a combination of eaction AND aciton, either of them not existing means this link doesn't exist.
+    *  So we have to figure out exactly which of them doesn't exist.
     */
     /* check eaction */
     struct m_ExAction *ea = Eat2Struct(eat, pmst);
@@ -486,6 +488,7 @@ void SimAgent::LinkStates(struct m_State *pmst, ExAction eat, Action act, struct
     if (ea == NULL)         // eaction not exist, add a new one to the ealist of pmst
     {
         struct m_ExAction *nea = NewEa(eat);
+        // add nea to pmst's environment action list
         nea->next = pmst->ealist;
         pmst->ealist = nea;
     }
@@ -498,30 +501,38 @@ void SimAgent::LinkStates(struct m_State *pmst, ExAction eat, Action act, struct
     if (ac == NULL)         // action not exist, add a new one to atlist of pmst and calculate it's payoff
     {
         struct m_Action *nac = NewAc(act);
-        nac->payoff = 0.0; //CalActPayoff(nac->act, pmst);
+        nac->payoff = 0.0; //CalActPayoff(nac->act, pmst);?
+        // add nac to pmst's action list
         nac->next = pmst->atlist;
         pmst->atlist = nac;
     }
 //    else                    // simply update payoff if exists
 //        ac->payoff = CalActPayoff(ac->act, pmst);
 
-    UpdateState(pmst);       // update previous state's payoff recursively
+    UpdateState(pmst);       // update payoff beginning from previous state recursively
     return;
 }
 
+/**
+* \brief Find the maximum payoff of states linked in a specified environment action to one state
+* \param eat specified environment action
+* \param mst to which state the link is
+* \return the maximum payoff
+*/
 float SimAgent::MaxPayoffInEat(ExAction eat, struct m_State *mst)
 {
-    float max_pf = -FLT_MAX;
+    float max_pf = -FLT_MAX;    // set to a possibly minimun value
     struct m_State *nmst;
     struct m_ForwardArcState *fas, *nfas;
 
+    // walk through the forward links
     for (fas = mst->flist; fas != NULL; fas = nfas)
     {
         if (fas->eat == eat)
         {
             nmst = fas->nstate;
 
-            if (nmst->payoff > max_pf)
+            if (nmst->payoff > max_pf)  // record the bigger one
                 max_pf = nmst->payoff;
         }
 
@@ -531,28 +542,41 @@ float SimAgent::MaxPayoffInEat(ExAction eat, struct m_State *mst)
     return max_pf;
 }
 
+/**
+* \brief Calculate the possibility of encountering an specified environment action
+* \param ea environment
+* \param mst the state struct
+* \return the possibility
+*/
 float SimAgent::Prob(struct m_ExAction *ea, struct m_State *mst)
 {
     float eacount = ea->count;
     float stcount = mst->count;
-    return eacount / stcount;
+    return eacount / stcount;   // number of ea divided by the total number
 }
 
+/**
+* \brief Calculate payoff of the specified state
+* \param mst specified state
+* \return payoff of the state
+*/
 float SimAgent::CalStatePayoff(struct m_State *mst)
 {
     dbgmoreprt("CalStatePayoff(): State: %ld, count: %ld\n", mst->st, mst->count);
 
     float u0 = mst->original_payoff;
-    float pf = u0, tmp;
+    float pf = u0;  // set initial value as original payoff
+    float tmp;
 
     struct m_ExAction *ea, *nea;
 
+    // walk through all environment actions
     for (ea = mst->ealist; ea != NULL; ea = nea)
     {
         dbgmoreprt("=============== Ealist ===================\n");
         dbgmoreprt("eid: %ld, count: %ld\n", ea->eat, ea->count);
         tmp = Prob(ea, mst) * MaxPayoffInEat(ea->eat, mst);
-        pf += tmp * discount_rate;
+        pf += tmp * discount_rate;  // accumulative total
         nea = ea->next;
     }
     dbgmoreprt("=============== Ealist End ===================\n");
@@ -560,18 +584,22 @@ float SimAgent::CalStatePayoff(struct m_State *mst)
     return pf;
 }
 
+/**
+* \brief Update states backwards recursively beginning from a specified state
+* \param mst a specified state where the update begins
+*/
 void SimAgent::UpdateState(struct m_State *mst)
 {
     /* update state's payoff */
     float payoff = CalStatePayoff(mst);
     dbgmoreprt("UpdateState(): State: %ld, payoff:%.1f\n", mst->st, payoff);
 
-    if (fabsf(mst->payoff - payoff) > threshold)            // compare with threshold, update if the diff exceeds threshold
+    if (fabsf(mst->payoff - payoff) >= threshold)    // compare with threshold, update if the diff exceeds threshold
     {
         mst->payoff  = payoff;
         dbgmoreprt("Change to payoff: %.1f\n", payoff);
 
-        /* update backward recursively */
+        /* update backwards recursively */
         struct m_BackArcState *bas, *nbas;
         for (bas = mst->blist; bas != NULL; bas = nbas)
         {
@@ -581,8 +609,9 @@ void SimAgent::UpdateState(struct m_State *mst)
     }
     else
     {
-        dbgmoreprt("Payoff no changes, smaller than %.1f\n", threshold);
+        dbgmoreprt("Payoff no changes, it's smaller than %.1f\n", threshold);
     }
+
     /* update actions' payoff */
     struct m_Action *ac, *nac;
     for (ac=mst->atlist; ac!=NULL; ac=nac)
@@ -592,36 +621,50 @@ void SimAgent::UpdateState(struct m_State *mst)
     }
 
     if (mst->mark == SAVED)
-        mst->mark = MODIFIED;           // set mark to modified
+        mst->mark = MODIFIED;   // set mark to indicate the modification
     return;
 }
 
+/**
+* \brief Return the state which is linked by a specified with specified environment action and action.
+* \param eat environment action value
+* \param act action value
+* \param mst the state which links the needed state
+* \return state struct needed, NULL if not found
+*/
 struct m_State *SimAgent::StateByEatAct(ExAction eat, Action act, struct m_State *mst)
 {
     struct m_ForwardArcState *fas, *nfas;
     for (fas=mst->flist; fas!=NULL; fas=nfas)
     {
-        if (fas->eat == eat && fas->act == act)
+        if (fas->eat == eat && fas->act == act)     // check both envir action and action value
             return fas->nstate;
         nfas = fas->next;
     }
     return NULL;
 }
 
+/**
+* \brief Calculate payoff of a specified action of a state
+* \param act action value
+* \param mst state struct which contains the action
+* \return payoff of the action
+*/
 float SimAgent::CalActPayoff(Action act, struct m_State *mst)
 {
-    float ori_payoff = 0.0;             // original payoff of actions
+    float ori_payoff = 0.0;             // original payoff of actions, TODO
     float payoff = ori_payoff;
 
     struct m_ExAction *ea, *nea;
     struct m_State *nmst;
 
+    // walk through the envir action list
     for (ea=mst->ealist; ea!=NULL; ea=nea)
     {
-        nmst = StateByEatAct(ea->eat, act, mst);
+        nmst = StateByEatAct(ea->eat, act, mst);    // find the states which are reached by performing this action
         if (nmst != NULL)
         {
-            payoff += Prob(ea, mst) * (nmst->payoff);
+            payoff += Prob(ea, mst) * (nmst->payoff);   // accumulative total
         }
         nea = ea->next;
     }
@@ -629,10 +672,16 @@ float SimAgent::CalActPayoff(Action act, struct m_State *mst)
     return payoff;
 }
 
+/**
+* \brief Choose the best actions of a state from a candidate action list.
+* \param mst the state
+* \param candidate action list
+* \return best actions
+*/
 vector<Action> SimAgent::BestActions(struct m_State *mst, vector<Action> acts)
 {
     float max_payoff = -FLT_MAX;
-    float ori_payoff = 0.0;         // original payoff of actions
+    float ori_payoff = 0.0;         // original payoff of actions, TODO
     float payoff;
     vector<Action> max_acts;
 
@@ -640,52 +689,59 @@ vector<Action> SimAgent::BestActions(struct m_State *mst, vector<Action> acts)
     for (vector<Action>::iterator act = acts.begin();
             act!=acts.end(); ++act)
     {
-        struct m_Action *mac = Act2Struct(*act, mst);
+        struct m_Action *mac = Act2Struct(*act, mst);   // get action struct from values
 
         if (mac != NULL)
             payoff = mac->payoff;
         else
-            payoff = ori_payoff;
+            payoff = ori_payoff;    // an unseen action has default payoff
 
-        if (payoff > max_payoff)
+        if (payoff > max_payoff)    // find a bigger one, refill the max payoff action list
         {
             max_acts.clear();
             max_acts.push_back(*act);
             max_payoff = payoff;
-
         }
-        else if (payoff == max_payoff)
+        else if (payoff == max_payoff)  // find an equal one, add it to the list
             max_acts.push_back(*act);
     }
     return max_acts;
 }
 
+/**
+* \brief Update memory from a specified state, with its original payoff given in.
+* \param oripayoff original payoff of this state
+* \param expst the state where update begins
+*/
 void SimAgent::UpdateMemory(float oripayoff, State expst)
 {
-    if (pre_in == INVALID_VALUE)  // previous state doesn't exist, it's the first time
+    // FIXME: the search and set of cur_mst and cur_st are done by MaxPayoffRule function, it's urly!
+
+    if (pre_in == INVALID_VALUE)  // previous state doesn't exist, it's running for the first time
     {
         if (cur_mst == NULL)  // first time without memory, create the state and save it to memory
         {
             cur_mst = NewState(cur_st);
-            cur_mst->original_payoff = oripayoff;
-            cur_mst->payoff = oripayoff;
+            cur_mst->original_payoff = oripayoff;   // set original payoff as given
+            cur_mst->payoff = oripayoff;            // set payoff as original payoff
 
+            // add current state to memory
             cur_mst->next = head;
             head = cur_mst;
 
-            states_map.insert(StatesMap::value_type(cur_mst->st, cur_mst));          // insert to map
-            state_num++;        // update global state number
+            states_map.insert(StatesMap::value_type(cur_mst->st, cur_mst));   // insert to hash map
+            state_num++;        // inc global state number
         }
         else             // state found in memory, simply update its count
         {
             cur_mst->count++;
-            if (cur_mst->mark == SAVED)
+            if (cur_mst->mark == SAVED)     // don't forget to change the storage flag
                 cur_mst->mark = MODIFIED;
         }
     }
-    else            // previous state exists
+    else     // previous state exists, it's been running for a while
     {
-        struct m_State *pmst = SearchState(pre_in);
+        struct m_State *pmst = SearchState(pre_in); // found previous state struct
         assert(pmst != NULL);               //ERROR("Previous state lost!\n");
 
         if (cur_mst == NULL)  // mst not exists, create the state, save it to memory, and link it to the previous state
@@ -699,7 +755,7 @@ void SimAgent::UpdateMemory(float oripayoff, State expst)
             states_map.insert(StatesMap::value_type(cur_mst->st, cur_mst));
             state_num++;
 
-            ExAction eat = cur_st - expst;              // calcuate exaction
+            ExAction eat = cur_st - expst;              // calcuate exaction, FIXME: the eat value should be unique
             LinkStates(pmst, eat, pre_out, cur_mst);
         }
         else    // mst already exists, update the count and link it to the previous state (LinkStates will handle it if the link already exists.)
@@ -714,6 +770,9 @@ void SimAgent::UpdateMemory(float oripayoff, State expst)
     return;
 }
 
+/**
+* \brief Free computer memory used by the agent's memory.
+*/
 void SimAgent::FreeMemory()
 {
     // free all states in turn
@@ -726,23 +785,32 @@ void SimAgent::FreeMemory()
     states_map.clear();
 }
 
+/**
+* \brief Remove and free a specified state from computer memory.
+* \param mst the state to be removed
+*/
 void SimAgent::RemoveState(struct m_State *mst)
 {
-//    dbgprt("remove state\n");
     if (mst == NULL)
         ERROR("Cant remove state, state is NULL\n");
+
+    // check if the state if connected by other states.
+    // a state can only be removed when it's a ROOT state, which means no other states is linked to it.
     if (mst->blist != NULL)
     {
-        dbgprt("RemoveState(): This state is still linked to other states, do nothing\n");
+        dbgprt("RemoveState(): This state is still linked to other states, can not be removed!\n");
         return;
     }
 
-    // remove flist recursively
+    // when a state is at root position, all the states which it's connected to (so called child states)
+    // will be removed, and this process is done recursively.
+
+    // walk through the forward list, remove all its child states
     struct m_ForwardArcState *fas, *nfas;
     for (fas=mst->flist; fas!=NULL; fas=nfas)
     {
         nfas = fas->next;
-        RemoveState(fas->nstate);
+        RemoveState(fas->nstate);   // recursive call
         FreeFas(fas);
     }
 
@@ -766,44 +834,59 @@ void SimAgent::RemoveState(struct m_State *mst)
     return FreeState(mst);
 }
 
+/**
+* \brief Implementation of the Maximun Payoff Rule (MPR).
+* \param st state which is concerned
+* \param acts the candidate action list
+* \return actions choosen by MPR
+*/
 vector<Action> SimAgent::MaxPayoffRule(State st, vector<Action> acts)
 {
-    struct m_State *mst = SearchState(st);
+    struct m_State *mst = SearchState(st);  // get the state struct from value
     vector<Action> re;
 
-    if (mst == NULL)        // first time to encounter this state, we know nothing about it, so do nothing
+    if (mst == NULL)        // first time to encounter this state, we know nothing about it, so no rules applied, return the whole list
     {
         re = acts;
     }
-    else                    // we have memory about this state, find the best action of it
+    else                    // we have memories about this state, find the best action of it
     {
-//        printf(", Payoff: %.3f\n", mst->payoff);
         re = BestActions(mst, acts);
     }
 
+    // update current state, FIXME: put it elsewhere?
     cur_mst = mst;
     cur_st = st;
+
     return re;
 }
 
+/**
+* \brief Get information of specified state from memory, and fill it in the given buffer
+* \param st the state whose information is requested
+* \param buffer[out] buffer to store the state information
+* \return the length of state information put in buffer, -1 for error
+*/
 int SimAgent::GetStateInfo(State st, void *buffer) const
 {
-    if (buffer == NULL)
+    if (buffer == NULL) // error, buffer is null
     {
-        dbgprt("GetStateInfo(): incoming buffer is NULL!\n");
+        dbgprt("GetStateInfo(): incoming buffer is NULL, no space to put the information!\n");
         return -1;
     }
 
     struct m_State *mst;
-    mst = SearchState(st);
+    mst = SearchState(st);  // find the state struct in computer memory
 
-    if (mst == NULL)
+    if (mst == NULL)    // error, not found
     {
         dbgprt("GetStateInfo(): State: %ld not found!\n", st);
         return -1;
     }
 
-    unsigned char *ptr = (unsigned char *)buffer;
+    unsigned char *ptr = (unsigned char *)buffer;   // use point ptr to travel through subparts of state information
+
+    // build a state information header
     struct State_Info_Header stif;
     stif.st = st;
     stif.original_payoff = mst->original_payoff;
@@ -825,7 +908,7 @@ int SimAgent::GetStateInfo(State st, void *buffer) const
         memcpy(ptr, &acif, sizeof(struct Action_Info));
         ptr += sizeof(struct Action_Info);
         act_num++;
-        if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)
+        if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)   // exceeds maximun buffer size, finish the filling
         {
             dbgprt("WARNNING: StateInfo size exceeds SI_MAX_SIZE!\n");
             goto finish;
@@ -844,7 +927,7 @@ int SimAgent::GetStateInfo(State st, void *buffer) const
         memcpy(ptr, &eaif, sizeof(struct ExAction_Info));
         ptr += sizeof(struct ExAction_Info);
         eat_num++;
-        if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)
+        if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)  // exceeds maximun buffer size, finish the filling
         {
             dbgprt("WARNNING: StateInfo size exceeds SI_MAX_SIZE!\n");
             goto finish;
@@ -871,7 +954,7 @@ int SimAgent::GetStateInfo(State st, void *buffer) const
                 memcpy(ptr, &lk, sizeof(struct pLink));
                 ptr += sizeof(struct pLink);
                 lk_num++;
-                if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)
+                if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)  // exceeds maximun buffer size, finish the filling
                 {
                     dbgprt("WARNNING: StateInfo size exceeds SI_MAX_SIZE!\n");
                     goto finish;
@@ -882,51 +965,60 @@ int SimAgent::GetStateInfo(State st, void *buffer) const
         nbas = bas->next;
     }
 
-finish:
+finish: // buffer is filled
     /* create state information with continous space */
     stif.act_num = act_num;
     stif.eat_num = eat_num;
     stif.lk_num = lk_num;
 
-    memcpy(buffer, &stif, sizeof(struct State_Info_Header));
+    memcpy(buffer, &stif, sizeof(struct State_Info_Header));    // fill in the header
     int length = ptr - (unsigned char *)buffer;
     return length;
 }
 
+/**
+* \brief Merge a recieved state information to memory.
+* \param stif the state information to be merged
+* \return if the state information is finally accepted and merged, 1 for yes, 0 for no.
+*/
 int SimAgent::MergeStateInfo(struct State_Info_Header *stif)
 {
-    unsigned char *p = (unsigned char *)stif;
+    unsigned char *p = (unsigned char *)stif;   // use point p to travel through each subpart
+    // action information
     p += sizeof(struct State_Info_Header);
     struct Action_Info *atif = (struct Action_Info *)p;
 
+    // environment action information
     int len = stif->act_num * sizeof(struct Action_Info);
     p += len;
     struct ExAction_Info *eaif = (struct ExAction_Info *)p;
 
+    // backward links information
     len = stif->eat_num * sizeof(struct ExAction_Info);
     p += len;
     struct pLink *lk = (struct pLink *)p;
 
     int i;
-    struct m_State *mst = SearchState(stif->st);
+    struct m_State *mst = SearchState(stif->st);    // search for the state
     int better = 0;         // if sender's info is better than mine
 
-    if (mst == NULL)        // if it's new, copy it in memory
+    if (mst == NULL)        // if it's new, accept it in memory
     {
         better = 1;         // anything is better than nothing
 
         mst = NewState(stif->st);
-        /* Add to memory */
+        /* Add to memory, and update counts */
         mst->next = head;
         head = mst;
         states_map.insert(StatesMap::value_type(mst->st, mst));
         state_num++;
 
+        // copy state information
         mst->payoff = stif->payoff;
         mst->original_payoff = stif->original_payoff;
         mst->count = stif->count;
 
-        /* Actions information */
+        /* copy actions information */
         for (i=0; i<stif->act_num; i++)
         {
             struct m_Action *mac = (struct m_Action *)malloc(sizeof(struct m_Action));
@@ -937,7 +1029,7 @@ int SimAgent::MergeStateInfo(struct State_Info_Header *stif)
             mst->atlist = mac;
         }
 
-        /* ExActions information */
+        /* copy ExActions information */
         for (i=0; i<stif->eat_num; i++)
         {
             struct m_ExAction *meat = (struct m_ExAction *)malloc(sizeof(struct m_ExAction));
@@ -948,7 +1040,7 @@ int SimAgent::MergeStateInfo(struct State_Info_Header *stif)
             mst->ealist = meat;
         }
 
-        /* links information */
+        /* copy links information */
         for (i=0; i<stif->lk_num; i++)
         {
             State pst = lk[i].pst;
@@ -965,15 +1057,16 @@ int SimAgent::MergeStateInfo(struct State_Info_Header *stif)
     {
         if (stif->count <= mst->count)               // experience matters
         {
-            better = 0;
+            better = 0;     // no lessons from a newbie
             return better;
         }
 
+        // it's a veteran
         better = 1;
         /* stif->count > mst->count */
         mst->payoff = stif->payoff;
 
-        /* actions information */
+        /* merge action information */
         for (i=0; i<stif->act_num; i++)
         {
             struct m_Action *mac, *nmac;
@@ -997,7 +1090,7 @@ int SimAgent::MergeStateInfo(struct State_Info_Header *stif)
                 mst->atlist = nmac;
             }
         }
-        /* ExActions */
+        /* merge environment action information */
         long delta_count = 0;
 
         for (i = 0; i < stif->eat_num; i++)
@@ -1045,17 +1138,21 @@ int SimAgent::MergeStateInfo(struct State_Info_Header *stif)
         }
 
     }
-    if (better == 1 && mst->mark == SAVED)                // no modification to my state if the recieved one is worse!
+    if (better == 1 && mst->mark == SAVED)     // no modification to my state if I didn't accept it
         mst->mark = MODIFIED;
     return better;
 }
 
+/**
+* \brief Pretty print state information
+* \param specified state information header
+*/
 void SimAgent::PrintStateInfo(struct State_Info_Header *stif)
 {
     if (stif == NULL)
         return;
 
-    int i;
+    int i = 0;
     printf("======================= State: %ld ===========================\n", stif->st);
     printf("Original payoff: %.2f,\t Payoff: %.2f,\t Count: %ld\n", stif->original_payoff, stif->payoff, stif->count);
     printf("--------------------- Actions, Num: %d -----------------------\n", stif->act_num);
@@ -1087,6 +1184,13 @@ void SimAgent::PrintStateInfo(struct State_Info_Header *stif)
     return;
 }
 
+/**
+* \brief Set arguments for connecting database.
+* \param srv database server location
+* \param usr username of database
+* \param passwd password of username
+* \param name of the database
+*/
 void SimAgent::SetDBArgs(string srv, string usr, string passwd, string db)
 {
     db_server = srv;
@@ -1096,6 +1200,10 @@ void SimAgent::SetDBArgs(string srv, string usr, string passwd, string db)
     return;
 }
 
+/**
+* \brief Connect to database.
+* \return -1 for error, 0 for success
+*/
 int SimAgent::DBConnect()
 {
     db_con = mysql_init(NULL);
@@ -1144,11 +1252,19 @@ int SimAgent::DBConnect()
     return 0;
 }
 
+/**
+* \brief Close database.
+*/
 void SimAgent::DBClose()
 {
     return mysql_close(db_con);
 }
 
+/**
+* \brief Get state value from database by specified index.
+* \param index index
+* \return state value of that index, INVALID_VALUE for error or not found
+*/
 State SimAgent::DBStateByIndex(unsigned long index)
 {
     char query_str[256];
@@ -1157,15 +1273,15 @@ State SimAgent::DBStateByIndex(unsigned long index)
     if (mysql_query(db_con, query_str))
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
-        return -1;
+        return INVALID_VALUE;
     }
 
     MYSQL_RES *result = mysql_store_result(db_con);
 
     if (result == NULL)
     {
-        dbgmoreprt("DBStateByIndex(): result == NULL!\n");
-        return -1;
+        dbgmoreprt("DBStateByIndex(): result is  NULL!\n");
+        return INVALID_VALUE;
     }
 
     MYSQL_ROW row = mysql_fetch_row(result);
@@ -1175,7 +1291,7 @@ State SimAgent::DBStateByIndex(unsigned long index)
     {
         dbgmoreprt("DBStateByIndex(): lengths is null\n");
         mysql_free_result(result);
-        return -1;
+        return INVALID_VALUE;
     }
     State rs = atol(row[0]);
 

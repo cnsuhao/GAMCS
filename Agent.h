@@ -59,7 +59,7 @@ public:
     /** These two functions are implementation dependant, declared as pure virtual functions */
     virtual int GetStateInfo(State, void *) const = 0;         /**<  collect information of specified state from memory */
     virtual int MergeStateInfo(struct State_Info_Header *) = 0;       /**<  merge recieved state information into memory */
-    void Update(float, State);      /**< update inner states */
+    void Update(float, State);      /**< update memory from state given its original payoff */
 protected:
     float discount_rate;                                        /**< discount rate (0<,<1)when calculate state payoff */
     float threshold;                                                /**< threshold used in payoff updating */

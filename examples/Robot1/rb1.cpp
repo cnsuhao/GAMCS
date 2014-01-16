@@ -12,7 +12,7 @@ int main(void)
 {
     signal(SIGINT, signal_handler);
     SimAgent ma(0.9, 0.01);
-    ma.SetDBArgs("localhost", "root", "890127", "Robot1");
+    ma.SetDBArgs("localhost", "root", "huangk", "Robot1");
     ma.InitMemory();
 
     Robot1 rb1(1);
