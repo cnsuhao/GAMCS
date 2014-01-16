@@ -9,7 +9,7 @@
 #include "SimAgent.h"
 
 /** \brief Load a specified state from a previous memory stored in database.
- * It's a recursive function, it will load all states directly or indirectly connected to this state to the computer memory.
+ * Note that it will load all states directly or indirectly connected to this state to the computer memory.
  * \param st state value
  * \return state struct of st in computer memory
  *
@@ -17,22 +17,22 @@
 void SimAgent::LoadState(State st)
 {
     char si_buf[SI_MAX_SIZE];
-    struct m_State *mst = SearchState(st);
-    if (mst == NULL)
+
+    struct m_State *mst = SearchState(st);  // search memory for the state first
+    if (mst == NULL)    // not found, create a new state struct
     {
         mst = NewState(st);
         /* Add to memory */
         mst->next = head;
         head = mst;
-        states_map.insert(StatesMap::value_type(mst->st, mst));
+        states_map.insert(StatesMap::value_type(mst->st, mst)); // don't forget to update hash map
     }
 
-    int len = DBFetchStateInfo(st, si_buf);
+    int len = DBFetchStateInfo(st, si_buf);     // get state information from database, return the size
     if (len == -1)       // should not happen, otherwise database corrupted!!
         ERROR("State: %ld should exist, but fetch from Database: %s returns NULL!\n", st, db_name.c_str());
 
     struct State_Info_Header *stif = (struct State_Info_Header *)si_buf;
-
 
     mst->mark = SAVED;      // it's SAVED when just load
     mst->st = stif->st;
@@ -43,13 +43,16 @@ void SimAgent::LoadState(State st)
     unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
     unsigned long ea_len = stif->eat_num * sizeof(struct ExAction_Info);
 
-    unsigned char *p = (unsigned char *)stif;
+    unsigned char *p = (unsigned char *)stif;       // use point p to travel through even parts
+    // point to actions
     p += sizeof(struct State_Info_Header);
     struct Action_Info *atif = (struct Action_Info *)p;
 
+    // point to environment actions
     p += ai_len;
     struct ExAction_Info *eaif = (struct ExAction_Info *)p;
 
+    // point to backward links
     p += ea_len;
     struct pLink *lk = (struct pLink *)p;
 
@@ -76,8 +79,8 @@ void SimAgent::LoadState(State st)
     /* build current state's backward list and previous state's forward lists */
     for (i=0; i<stif->lk_num; i++)
     {
-        struct m_State *pmst = SearchState(lk[i].pst);
-        if (pmst == NULL)
+        struct m_State *pmst = SearchState(lk[i].pst);  // search for previous state in memory
+        if (pmst == NULL)   // not found, create one
         {
             pmst = NewState(lk[i].pst);
             /* Add to memory */
@@ -117,6 +120,7 @@ void SimAgent::InitMemory()
         char label[64] = "Loading: ";
         printf("Initializing Memory from Database: %s ", db_name.c_str());
         fflush(stdout);
+
         /* load memory information */
         struct m_Memory_Info *memif = DBFetchMemoryInfo();
         if (memif != NULL)
@@ -194,79 +198,71 @@ void SimAgent::SaveMemory()
     return;
 }
 
-SimAgent::SimAgent():Agent()
+SimAgent::SimAgent() :
+    state_num(0), lk_num(0), db_con(NULL), db_server(""), db_user(""), db_password(""), db_name(""),
+    db_t_stateinfo("StateInfo"), db_t_meminfo("MemoryInfo"), head(NULL), cur_mst(NULL), cur_st(INVALID_VALUE)
 {
-    //ctor
-    state_num = lk_num = 0;
-    head = NULL;
     states_map.clear();
-
-    db_con = NULL;
-    db_server = "";
-    db_user = "";
-    db_password = "";
-    db_name = "";
-    db_t_stateinfo = "StateInfo";
-    db_t_meminfo = "MemoryInfo";
-
-    cur_mst = NULL;
-    cur_st = -1;
 }
 
-SimAgent::SimAgent(float dr, float th):Agent(dr, th)
+SimAgent::SimAgent(float dr, float th):
+    Agent(dr, th), state_num(0), lk_num(0), db_con(NULL), db_server(""), db_user(""), db_password(""), db_name(""),
+    db_t_stateinfo("StateInfo"), db_t_meminfo("MemoryInfo"), head(NULL), cur_mst(NULL), cur_st(INVALID_VALUE)
 {
-    state_num = lk_num = 0;
-    head = NULL;
     states_map.clear();
-
-    db_con = NULL;
-    db_server = "";
-    db_user = "";
-    db_password = "";
-    db_name = "";
-    db_t_stateinfo = "StateInfo";
-    db_t_meminfo = "MemoryInfo";
-
-    cur_mst = NULL;
-    cur_st = -1;
 }
 
 SimAgent::~SimAgent()
 {
-    //dtor
-    dbgmoreprt("Enter ~SimAgent()\n");
-    if (!db_name.empty())
+    if (!db_name.empty())   // save memory if database not empty
         SaveMemory();
-    FreeMemory();
+    FreeMemory();       // free computer memory
 }
+
+/** \brief search for state value in memory
+ *
+ * \param st state value
+ * \return state struct, NULL for not exists
+ *
+ */
 
 struct m_State *SimAgent::SearchState(State st) const
 {
-    StatesMap::const_iterator it = states_map.find(st);
+    StatesMap::const_iterator it = states_map.find(st); // find the state value in hash map
     if (it != states_map.end())     // found
         return (struct m_State *)(it->second);
     else
         return NULL;
 }
 
+/** \brief create a new state struct
+* \param st state value to be created
+* \return newly created state struct
+*/
 struct m_State *SimAgent::NewState(State st)
 {
     struct m_State *mst = (struct m_State *)malloc(sizeof(struct m_State));
+    // fill in default values
     mst->st = st;
-    mst->original_payoff = 1.0;                 // 1.0 as default
+    mst->original_payoff = 1.0;                 // 1.0 as default, TODO: setting api needed
     mst->payoff = mst->original_payoff;         // set payoff to original payoff, it's important!
-    mst->count = 1;
-    mst->flist = NULL;
+    mst->count = 1;         // it's created when we first encounter it
+    mst->flist = NULL;      // we just create a struct here, no links considered
     mst->blist = NULL;
-    mst->mark = NEW;
-    mst->atlist = NULL;
+    mst->mark = NEW;        // it's new, and should be saved
+    mst->atlist = NULL;     // no actions or environment actions
     mst->ealist = NULL;
     mst->next = NULL;
     return mst;
 }
 
+/** \brief Free a state struct and retrieve its computer memory
+ * \param mst state struct
+ *
+ */
 void SimAgent::FreeState(struct m_State *mst)
 {
+    // before free the struct itself, free its subparts first
     /* free atlist */
     struct m_Action *ac, *nac;
     for (ac = mst->atlist; ac!=NULL; ac=nac)
@@ -302,6 +298,14 @@ void SimAgent::FreeState(struct m_State *mst)
     return free(mst);
 }
 
+/** \brief Create a new forward arc struct
+ *
+ * \param eat the environment action
+ * \param act the action
+ * \return a new forward arc struct
+ *
+ */
+
 struct m_ForwardArcState *SimAgent::NewFas(ExAction eat, Action act)
 {
     struct m_ForwardArcState *fas = (struct m_ForwardArcState *)malloc(sizeof(struct m_ForwardArcState));
@@ -313,11 +317,21 @@ struct m_ForwardArcState *SimAgent::NewFas(ExAction eat, Action act)
     return fas;
 }
 
+/** \brief Free a forward arc struct
+ *
+ * \param fas the struct to be freed
+ *
+ */
 void SimAgent::FreeFas(struct m_ForwardArcState *fas)
 {
     return free(fas);
 }
 
+/** \brief Create a new Back Arc struct
+ *
+ * \return a new back arc struct
+ *
+ */
 struct m_BackArcState *SimAgent::NewBas()
 {
     struct m_BackArcState *bas = (struct m_BackArcState *)malloc(sizeof(struct m_BackArcState));
@@ -326,15 +340,26 @@ struct m_BackArcState *SimAgent::NewBas()
     return bas;
 }
 
+/** \brief Free a back arc struct
+ *
+ */
 void SimAgent::FreeBas(struct m_BackArcState *bas)
 {
     return free(bas);
 }
 
+/** \brief Convert from an action value to a action struct
+ *
+ * \param act action value
+ * \param mst in which state struct to search
+ * \return the action struct found, NULL if not found
+ *
+ */
 struct m_Action* SimAgent::Act2Struct(Action act, struct m_State *mst)
 {
     struct m_Action *ac, *nac;
 
+    // walk through action list
     for (ac = mst->atlist; ac != NULL; ac = nac)
     {
         if (ac->act == act)
@@ -346,10 +371,17 @@ struct m_Action* SimAgent::Act2Struct(Action act, struct m_State *mst)
     return NULL;
 }
 
+/** \brief Convert from an environment action value to a exaction struct
+ *
+ * \param eat environment action value
+ * \param mst in which state struct to search
+ * \return the environment action struct found, NULL if not found
+ *
+ */
 struct m_ExAction* SimAgent::Eat2Struct(ExAction eat, struct m_State *mst)
 {
     struct m_ExAction *ea, *nea;
-
+    // walk through environment action list
     for (ea = mst->ealist; ea != NULL; ea = nea)
     {
         if (ea->eat == eat)
@@ -361,6 +393,12 @@ struct m_ExAction* SimAgent::Eat2Struct(ExAction eat, struct m_State *mst)
     return NULL;
 }
 
+/** \brief Create a new Environment Action struct
+ *
+ * \param eat environment action value
+ * \return a new environment action struct
+ *
+ */
 struct m_ExAction *SimAgent::NewEa(ExAction eat)
 {
     struct m_ExAction *ea = (struct m_ExAction *)malloc(sizeof(struct m_ExAction));
@@ -376,12 +414,18 @@ void SimAgent::FreeEa(struct m_ExAction *ea)
     return free(ea);
 }
 
+/** \brief Create a new Action struct
+ *
+ * \param eat action value
+ * \return a new action struct
+ *
+ */
 struct m_Action *SimAgent::NewAc(Action act)
 {
     struct m_Action *ac = (struct m_Action *)malloc(sizeof(struct m_Action));
 
     ac->act = act;
-    ac->payoff = 0;
+    ac->payoff = 0;     // default payoff is 0, TODO: setting api needed
     ac->next = NULL;
     return ac;
 }
@@ -391,6 +435,14 @@ void SimAgent::FreeAc(struct m_Action *ac)
     return free(ac);
 }
 
+/** \brief Build a link between two states
+ * pmst + eat + act ==> mst
+ * \param pmst previous state struct
+ * \param eat environment action struct of the link
+ * \param act action struct of the link
+ * \param mst state struct
+ *
+ */
 void SimAgent::LinkStates(struct m_State *pmst, ExAction eat, Action act, struct m_State *mst)
 {
     /* check if the link already exists, if so simply update the count of eaction */
@@ -400,12 +452,12 @@ void SimAgent::LinkStates(struct m_State *pmst, ExAction eat, Action act, struct
     {
         if (f->nstate->st == mst->st &&
                 f->act == act &&
-                f->eat == eat)              //
+                f->eat == eat)              // two links equal if and only if their states equal, and actions equal, and environment action equal
         {
-            struct m_ExAction *ea = Eat2Struct(eat, pmst);
-            ea->count++;
+            struct m_ExAction *ea = Eat2Struct(eat, pmst);      // get the environment action struct
+            ea->count++;        // inc count
             UpdateState(pmst);       // update previous state's payoff recursively
-            return;
+            return;     // done, return
         }
 
         nf = f->next;
@@ -586,7 +638,7 @@ vector<Action> SimAgent::BestActions(struct m_State *mst, vector<Action> acts)
 
     max_acts.clear();
     for (vector<Action>::iterator act = acts.begin();
-    act!=acts.end(); ++act)
+            act!=acts.end(); ++act)
     {
         struct m_Action *mac = Act2Struct(*act, mst);
 
