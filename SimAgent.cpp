@@ -14,81 +14,92 @@
  * \return state struct of st in computer memory
  *
  */
-struct m_State *SimAgent::LoadState(State st)
+void SimAgent::LoadState(State st)
 {
-    struct m_State *mst = SearchState(st);  // find if this state is already loaded in computer memory
-    if (mst == NULL)    // didn't find, get it from database
+    char si_buf[SI_MAX_SIZE];
+    struct m_State *mst = SearchState(st);
+    if (mst == NULL)
     {
-        char si_buf[SI_MAX_SIZE];
-        int len = DBFetchStateInfo(st, si_buf);  // fetch state infomation from database, return the size
-        if (len == -1)       // should not happen, otherwise database corrupted!!
-            ERROR("State: %ld should exist, but fetch from Database: %s returns NULL!\n", st, db_name.c_str());
-
-        // build a new state struct from the fetched state information
-        struct State_Info_Header *stif = (struct State_Info_Header *)si_buf;
         mst = NewState(st);
-        mst->mark = SAVED;      // it's SAVED when just load
-        mst->st = stif->st;
-        mst->original_payoff = stif->original_payoff;
-        mst->payoff = stif->payoff;
-        mst->count = stif->count;
-        /* Add the new state to memory */
+        /* Add to memory */
         mst->next = head;
         head = mst;
-        states_map.insert(StatesMap::value_type(mst->st, mst)); // don't forget to update the hash map
-
-        unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
-        unsigned long ea_len = stif->eat_num * sizeof(struct ExAction_Info);
-
-        unsigned char *p = (unsigned char *)stif;       // use point p to travel through different parts, and fetch information
-        p += sizeof(struct State_Info_Header);          // point to actions information
-        struct Action_Info *atif = (struct Action_Info *)p;
-
-        p += ai_len;            // point to environment actions information
-        struct ExAction_Info *eaif = (struct ExAction_Info *)p;
-
-        p += ea_len;            // point to links information
-        struct pLink *lk = (struct pLink *)p;
-
-        int i;
-        /* build actions list */
-        for (i=0; i<stif->act_num; i++)
-        {
-            struct m_Action *mac = NewAc(atif[i].act);
-            mac->payoff = atif[i].payoff;
-
-            mac->next = mst->atlist;
-            mst->atlist = mac;
-        }
-        /* build environment actions list */
-        for (i=0; i<stif->eat_num; i++)
-        {
-            struct m_ExAction *mea = NewEa(eaif[i].eat);
-            mea->count = eaif[i].count;
-
-            mea->next = mst->ealist;
-            mst->ealist = mea;
-        }
-
-        /* build current state's backward list and previous state's forward lists */
-        for (i=0; i<stif->lk_num; i++)
-        {
-            struct m_State *pmst = LoadState(lk[i].pst);    // load state recursively
-            /* build backward list */
-            struct m_BackArcState *mbas = NewBas();
-            mbas->pstate = pmst;
-
-            mbas->next = mst->blist;
-            mst->blist = mbas;
-
-            struct m_ForwardArcState *mfas = NewFas(lk[i].peat, lk[i].pact);
-            mfas->nstate = mst;
-
-            mfas->next = pmst->flist;
-            pmst->flist = mfas;
-        }
+        states_map.insert(StatesMap::value_type(mst->st, mst));
     }
-    return mst;
+
+    int len = DBFetchStateInfo(st, si_buf);
+    if (len == -1)       // should not happen, otherwise database corrupted!!
+        ERROR("State: %ld should exist, but fetch from Database: %s returns NULL!\n", st, db_name.c_str());
+
+    struct State_Info_Header *stif = (struct State_Info_Header *)si_buf;
+
+
+    mst->mark = SAVED;      // it's SAVED when just load
+    mst->st = stif->st;
+    mst->original_payoff = stif->original_payoff;
+    mst->payoff = stif->payoff;
+    mst->count = stif->count;
+
+    unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
+    unsigned long ea_len = stif->eat_num * sizeof(struct ExAction_Info);
+
+    unsigned char *p = (unsigned char *)stif;
+    p += sizeof(struct State_Info_Header);
+    struct Action_Info *atif = (struct Action_Info *)p;
+
+    p += ai_len;
+    struct ExAction_Info *eaif = (struct ExAction_Info *)p;
+
+    p += ea_len;
+    struct pLink *lk = (struct pLink *)p;
+
+    int i;
+    /* build actions list */
+    for (i=0; i<stif->act_num; i++)
+    {
+        struct m_Action *mac = NewAc(atif[i].act);
+        mac->payoff = atif[i].payoff;
+
+        mac->next = mst->atlist;
+        mst->atlist = mac;
+    }
+    /* build exactions list */
+    for (i=0; i<stif->eat_num; i++)
+    {
+        struct m_ExAction *mea = NewEa(eaif[i].eat);
+        mea->count = eaif[i].count;
+
+        mea->next = mst->ealist;
+        mst->ealist = mea;
+    }
+
+    /* build current state's backward list and previous state's forward lists */
+    for (i=0; i<stif->lk_num; i++)
+    {
+        struct m_State *pmst = SearchState(lk[i].pst);
+        if (pmst == NULL)
+        {
+            pmst = NewState(lk[i].pst);
+            /* Add to memory */
+            pmst->next = head;
+            head = pmst;
+            states_map.insert(StatesMap::value_type(pmst->st, pmst));
+        }
+        /* build mst's backward list */
+        struct m_BackArcState *mbas = NewBas();
+        mbas->pstate = pmst;
+
+        mbas->next = mst->blist;
+        mst->blist = mbas;
+        /* build pmst's forward list */
+        struct m_ForwardArcState *mfas = NewFas(lk[i].peat, lk[i].pact);
+        mfas->nstate = mst;
+
+        mfas->next = pmst->flist;
+        pmst->flist = mfas;
+    }
+
+    return;
 }
 
 /** \brief Initialize memory, if saved, loaded from database to computer memory, otherwise do nothing.
@@ -103,7 +114,8 @@ void SimAgent::InitMemory()
     int re = DBConnect();   // otherwise, load memory from database
     if (re == 0)        // successfully connected
     {
-        printf("Initializing Memory from Database: %s .", db_name.c_str());
+        char label[64] = "Loading: ";
+        printf("Initializing Memory from Database: %s ", db_name.c_str());
         fflush(stdout);
         /* load memory information */
         struct m_Memory_Info *memif = DBFetchMemoryInfo();
@@ -117,8 +129,6 @@ void SimAgent::InitMemory()
             lk_num = memif->lk_num;
             free(memif);    // free it, the memory struct are not a substaintial struct for running, it's just used to store meta-memory information
         }
-        printf("..");
-        fflush(stdout);
 
         /* load states information */
         State st;
@@ -127,17 +137,16 @@ void SimAgent::InitMemory()
         {
             dbgmoreprt("DB: %s, LoadState: %ld\n", db_name.c_str(), st);
             LoadState(st);
-            index++;    // next state
-            printf(".");
-            fflush(stdout);
+            index++;
+            PrintProcess(index, state_num, label);
         }
     }
     else    // connect database failed!
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
     }
-    printf("\n");
-    DBClose();      // it's done, close database
+
+    DBClose();
     return;
 }
 
@@ -149,19 +158,17 @@ void SimAgent::SaveMemory()
     if (db_name.empty())    // no database specified, no need to save
         return;
 
-    printf("Saving Memory to DataBase: %s .", db_name.c_str());
-    fflush(stdout);
-    int re = DBConnect();       // connect to database
-    if (re == 0)                // connect successfully
+    char label[64] = "Saving: ";
+    printf("Saving Memory to DataBase: %s ", db_name.c_str());
+    int re = DBConnect();
+    if (re == 0)
     {
         /* save memory information */
         DBAddMemoryInfo();
-        printf("..");
-        fflush(stdout);
-
         /* save states information */
         char si_buf[SI_MAX_SIZE];
         struct m_State *mst, *nmst;
+        unsigned long index = 0;
         for (mst=head; mst!=NULL; mst=nmst)
         {
             if (mst->mark == NEW)
@@ -176,14 +183,13 @@ void SimAgent::SaveMemory()
                 GetStateInfo(mst->st, si_buf);
                 DBUpdateStateInfo((struct State_Info_Header *)si_buf);
             }
-            printf(".");
-            fflush(stdout);
             mst->mark = SAVED;
 
+            index++;
+            PrintProcess(index, state_num, label);
             nmst = mst->next;
         }
     }
-    printf("\n");
     DBClose();
     return;
 }
@@ -1382,4 +1388,38 @@ struct m_Memory_Info *SimAgent::DBFetchMemoryInfo()
     mysql_free_result(result);          // free result
 
     return memif;
+}
+
+void SimAgent::PrintProcess(unsigned long current, unsigned long total, char *label)
+{
+    double prcnt;
+    int num_of_dots;
+    char buffer[80] = {0};
+    int width;
+    /* get term width */
+    FILE *fp;
+    prcnt=1.0*current/total;
+    fp = popen("stty size | cut -d\" \" -f2","r");
+    fgets(buffer, sizeof(buffer),fp);
+    pclose(fp);
+    width = atoi(buffer);
+
+    if ( width < 32)
+    {
+        printf("\e[1A%3d%% completed.\n", (int)(prcnt*100));
+    }
+    else
+    {
+        num_of_dots = width - 20;
+
+        char *pline_to_print = (char *)malloc( sizeof(char)*width );
+        int dots = (int)(num_of_dots*prcnt);
+
+        memset(pline_to_print,0,width);
+        memset(pline_to_print,'>',dots);
+        memset(pline_to_print+dots, ' ', num_of_dots - dots);
+        printf("\e[1A%s[%s] %3d%% \n", label, pline_to_print,(int)(prcnt*100));
+        free(pline_to_print);
+    }
+    return;
 }
