@@ -73,20 +73,20 @@ class SimAgent : public Agent
         SimAgent(float, float);
         virtual ~SimAgent();
 
-        virtual int GetStateInfo(State, void *) const;                 /**< implementing GetStateInfo function */
-        virtual int MergeStateInfo(struct State_Info_Header *);               /**< implementing MergeStateInfo function */
+        int GetStateInfo(State, void *) const;                 /**< implementing GetStateInfo function */
+        int MergeStateInfo(struct State_Info_Header *);               /**< implementing MergeStateInfo function */
         static void PrintStateInfo(struct State_Info_Header *);         /**< print state information gracefully */
         void SetDBArgs(string, string, string, string);                 /**< set database related arguments */
         void InitMemory();              /**< load memory from database */
         void SaveMemory();              /**< save memory to database */
 
     protected:
-        virtual vector<Action> MaxPayoffRule(State, vector<Action>);    /**< implementing maximun payoff rule */
-        void UpdateMemory(float, State);            /**< update memory recursively beginning from a specified state */
-
     private:
-       unsigned long state_num;                  /**< total number of states in memory */
+        unsigned long state_num;                  /**< total number of states in memory */
         unsigned long lk_num;                    /**< total number of links between states in memory */
+
+        vector<Action> MaxPayoffRule(State, vector<Action>);    /**< implementing maximun payoff rule */
+        void UpdateMemory(float, State);            /**< implementing UpdateMemory of Agent */
 
         MYSQL *db_con;      /**< database connection handler */
         string db_server;   /**< database server address */

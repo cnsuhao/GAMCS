@@ -12,7 +12,6 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
-					<Add option="-std=c++11" />
 					<Add option="-Wextra" />
 					<Add option="-Wall" />
 					<Add option="-pg" />
@@ -78,6 +77,7 @@
 			</Target>
 		</Build>
 		<Compiler>
+			<Add option="-std=c++0x" />
 			<Add option="-Wall" />
 			<Add option="-pg" />
 			<Add option="-g" />
