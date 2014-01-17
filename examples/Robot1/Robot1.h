@@ -13,13 +13,13 @@ class Robot1 : public Avatar
 
     protected:
     private:
-        State position;
+        Agent::State position;
 
-        State GetCurrentState();
-        void DoAction(Action);
-        vector<Action> ActionList(State);
-        State ExpectedState();
-        float OriginalPayoff(State);
+        Agent::State GetCurrentState();
+        void DoAction(Agent::Action);
+        std::vector<Agent::Action> ActionCandidates(Agent::State);
+        Agent::State ExpectedState();
+        float OriginalPayoff(Agent::State);
 };
 
 #endif // ROBOT1_H

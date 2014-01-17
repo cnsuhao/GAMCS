@@ -6,9 +6,12 @@
 *
 *	@Modify date:
 ***********************************************************************/
+#include <stdlib.h>
+#include <time.h>
+#include "Debug.h"
 #include "GIOM.h"
 
-GIOM::GIOM() : cur_in(INVALID_VALUE), cur_out(INVALID_VALUE)
+GIOM::GIOM() : cur_in(INVALID_INPUT), cur_out(INVALID_OUTPUT)
 {
     srand(time(NULL));          // random seed, true random values needed
 }
@@ -24,7 +27,7 @@ GIOM::~GIOM()
  * \return outputs distribution after restrict
  *
  */
-vector<Output> GIOM::Restrict(Input in, vector<Output> outlist)
+std::vector<GIOM::Output> GIOM::Restrict(Input in, const std::vector<GIOM::Output> &outlist)
 {
     UNUSED(in);
     return outlist; // return outlist as it is
@@ -33,20 +36,20 @@ vector<Output> GIOM::Restrict(Input in, vector<Output> outlist)
 /** \brief Process function of GIOM.
  * Return a random item from the restricted outputs by defaut.
  * \param in input identity
- * \return output
+ * \return GIOM::Output
  *
  */
-Output GIOM::Process(Input in, vector<Output> outlist)
+GIOM::Output GIOM::Process(Input in, const std::vector<GIOM::Output> &outlist)
 {
-    vector<Output> restricited_outputs = Restrict(in, outlist); // get restricted output values first
-    if (restricited_outputs.empty())    // no output generated, return an invalid output
-        return INVALID_VALUE;
+    std::vector<GIOM::Output> restricited_outputs = Restrict(in, outlist); // get restricted GIOM::Output values first
+    if (restricited_outputs.empty())    // no GIOM::Output generated, return an invalid GIOM::Output
+        return INVALID_OUTPUT;
 
-    int sz = restricited_outputs.size();    // number of output values
-    int index = rand() % (sz);      // choose an output value randomly
-    Output out = restricited_outputs[index];
+    int sz = restricited_outputs.size();    // number of GIOM::Output values
+    int index = rand() % (sz);      // choose an GIOM::Output value randomly
+    GIOM::Output out = restricited_outputs[index];
 
-    // store states
+    // store input and GIOM::Output
     cur_in = in;
     cur_out = out;
     return out;
@@ -67,7 +70,7 @@ float GIOM::Entropy()
  */
 void GIOM::Update()
 {
-    cur_in = INVALID_VALUE;
-    cur_out = INVALID_VALUE;
+    cur_in = INVALID_INPUT;
+    cur_out = INVALID_OUTPUT;
     return;
 }

@@ -6,7 +6,14 @@
 *
 *	@Modify date:
 ***********************************************************************/
+#include <fstream>
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <signal.h>
 #include "SimGroup.h"
+#include "Debug.h"
 
 /**
 * \brief Send message to all neighbours of a member.
@@ -15,7 +22,7 @@
 * \param length length of the message
 * \return length of message that has been sent
 */
-int SimGroup::Send(int id, void *buffer, size_t length)
+int SimGroup::Send(int id, const void *buffer, size_t length)
 {
     size_t re = 0;
     if (length > DATA_SIZE) // check length
@@ -34,9 +41,9 @@ int SimGroup::Send(int id, void *buffer, size_t length)
         printf("------------------------------ Send End----------------------------------\n\n");
         #endif
 
-        vector<int> neighs = GetNeighs(id);     // get all its neightbours, the message will send to all of they
+        std::vector<int> neighs = GetNeighs(id);     // get all its neightbours, the message will send to all of they
         // walk through all its neighbours, send message to they one by one
-        for (vector<int>::iterator it = neighs.begin();
+        for (std::vector<int>::iterator it = neighs.begin();
         it != neighs.end(); ++it)
         {
             // for a neighbour
@@ -108,7 +115,7 @@ int SimGroup::Recv(int id, void *buffer, size_t length)
 * \brief Load topological structure of a group from a configure file.
 * \param tf file name
 */
-void SimGroup::LoadTopo(string tf)
+void SimGroup::LoadTopo(std::string tf)
 {
     topofile = tf;
     BuildNeighsChannels();
@@ -137,7 +144,7 @@ SimGroup::SimGroup(int i) : Group(i), topofile("")
 
 SimGroup::~SimGroup()
 {
-    for (vector<int>::iterator it = members.begin(); it!=members.end(); ++it)
+    for (std::vector<int>::iterator it = members.begin(); it!=members.end(); ++it)
     {
         /* free neighlist */
         struct Neigh *neigh = NULL, *nneigh = NULL;
@@ -172,9 +179,9 @@ struct Channel *SimGroup::GetChannel(int id)
 * \param id member id
 * \return neighbour list
 */
-vector<int> SimGroup::GetNeighs(int id)
+std::vector<int> SimGroup::GetNeighs(int id)
 {
-    vector<int> neighs;
+    std::vector<int> neighs;
     neighs.clear();
 
     // walk through one's neighlist
@@ -198,7 +205,7 @@ void SimGroup::BuildNeighsChannels()
         return;
     }
 
-    fstream tf(topofile.c_str());   // open topofile
+    std::fstream tf(topofile.c_str());   // open topofile
 
     if (!tf.is_open())
     {
@@ -235,7 +242,7 @@ void SimGroup::BuildNeighsChannels()
     member_num = members.size();    // number of members
 
     /* initialize channels */
-    for (vector<int>::iterator it = members.begin(); it!=members.end(); ++it)
+    for (std::vector<int>::iterator it = members.begin(); it!=members.end(); ++it)
     {
         channels[*it].msg = (struct Msg *)malloc(sizeof(struct Msg) * CHANNEL_SIZE);
         assert(channels[*it].msg != NULL);

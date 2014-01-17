@@ -5,6 +5,7 @@
 #include <sys/syscall.h>
 #include <pthread.h>
 #include <signal.h>
+#include <vector>
 #include "../../Avatar.h"
 
 class Individual : public Avatar
@@ -16,13 +17,12 @@ class Individual : public Avatar
     protected:
         void Run();
     private:
-        State position;
+        Agent::State position;
 
-        State GetCurrentState();
-        void DoAction(Action);
-        vector<Action> ActionList(State);
-        State ExpectedState();
-        float OriginalPayoff(State);
+        Agent::State GetCurrentState();
+        void DoAction(Agent::Action);
+        std::vector<Agent::Action> ActionCandidates(Agent::State);
+        float OriginalPayoff(Agent::State);
 };
 
 #endif // INDIVIDUAL_H

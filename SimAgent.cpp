@@ -6,7 +6,12 @@
 *
 *	@Modify date:
 ***********************************************************************/
+#include <math.h>
+#include <float.h>
+#include <string.h>
+#include <string>
 #include "SimAgent.h"
+#include "Debug.h"
 
 /** \brief Load a specified state from a previous memory stored in database.
  * Note that it will load all states directly or indirectly connected to this state to the computer memory.
@@ -14,7 +19,7 @@
  * \return state struct of st in computer memory
  *
  */
-void SimAgent::LoadState(State st)
+void SimAgent::LoadState(Agent::State st)
 {
     char si_buf[SI_MAX_SIZE];
 
@@ -30,7 +35,7 @@ void SimAgent::LoadState(State st)
 
     int len = DBFetchStateInfo(st, si_buf);     // get state information from database, return the size
     if (len == -1)       // should not happen, otherwise database corrupted!!
-        ERROR("State: %ld should exist, but fetch from Database: %s returns NULL!\n", st, db_name.c_str());
+        ERROR("state: %ld should exist, but fetch from Database: %s returns NULL!\n", st, db_name.c_str());
 
     struct State_Info_Header *stif = (struct State_Info_Header *)si_buf;
 
@@ -41,7 +46,7 @@ void SimAgent::LoadState(State st)
     mst->count = stif->count;
 
     unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
-    unsigned long ea_len = stif->eat_num * sizeof(struct ExAction_Info);
+    unsigned long ea_len = stif->eat_num * sizeof(struct EnvAction_Info);
 
     unsigned char *p = (unsigned char *)stif;       // use point p to travel through even parts
     // point to actions
@@ -50,11 +55,11 @@ void SimAgent::LoadState(State st)
 
     // point to environment actions
     p += ai_len;
-    struct ExAction_Info *eaif = (struct ExAction_Info *)p;
+    struct EnvAction_Info *eaif = (struct EnvAction_Info *)p;
 
     // point to backward links
     p += ea_len;
-    struct pLink *lk = (struct pLink *)p;
+    struct BackLink *lk = (struct BackLink *)p;
 
     int i;
     /* build actions list */
@@ -69,7 +74,7 @@ void SimAgent::LoadState(State st)
     /* build exactions list */
     for (i=0; i<stif->eat_num; i++)
     {
-        struct m_ExAction *mea = NewEa(eaif[i].eat);
+        struct m_EnvAction *mea = NewEa(eaif[i].eat);
         mea->count = eaif[i].count;
 
         mea->next = mst->ealist;
@@ -135,9 +140,9 @@ void SimAgent::InitMemory()
         }
 
         /* load states information */
-        State st;
+        Agent::State st;
         unsigned long index = 0;    // load states from database one by one
-        while((st = DBStateByIndex(index)) != INVALID_VALUE)
+        while((st = DBStateByIndex(index)) != INVALID_STATE)
         {
             dbgmoreprt("DB: %s, LoadState: %ld\n", db_name.c_str(), st);
             LoadState(st);
@@ -177,13 +182,13 @@ void SimAgent::SaveMemory()
         {
             if (mst->mark == NEW)
             {
-                dbgmoreprt("DB: %s, State: %ld, Mark: %d\n", db_name.c_str(),mst->st, mst->mark);
+                dbgmoreprt("DB: %s, state: %ld, Mark: %d\n", db_name.c_str(),mst->st, mst->mark);
                 GetStateInfo(mst->st, si_buf);
                 DBAddStateInfo((struct State_Info_Header *)si_buf);
             }
             else if (mst->mark == MODIFIED)
             {
-                dbgmoreprt("DB: %s, State: %ld, Mark: %d\n", db_name.c_str(),mst->st, mst->mark);
+                dbgmoreprt("DB: %s, state: %ld, Mark: %d\n", db_name.c_str(),mst->st, mst->mark);
                 GetStateInfo(mst->st, si_buf);
                 DBUpdateStateInfo((struct State_Info_Header *)si_buf);
             }
@@ -226,7 +231,7 @@ SimAgent::~SimAgent()
  *
  */
 
-struct m_State *SimAgent::SearchState(State st) const
+struct m_State *SimAgent::SearchState(Agent::State st) const
 {
     StatesMap::const_iterator it = states_map.find(st); // find the state value in hash map
     if (it != states_map.end())     // found
@@ -239,7 +244,7 @@ struct m_State *SimAgent::SearchState(State st) const
 * \param st state value to be created
 * \return newly created state struct
 */
-struct m_State *SimAgent::NewState(State st)
+struct m_State *SimAgent::NewState(Agent::State st)
 {
     struct m_State *mst = (struct m_State *)malloc(sizeof(struct m_State));
     // fill in default values
@@ -272,7 +277,7 @@ void SimAgent::FreeState(struct m_State *mst)
     }
 
     /* free ealist */
-    struct m_ExAction *ea, *nea;
+    struct m_EnvAction *ea, *nea;
     for (ea = mst->ealist; ea != NULL; ea = nea)
     {
         nea = ea->next;
@@ -306,7 +311,7 @@ void SimAgent::FreeState(struct m_State *mst)
  *
  */
 
-struct m_ForwardArcState *SimAgent::NewFas(ExAction eat, Action act)
+struct m_ForwardArcState *SimAgent::NewFas(EnvAction eat, Agent::Action act)
 {
     struct m_ForwardArcState *fas = (struct m_ForwardArcState *)malloc(sizeof(struct m_ForwardArcState));
 
@@ -355,7 +360,7 @@ void SimAgent::FreeBas(struct m_BackArcState *bas)
  * \return the action struct found, NULL if not found
  *
  */
-struct m_Action* SimAgent::Act2Struct(Action act, struct m_State *mst)
+struct m_Action* SimAgent::Act2Struct(Agent::Action act, const struct m_State *mst) const
 {
     struct m_Action *ac, *nac;
 
@@ -371,17 +376,17 @@ struct m_Action* SimAgent::Act2Struct(Action act, struct m_State *mst)
     return NULL;
 }
 
-/** \brief Convert from an environment action value to a exaction struct
+/** \brief Convert from an environment action value to a EnvAction struct
  *
  * \param eat environment action value
  * \param mst in which state struct to search
  * \return the environment action struct found, NULL if not found
  *
  */
-struct m_ExAction* SimAgent::Eat2Struct(ExAction eat, struct m_State *mst)
+struct m_EnvAction* SimAgent::Eat2Struct(EnvAction eat, const struct m_State *mst) const
 {
-    struct m_ExAction *ea, *nea;
-    // walk through environment action list
+    struct m_EnvAction *ea, *nea;
+    // walk through environment Agent::Action list
     for (ea = mst->ealist; ea != NULL; ea = nea)
     {
         if (ea->eat == eat)
@@ -393,15 +398,15 @@ struct m_ExAction* SimAgent::Eat2Struct(ExAction eat, struct m_State *mst)
     return NULL;
 }
 
-/** \brief Create a new Environment Action struct
+/** \brief Create a new Environment action struct
  *
  * \param eat environment action value
  * \return a new environment action struct
  *
  */
-struct m_ExAction *SimAgent::NewEa(ExAction eat)
+struct m_EnvAction *SimAgent::NewEa(EnvAction eat)
 {
-    struct m_ExAction *ea = (struct m_ExAction *)malloc(sizeof(struct m_ExAction));
+    struct m_EnvAction *ea = (struct m_EnvAction *)malloc(sizeof(struct m_EnvAction));
 
     ea->eat = eat;
     ea->count = 1;
@@ -409,18 +414,18 @@ struct m_ExAction *SimAgent::NewEa(ExAction eat)
     return ea;
 }
 
-void SimAgent::FreeEa(struct m_ExAction *ea)
+void SimAgent::FreeEa(struct m_EnvAction *ea)
 {
     return free(ea);
 }
 
-/** \brief Create a new Action struct
+/** \brief Create a new action struct
  *
  * \param eat action value
  * \return a new action struct
  *
  */
-struct m_Action *SimAgent::NewAc(Action act)
+struct m_Action *SimAgent::NewAc(Agent::Action act)
 {
     struct m_Action *ac = (struct m_Action *)malloc(sizeof(struct m_Action));
 
@@ -443,7 +448,7 @@ void SimAgent::FreeAc(struct m_Action *ac)
  * \param mst state struct
  *
  */
-void SimAgent::LinkStates(struct m_State *pmst, ExAction eat, Action act, struct m_State *mst)
+void SimAgent::LinkStates(struct m_State *pmst, EnvAction eat, Agent::Action act, struct m_State *mst)
 {
     /* check if the link already exists, if so simply update the count of environment action */
     struct m_ForwardArcState *f, *nf;
@@ -454,7 +459,7 @@ void SimAgent::LinkStates(struct m_State *pmst, ExAction eat, Action act, struct
                 f->act == act &&
                 f->eat == eat)   // two links equal if and only if their states equal, and actions equal, and environment action equal
         {
-            struct m_ExAction *ea = Eat2Struct(eat, pmst);      // get the environment action struct
+            struct m_EnvAction *ea = Eat2Struct(eat, pmst);      // get the environment action struct
             ea->count++;        // inc count
             UpdateState(pmst);       // update previous state's payoff recursively
             return;     // done, return
@@ -483,11 +488,11 @@ void SimAgent::LinkStates(struct m_State *pmst, ExAction eat, Action act, struct
     *  So we have to figure out exactly which of them doesn't exist.
     */
     /* check eaction */
-    struct m_ExAction *ea = Eat2Struct(eat, pmst);
+    struct m_EnvAction *ea = Eat2Struct(eat, pmst);
 
     if (ea == NULL)         // eaction not exist, add a new one to the ealist of pmst
     {
-        struct m_ExAction *nea = NewEa(eat);
+        struct m_EnvAction *nea = NewEa(eat);
         // add nea to pmst's environment action list
         nea->next = pmst->ealist;
         pmst->ealist = nea;
@@ -519,7 +524,7 @@ void SimAgent::LinkStates(struct m_State *pmst, ExAction eat, Action act, struct
 * \param mst to which state the link is
 * \return the maximum payoff
 */
-float SimAgent::MaxPayoffInEat(ExAction eat, struct m_State *mst)
+float SimAgent::MaxPayoffInEat(EnvAction eat, const struct m_State *mst) const
 {
     float max_pf = -FLT_MAX;    // set to a possibly minimun value
     struct m_State *nmst;
@@ -548,7 +553,7 @@ float SimAgent::MaxPayoffInEat(ExAction eat, struct m_State *mst)
 * \param mst the state struct
 * \return the possibility
 */
-float SimAgent::Prob(struct m_ExAction *ea, struct m_State *mst)
+float SimAgent::Prob(const struct m_EnvAction *ea, const struct m_State *mst) const
 {
     float eacount = ea->count;
     float stcount = mst->count;
@@ -560,15 +565,15 @@ float SimAgent::Prob(struct m_ExAction *ea, struct m_State *mst)
 * \param mst specified state
 * \return payoff of the state
 */
-float SimAgent::CalStatePayoff(struct m_State *mst)
+float SimAgent::CalStatePayoff(const struct m_State *mst) const
 {
-    dbgmoreprt("CalStatePayoff(): State: %ld, count: %ld\n", mst->st, mst->count);
+    dbgmoreprt("CalStatePayoff(): state: %ld, count: %ld\n", mst->st, mst->count);
 
     float u0 = mst->original_payoff;
     float pf = u0;  // set initial value as original payoff
     float tmp;
 
-    struct m_ExAction *ea, *nea;
+    struct m_EnvAction *ea, *nea;
 
     // walk through all environment actions
     for (ea = mst->ealist; ea != NULL; ea = nea)
@@ -592,7 +597,7 @@ void SimAgent::UpdateState(struct m_State *mst)
 {
     /* update state's payoff */
     float payoff = CalStatePayoff(mst);
-    dbgmoreprt("UpdateState(): State: %ld, payoff:%.1f\n", mst->st, payoff);
+    dbgmoreprt("UpdateState(): state: %ld, payoff:%.1f\n", mst->st, payoff);
 
     if (fabsf(mst->payoff - payoff) >= threshold)    // compare with threshold, update if the diff exceeds threshold
     {
@@ -632,7 +637,7 @@ void SimAgent::UpdateState(struct m_State *mst)
 * \param mst the state which links the needed state
 * \return state struct needed, NULL if not found
 */
-struct m_State *SimAgent::StateByEatAct(ExAction eat, Action act, struct m_State *mst)
+struct m_State *SimAgent::StateByEatAct(EnvAction eat, Agent::Action act, const struct m_State *mst) const
 {
     struct m_ForwardArcState *fas, *nfas;
     for (fas=mst->flist; fas!=NULL; fas=nfas)
@@ -650,12 +655,12 @@ struct m_State *SimAgent::StateByEatAct(ExAction eat, Action act, struct m_State
 * \param mst state struct which contains the action
 * \return payoff of the action
 */
-float SimAgent::CalActPayoff(Action act, struct m_State *mst)
+float SimAgent::CalActPayoff(Agent::Action act, const struct m_State *mst) const
 {
     float ori_payoff = 0.0;             // original payoff of actions, TODO
     float payoff = ori_payoff;
 
-    struct m_ExAction *ea, *nea;
+    struct m_EnvAction *ea, *nea;
     struct m_State *nmst;
 
     // walk through the envir action list
@@ -678,15 +683,15 @@ float SimAgent::CalActPayoff(Action act, struct m_State *mst)
 * \param candidate action list
 * \return best actions
 */
-vector<Action> SimAgent::BestActions(struct m_State *mst, vector<Action> acts)
+std::vector<Agent::Action> SimAgent::BestActions(const struct m_State *mst, const std::vector<Agent::Action> &acts)
 {
     float max_payoff = -FLT_MAX;
     float ori_payoff = 0.0;         // original payoff of actions, TODO
     float payoff;
-    vector<Action> max_acts;
+    std::vector<Agent::Action> max_acts;
 
     max_acts.clear();
-    for (vector<Action>::iterator act = acts.begin();
+    for (std::vector<Agent::Action>::const_iterator act = acts.begin();
             act!=acts.end(); ++act)
     {
         struct m_Action *mac = Act2Struct(*act, mst);   // get action struct from values
@@ -716,7 +721,7 @@ void SimAgent::UpdateMemory(float oripayoff)
 {
     printf("pre_in: %ld\n", pre_in);
 
-    if (pre_in == INVALID_VALUE)    // previous state not exist, it's running for the first time
+    if (pre_in == INVALID_STATE)    // previous state not exist, it's running for the first time
     {
         //NOTE: cur_mst is already set in MaxPayoffRule() function
         if (cur_mst == NULL)    // first time without memory, create current state struct in memory
@@ -744,7 +749,8 @@ void SimAgent::UpdateMemory(float oripayoff)
 
     /* previous state exists */
     struct m_State *pmst = SearchState(pre_in); // found previous state struct
-    assert(pmst != NULL);   // it exists, we should find it.
+    if (pmst == NULL)
+        ERROR("Can not find previous state in memory, which should be existing!");
 
     //NOTE: cur_mst is already set in MaxPayoffRule() function
     if (cur_mst == NULL)    // currrent state struct not exists in memory, create it in memory, and link it to the previous state
@@ -759,7 +765,7 @@ void SimAgent::UpdateMemory(float oripayoff)
         states_map.insert(StatesMap::value_type(cur_mst->st, cur_mst));
         state_num++;
 
-        ExAction peat = cur_in - pre_in - pre_out;  // calcuate previous environment action
+        EnvAction peat = cur_in - pre_in - pre_out;  // calcuate previous environment action
         LinkStates(pmst, peat, pre_out, cur_mst);   // build the link
     }
     else    // current state struct already exists, update the count and link it to the previous state (LinkStates will handle it if the link already exists.)
@@ -769,7 +775,7 @@ void SimAgent::UpdateMemory(float oripayoff)
         if (cur_mst->mark == SAVED)
             cur_mst->mark = MODIFIED;
 
-        ExAction peat = cur_in - pre_in - pre_out;
+        EnvAction peat = cur_in - pre_in - pre_out;
         LinkStates(pmst, peat, pre_out, cur_mst);
     }
 
@@ -821,7 +827,7 @@ void SimAgent::RemoveState(struct m_State *mst)
     }
 
     // remove ealist
-    struct m_ExAction *ea, *nea;
+    struct m_EnvAction *ea, *nea;
     for (ea=mst->ealist; ea!=NULL; ea=nea)
     {
         nea = ea->next;
@@ -846,10 +852,10 @@ void SimAgent::RemoveState(struct m_State *mst)
 * \param acts the candidate action list
 * \return actions choosen by MPR
 */
-vector<Action> SimAgent::MaxPayoffRule(State st, vector<Action> acts)
+std::vector<Agent::Action> SimAgent::MaxPayoffRule(Agent::State st, const std::vector<Agent::Action> &acts)
 {
     cur_mst = SearchState(st);  // get the state struct from state value
-    vector<Action> re;
+    std::vector<Agent::Action> re;
 
     if (cur_mst == NULL)        // first time to encounter this state, we know nothing about it, so no rules applied, return the whole list
     {
@@ -869,7 +875,7 @@ vector<Action> SimAgent::MaxPayoffRule(State st, vector<Action> acts)
 * \param buffer[out] buffer to store the state information
 * \return the length of state information put in buffer, -1 for error
 */
-int SimAgent::GetStateInfo(State st, void *buffer) const
+int SimAgent::GetStateInfo(Agent::State st, void *buffer) const
 {
     if (buffer == NULL) // error, buffer is null
     {
@@ -882,7 +888,7 @@ int SimAgent::GetStateInfo(State st, void *buffer) const
 
     if (mst == NULL)    // error, not found
     {
-        dbgprt("GetStateInfo(): State: %ld not found!\n", st);
+        dbgprt("GetStateInfo(): state: %ld not found!\n", st);
         return -1;
     }
 
@@ -898,7 +904,7 @@ int SimAgent::GetStateInfo(State st, void *buffer) const
     int act_num = 0;
     int eat_num = 0;
     int lk_num = 0;
-    /* Action information */
+    /* action information */
     ptr += sizeof(struct State_Info_Header);
     struct Action_Info acif;
 
@@ -919,15 +925,15 @@ int SimAgent::GetStateInfo(State st, void *buffer) const
         nac = ac->next;
     }
 
-    /* ExAction information */
-    struct ExAction_Info eaif;
-    struct m_ExAction *ea, *nea;
+    /* EnvAction information */
+    struct EnvAction_Info eaif;
+    struct m_EnvAction *ea, *nea;
     for (ea=mst->ealist; ea!=NULL; ea=nea)
     {
         eaif.count = ea->count;
         eaif.eat = ea->eat;
-        memcpy(ptr, &eaif, sizeof(struct ExAction_Info));
-        ptr += sizeof(struct ExAction_Info);
+        memcpy(ptr, &eaif, sizeof(struct EnvAction_Info));
+        ptr += sizeof(struct EnvAction_Info);
         eat_num++;
         if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)  // exceeds maximun buffer size, finish the filling
         {
@@ -938,7 +944,7 @@ int SimAgent::GetStateInfo(State st, void *buffer) const
     }
 
     /* links information */
-    struct pLink lk;
+    struct BackLink lk;
     struct m_BackArcState *bas, *nbas;
     for (bas=mst->blist; bas!=NULL; bas=nbas)
     {
@@ -953,8 +959,8 @@ int SimAgent::GetStateInfo(State st, void *buffer) const
                 lk.pst = bas->pstate->st;
                 lk.pact = fas->act;
                 lk.peat = fas->eat;
-                memcpy(ptr, &lk, sizeof(struct pLink));
-                ptr += sizeof(struct pLink);
+                memcpy(ptr, &lk, sizeof(struct BackLink));
+                ptr += sizeof(struct BackLink);
                 lk_num++;
                 if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)  // exceeds maximun buffer size, finish the filling
                 {
@@ -983,7 +989,7 @@ finish: // buffer is filled
 * \param stif the state information to be merged
 * \return if the state information is finally accepted and merged, 1 for yes, 0 for no.
 */
-int SimAgent::MergeStateInfo(struct State_Info_Header *stif)
+int SimAgent::MergeStateInfo(const struct State_Info_Header *stif)
 {
     unsigned char *p = (unsigned char *)stif;   // use point p to travel through each subpart
     // action information
@@ -993,12 +999,12 @@ int SimAgent::MergeStateInfo(struct State_Info_Header *stif)
     // environment action information
     int len = stif->act_num * sizeof(struct Action_Info);
     p += len;
-    struct ExAction_Info *eaif = (struct ExAction_Info *)p;
+    struct EnvAction_Info *eaif = (struct EnvAction_Info *)p;
 
     // backward links information
-    len = stif->eat_num * sizeof(struct ExAction_Info);
+    len = stif->eat_num * sizeof(struct EnvAction_Info);
     p += len;
-    struct pLink *lk = (struct pLink *)p;
+    struct BackLink *lk = (struct BackLink *)p;
 
     int i;
     struct m_State *mst = SearchState(stif->st);    // search for the state
@@ -1034,7 +1040,7 @@ int SimAgent::MergeStateInfo(struct State_Info_Header *stif)
         /* copy ExActions information */
         for (i=0; i<stif->eat_num; i++)
         {
-            struct m_ExAction *meat = (struct m_ExAction *)malloc(sizeof(struct m_ExAction));
+            struct m_EnvAction *meat = (struct m_EnvAction *)malloc(sizeof(struct m_EnvAction));
             meat->eat = eaif[i].eat;
             meat->count = eaif[i].count;
 
@@ -1045,7 +1051,7 @@ int SimAgent::MergeStateInfo(struct State_Info_Header *stif)
         /* copy links information */
         for (i=0; i<stif->lk_num; i++)
         {
-            State pst = lk[i].pst;
+            Agent::State pst = lk[i].pst;
             struct m_State *pmst = SearchState(pst);            // find if the previous state exists
             if (pmst != NULL)                                   // if so, make the link, otherwise do nothing
             {
@@ -1097,7 +1103,7 @@ int SimAgent::MergeStateInfo(struct State_Info_Header *stif)
 
         for (i = 0; i < stif->eat_num; i++)
         {
-            struct m_ExAction *meat, *nmeat;
+            struct m_EnvAction *meat, *nmeat;
 
             for (meat = mst->ealist; meat != NULL; meat = nmeat)
             {
@@ -1114,7 +1120,7 @@ int SimAgent::MergeStateInfo(struct State_Info_Header *stif)
             // new eat, create one
             if (meat == NULL)
             {
-                struct m_ExAction *neat = (struct m_ExAction *)malloc(sizeof(struct m_ExAction));
+                struct m_EnvAction *neat = (struct m_EnvAction *)malloc(sizeof(struct m_EnvAction));
                 neat->eat = eaif[i].eat;
                 neat->count = eaif[i].count;
 
@@ -1130,7 +1136,7 @@ int SimAgent::MergeStateInfo(struct State_Info_Header *stif)
         /* links, make the link if previous state exists */
         for (i=0; i<stif->lk_num; i++)
         {
-            State pst = lk[i].pst;
+            Agent::State pst = lk[i].pst;
             struct m_State *pmst = SearchState(pst);
             if (pmst != NULL)
             {
@@ -1146,10 +1152,10 @@ int SimAgent::MergeStateInfo(struct State_Info_Header *stif)
 }
 
 /**
-* \brief Pretty print state information
-* \param specified state information header
+* \brief Pretty print State information
+* \param specified State information header
 */
-void SimAgent::PrintStateInfo(struct State_Info_Header *stif)
+void SimAgent::PrintStateInfo(const struct State_Info_Header *stif)
 {
     if (stif == NULL)
         return;
@@ -1168,18 +1174,18 @@ void SimAgent::PrintStateInfo(struct State_Info_Header *stif)
     printf("------------------- ExActions, Num: %d ------------------------\n", stif->eat_num);
     int len = stif->act_num * sizeof(struct Action_Info);
     p += len;
-    struct ExAction_Info *eaif = (struct ExAction_Info *)p;
+    struct EnvAction_Info *eaif = (struct EnvAction_Info *)p;
     for (i=0; i<stif->eat_num; i++)
     {
-        printf("\t ExAction: %ld,\t\t Count: %ld\n", eaif[i].eat, eaif[i].count);
+        printf("\t EnvAction: %ld,\t\t Count: %ld\n", eaif[i].eat, eaif[i].count);
     }
-    printf("------------------------ pLinks, Num: %d ---------------------------\n", stif->lk_num);
-    len = stif->eat_num * sizeof(struct ExAction_Info);
+    printf("------------------------ BackLinks, Num: %d ---------------------------\n", stif->lk_num);
+    len = stif->eat_num * sizeof(struct EnvAction_Info);
     p += len;
-    struct pLink *lk = (struct pLink *)p;
+    struct BackLink *lk = (struct BackLink *)p;
     for (i=0; i<stif->lk_num; i++)
     {
-        printf("\t pLink:\t\t %ld |+++ %ld +++ %ld ++>.\n", lk[i].pst, lk[i].peat, lk[i].pact);
+        printf("\t BackLink:\t\t %ld |+++ %ld +++ %ld ++>.\n", lk[i].pst, lk[i].peat, lk[i].pact);
     }
     printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n");
 
@@ -1193,7 +1199,7 @@ void SimAgent::PrintStateInfo(struct State_Info_Header *stif)
 * \param passwd password of username
 * \param name of the database
 */
-void SimAgent::SetDBArgs(string srv, string usr, string passwd, string db)
+void SimAgent::SetDBArgs(std::string srv, std::string usr, std::string passwd, std::string db)
 {
     db_server = srv;
     db_user = usr;
@@ -1235,7 +1241,7 @@ int SimAgent::DBConnect()
     mysql_select_db(db_con, db_name.c_str());               // use database
     /* create table if not exists */
     char tb_string[256];
-    sprintf(tb_string, "CREATE TABLE IF NOT EXISTS %s.%s(State BIGINT PRIMARY KEY, OriPayoff FLOAT, Payoff FLOAT, Count BIGINT, ActInfos BLOB, ExActInfos BLOB, pLinks BLOB) \
+    sprintf(tb_string, "CREATE TABLE IF NOT EXISTS %s.%s(State BIGINT PRIMARY KEY, OriPayoff FLOAT, Payoff FLOAT, Count BIGINT, ActInfos BLOB, ExActInfos BLOB, BackLinks BLOB) \
             ENGINE MyISAM ", db_name.c_str(), db_t_stateinfo.c_str());
     if (mysql_query(db_con, tb_string))
     {
@@ -1265,9 +1271,9 @@ void SimAgent::DBClose()
 /**
 * \brief Get state value from database by specified index.
 * \param index index
-* \return state value of that index, INVALID_VALUE for error or not found
+* \return state value of that index, INVALID_STATE for error or not found
 */
-State SimAgent::DBStateByIndex(unsigned long index)
+Agent::State SimAgent::DBStateByIndex(unsigned long index) const
 {
     char query_str[256];
     sprintf(query_str, "SELECT * FROM %s LIMIT %ld, 1", db_t_stateinfo.c_str(), index);
@@ -1275,7 +1281,7 @@ State SimAgent::DBStateByIndex(unsigned long index)
     if (mysql_query(db_con, query_str))
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
-        return INVALID_VALUE;
+        return INVALID_STATE;
     }
 
     MYSQL_RES *result = mysql_store_result(db_con);
@@ -1283,7 +1289,7 @@ State SimAgent::DBStateByIndex(unsigned long index)
     if (result == NULL)
     {
         dbgmoreprt("DBStateByIndex(): result is  NULL!\n");
-        return INVALID_VALUE;
+        return INVALID_STATE;
     }
 
     MYSQL_ROW row = mysql_fetch_row(result);
@@ -1293,9 +1299,9 @@ State SimAgent::DBStateByIndex(unsigned long index)
     {
         dbgmoreprt("DBStateByIndex(): lengths is null\n");
         mysql_free_result(result);
-        return INVALID_VALUE;
+        return INVALID_STATE;
     }
-    State rs = atol(row[0]);
+    Agent::State rs = atol(row[0]);
 
     mysql_free_result(result);          // free result
     return rs;
@@ -1307,7 +1313,7 @@ State SimAgent::DBStateByIndex(unsigned long index)
 * \param buffer buffer to put state information in
 * \return length of the fetched state information, -1 if error
 */
-int SimAgent::DBFetchStateInfo(State st, void *buffer)
+int SimAgent::DBFetchStateInfo(Agent::State st, void *buffer) const
 {
     char query_string[256];
     sprintf(query_string, "SELECT * FROM %s WHERE State=%ld", db_t_stateinfo.c_str(), st);  // build mysql query
@@ -1355,8 +1361,8 @@ int SimAgent::DBFetchStateInfo(State st, void *buffer)
     stif.count = atol(row[3]);
 
     stif.act_num = ai_len / sizeof(struct Action_Info);
-    stif.eat_num = ea_len / sizeof(struct ExAction_Info);
-    stif.lk_num = lk_len / sizeof(struct pLink);
+    stif.eat_num = ea_len / sizeof(struct EnvAction_Info);
+    stif.lk_num = lk_len / sizeof(struct BackLink);
 
     // copy header to buffer
     memcpy(ptr, &stif, sizeof(struct State_Info_Header));
@@ -1400,7 +1406,7 @@ finish: // the buffer is filled up now
 * \param state value
 * \return 1 if found, 0 if not
 */
-int SimAgent::DBSearchState(State st)
+int SimAgent::DBSearchState(Agent::State st) const
 {
     char query_string[256];
     sprintf(query_string, "SELECT * FROM %s WHERE State=%ld", db_t_stateinfo.c_str(), st);
@@ -1427,17 +1433,17 @@ int SimAgent::DBSearchState(State st)
 * \brief Add state information to database.
 * \param stif header pointed to state information
 */
-void SimAgent::DBAddStateInfo(struct State_Info_Header *stif)
+void SimAgent::DBAddStateInfo(const struct State_Info_Header *stif)
 {
     char str[256];
-    sprintf(str, "INSERT INTO %s(State, OriPayoff, Payoff, Count, ActInfos, ExActInfos, pLinks) VALUES(%ld, %.2f, %.2f, %ld, '%%s', '%%s', '%%s')",
+    sprintf(str, "INSERT INTO %s(State, OriPayoff, Payoff, Count, ActInfos, ExActInfos, BackLinks) VALUES(%ld, %.2f, %.2f, %ld, '%%s', '%%s', '%%s')",
             db_t_stateinfo.c_str(), stif->st, stif->original_payoff, stif->payoff, stif->count);    // first stag of building mysql insert query, actlist, eactlist and links are build below
     size_t str_len = strlen(str);
 
     // get lenght of several subparts
     unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
-    unsigned long ea_len = stif->eat_num * sizeof(struct ExAction_Info);
-    unsigned long lk_len = stif->lk_num * sizeof(struct pLink);
+    unsigned long ea_len = stif->eat_num * sizeof(struct EnvAction_Info);
+    unsigned long lk_len = stif->lk_num * sizeof(struct BackLink);
 
     unsigned char *p = (unsigned char *)stif;   // use p to travel
 
@@ -1447,11 +1453,11 @@ void SimAgent::DBAddStateInfo(struct State_Info_Header *stif)
 
     // point to environment action information part
     p += ai_len;
-    struct ExAction_Info *eaif = (struct ExAction_Info *)p;
+    struct EnvAction_Info *eaif = (struct EnvAction_Info *)p;
 
     // point to backward link part
     p += ea_len;
-    struct pLink *lk = (struct pLink *)p;
+    struct BackLink *lk = (struct BackLink *)p;
 
     char ai_chunk[2*ai_len +1]; // temporary buffer to put action information
     mysql_real_escape_string(db_con, ai_chunk, (char *)atif, ai_len);
@@ -1477,26 +1483,26 @@ void SimAgent::DBAddStateInfo(struct State_Info_Header *stif)
 * \brief Update information of a state already exists in database.
 * \param stif header pointed to the modified state information
 */
-void SimAgent::DBUpdateStateInfo(struct State_Info_Header *stif)
+void SimAgent::DBUpdateStateInfo(const struct State_Info_Header *stif)
 {
     char str[256];
-    sprintf(str, "UPDATE %s SET OriPayoff=%.2f, Payoff=%.2f, Count=%ld, ActInfos='%%s', ExActInfos='%%s', pLinks='%%s' WHERE State=%ld",
+    sprintf(str, "UPDATE %s SET OriPayoff=%.2f, Payoff=%.2f, Count=%ld, ActInfos='%%s', ExActInfos='%%s', BackLinks='%%s' WHERE State=%ld",
             db_t_stateinfo.c_str(), stif->original_payoff, stif->payoff, stif->count, stif->st);    // first stage of building the update query
     size_t str_len = strlen(str);
 
     unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
-    unsigned long ea_len = stif->eat_num * sizeof(struct ExAction_Info);
-    unsigned long lk_len = stif->lk_num * sizeof(struct pLink);
+    unsigned long ea_len = stif->eat_num * sizeof(struct EnvAction_Info);
+    unsigned long lk_len = stif->lk_num * sizeof(struct BackLink);
 
     unsigned char *p = (unsigned char *)stif;
     p += sizeof(struct State_Info_Header);
     struct Action_Info *atif = (struct Action_Info *)p;
 
     p += ai_len;
-    struct ExAction_Info *eaif = (struct ExAction_Info *)p;
+    struct EnvAction_Info *eaif = (struct EnvAction_Info *)p;
 
     p += ea_len;
-    struct pLink *lk = (struct pLink *)p;
+    struct BackLink *lk = (struct BackLink *)p;
 
     char ai_chunk[2*ai_len +1];
     mysql_real_escape_string(db_con, ai_chunk, (char *)atif, ai_len);
@@ -1521,7 +1527,7 @@ void SimAgent::DBUpdateStateInfo(struct State_Info_Header *stif)
 * \brief Delete a state from database by its value
 * \param st state value to be delete
 */
-void SimAgent::DBDeleteState(State st)
+void SimAgent::DBDeleteState(Agent::State st)
 {
     char query_string[256];
     sprintf(query_string, "DELETE  FROM %s WHERE State=%ld", db_t_stateinfo.c_str(), st);   // build delete query
@@ -1607,7 +1613,7 @@ struct m_Memory_Info *SimAgent::DBFetchMemoryInfo()
 * \param total total amount
 * \param label indicator label
 */
-void SimAgent::PrintProcess(unsigned long current, unsigned long total, char *label)
+void SimAgent::PrintProcess(unsigned long current, unsigned long total, char *label) const
 {
     double prcnt;
     int num_of_dots;

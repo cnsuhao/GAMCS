@@ -6,7 +6,10 @@
 *
 *	@Modify date:
 ***********************************************************************/
+#include <pthread.h>
+#include <stdio.h>
 #include "Avatar.h"
+#include "Debug.h"
 
 bool Avatar::quit = false;  // set quit indicator to false
 
@@ -44,19 +47,19 @@ void Avatar::Run()
     {
         RecvStateInfo();    // check if new message has recieved
 
-        State cs = GetCurrentState();   // get current state
+        Agent::State cs = GetCurrentState();   // get current state
         printf("Id: %d, Current state: %ld\n", id, cs);
 
 //============= Process stage ===========
-        vector<Action> acts = ActionList(cs);   // get all action candidates of a state
+        std::vector<Agent::Action> acts = ActionCandidates(cs);   // get all action candidates of a state
 
-        Action act = agent->Process(cs, acts);  // choose an action from candidates
+        Agent::Action act = agent->Process(cs, acts);  // choose an action from candidates
 
 //============= Update stage ============
         float oripayoff = OriginalPayoff(cs);   // get original payoff of a state
         agent->Update(oripayoff);
 
-        if (act == INVALID_VALUE)       // no valid actions available, reach a dead end, quit
+        if (act == INVALID_ACTION)       // no valid actions available, reach a dead end, quit
             break;
         DoAction(act);      // otherwise, perform the action
 
@@ -106,7 +109,7 @@ void Avatar::JoinGroup(Group *grp)
 * \brief Send information of a specified state to all neighbours.
 * \param st state value to be sent
 */
-void Avatar::SendStateInfo(State st)
+void Avatar::SendStateInfo(Agent::State st)
 {
     if (group == NULL)  // no neighbours, nothing to do
         return;
@@ -157,7 +160,7 @@ void Avatar::RecvStateInfo()
  * \return original payoff of st
  *
  */
-float Avatar::OriginalPayoff(State st)
+float Avatar::OriginalPayoff(Agent::State st)
 {
     UNUSED(st);
     return 1.0;
