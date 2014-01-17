@@ -26,10 +26,7 @@ State Individual::GetCurrentState()
 
 void Individual::DoAction(Action act)
 {
-    if (act == 1)
-        position -= 1;
-    else if (act == 2)
-        position += 1;
+    position += act;
 
     if (position > 15)
         position = 15;
@@ -44,18 +41,9 @@ vector<Action> Individual::ActionList(State st)
     vector<Action> acts;
     acts.clear();
     acts.push_back(1);
-    acts.push_back(2);
+    acts.push_back(-1);
 
     return acts;
-}
-
-
-State Individual::ExpectedState()
-{
-    if (pre_act == 1)
-        return pre_st-1;
-    else // pre_act == 2
-        return pre_st+1;
 }
 
 float Individual::OriginalPayoff(State st)

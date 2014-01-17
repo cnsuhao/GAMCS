@@ -10,11 +10,11 @@
 
 bool Avatar::quit = false;  // set quit indicator to false
 
-Avatar::Avatar() : id(0), freq(100), agent(NULL), group(NULL), pre_st(INVALID_VALUE), pre_act(INVALID_VALUE)
+Avatar::Avatar() : id(0), freq(100), agent(NULL), group(NULL)
 {
 }
 
-Avatar::Avatar(int i) : id(i), freq(100), agent(NULL), group(NULL), pre_st(INVALID_VALUE), pre_act(INVALID_VALUE)
+Avatar::Avatar(int i) : id(i), freq(100), agent(NULL), group(NULL)
 {
 }
 
@@ -46,20 +46,19 @@ void Avatar::Run()
 
         State cs = GetCurrentState();   // get current state
         printf("Id: %d, Current state: %ld\n", id, cs);
+
+//============= Process stage ===========
         vector<Action> acts = ActionList(cs);   // get all action candidates of a state
 
         Action act = agent->Process(cs, acts);  // choose an action from candidates
 
+//============= Update stage ============
         float oripayoff = OriginalPayoff(cs);   // get original payoff of a state
-        State es = ExpectedState();
-        agent->Update(oripayoff, es);       //FIXME
+        agent->Update(oripayoff);
 
         if (act == INVALID_VALUE)       // no valid actions available, reach a dead end, quit
             break;
         DoAction(act);      // otherwise, perform the action
-
-        pre_st = cs;        // update previous state and action
-        pre_act = act;
 
         if (count >= freq)      // check if it's time to send a message
         {

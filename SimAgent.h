@@ -85,7 +85,7 @@ class SimAgent : public Agent
         unsigned long lk_num;                    /**< total number of links between states in memory */
 
         vector<Action> MaxPayoffRule(State, vector<Action>);    /**< implementing maximun payoff rule */
-        void UpdateMemory(float, State);            /**< implementing UpdateMemory of Agent */
+        void UpdateMemory(float);            /**< implementing UpdateMemory of Agent */
 
         MYSQL *db_con;      /**< database connection handler */
         string db_server;   /**< database server address */
@@ -110,7 +110,6 @@ class SimAgent : public Agent
         struct m_State *head;           /**< memory head*/
         StatesMap states_map;           /**< hash map from state values to state struct */
         struct m_State *cur_mst;        /**< state struct for current state value */
-        State cur_st;                   /**< current state value */
 
         void LoadState(State);               /**< fetch state struct by state value */
 

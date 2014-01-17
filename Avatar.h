@@ -28,13 +28,9 @@ class Avatar
         Agent *agent;   /**< connected agent */
         Group *group;   /**< my group */
 
-        State pre_st;   /**< previous state value */
-        Action pre_act; /**< previous action value */
-
         virtual State GetCurrentState() = 0;    /**< get current state */
         virtual void DoAction(Action) = 0;      /**< perform an action */
         virtual vector<Action> ActionList(State) = 0;   /**< return a list of all candidate actions of a state */
-        virtual State ExpectedState() = 0;      /**<  */
         virtual float OriginalPayoff(State);    /**< original payoff of a state */
 
         virtual void SendStateInfo(State);      /**< send information of a state to all its neighbours */
