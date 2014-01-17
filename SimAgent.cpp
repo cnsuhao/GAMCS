@@ -711,7 +711,7 @@ vector<Action> SimAgent::BestActions(struct m_State *mst, vector<Action> acts)
 /**
 * \brief Update memory from a specified state, with its original payoff given in.
 * \param oripayoff original payoff of this state
-* \param expst the state where update begins
+* \param expst the expected state value
 */
 void SimAgent::UpdateMemory(float oripayoff, State expst)
 {
@@ -1299,10 +1299,16 @@ State SimAgent::DBStateByIndex(unsigned long index)
     return rs;
 }
 
+/**
+* \brief Fetch state information from database, and put it in a buffer.
+* \param st state value
+* \param buffer buffer to put state information in
+* \return length of the fetched state information, -1 if error
+*/
 int SimAgent::DBFetchStateInfo(State st, void *buffer)
 {
     char query_string[256];
-    sprintf(query_string, "SELECT * FROM %s WHERE State=%ld", db_t_stateinfo.c_str(), st);
+    sprintf(query_string, "SELECT * FROM %s WHERE State=%ld", db_t_stateinfo.c_str(), st);  // build mysql query
 
     if (mysql_query(db_con, query_string))
     {
@@ -1314,7 +1320,7 @@ int SimAgent::DBFetchStateInfo(State st, void *buffer)
 
     if (result == NULL)
     {
-        dbgmoreprt("DBFetchStateInfo(): result == NULL!\n");
+        dbgmoreprt("DBFetchStateInfo(): result is NULL!\n");
         return -1;
     }
 
@@ -1333,12 +1339,13 @@ int SimAgent::DBFetchStateInfo(State st, void *buffer)
         return -1;
     }
 
-    unsigned char *ptr = (unsigned char *)buffer;
+    unsigned char *ptr = (unsigned char *)buffer;       // use point ptr to travel through each subpart
 
     unsigned long ai_len = lengths[4];
     unsigned long ea_len = lengths[5];
     unsigned long lk_len = lengths[6];
 
+    // build header
     struct State_Info_Header stif;
     stif.st = atol(row[0]);
     stif.original_payoff = atof(row[1]);
@@ -1349,16 +1356,19 @@ int SimAgent::DBFetchStateInfo(State st, void *buffer)
     stif.eat_num = ea_len / sizeof(struct ExAction_Info);
     stif.lk_num = lk_len / sizeof(struct pLink);
 
+    // copy header to buffer
     memcpy(ptr, &stif, sizeof(struct State_Info_Header));
 
+    // action information part
     ptr += sizeof(struct State_Info_Header);
     memcpy(ptr, row[4], ai_len);
-    if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)
+    if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)      // buffer is full
     {
         dbgprt("WARNNING: StateInfo size exceeds SI_MAX_SIZE!\n");
         goto finish;
     }
 
+    // environment action information part
     ptr += ai_len;
     memcpy(ptr, row[5], ea_len);
     if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)          // CHECK NEEDED
@@ -1367,9 +1377,10 @@ int SimAgent::DBFetchStateInfo(State st, void *buffer)
         goto finish;
     }
 
+    // backward links part
     ptr += ea_len;
     memcpy(ptr, row[6], lk_len);
-    if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)
+    if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)  // buffer is full
     {
         dbgprt("WARNNING: StateInfo size exceeds SI_MAX_SIZE!\n");
         goto finish;
@@ -1377,11 +1388,16 @@ int SimAgent::DBFetchStateInfo(State st, void *buffer)
 
     mysql_free_result(result);          // free result
 
-finish:
+finish: // the buffer is filled up now
     int length = ptr - (unsigned char *)buffer;
     return length;
 }
 
+/**
+* \brief Search for specified state in database.
+* \param state value
+* \return 1 if found, 0 if not
+*/
 int SimAgent::DBSearchState(State st)
 {
     char query_string[256];
@@ -1405,52 +1421,65 @@ int SimAgent::DBSearchState(State st)
     return re;
 }
 
+/**
+* \brief Add state information to database.
+* \param stif header pointed to state information
+*/
 void SimAgent::DBAddStateInfo(struct State_Info_Header *stif)
 {
     char str[256];
     sprintf(str, "INSERT INTO %s(State, OriPayoff, Payoff, Count, ActInfos, ExActInfos, pLinks) VALUES(%ld, %.2f, %.2f, %ld, '%%s', '%%s', '%%s')",
-            db_t_stateinfo.c_str(), stif->st, stif->original_payoff, stif->payoff, stif->count);
+            db_t_stateinfo.c_str(), stif->st, stif->original_payoff, stif->payoff, stif->count);    // first stag of building mysql insert query, actlist, eactlist and links are build below
     size_t str_len = strlen(str);
 
+    // get lenght of several subparts
     unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
     unsigned long ea_len = stif->eat_num * sizeof(struct ExAction_Info);
     unsigned long lk_len = stif->lk_num * sizeof(struct pLink);
 
-    unsigned char *p = (unsigned char *)stif;
+    unsigned char *p = (unsigned char *)stif;   // use p to travel
+
+    // point to action information part
     p += sizeof(struct State_Info_Header);
     struct Action_Info *atif = (struct Action_Info *)p;
 
+    // point to environment action information part
     p += ai_len;
     struct ExAction_Info *eaif = (struct ExAction_Info *)p;
 
+    // point to backward link part
     p += ea_len;
     struct pLink *lk = (struct pLink *)p;
 
-    char ai_chunk[2*ai_len +1];
+    char ai_chunk[2*ai_len +1]; // temporary buffer to put action information
     mysql_real_escape_string(db_con, ai_chunk, (char *)atif, ai_len);
-    char ea_chunk[2*ea_len +1];
+    char ea_chunk[2*ea_len +1]; // temporary buffer to put envir action info
     mysql_real_escape_string(db_con, ea_chunk, (char *)eaif, ea_len);
-    char lk_chunk[2*lk_len +1];
+    char lk_chunk[2*lk_len +1]; // temporary buffer for links
     mysql_real_escape_string(db_con, lk_chunk, (char *)lk, lk_len);
 
     char query[str_len + 2*(ai_len+ea_len+lk_len)+1];
-    int len = snprintf(query, str_len + 2*(ai_len+ea_len+lk_len)+1, str, ai_chunk, ea_chunk, lk_chunk);
+    int len = snprintf(query, str_len + 2*(ai_len+ea_len+lk_len)+1, str, ai_chunk, ea_chunk, lk_chunk);     // final stag of building insert query
 
 //    dbgprt("query: %s\n", query);
-    if (mysql_real_query(db_con, query, len))
+    if (mysql_real_query(db_con, query, len))       // perform the query, and insert st to database
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
-        return;
+        return;     // FIXME: indicator of error?
     }
 
     return;
 }
 
+/**
+* \brief Update information of a state already exists in database.
+* \param stif header pointed to the modified state information
+*/
 void SimAgent::DBUpdateStateInfo(struct State_Info_Header *stif)
 {
     char str[256];
     sprintf(str, "UPDATE %s SET OriPayoff=%.2f, Payoff=%.2f, Count=%ld, ActInfos='%%s', ExActInfos='%%s', pLinks='%%s' WHERE State=%ld",
-            db_t_stateinfo.c_str(), stif->original_payoff, stif->payoff, stif->count, stif->st);
+            db_t_stateinfo.c_str(), stif->original_payoff, stif->payoff, stif->count, stif->st);    // first stage of building the update query
     size_t str_len = strlen(str);
 
     unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
@@ -1475,9 +1504,9 @@ void SimAgent::DBUpdateStateInfo(struct State_Info_Header *stif)
     mysql_real_escape_string(db_con, lk_chunk, (char *)lk, lk_len);
 
     char query[str_len + 2*(ai_len+ea_len+lk_len)+1];
-    int len = snprintf(query, str_len + 2*(ai_len+ea_len+lk_len)+1, str, ai_chunk, ea_chunk, lk_chunk);
+    int len = snprintf(query, str_len + 2*(ai_len+ea_len+lk_len)+1, str, ai_chunk, ea_chunk, lk_chunk);     // final stage of building query
 
-    if (mysql_real_query(db_con, query, len))
+    if (mysql_real_query(db_con, query, len))   // perform the query, and update database
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
         return;
@@ -1486,12 +1515,16 @@ void SimAgent::DBUpdateStateInfo(struct State_Info_Header *stif)
     return;
 }
 
+/**
+* \brief Delete a state from database by its value
+* \param st state value to be delete
+*/
 void SimAgent::DBDeleteState(State st)
 {
     char query_string[256];
-    sprintf(query_string, "DELETE  FROM %s WHERE State=%ld", db_t_stateinfo.c_str(), st);
+    sprintf(query_string, "DELETE  FROM %s WHERE State=%ld", db_t_stateinfo.c_str(), st);   // build delete query
 
-    if (mysql_query(db_con, query_string))
+    if (mysql_query(db_con, query_string))  // perform query
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
         return;
@@ -1499,15 +1532,18 @@ void SimAgent::DBDeleteState(State st)
     return;
 }
 
+/**
+* \brief Add memory statistics to database.
+*/
 void SimAgent::DBAddMemoryInfo()
 {
     char query_str[256];
 
     sprintf(query_str, "INSERT INTO %s(TimeStamp, DiscountRate, Threshold, NumStates, NumLinks, LastState, LastAction) VALUES(NULL, %.2f, %.2f, %ld, %ld, %ld, %ld)",
-            db_t_meminfo.c_str(), discount_rate, threshold, state_num, lk_num, pre_in, pre_out);
+            db_t_meminfo.c_str(), discount_rate, threshold, state_num, lk_num, pre_in, pre_out); // build insert query
 
     int len = strlen(query_str);
-    if (mysql_real_query(db_con, query_str, len))
+    if (mysql_real_query(db_con, query_str, len))   // perform query
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
         return;
@@ -1515,10 +1551,14 @@ void SimAgent::DBAddMemoryInfo()
     return;
 }
 
+/**
+* \brief Fetch memory statistics from database.
+* \return memory info struct, NULL if error
+*/
 struct m_Memory_Info *SimAgent::DBFetchMemoryInfo()
 {
     char query_str[256];
-    sprintf(query_str, "SELECT * FROM %s ORDER BY TimeStamp DESC LIMIT 1", db_t_meminfo.c_str());
+    sprintf(query_str, "SELECT * FROM %s ORDER BY TimeStamp DESC LIMIT 1", db_t_meminfo.c_str());   // select the lastest one
 
     if (mysql_query(db_con, query_str))
     {
@@ -1530,7 +1570,7 @@ struct m_Memory_Info *SimAgent::DBFetchMemoryInfo()
 
     if (result == NULL)
     {
-        dbgmoreprt("DBFetchMemoryInfo(): result == NULL!\n");
+        dbgmoreprt("DBFetchMemoryInfo(): result is NULL!\n");
         return NULL;
     }
 
@@ -1546,6 +1586,7 @@ struct m_Memory_Info *SimAgent::DBFetchMemoryInfo()
 
     struct m_Memory_Info *memif = (struct m_Memory_Info *)malloc(sizeof(struct m_Memory_Info));
     dbgprt("DB: %s, Memory TimeStamp: %s\n", db_name.c_str(), row[0]);
+    // fill in the memory struct
     memif->discount_rate = atof(row[1]);
     memif->threshold = atof(row[2]);
     memif->state_num = atol(row[3]);
@@ -1558,6 +1599,12 @@ struct m_Memory_Info *SimAgent::DBFetchMemoryInfo()
     return memif;
 }
 
+/**
+* \brief Pretty print process of load or save memory to database.
+* \param current current progress
+* \param total total amount
+* \param label indicator label
+*/
 void SimAgent::PrintProcess(unsigned long current, unsigned long total, char *label)
 {
     double prcnt;
