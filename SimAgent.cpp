@@ -1214,6 +1214,12 @@ void SimAgent::SetDBArgs(std::string srv, std::string usr, std::string passwd, s
 */
 int SimAgent::DBConnect()
 {
+    if (mysql_library_init(0, NULL, NULL))
+    {
+        fprintf(stderr, "could not initialize MySQL library!\n");
+        return -1;
+    }
+
     db_con = mysql_init(NULL);
 
     if (db_con == NULL)
@@ -1265,7 +1271,8 @@ int SimAgent::DBConnect()
 */
 void SimAgent::DBClose()
 {
-    return mysql_close(db_con);
+    mysql_close(db_con);
+    return mysql_library_end();
 }
 
 /**
