@@ -1,5 +1,6 @@
 #ifndef AVATAR_H
 #define AVATAR_H
+#include <stdlib.h>
 #include "Agent.h"
 #include "Group.h"
 
@@ -28,13 +29,13 @@ class Avatar
         Agent *agent;   /**< connected agent */
         Group *group;   /**< my group */
 
-        virtual State GetCurrentState() = 0;    /**< get current state */
-        virtual void DoAction(Action) = 0;      /**< perform an action */
-        virtual vector<Action> ActionList(State) = 0;   /**< return a list of all candidate actions of a state */
-        virtual float OriginalPayoff(State);    /**< original payoff of a state */
+        virtual Agent::Agent::State GetCurrentState() = 0;    /**< get current Agent::State */
+        virtual void DoAction(Agent::Action) = 0;      /**< perform an Agent::Action */
+        virtual std::vector<Agent::Action> ActionCandidates(Agent::State) = 0;   /**< return a list of all Agent::Action candidates of a Agent::State */
+        virtual float OriginalPayoff(Agent::State);    /**< original payoff of a Agent::State */
 
-        virtual void SendStateInfo(State);      /**< send information of a state to all its neighbours */
-        virtual void RecvStateInfo();           /**< recieve state information from neighbours */
+        virtual void SendStateInfo(Agent::State);      /**< send information of a Agent::State to all its neighbours */
+        virtual void RecvStateInfo();           /**< recieve Agent::State information from neighbours */
 
         static void* hook(void* args) {         /**< hook to run a class function(Run() here) in a thread */
             reinterpret_cast<Avatar *>(args)->Run();

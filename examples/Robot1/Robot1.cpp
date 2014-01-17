@@ -18,12 +18,12 @@ Robot1::~Robot1()
     //dtor
 }
 
-State Robot1::GetCurrentState()
+Agent::State Robot1::GetCurrentState()
 {
     return position;
 }
 
-void Robot1::DoAction(Action act)
+void Robot1::DoAction(Agent::Action act)
 {
     position += act;
 
@@ -42,10 +42,11 @@ void Robot1::DoAction(Action act)
  *
  */
 
-vector<Action> Robot1::ActionList(State st)
+std::vector<Agent::Action> Robot1::ActionCandidates(Agent::State st)
 {
-    UNUSED(st);
-    vector<Action> acts;
+//    UNUSED(st);
+    st = st;
+    std::vector<Agent::Action> acts;
     acts.clear();
     acts.push_back(1);
     acts.push_back(-1);
@@ -53,7 +54,7 @@ vector<Action> Robot1::ActionList(State st)
     return acts;
 }
 
-float Robot1::OriginalPayoff(State st)
+float Robot1::OriginalPayoff(Agent::State st)
 {
     if (st == 15)
         return 1;

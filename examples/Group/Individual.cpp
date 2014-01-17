@@ -15,16 +15,15 @@ Individual::Individual(int i):Avatar(i)
 
 Individual::~Individual()
 {
-    //dtor
-    dbgmoreprt("~Individual\n");
+
 }
 
-State Individual::GetCurrentState()
+Agent::State Individual::GetCurrentState()
 {
     return position;
 }
 
-void Individual::DoAction(Action act)
+void Individual::DoAction(Agent::Action act)
 {
     position += act;
 
@@ -35,10 +34,10 @@ void Individual::DoAction(Action act)
     return;
 }
 
-vector<Action> Individual::ActionList(State st)
+std::vector<Agent::Action> Individual::ActionCandidates(Agent::State st)
 {
-    UNUSED(st);
-    vector<Action> acts;
+//    UNUSED(st);
+    std::vector<Agent::Action> acts;
     acts.clear();
     acts.push_back(1);
     acts.push_back(-1);
@@ -46,7 +45,7 @@ vector<Action> Individual::ActionList(State st)
     return acts;
 }
 
-float Individual::OriginalPayoff(State st)
+float Individual::OriginalPayoff(Agent::State st)
 {
     if (st == 9)
         return 1;

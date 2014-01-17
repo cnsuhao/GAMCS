@@ -7,8 +7,9 @@
 *	@Modify date:
 ***********************************************************************/
 #include "PFTGIOM.h"
+#include "Debug.h"
 
-PFTGIOM::PFTGIOM(): pre_in(INVALID_VALUE), pre_out(INVALID_VALUE)
+PFTGIOM::PFTGIOM(): pre_in(INVALID_INPUT), pre_out(INVALID_OUTPUT)
 {
 }
 
@@ -19,12 +20,12 @@ PFTGIOM::~PFTGIOM()
 /** \brief Reimplement Process function.
  * Append time sequence functionaliy to GIOM.
  * \param in input value
- * \return output value
+ * \return GIOM::Output value
  *
  */
-Output PFTGIOM::Process(Input in, vector<Output> outlist)
+GIOM::Output PFTGIOM::Process(Input in, const std::vector<GIOM::Output> &outlist)
 {
-    Output out = GIOM::Process(in, outlist);
+    GIOM::Output out = GIOM::Process(in, outlist);
     return out;
 }
 
@@ -49,7 +50,7 @@ void PFTGIOM::Update()
  * \return outputs distribution after restricting
  *
  */
-vector<Output> PFTGIOM::Restrict(Input in, vector<Output> outlist)
+std::vector<GIOM::Output> PFTGIOM::Restrict(Input in, const std::vector<GIOM::Output> &outlist)
 {
     UNUSED(in);
     return outlist;

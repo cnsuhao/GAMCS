@@ -1,39 +1,33 @@
 #ifndef GIOM_H
 #define GIOM_H
 #include <vector>
-#include <string>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <math.h>
-#include <stdio.h>
-#include "Debug.h"
+#include <limits.h>
 
-typedef unsigned long Input;            /**< input value, positive numbers */
-typedef unsigned long Output;           /**< output value  */   //TODO negetive value
 
-const unsigned long INVALID_VALUE = 0;           /**< 0 means invalid input or output value */
-
-using namespace std;
+const unsigned long INVALID_INPUT = 0;           /**< never use 0 for a valid state! */
+const long INVALID_OUTPUT = LONG_MAX;        /**< the maximun value is used to indicate invalidation, be careful! */
 
 /**
 * General Input Output Model
 */
 class GIOM
 {
-    public:
-        /** Default constructor */
-        GIOM();
-        /** Default destructor */
-        virtual ~GIOM();
-        Output Process(Input, vector<Output>);          /**< generate an output value from a output list given an input value */
-        float Entropy();                                        /**< calculate entropy of this GIOM */
-        void Update();
-    protected:
-        virtual vector<Output> Restrict(Input, vector<Output>);     /**< restrict the outputs */
-        Input cur_in;       /**< input value */
-        Output cur_out;     /**< output value corresponding to cur_in */
-    private:
+public:
+    typedef unsigned long Input;            /**< input value, positive numbers */
+    typedef long Output;                    /**< output value, output is the difference of two inputs, so it can be negetive, range: - max(Input) ~ +max(Input)*/
+
+    /** Default constructor */
+    GIOM();
+    /** Default destructor */
+    virtual ~GIOM();
+    Output Process(Input, const std::vector<Output> &);          /**< generate an output value from a output list given an input value */
+    float Entropy();                                        /**< calculate entropy of this GIOM */
+    void Update();
+protected:
+    virtual std::vector<Output> Restrict(Input, const std::vector<Output> &);     /**< restrict the outputs */
+    Input cur_in;       /**< input value */
+    Output cur_out;     /**< output value corresponding to cur_in */
+private:
 };
 
 #endif // GIOM_H
