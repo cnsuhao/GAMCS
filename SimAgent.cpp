@@ -205,14 +205,14 @@ void SimAgent::SaveMemory()
 
 SimAgent::SimAgent() :
     state_num(0), lk_num(0), db_con(NULL), db_server(""), db_user(""), db_password(""), db_name(""),
-    db_t_stateinfo("StateInfo"), db_t_meminfo("MemoryInfo"), head(NULL), cur_mst(NULL)
+    db_t_stateinfo("StateInfo"), db_t_meminfo("MemoryInfo"), head(NULL), cur_mst(NULL), actions_original_payoff(0.0)
 {
     states_map.clear();
 }
 
 SimAgent::SimAgent(float dr, float th):
     Agent(dr, th), state_num(0), lk_num(0), db_con(NULL), db_server(""), db_user(""), db_password(""), db_name(""),
-    db_t_stateinfo("StateInfo"), db_t_meminfo("MemoryInfo"), head(NULL), cur_mst(NULL)
+    db_t_stateinfo("StateInfo"), db_t_meminfo("MemoryInfo"), head(NULL), cur_mst(NULL), actions_original_payoff(0.0)
 {
     states_map.clear();
 }
@@ -249,8 +249,8 @@ struct m_State *SimAgent::NewState(Agent::State st)
     struct m_State *mst = (struct m_State *)malloc(sizeof(struct m_State));
     // fill in default values
     mst->st = st;
-    mst->original_payoff = 1.0;                 // 1.0 as default, TODO: setting api needed
-    mst->payoff = mst->original_payoff;         // set payoff to original payoff, it's important!
+    mst->original_payoff = 0.0;                 // any value, doesn't master
+    mst->payoff = 0.0;         // set payoff to original payoff, it's important! //????? FIXME
     mst->count = 1;         // it's created when we first encounter it
     mst->flist = NULL;      // we just create a struct here, no links considered
     mst->blist = NULL;
@@ -430,7 +430,7 @@ struct m_Action *SimAgent::NewAc(Agent::Action act)
     struct m_Action *ac = (struct m_Action *)malloc(sizeof(struct m_Action));
 
     ac->act = act;
-    ac->payoff = 0;     // default payoff is 0, TODO: setting api needed
+    ac->payoff = actions_original_payoff;
     ac->next = NULL;
     return ac;
 }
@@ -657,7 +657,7 @@ struct m_State *SimAgent::StateByEatAct(EnvAction eat, Agent::Action act, const 
 */
 float SimAgent::CalActPayoff(Agent::Action act, const struct m_State *mst) const
 {
-    float ori_payoff = 0.0;             // original payoff of actions, TODO
+    float ori_payoff = actions_original_payoff;             // original payoff of actions
     float payoff = ori_payoff;
 
     struct m_EnvAction *ea, *nea;
@@ -686,7 +686,7 @@ float SimAgent::CalActPayoff(Agent::Action act, const struct m_State *mst) const
 std::vector<Agent::Action> SimAgent::BestActions(const struct m_State *mst, const std::vector<Agent::Action> &acts)
 {
     float max_payoff = -FLT_MAX;
-    float ori_payoff = 0.0;         // original payoff of actions, TODO
+    float ori_payoff = actions_original_payoff;         // original payoff of actions
     float payoff;
     std::vector<Agent::Action> max_acts;
 
