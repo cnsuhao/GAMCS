@@ -8,89 +8,108 @@
 ***********************************************************************/
 #include "Avatar.h"
 
-int Avatar::quit = 0;
+bool Avatar::quit = false;  // set quit indicator to false
 
-Avatar::Avatar(int i)
+Avatar::Avatar() : id(0), freq(100), agent(NULL), group(NULL), pre_st(INVALID_VALUE), pre_act(INVALID_VALUE)
 {
-    //ctor
-    id = i;
-    freq = 100;
-    agent = NULL;
-    group = NULL;
-    pre_st = -1;
-    pre_act = -1;
+}
+
+Avatar::Avatar(int i) : id(i), freq(100), agent(NULL), group(NULL), pre_st(INVALID_VALUE), pre_act(INVALID_VALUE)
+{
 }
 
 Avatar::~Avatar()
 {
-    //dtor
 }
 
+/**
+* \brief Run Run() function in a thread.
+*/
 pthread_t Avatar::ThreadRun()
 {
     pthread_t tid;
-    pthread_create(&tid, NULL, hook, this);
+    pthread_create(&tid, NULL, hook, this); // create a thread, and call the hook
 
     return tid;
 }
 
+/**
+* \brief Run a avatar continuously.
+*/
 void Avatar::Run()
 {
-    int count = 0;
+    int count = 0;  // count for sending messages
+
     while(!quit)
     {
-        RecvStateInfo();
+        RecvStateInfo();    // check if new message has recieved
 
-        State cs = GetCurrentState();
+        State cs = GetCurrentState();   // get current state
         printf("Id: %d, Current state: %ld\n", id, cs);
-        vector<Action> acts = ActionList(cs);
+        vector<Action> acts = ActionList(cs);   // get all action candidates of a state
 
-        Action act = agent->Process(cs, acts);
+        Action act = agent->Process(cs, acts);  // choose an action from candidates
 
-        float oripayoff = OriginalPayoff(cs);
+        float oripayoff = OriginalPayoff(cs);   // get original payoff of a state
         State es = ExpectedState();
-        agent->Update(oripayoff, es);
+        agent->Update(oripayoff, es);       //FIXME
 
-        if (act == INVALID_VALUE)
+        if (act == INVALID_VALUE)       // no valid actions available, reach a dead end, quit
             break;
-        DoAction(act);
+        DoAction(act);      // otherwise, perform the action
 
-        pre_st = cs;
+        pre_st = cs;        // update previous state and action
         pre_act = act;
 
-        if (count >= freq)
+        if (count >= freq)      // check if it's time to send a message
         {
             SendStateInfo(cs);
-            count = 0;
+            count = 0;      // reset count
         }
         else
-            count++;
+            count++;        // inc count
     }
+    // quit
     dbgmoreprt("Id: %d, Run() Exit!\n", id);
     return;
 }
 
+/**
+* \brief Set communication frequence.
+*/
 void Avatar::SetFreq(int fq)
 {
     freq = fq;
     return;
 }
 
+/**
+* \brief Connect to an agent.
+* \param agt agent to be connected
+*/
 void Avatar::ConnectAgent(Agent *agt)
 {
     agent = agt;
     return;
 }
 
+/**
+* \brief Join a group
+* \param grp group to join
+*/
 void Avatar::JoinGroup(Group *grp)
 {
     group = grp;
     return;
 }
 
+/**
+* \brief Send information of a specified state to all neighbours.
+* \param st state value to be sent
+*/
 void Avatar::SendStateInfo(State st)
 {
-    if (group == NULL)
+    if (group == NULL)  // no neighbours, nothing to do
         return;
 
     char si_buffer[SI_MAX_SIZE];
@@ -100,29 +119,33 @@ void Avatar::SendStateInfo(State st)
         return;
     }
 
-    group->Send(id, si_buffer, len);
+    group->Send(id, si_buffer, len);        // call the send facility in group
 
     return;
 }
 
+/**
+* \brief Recieve state information from neighbours.
+*/
 void Avatar::RecvStateInfo()
 {
-    if (group == NULL)
+    if (group == NULL)  // no neighbours, nothing to do
         return;
 
-    char re_buf[SI_MAX_SIZE];
-    char sd_buf[SI_MAX_SIZE];
+    char re_buf[SI_MAX_SIZE];   // buffer for recieved message
+    char sd_buf[SI_MAX_SIZE];   // buffer for message to be sent
 
-    while(group->Recv(id, re_buf, 2048) != 0)
+    while(group->Recv(id, re_buf, 2048) != 0)   // message recieved
     {
         struct State_Info_Header *stif = (struct State_Info_Header *)re_buf;
-        int better = agent->MergeStateInfo(stif);
-        if (better == 0)                // send out my information if it is not better
+        int better = agent->MergeStateInfo(stif);   // merge the recieved state information to memory
+
+        if (better == 0)                // the state information wasn't better than mine and thus not accepted, it's my duty to send out my better information to others
         {
-            int len = agent->GetStateInfo(stif->st, sd_buf);
+            int len = agent->GetStateInfo(stif->st, sd_buf);    // get my information of the same state
             if (len != -1)
             {
-                group->Send(id, sd_buf, len);
+                group->Send(id, sd_buf, len);       // send it to all my neighbours
             }
         }
     }
@@ -130,12 +153,11 @@ void Avatar::RecvStateInfo()
 }
 
 /** \brief Get original payoff of each state.
- *  Return 1 for every state.
+ *  Return 1 for every state by default.
  * \param st state identity
  * \return original payoff of st
  *
  */
-
 float Avatar::OriginalPayoff(State st)
 {
     UNUSED(st);

@@ -80,7 +80,6 @@ class SimAgent : public Agent
         void InitMemory();              /**< load memory from database */
         void SaveMemory();              /**< save memory to database */
 
-    protected:
     private:
         unsigned long state_num;                  /**< total number of states in memory */
         unsigned long lk_num;                    /**< total number of links between states in memory */

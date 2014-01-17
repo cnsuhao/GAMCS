@@ -2,18 +2,22 @@
 #define GROUP_H
 #include <stdlib.h>
 
+/**
+* Group of agents
+*/
 class Group
 {
     public:
         Group();
+        Group(int);
         virtual ~Group();
 
-        virtual int Send(int, void *, size_t) = 0;
-        virtual int Recv(int, void *, size_t) = 0;
+        /* Communication facilities which can be used by members in this group */
+        virtual int Send(int, void *, size_t) = 0;  /**< send message to one's neighbour */
+        virtual int Recv(int, void *, size_t) = 0;  /**< recieve one's message */
     protected:
-        int id;
-        int member_num;
-    private:
+        int id;     /**< group id */
+        int member_num;     /**< number of members in this group */
 };
 
 #endif // GROUP_H

@@ -8,14 +8,14 @@
 ***********************************************************************/
 #include "Group.h"
 
-Group::Group()
+Group::Group() : id(0), member_num(0)
 {
-    //ctor
-    member_num = 0;
-    id = -1;
+}
+
+Group::Group(int i) : id(i), member_num(0)
+{
 }
 
 Group::~Group()
 {
-    //dtor
 }
