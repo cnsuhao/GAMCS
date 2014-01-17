@@ -36,9 +36,9 @@ vector<Action> Agent::Restrict(State st, vector<Action> acts)
  *
  */
 
-void Agent::Update(float oripayoff, State expst)
+void Agent::Update(float oripayoff)
 {
-    UpdateMemory(oripayoff, expst); // update memory beginning from expst
+    UpdateMemory(oripayoff); // update memory
     PFTGIOM::Update();
     return;
 }

@@ -59,7 +59,7 @@ public:
     /** These two functions are implementation dependant, declared as pure virtual functions */
     virtual int GetStateInfo(State, void *) const = 0;         /**<  collect information of specified state from memory */
     virtual int MergeStateInfo(struct State_Info_Header *) = 0;       /**<  merge recieved state information into memory */
-    void Update(float, State);      /**< update memory from state given its original payoff */
+    void Update(float);      /**< update memory, this function will call UpdateMemory() to do the real update */
 protected:
     float discount_rate;                                        /**< discount rate (0<,<1)when calculate state payoff */
     float threshold;                                                /**< threshold used in payoff updating */
@@ -67,7 +67,7 @@ protected:
     vector<Action> Restrict(State, vector<Action>);     /**< reimplement restrict using maximun payoff rule  */
 
     virtual vector<Action> MaxPayoffRule(State, vector<Action>) = 0;        /**< implementation of maximun payoff rule */
-    virtual void UpdateMemory(float, State) = 0;    /**<  update memory recursively beginning from specified state */
+    virtual void UpdateMemory(float) = 0;    /**<  update states in memory given current state's original payoff*/
 private:
 };
 

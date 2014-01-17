@@ -200,14 +200,14 @@ void SimAgent::SaveMemory()
 
 SimAgent::SimAgent() :
     state_num(0), lk_num(0), db_con(NULL), db_server(""), db_user(""), db_password(""), db_name(""),
-    db_t_stateinfo("StateInfo"), db_t_meminfo("MemoryInfo"), head(NULL), cur_mst(NULL), cur_st(INVALID_VALUE)
+    db_t_stateinfo("StateInfo"), db_t_meminfo("MemoryInfo"), head(NULL), cur_mst(NULL)
 {
     states_map.clear();
 }
 
 SimAgent::SimAgent(float dr, float th):
     Agent(dr, th), state_num(0), lk_num(0), db_con(NULL), db_server(""), db_user(""), db_password(""), db_name(""),
-    db_t_stateinfo("StateInfo"), db_t_meminfo("MemoryInfo"), head(NULL), cur_mst(NULL), cur_st(INVALID_VALUE)
+    db_t_stateinfo("StateInfo"), db_t_meminfo("MemoryInfo"), head(NULL), cur_mst(NULL)
 {
     states_map.clear();
 }
@@ -709,64 +709,70 @@ vector<Action> SimAgent::BestActions(struct m_State *mst, vector<Action> acts)
 }
 
 /**
-* \brief Update memory from a specified state, with its original payoff given in.
-* \param oripayoff original payoff of this state
-* \param expst the expected state value
+* \brief Update states in memory.
+* \param oripayoff original payoff of current state
 */
-void SimAgent::UpdateMemory(float oripayoff, State expst)
+void SimAgent::UpdateMemory(float oripayoff)
 {
-    // FIXME: the search and set of cur_mst and cur_st are done by MaxPayoffRule function, it's urly!
+    printf("pre_in: %ld\n", pre_in);
 
-    if (pre_in == INVALID_VALUE)  // previous state doesn't exist, it's running for the first time
+    if (pre_in == INVALID_VALUE)    // previous state not exist, it's running for the first time
     {
-        if (cur_mst == NULL)  // first time without memory, create the state and save it to memory
+        //NOTE: cur_mst is already set in MaxPayoffRule() function
+        if (cur_mst == NULL)    // first time without memory, create current state struct in memory
         {
-            cur_mst = NewState(cur_st);
-            cur_mst->original_payoff = oripayoff;   // set original payoff as given
-            cur_mst->payoff = oripayoff;            // set payoff as original payoff
+            cur_mst = NewState(cur_in);
+            cur_mst->original_payoff = oripayoff; // set original payoff as given
+            cur_mst->payoff = oripayoff; // set payoff as original payoff
 
             // add current state to memory
             cur_mst->next = head;
             head = cur_mst;
 
-            states_map.insert(StatesMap::value_type(cur_mst->st, cur_mst));   // insert to hash map
-            state_num++;        // inc global state number
+            states_map.insert(StatesMap::value_type(cur_mst->st, cur_mst)); // insert to hash map
+            state_num++; // inc global state number
         }
-        else             // state found in memory, simply update its count
+        else    // state found in memory, simply update its count
         {
             cur_mst->count++;
             if (cur_mst->mark == SAVED)     // don't forget to change the storage flag
                 cur_mst->mark = MODIFIED;
         }
+
+        return;
     }
-    else     // previous state exists, it's been running for a while
+
+    /* previous state exists */
+    struct m_State *pmst = SearchState(pre_in); // found previous state struct
+    assert(pmst != NULL);   // it exists, we should find it.
+
+    //NOTE: cur_mst is already set in MaxPayoffRule() function
+    if (cur_mst == NULL)    // currrent state struct not exists in memory, create it in memory, and link it to the previous state
     {
-        struct m_State *pmst = SearchState(pre_in); // found previous state struct
-        assert(pmst != NULL);               //ERROR("Previous state lost!\n");
+        cur_mst = NewState(cur_in);
+        cur_mst->original_payoff = oripayoff;
+        cur_mst->payoff = cur_mst->original_payoff;
 
-        if (cur_mst == NULL)  // mst not exists, create the state, save it to memory, and link it to the previous state
-        {
-            cur_mst = NewState(cur_st);
-            cur_mst->original_payoff = oripayoff;
-            cur_mst->payoff = oripayoff;
+        // add it to memory, and update counts
+        cur_mst->next = head;
+        head = cur_mst;
+        states_map.insert(StatesMap::value_type(cur_mst->st, cur_mst));
+        state_num++;
 
-            cur_mst->next = head;
-            head = cur_mst;
-            states_map.insert(StatesMap::value_type(cur_mst->st, cur_mst));
-            state_num++;
-
-            ExAction eat = cur_st - expst;              // calcuate exaction, FIXME: the eat value should be unique
-            LinkStates(pmst, eat, pre_out, cur_mst);
-        }
-        else    // mst already exists, update the count and link it to the previous state (LinkStates will handle it if the link already exists.)
-        {
-            cur_mst->count++;
-            if (cur_mst->mark == SAVED)
-                cur_mst->mark = MODIFIED;
-            ExAction eat = cur_st - expst;
-            LinkStates(pmst, eat, pre_out, cur_mst);
-        }
+        ExAction peat = cur_in - pre_in - pre_out;  // calcuate previous environment action
+        LinkStates(pmst, peat, pre_out, cur_mst);   // build the link
     }
+    else    // current state struct already exists, update the count and link it to the previous state (LinkStates will handle it if the link already exists.)
+    {
+        cur_mst->count++;
+
+        if (cur_mst->mark == SAVED)
+            cur_mst->mark = MODIFIED;
+
+        ExAction peat = cur_in - pre_in - pre_out;
+        LinkStates(pmst, peat, pre_out, cur_mst);
+    }
+
     return;
 }
 
@@ -842,21 +848,17 @@ void SimAgent::RemoveState(struct m_State *mst)
 */
 vector<Action> SimAgent::MaxPayoffRule(State st, vector<Action> acts)
 {
-    struct m_State *mst = SearchState(st);  // get the state struct from value
+    cur_mst = SearchState(st);  // get the state struct from state value
     vector<Action> re;
 
-    if (mst == NULL)        // first time to encounter this state, we know nothing about it, so no rules applied, return the whole list
+    if (cur_mst == NULL)        // first time to encounter this state, we know nothing about it, so no rules applied, return the whole list
     {
         re = acts;
     }
     else                    // we have memories about this state, find the best action of it
     {
-        re = BestActions(mst, acts);
+        re = BestActions(cur_mst, acts);
     }
-
-    // update current state, FIXME: put it elsewhere?
-    cur_mst = mst;
-    cur_st = st;
 
     return re;
 }

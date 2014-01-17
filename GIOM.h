@@ -10,7 +10,7 @@
 #include "Debug.h"
 
 typedef unsigned long Input;            /**< input value, positive numbers */
-typedef unsigned long Output;           /**< output value  */
+typedef unsigned long Output;           /**< output value  */   //TODO negetive value
 
 const unsigned long INVALID_VALUE = 0;           /**< 0 means invalid input or output value */
 
