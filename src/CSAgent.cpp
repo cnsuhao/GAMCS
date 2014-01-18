@@ -9,11 +9,8 @@
 #include <math.h>
 #include <float.h>
 #include <string.h>
-#include <string>
 #include <stdio.h>
 #include <stdlib.h>
-#include <mysql/mysql.h>
-#include <unordered_map>
 #include "CSAgent.h"
 #include "Debug.h"
 
