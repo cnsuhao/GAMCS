@@ -1,6 +1,6 @@
 #include <pthread.h>
-#include "../../SimGroup.h"
-#include "../../SimAgent.h"
+#include "CSGroup.h"
+#include "CSAgent.h"
 #include "Individual.h"
 
 void signal_handler(int sig)

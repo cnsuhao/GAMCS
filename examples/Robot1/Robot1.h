@@ -1,7 +1,7 @@
 #ifndef ROBOT1_H
 #define ROBOT1_H
 #include <signal.h>
-#include "../../Avatar.h"
+#include "Avatar.h"
 
 class Robot1 : public Avatar
 {

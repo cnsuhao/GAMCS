@@ -1,5 +1,3 @@
 AUX_SOURCE_DIRECTORY(. LIB_SRCS)
-INCLUDE_DIRECTORIES(../include)
-SET(CFLAG "-std=c++0x")
-TARGET_LINK_LIBRARIES(avatar mysqlclient pthread m)
+SET(CMAKE_CXX_FLAGS "-std=c++0x -Wall -Wextra")
 ADD_LIBRARY(avatar SHARED ${LIB_SRCS})

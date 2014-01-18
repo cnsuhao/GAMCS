@@ -6,7 +6,7 @@
 #include <pthread.h>
 #include <signal.h>
 #include <vector>
-#include "../../Avatar.h"
+#include "Avatar.h"
 
 class Individual : public Avatar
 {
