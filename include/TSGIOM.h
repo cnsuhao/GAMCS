@@ -1,16 +1,16 @@
-#ifndef PFGIOM_H
-#define PFGIOM_H
+#ifndef TSGIOM_H
+#define TSGIOM_H
 
 #include "GIOM.h"
 
 /**
-* Partial Feedback & Time Sequence General Input Output Model
+* Time Sequence General Input Output Model
 */
-class PFTGIOM : public GIOM
+class TSGIOM : public GIOM
 {
     public:
-        PFTGIOM();
-        virtual ~PFTGIOM();
+        TSGIOM();
+        virtual ~TSGIOM();
         Output Process(Input, const std::vector<Output> &);          // reimplement Process, add time sequence functionality to the process
         void Update();
     protected:
@@ -21,4 +21,4 @@ class PFTGIOM : public GIOM
     private:
 };
 
-#endif // PFGIOM_H
+#endif // TSGIOM_H

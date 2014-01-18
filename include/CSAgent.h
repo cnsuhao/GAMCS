@@ -1,9 +1,6 @@
 #ifndef CSAGENT_H
 #define CSAGENT_H
 
-#include <mysql/mysql.h>
-#include <unordered_map>
-#include <string>
 #include "Agent.h"
 
 /**

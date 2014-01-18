@@ -1,7 +1,7 @@
 #ifndef AGENT_H
 #define AGENT_H
 
-#include "PFTGIOM.h"
+#include "TSGIOM.h"
 
 const int SI_MAX_SIZE = 2048;        /**< maximum size of state information */
 
@@ -11,7 +11,7 @@ const long INVALID_ACTION = INVALID_OUTPUT;
 /**
 * Interface of an autonomous agent.
 */
-class Agent : public PFTGIOM
+class Agent : public TSGIOM
 {
 public:
     typedef GIOM::Input State;                /**< for agent we call an input as a state */

@@ -1,0 +1,4 @@
+INCLUDE_DIRECTORIES("../../include")
+LINK_DIRECTORIES(${PROJECT_SOURCE_DIR}/src) # 库目录搜索路径
+TARGET_LINK_LIBRARIES(rb1 avatar)   # 指定链接库
+ADD_EXECUTABLE(rb1 Robot1.cpp)
