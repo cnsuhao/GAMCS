@@ -1,0 +1,5 @@
+AUX_SOURCE_DIRECTORY(. LIB_SRCS)
+INCLUDE_DIRECTORIES(../include)
+SET(CFLAG "-std=c++0x")
+TARGET_LINK_LIBRARIES(avatar mysqlclient pthread m)
+ADD_LIBRARY(avatar SHARED ${LIB_SRCS})

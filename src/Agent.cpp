@@ -39,6 +39,6 @@ std::vector<Agent::Action> Agent::Restrict(Agent::State st, const std::vector<Ag
 void Agent::Update(float oripayoff)
 {
     UpdateMemory(oripayoff); // update memory
-    PFTGIOM::Update();
+    TSGIOM::Update();
     return;
 }

@@ -6,14 +6,14 @@
 *
 *	@Modify date:
 ***********************************************************************/
-#include "PFTGIOM.h"
+#include "TSGIOM.h"
 #include "Debug.h"
 
-PFTGIOM::PFTGIOM(): pre_in(INVALID_INPUT), pre_out(INVALID_OUTPUT)
+TSGIOM::TSGIOM(): pre_in(INVALID_INPUT), pre_out(INVALID_OUTPUT)
 {
 }
 
-PFTGIOM::~PFTGIOM()
+TSGIOM::~TSGIOM()
 {
 }
 
@@ -23,7 +23,7 @@ PFTGIOM::~PFTGIOM()
  * \return GIOM::Output value
  *
  */
-GIOM::Output PFTGIOM::Process(Input in, const std::vector<GIOM::Output> &outlist)
+GIOM::Output TSGIOM::Process(Input in, const std::vector<GIOM::Output> &outlist)
 {
     GIOM::Output out = GIOM::Process(in, outlist);
     return out;
@@ -33,7 +33,7 @@ GIOM::Output PFTGIOM::Process(Input in, const std::vector<GIOM::Output> &outlist
  *
  *
  */
-void PFTGIOM::Update()
+void TSGIOM::Update()
 {
     /* update time sequence */
     pre_in = cur_in;
@@ -50,7 +50,7 @@ void PFTGIOM::Update()
  * \return outputs distribution after restricting
  *
  */
-std::vector<GIOM::Output> PFTGIOM::Restrict(Input in, const std::vector<GIOM::Output> &outlist)
+std::vector<GIOM::Output> TSGIOM::Restrict(Input in, const std::vector<GIOM::Output> &outlist)
 {
     UNUSED(in);
     return outlist;
