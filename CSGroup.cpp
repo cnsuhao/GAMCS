@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
-#include "SimGroup.h"
+#include "CSGroup.h"
 #include "Debug.h"
 
 /**
@@ -22,7 +22,7 @@
 * \param length length of the message
 * \return length of message that has been sent
 */
-int SimGroup::Send(int id, const void *buffer, size_t length)
+int CSGroup::Send(int id, const void *buffer, size_t length)
 {
     size_t re = 0;
     if (length > DATA_SIZE) // check length
@@ -71,7 +71,7 @@ int SimGroup::Send(int id, const void *buffer, size_t length)
 * \param length of the message to be recieved
 * \return length of message recieved
 */
-int SimGroup::Recv(int id, void *buffer, size_t length)
+int CSGroup::Recv(int id, void *buffer, size_t length)
 {
     if (length > DATA_SIZE)     // check length
     {
@@ -115,14 +115,14 @@ int SimGroup::Recv(int id, void *buffer, size_t length)
 * \brief Load topological structure of a group from a configure file.
 * \param tf file name
 */
-void SimGroup::LoadTopo(std::string tf)
+void CSGroup::LoadTopo(std::string tf)
 {
     topofile = tf;
     BuildNeighsChannels();
     return;
 }
 
-SimGroup::SimGroup() : topofile("")
+CSGroup::CSGroup() : topofile("")
 {
     members.clear();
     for (int i=0; i<MAX_MEMBER; i++)    // set unused neightlist and channels to NULL
@@ -132,7 +132,7 @@ SimGroup::SimGroup() : topofile("")
     }
 }
 
-SimGroup::SimGroup(int i) : Group(i), topofile("")
+CSGroup::CSGroup(int i) : Group(i), topofile("")
 {
     members.clear();
     for (int i=0; i<MAX_MEMBER; i++)
@@ -142,7 +142,7 @@ SimGroup::SimGroup(int i) : Group(i), topofile("")
     }
 }
 
-SimGroup::~SimGroup()
+CSGroup::~CSGroup()
 {
     for (std::vector<int>::iterator it = members.begin(); it!=members.end(); ++it)
     {
@@ -169,7 +169,7 @@ SimGroup::~SimGroup()
 * \param id member id
 * \return channel address
 */
-struct Channel *SimGroup::GetChannel(int id)
+struct Channel *CSGroup::GetChannel(int id)
 {
     return &channels[id];
 };
@@ -179,7 +179,7 @@ struct Channel *SimGroup::GetChannel(int id)
 * \param id member id
 * \return neighbour list
 */
-std::vector<int> SimGroup::GetNeighs(int id)
+std::vector<int> CSGroup::GetNeighs(int id)
 {
     std::vector<int> neighs;
     neighs.clear();
@@ -197,7 +197,7 @@ std::vector<int> SimGroup::GetNeighs(int id)
 /**
 * \brief Build up neighlist and channels for all members in the group.
 */
-void SimGroup::BuildNeighsChannels()
+void CSGroup::BuildNeighsChannels()
 {
     if (topofile.empty())   // no topofile specified, the group will be emtpy, no members or neighbours
     {
@@ -258,7 +258,7 @@ void SimGroup::BuildNeighsChannels()
 * \brief Get member number in group.
 * \return number of members
 */
-int SimGroup::NumOfMembers()
+int CSGroup::NumOfMembers()
 {
     return member_num;
 }

@@ -1,5 +1,5 @@
-#ifndef MYAGENT_H
-#define MYAGENT_H
+#ifndef CSAGENT_H
+#define CSAGENT_H
 
 #include <mysql/mysql.h>
 #include <unordered_map>
@@ -7,17 +7,17 @@
 #include "Agent.h"
 
 /**
-* Simulation of Agent, which uses computers to implement an agent.
+* Computer Simulation of Agent, which uses computers to implement an agent.
 */
-class SimAgent : public Agent
+class CSAgent : public Agent
 {
 public:
     typedef std::unordered_map<Agent::State, void *> StatesMap; /**< hash map from state value to state struct */
     enum m_StMark {SAVED, NEW, MODIFIED};   /**< storage status of a state */
 
-    SimAgent();
-    SimAgent(float, float);
-    virtual ~SimAgent();
+    CSAgent();
+    CSAgent(float, float);
+    virtual ~CSAgent();
 
     int GetStateInfo(Agent::State, void *) const;                 /**< implementing GetStateInfo function */
     int MergeStateInfo(const struct State_Info_Header *);               /**< implementing MergeStateInfo function */
@@ -129,7 +129,7 @@ struct m_State
     float payoff;               /**< state payoff */
     float original_payoff;      /**< original payoff of state */
     unsigned long count;        /**< state count */
-    enum SimAgent::m_StMark mark;         /**< mark used for saving memory to disk */
+    enum CSAgent::m_StMark mark;         /**< mark used for saving memory to disk */
     struct m_EnvAction *ealist;  /**< exacts of this state */
     struct m_Action *atlist;    /**< actions of this state */
     struct m_ForwardArcState *flist;    /**< forward links */
@@ -148,4 +148,4 @@ struct m_Memory_Info
     Agent::Action last_act;    /**< last performed Agent::Action when saving memory */
 };
 
-#endif // MYAGENT_H
+#endif // CSAGENT_H
