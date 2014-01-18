@@ -1,5 +1,5 @@
-#ifndef SIMGROUP_H
-#define SIMGROUP_H
+#ifndef CSGROUP_H
+#define CSGROUP_H
 
 #include <string>
 #include <vector>
@@ -23,12 +23,12 @@ struct Channel
 /**
 * Simulation of a group of agents, in which they can communicate and share knowledge with each other.
 */
-class SimGroup : public Group
+class CSGroup : public Group
 {
     public:
-        SimGroup();
-        SimGroup(int);
-        virtual ~SimGroup();
+        CSGroup();
+        CSGroup(int);
+        virtual ~CSGroup();
 
         void LoadTopo(std::string);      /**< load topological structure of the group from a file */
         int NumOfMembers();         /**< number of members in this group */
@@ -66,4 +66,4 @@ struct Neigh
     struct Neigh *next;     /**< next neigh */
 };
 
-#endif // SIMGROUP_H
+#endif // CSGROUP_H

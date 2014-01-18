@@ -18,13 +18,13 @@ int main(void)
 
     signal(SIGINT, signal_handler);
 
-    SimGroup grp(1);
+    CSGroup grp(1);
     grp.LoadTopo("group.conf");
 
     int num = grp.NumOfMembers();
     int i;
     pthread_t tids[num];
-    SimAgent *sas[num];
+    CSAgent *sas[num];
     Individual *indvs[num];
 
     for (i=0; i<num; i++)
@@ -32,7 +32,7 @@ int main(void)
         printf("i: %d\n", i);
         indvs[i] = new Individual(i);
 
-        sas[i] = new SimAgent(0.8, 0.01);
+        sas[i] = new CSAgent(0.8, 0.01);
         sprintf(str, "Indiv%d", i);
         sas[i]->SetDBArgs("localhost", "root", "890127", str);
         sas[i]->InitMemory();

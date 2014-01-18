@@ -10,7 +10,7 @@
 #include <float.h>
 #include <string.h>
 #include <string>
-#include "SimAgent.h"
+#include "CSAgent.h"
 #include "Debug.h"
 
 /** \brief Load a specified state from a previous memory stored in database.
@@ -19,7 +19,7 @@
  * \return state struct of st in computer memory
  *
  */
-void SimAgent::LoadState(Agent::State st)
+void CSAgent::LoadState(Agent::State st)
 {
     char si_buf[SI_MAX_SIZE];
 
@@ -114,7 +114,7 @@ void SimAgent::LoadState(Agent::State st)
  *
  */
 
-void SimAgent::InitMemory()
+void CSAgent::InitMemory()
 {
     if (db_name.empty())    // no database specified, do nothing
         return;
@@ -162,7 +162,7 @@ void SimAgent::InitMemory()
 /** \brief Save current memroy to database, including states information and memory-level statistics.
  *
  */
-void SimAgent::SaveMemory()
+void CSAgent::SaveMemory()
 {
     if (db_name.empty())    // no database specified, no need to save
         return;
@@ -203,21 +203,21 @@ void SimAgent::SaveMemory()
     return;
 }
 
-SimAgent::SimAgent() :
+CSAgent::CSAgent() :
     state_num(0), lk_num(0), db_con(NULL), db_server(""), db_user(""), db_password(""), db_name(""),
     db_t_stateinfo("StateInfo"), db_t_meminfo("MemoryInfo"), head(NULL), cur_mst(NULL), actions_original_payoff(0.0)
 {
     states_map.clear();
 }
 
-SimAgent::SimAgent(float dr, float th):
+CSAgent::CSAgent(float dr, float th):
     Agent(dr, th), state_num(0), lk_num(0), db_con(NULL), db_server(""), db_user(""), db_password(""), db_name(""),
     db_t_stateinfo("StateInfo"), db_t_meminfo("MemoryInfo"), head(NULL), cur_mst(NULL), actions_original_payoff(0.0)
 {
     states_map.clear();
 }
 
-SimAgent::~SimAgent()
+CSAgent::~CSAgent()
 {
     if (!db_name.empty())   // save memory if database not empty
         SaveMemory();
@@ -231,7 +231,7 @@ SimAgent::~SimAgent()
  *
  */
 
-struct m_State *SimAgent::SearchState(Agent::State st) const
+struct m_State *CSAgent::SearchState(Agent::State st) const
 {
     StatesMap::const_iterator it = states_map.find(st); // find the state value in hash map
     if (it != states_map.end())     // found
@@ -244,7 +244,7 @@ struct m_State *SimAgent::SearchState(Agent::State st) const
 * \param st state value to be created
 * \return newly created state struct
 */
-struct m_State *SimAgent::NewState(Agent::State st)
+struct m_State *CSAgent::NewState(Agent::State st)
 {
     struct m_State *mst = (struct m_State *)malloc(sizeof(struct m_State));
     // fill in default values
@@ -265,7 +265,7 @@ struct m_State *SimAgent::NewState(Agent::State st)
  * \param mst state struct
  *
  */
-void SimAgent::FreeState(struct m_State *mst)
+void CSAgent::FreeState(struct m_State *mst)
 {
     // before free the struct itself, free its subparts first
     /* free atlist */
@@ -311,7 +311,7 @@ void SimAgent::FreeState(struct m_State *mst)
  *
  */
 
-struct m_ForwardArcState *SimAgent::NewFas(EnvAction eat, Agent::Action act)
+struct m_ForwardArcState *CSAgent::NewFas(EnvAction eat, Agent::Action act)
 {
     struct m_ForwardArcState *fas = (struct m_ForwardArcState *)malloc(sizeof(struct m_ForwardArcState));
 
@@ -327,7 +327,7 @@ struct m_ForwardArcState *SimAgent::NewFas(EnvAction eat, Agent::Action act)
  * \param fas the struct to be freed
  *
  */
-void SimAgent::FreeFas(struct m_ForwardArcState *fas)
+void CSAgent::FreeFas(struct m_ForwardArcState *fas)
 {
     return free(fas);
 }
@@ -337,7 +337,7 @@ void SimAgent::FreeFas(struct m_ForwardArcState *fas)
  * \return a new back arc struct
  *
  */
-struct m_BackArcState *SimAgent::NewBas()
+struct m_BackArcState *CSAgent::NewBas()
 {
     struct m_BackArcState *bas = (struct m_BackArcState *)malloc(sizeof(struct m_BackArcState));
     bas->pstate = NULL;
@@ -348,7 +348,7 @@ struct m_BackArcState *SimAgent::NewBas()
 /** \brief Free a back arc struct
  *
  */
-void SimAgent::FreeBas(struct m_BackArcState *bas)
+void CSAgent::FreeBas(struct m_BackArcState *bas)
 {
     return free(bas);
 }
@@ -360,7 +360,7 @@ void SimAgent::FreeBas(struct m_BackArcState *bas)
  * \return the action struct found, NULL if not found
  *
  */
-struct m_Action* SimAgent::Act2Struct(Agent::Action act, const struct m_State *mst) const
+struct m_Action* CSAgent::Act2Struct(Agent::Action act, const struct m_State *mst) const
 {
     struct m_Action *ac, *nac;
 
@@ -383,7 +383,7 @@ struct m_Action* SimAgent::Act2Struct(Agent::Action act, const struct m_State *m
  * \return the environment action struct found, NULL if not found
  *
  */
-struct m_EnvAction* SimAgent::Eat2Struct(EnvAction eat, const struct m_State *mst) const
+struct m_EnvAction* CSAgent::Eat2Struct(EnvAction eat, const struct m_State *mst) const
 {
     struct m_EnvAction *ea, *nea;
     // walk through environment Agent::Action list
@@ -404,7 +404,7 @@ struct m_EnvAction* SimAgent::Eat2Struct(EnvAction eat, const struct m_State *ms
  * \return a new environment action struct
  *
  */
-struct m_EnvAction *SimAgent::NewEa(EnvAction eat)
+struct m_EnvAction *CSAgent::NewEa(EnvAction eat)
 {
     struct m_EnvAction *ea = (struct m_EnvAction *)malloc(sizeof(struct m_EnvAction));
 
@@ -414,7 +414,7 @@ struct m_EnvAction *SimAgent::NewEa(EnvAction eat)
     return ea;
 }
 
-void SimAgent::FreeEa(struct m_EnvAction *ea)
+void CSAgent::FreeEa(struct m_EnvAction *ea)
 {
     return free(ea);
 }
@@ -425,7 +425,7 @@ void SimAgent::FreeEa(struct m_EnvAction *ea)
  * \return a new action struct
  *
  */
-struct m_Action *SimAgent::NewAc(Agent::Action act)
+struct m_Action *CSAgent::NewAc(Agent::Action act)
 {
     struct m_Action *ac = (struct m_Action *)malloc(sizeof(struct m_Action));
 
@@ -435,7 +435,7 @@ struct m_Action *SimAgent::NewAc(Agent::Action act)
     return ac;
 }
 
-void SimAgent::FreeAc(struct m_Action *ac)
+void CSAgent::FreeAc(struct m_Action *ac)
 {
     return free(ac);
 }
@@ -448,7 +448,7 @@ void SimAgent::FreeAc(struct m_Action *ac)
  * \param mst state struct
  *
  */
-void SimAgent::LinkStates(struct m_State *pmst, EnvAction eat, Agent::Action act, struct m_State *mst)
+void CSAgent::LinkStates(struct m_State *pmst, EnvAction eat, Agent::Action act, struct m_State *mst)
 {
     /* check if the link already exists, if so simply update the count of environment action */
     struct m_ForwardArcState *f, *nf;
@@ -524,7 +524,7 @@ void SimAgent::LinkStates(struct m_State *pmst, EnvAction eat, Agent::Action act
 * \param mst to which state the link is
 * \return the maximum payoff
 */
-float SimAgent::MaxPayoffInEat(EnvAction eat, const struct m_State *mst) const
+float CSAgent::MaxPayoffInEat(EnvAction eat, const struct m_State *mst) const
 {
     float max_pf = -FLT_MAX;    // set to a possibly minimun value
     struct m_State *nmst;
@@ -553,7 +553,7 @@ float SimAgent::MaxPayoffInEat(EnvAction eat, const struct m_State *mst) const
 * \param mst the state struct
 * \return the possibility
 */
-float SimAgent::Prob(const struct m_EnvAction *ea, const struct m_State *mst) const
+float CSAgent::Prob(const struct m_EnvAction *ea, const struct m_State *mst) const
 {
     float eacount = ea->count;
     float stcount = mst->count;
@@ -565,7 +565,7 @@ float SimAgent::Prob(const struct m_EnvAction *ea, const struct m_State *mst) co
 * \param mst specified state
 * \return payoff of the state
 */
-float SimAgent::CalStatePayoff(const struct m_State *mst) const
+float CSAgent::CalStatePayoff(const struct m_State *mst) const
 {
     dbgmoreprt("CalStatePayoff(): state: %ld, count: %ld\n", mst->st, mst->count);
 
@@ -593,7 +593,7 @@ float SimAgent::CalStatePayoff(const struct m_State *mst) const
 * \brief Update states backwards recursively beginning from a specified state
 * \param mst a specified state where the update begins
 */
-void SimAgent::UpdateState(struct m_State *mst)
+void CSAgent::UpdateState(struct m_State *mst)
 {
     /* update state's payoff */
     float payoff = CalStatePayoff(mst);
@@ -637,7 +637,7 @@ void SimAgent::UpdateState(struct m_State *mst)
 * \param mst the state which links the needed state
 * \return state struct needed, NULL if not found
 */
-struct m_State *SimAgent::StateByEatAct(EnvAction eat, Agent::Action act, const struct m_State *mst) const
+struct m_State *CSAgent::StateByEatAct(EnvAction eat, Agent::Action act, const struct m_State *mst) const
 {
     struct m_ForwardArcState *fas, *nfas;
     for (fas=mst->flist; fas!=NULL; fas=nfas)
@@ -655,7 +655,7 @@ struct m_State *SimAgent::StateByEatAct(EnvAction eat, Agent::Action act, const 
 * \param mst state struct which contains the action
 * \return payoff of the action
 */
-float SimAgent::CalActPayoff(Agent::Action act, const struct m_State *mst) const
+float CSAgent::CalActPayoff(Agent::Action act, const struct m_State *mst) const
 {
     float ori_payoff = actions_original_payoff;             // original payoff of actions
     float payoff = ori_payoff;
@@ -683,7 +683,7 @@ float SimAgent::CalActPayoff(Agent::Action act, const struct m_State *mst) const
 * \param candidate action list
 * \return best actions
 */
-std::vector<Agent::Action> SimAgent::BestActions(const struct m_State *mst, const std::vector<Agent::Action> &acts)
+std::vector<Agent::Action> CSAgent::BestActions(const struct m_State *mst, const std::vector<Agent::Action> &acts)
 {
     float max_payoff = -FLT_MAX;
     float ori_payoff = actions_original_payoff;         // original payoff of actions
@@ -717,7 +717,7 @@ std::vector<Agent::Action> SimAgent::BestActions(const struct m_State *mst, cons
 * \brief Update states in memory.
 * \param oripayoff original payoff of current state
 */
-void SimAgent::UpdateMemory(float oripayoff)
+void CSAgent::UpdateMemory(float oripayoff)
 {
     printf("pre_in: %ld\n", pre_in);
 
@@ -785,7 +785,7 @@ void SimAgent::UpdateMemory(float oripayoff)
 /**
 * \brief Free computer memory used by the agent's memory.
 */
-void SimAgent::FreeMemory()
+void CSAgent::FreeMemory()
 {
     // free all states in turn
     struct m_State *mst, *nmst;
@@ -801,7 +801,7 @@ void SimAgent::FreeMemory()
 * \brief Remove and free a specified state from computer memory.
 * \param mst the state to be removed
 */
-void SimAgent::RemoveState(struct m_State *mst)
+void CSAgent::RemoveState(struct m_State *mst)
 {
     if (mst == NULL)
         ERROR("Cant remove state, state is NULL\n");
@@ -852,7 +852,7 @@ void SimAgent::RemoveState(struct m_State *mst)
 * \param acts the candidate action list
 * \return actions choosen by MPR
 */
-std::vector<Agent::Action> SimAgent::MaxPayoffRule(Agent::State st, const std::vector<Agent::Action> &acts)
+std::vector<Agent::Action> CSAgent::MaxPayoffRule(Agent::State st, const std::vector<Agent::Action> &acts)
 {
     cur_mst = SearchState(st);  // get the state struct from state value
     std::vector<Agent::Action> re;
@@ -875,7 +875,7 @@ std::vector<Agent::Action> SimAgent::MaxPayoffRule(Agent::State st, const std::v
 * \param buffer[out] buffer to store the state information
 * \return the length of state information put in buffer, -1 for error
 */
-int SimAgent::GetStateInfo(Agent::State st, void *buffer) const
+int CSAgent::GetStateInfo(Agent::State st, void *buffer) const
 {
     if (buffer == NULL) // error, buffer is null
     {
@@ -989,7 +989,7 @@ finish: // buffer is filled
 * \param stif the state information to be merged
 * \return if the state information is finally accepted and merged, 1 for yes, 0 for no.
 */
-int SimAgent::MergeStateInfo(const struct State_Info_Header *stif)
+int CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
 {
     unsigned char *p = (unsigned char *)stif;   // use point p to travel through each subpart
     // action information
@@ -1155,7 +1155,7 @@ int SimAgent::MergeStateInfo(const struct State_Info_Header *stif)
 * \brief Pretty print State information
 * \param specified State information header
 */
-void SimAgent::PrintStateInfo(const struct State_Info_Header *stif)
+void CSAgent::PrintStateInfo(const struct State_Info_Header *stif)
 {
     if (stif == NULL)
         return;
@@ -1199,7 +1199,7 @@ void SimAgent::PrintStateInfo(const struct State_Info_Header *stif)
 * \param passwd password of username
 * \param name of the database
 */
-void SimAgent::SetDBArgs(std::string srv, std::string usr, std::string passwd, std::string db)
+void CSAgent::SetDBArgs(std::string srv, std::string usr, std::string passwd, std::string db)
 {
     db_server = srv;
     db_user = usr;
@@ -1212,7 +1212,7 @@ void SimAgent::SetDBArgs(std::string srv, std::string usr, std::string passwd, s
 * \brief Connect to database.
 * \return -1 for error, 0 for success
 */
-int SimAgent::DBConnect()
+int CSAgent::DBConnect()
 {
     if (mysql_library_init(0, NULL, NULL))
     {
@@ -1269,7 +1269,7 @@ int SimAgent::DBConnect()
 /**
 * \brief Close database.
 */
-void SimAgent::DBClose()
+void CSAgent::DBClose()
 {
     mysql_close(db_con);
     return mysql_library_end();
@@ -1280,7 +1280,7 @@ void SimAgent::DBClose()
 * \param index index
 * \return state value of that index, INVALID_STATE for error or not found
 */
-Agent::State SimAgent::DBStateByIndex(unsigned long index) const
+Agent::State CSAgent::DBStateByIndex(unsigned long index) const
 {
     char query_str[256];
     sprintf(query_str, "SELECT * FROM %s LIMIT %ld, 1", db_t_stateinfo.c_str(), index);
@@ -1320,7 +1320,7 @@ Agent::State SimAgent::DBStateByIndex(unsigned long index) const
 * \param buffer buffer to put state information in
 * \return length of the fetched state information, -1 if error
 */
-int SimAgent::DBFetchStateInfo(Agent::State st, void *buffer) const
+int CSAgent::DBFetchStateInfo(Agent::State st, void *buffer) const
 {
     char query_string[256];
     sprintf(query_string, "SELECT * FROM %s WHERE State=%ld", db_t_stateinfo.c_str(), st);  // build mysql query
@@ -1413,7 +1413,7 @@ finish: // the buffer is filled up now
 * \param state value
 * \return 1 if found, 0 if not
 */
-int SimAgent::DBSearchState(Agent::State st) const
+int CSAgent::DBSearchState(Agent::State st) const
 {
     char query_string[256];
     sprintf(query_string, "SELECT * FROM %s WHERE State=%ld", db_t_stateinfo.c_str(), st);
@@ -1440,7 +1440,7 @@ int SimAgent::DBSearchState(Agent::State st) const
 * \brief Add state information to database.
 * \param stif header pointed to state information
 */
-void SimAgent::DBAddStateInfo(const struct State_Info_Header *stif)
+void CSAgent::DBAddStateInfo(const struct State_Info_Header *stif)
 {
     char str[256];
     sprintf(str, "INSERT INTO %s(State, OriPayoff, Payoff, Count, ActInfos, ExActInfos, BackLinks) VALUES(%ld, %.2f, %.2f, %ld, '%%s', '%%s', '%%s')",
@@ -1490,7 +1490,7 @@ void SimAgent::DBAddStateInfo(const struct State_Info_Header *stif)
 * \brief Update information of a state already exists in database.
 * \param stif header pointed to the modified state information
 */
-void SimAgent::DBUpdateStateInfo(const struct State_Info_Header *stif)
+void CSAgent::DBUpdateStateInfo(const struct State_Info_Header *stif)
 {
     char str[256];
     sprintf(str, "UPDATE %s SET OriPayoff=%.2f, Payoff=%.2f, Count=%ld, ActInfos='%%s', ExActInfos='%%s', BackLinks='%%s' WHERE State=%ld",
@@ -1534,7 +1534,7 @@ void SimAgent::DBUpdateStateInfo(const struct State_Info_Header *stif)
 * \brief Delete a state from database by its value
 * \param st state value to be delete
 */
-void SimAgent::DBDeleteState(Agent::State st)
+void CSAgent::DBDeleteState(Agent::State st)
 {
     char query_string[256];
     sprintf(query_string, "DELETE  FROM %s WHERE State=%ld", db_t_stateinfo.c_str(), st);   // build delete query
@@ -1550,7 +1550,7 @@ void SimAgent::DBDeleteState(Agent::State st)
 /**
 * \brief Add memory statistics to database.
 */
-void SimAgent::DBAddMemoryInfo()
+void CSAgent::DBAddMemoryInfo()
 {
     char query_str[256];
 
@@ -1570,7 +1570,7 @@ void SimAgent::DBAddMemoryInfo()
 * \brief Fetch memory statistics from database.
 * \return memory info struct, NULL if error
 */
-struct m_Memory_Info *SimAgent::DBFetchMemoryInfo()
+struct m_Memory_Info *CSAgent::DBFetchMemoryInfo()
 {
     char query_str[256];
     sprintf(query_str, "SELECT * FROM %s ORDER BY TimeStamp DESC LIMIT 1", db_t_meminfo.c_str());   // select the lastest one
@@ -1620,7 +1620,7 @@ struct m_Memory_Info *SimAgent::DBFetchMemoryInfo()
 * \param total total amount
 * \param label indicator label
 */
-void SimAgent::PrintProcess(unsigned long current, unsigned long total, char *label) const
+void CSAgent::PrintProcess(unsigned long current, unsigned long total, char *label) const
 {
     double prcnt;
     int num_of_dots;
