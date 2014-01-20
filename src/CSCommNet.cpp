@@ -13,11 +13,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
-#include "CSCCCNet.h"
+#include "CSCommNet.h"
 #include "CSAgent.h"
 #include "Debug.h"
 
-CSCCCNet::CSCCCNet() :
+CSCommNet::CSCommNet() :
         topofile(""), member_num(0)
 {
     members.clear();
@@ -28,8 +28,8 @@ CSCCCNet::CSCCCNet() :
     }
 }
 
-CSCCCNet::CSCCCNet(int i) :
-        CCCNet(i), topofile(""), member_num(0)
+CSCommNet::CSCommNet(int i) :
+        CommNet(i), topofile(""), member_num(0)
 {
     members.clear();
     for (int i = 0; i < MAX_MEMBER; i++)
@@ -39,7 +39,7 @@ CSCCCNet::CSCCCNet(int i) :
     }
 }
 
-CSCCCNet::~CSCCCNet()
+CSCommNet::~CSCommNet()
 {
     for (std::vector<int>::iterator it = members.begin(); it != members.end();
             ++it)
@@ -69,7 +69,7 @@ CSCCCNet::~CSCCCNet()
  * \param length length of the message
  * \return length of message that has been sent
  */
-int CSCCCNet::Send(int id, const void *buffer, size_t length)
+int CSCommNet::Send(int id, const void *buffer, size_t length)
 {
     size_t re = 0;
     if (length > DATA_SIZE)    // check length
@@ -118,7 +118,7 @@ int CSCCCNet::Send(int id, const void *buffer, size_t length)
  * \param length of the message to be recieved
  * \return length of message recieved
  */
-int CSCCCNet::Recv(int id, void *buffer, size_t length)
+int CSCommNet::Recv(int id, void *buffer, size_t length)
 {
     if (length > DATA_SIZE)    // check length
     {
@@ -162,7 +162,7 @@ int CSCCCNet::Recv(int id, void *buffer, size_t length)
  * \brief Load topological structure of a group from a configure file.
  * \param tf file name
  */
-void CSCCCNet::LoadTopoFile(std::string tf)
+void CSCommNet::LoadTopoFile(std::string tf)
 {
     topofile = tf;
     BuildNeighsChannels();
@@ -174,7 +174,7 @@ void CSCCCNet::LoadTopoFile(std::string tf)
  * \param id member id
  * \return channel address
  */
-struct Channel *CSCCCNet::GetChannel(int id)
+struct Channel *CSCommNet::GetChannel(int id)
 {
     return &channels[id];
 }
@@ -185,7 +185,7 @@ struct Channel *CSCCCNet::GetChannel(int id)
  * \param id member id
  * \return neighbour list
  */
-std::vector<int> CSCCCNet::GetNeighbours(int id)
+std::vector<int> CSCommNet::GetNeighbours(int id)
 {
     std::vector<int> neighs;
     neighs.clear();
@@ -203,7 +203,7 @@ std::vector<int> CSCCCNet::GetNeighbours(int id)
 /**
  * \brief Build up neighlist and channels for all members in the group.
  */
-void CSCCCNet::BuildNeighsChannels()
+void CSCommNet::BuildNeighsChannels()
 {
     if (topofile.empty())    // no topofile specified, the group will be emtpy, no members or neighbours
     {
@@ -263,13 +263,13 @@ void CSCCCNet::BuildNeighsChannels()
 }
 
 
-void CSCCCNet::AddMember(int mid, const std::vector<int> &neighbours)
+void CSCommNet::AddMember(int mid, const std::vector<int> &neighbours)
 {
     AddMember(mid); // add member first
     AddNeighbour(mid, neighbours);  // add neighbours
 }
 
-void CSCCCNet::AddNeighbour(int who, const std::vector<int> &neighbours)
+void CSCommNet::AddNeighbour(int who, const std::vector<int> &neighbours)
 {
     // add all neighbours
     for (std::vector<int>::const_iterator nit = neighbours.begin();
@@ -279,7 +279,7 @@ void CSCCCNet::AddNeighbour(int who, const std::vector<int> &neighbours)
     }
 }
 
-void CSCCCNet::RemoveNeighbour(int who, const std::vector<int> &neighbours)
+void CSCommNet::RemoveNeighbour(int who, const std::vector<int> &neighbours)
 {
     // remove all neighbours
     for (std::vector<int>::const_iterator nit = neighbours.begin();
@@ -289,7 +289,7 @@ void CSCCCNet::RemoveNeighbour(int who, const std::vector<int> &neighbours)
     }
 }
 
-void CSCCCNet::AddMember(int mem)
+void CSCommNet::AddMember(int mem)
 {
     // chech if alread exists
     std::vector<int>::iterator it = std::find(members.begin(), members.end(),
@@ -307,7 +307,7 @@ void CSCCCNet::AddMember(int mem)
     channels[mem].ptr = CHANNEL_SIZE - 1;
 }
 
-void CSCCCNet::AddNeighbour(int mem, int neb)
+void CSCommNet::AddNeighbour(int mem, int neb)
 {
     // check if member exists
     std::vector<int>::iterator it = std::find(members.begin(), members.end(),
@@ -348,7 +348,7 @@ void CSCCCNet::AddNeighbour(int mem, int neb)
     neighlist[mem] = nneigh;
 }
 
-void CSCCCNet::RemoveMember(int mem)
+void CSCommNet::RemoveMember(int mem)
 {
     // check if exists
     std::vector<int>::iterator it = std::find(members.begin(), members.end(),
@@ -388,7 +388,7 @@ void CSCCCNet::RemoveMember(int mem)
 
 }
 
-void CSCCCNet::RemoveNeighbour(int mem, int neighbour)
+void CSCommNet::RemoveNeighbour(int mem, int neighbour)
 {
     // check if member exists
     std::vector<int>::iterator it = std::find(members.begin(), members.end(),
@@ -425,7 +425,7 @@ void CSCCCNet::RemoveNeighbour(int mem, int neighbour)
 
 }
 
-bool CSCCCNet::IsConnectedTo(int from, int to)
+bool CSCommNet::IsConnectedTo(int from, int to)
 {
     bool connected = false;
     struct Neigh *nb, *nnb;

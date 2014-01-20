@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include "CCCNet.h"
+#include "CommNet.h"
 
 #define MAX_MEMBER 1000     // maximun number of members in group
 #define CHANNEL_SIZE 10     // maximun number of messages a channel can store
@@ -21,14 +21,14 @@ struct Channel
 };
 
 /**
-* Computer Simulation of CCCNet, in which they can communicate and share knowledge with each other.
+* Computer Simulation of CommNet, in which they can communicate and share knowledge with each other.
 */
-class CSCCCNet : public CCCNet
+class CSCommNet : public CommNet
 {
     public:
-        CSCCCNet();
-        CSCCCNet(int);
-        virtual ~CSCCCNet();
+        CSCommNet();
+        CSCommNet(int);
+        virtual ~CSCommNet();
 
         void LoadTopoFile(std::string);      /**< load topological structure of the group from a file */
 
@@ -62,7 +62,7 @@ class CSCCCNet : public CCCNet
 * \brief Get member number in group.
 * \return number of members
 */
-inline int CSCCCNet::NumberOfMembers()
+inline int CSCommNet::NumberOfMembers()
 {
     return member_num;
 }

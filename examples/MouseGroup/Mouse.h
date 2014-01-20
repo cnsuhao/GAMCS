@@ -6,9 +6,9 @@
 #include <pthread.h>
 #include <signal.h>
 #include <vector>
-#include "Avatar.h"
+#include "CSSocialAvatar.h"
 
-class Mouse : public Avatar
+class Mouse : public CSSocialAvatar
 {
     public:
         Mouse(int i);

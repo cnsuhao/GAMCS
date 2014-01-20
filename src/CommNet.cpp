@@ -6,18 +6,18 @@
  *
  *	@Modify date:
  ***********************************************************************/
-#include "CCCNet.h"
+#include "CommNet.h"
 
-CCCNet::CCCNet() :
+CommNet::CommNet() :
         id(0)
 {
 }
 
-CCCNet::CCCNet(int i) :
+CommNet::CommNet(int i) :
         id(i)
 {
 }
 
-CCCNet::~CCCNet()
+CommNet::~CommNet()
 {
 }

@@ -5,12 +5,12 @@
 /**
  * Communication Network Interface
  */
-class CCCNet
+class CommNet
 {
     public:
-        CCCNet();
-        CCCNet(int);
-        virtual ~CCCNet();
+        CommNet();
+        CommNet(int);
+        virtual ~CommNet();
 
         /* build the network */
         virtual void AddMember(int) = 0; /**< add a new member to network */

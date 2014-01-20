@@ -1,6 +1,6 @@
 #include <pthread.h>
 #include <iostream>
-#include "CSCCCNet.h"
+#include "CSCommNet.h"
 #include "CSAgent.h"
 #include "Mouse.h"
 
@@ -8,7 +8,7 @@ void signal_handler(int sig)
 {
     if (sig == SIGINT)
     {
-        Mouse::quit = 1;
+        // do something
     }
     return;
 }
@@ -17,7 +17,7 @@ int main(void)
 {
     signal(SIGINT, signal_handler);
 
-    CSCCCNet cccnet(1);
+    CSCommNet cccnet(1);
     int mouse_num = 4;
     Mouse *mice[mouse_num];
     CSAgent *agents[mouse_num];
@@ -31,7 +31,7 @@ int main(void)
         agent->InitMemory();
 
         mouse->ConnectAgent(agent);
-        mouse->SetCCCNet(&cccnet);
+        mouse->SetCommNet(&cccnet);
         mice[i] = mouse;
         agents[i] = agent;
         tids[i] = mice[i]->ThreadLaunch();      // launch

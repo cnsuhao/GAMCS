@@ -4,7 +4,9 @@
 void signal_handler(int sig)
 {
     if (sig == SIGINT)
-        Mouse1::quit = 1;
+    {
+        // do something
+    }
     return;
 }
 
@@ -12,10 +14,10 @@ int main(void)
 {
     signal(SIGINT, signal_handler);
     CSAgent ma(0.9, 0.01);
-    ma.SetDBArgs("localhost", "root", "huangk", "Robot1");
+    ma.SetDBArgs("localhost", "root", "huangk", "Mouse");
     ma.InitMemory();
 
-    Mouse1 rb1(1);
-    rb1.ConnectAgent(&ma);
-    rb1.Launch();
+    Mouse mouse(1);
+    mouse.ConnectAgent(&ma);
+    mouse.Launch();
 }
