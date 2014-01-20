@@ -8,22 +8,22 @@
 ***********************************************************************/
 #include "Mouse.h"
 
-Mouse1::Mouse1(int i):Avatar(i)
+Mouse::Mouse(int i):Avatar(i)
 {
     position = 5;
 }
 
-Mouse1::~Mouse1()
+Mouse::~Mouse()
 {
     //dtor
 }
 
-Agent::State Mouse1::GetCurrentState()
+Agent::State Mouse::GetCurrentState()
 {
     return position;
 }
 
-void Mouse1::DoAction(Agent::Action act)
+void Mouse::DoAction(Agent::Action act)
 {
     position += act;
 
@@ -42,19 +42,25 @@ void Mouse1::DoAction(Agent::Action act)
  *
  */
 
-std::vector<Agent::Action> Mouse1::ActionCandidates(Agent::State st)
+std::vector<Agent::Action> Mouse::ActionCandidates(Agent::State st)
 {
 //    UNUSED(st);
-    st = st;
-    std::vector<Agent::Action> acts;
-    acts.clear();
-    acts.push_back(1);
-    acts.push_back(-1);
-
-    return acts;
+    static int count;
+//    UNUSED(st);
+    if (count < 50000)
+    {
+        std::vector<Agent::Action> acts;
+        acts.clear();
+        acts.push_back(1);
+        acts.push_back(-1);
+        count++;
+        return acts;
+    }
+    else
+        return std::vector<Agent::Action>();    // return an empty list
 }
 
-float Mouse1::OriginalPayoff(Agent::State st)
+float Mouse::OriginalPayoff(Agent::State st)
 {
     if (st == 15)
         return 1;

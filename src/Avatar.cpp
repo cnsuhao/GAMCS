@@ -6,34 +6,20 @@
 *
 *	@Modify date:
 ***********************************************************************/
-#include <pthread.h>
 #include <stdio.h>
 #include "Avatar.h"
 #include "Debug.h"
 
-bool Avatar::quit = false;  // set quit indicator to false
-
-Avatar::Avatar() : id(0), freq(100), agent(NULL), cccnet(NULL)
+Avatar::Avatar() : id(0), freq(100), agent(NULL), commnet(NULL)
 {
 }
 
-Avatar::Avatar(int i) : id(i), freq(100), agent(NULL), cccnet(NULL)
+Avatar::Avatar(int i) : id(i), freq(100), agent(NULL), commnet(NULL)
 {
 }
 
 Avatar::~Avatar()
 {
-}
-
-/**
-* \brief Launch Launch() function in a thread.
-*/
-pthread_t Avatar::ThreadLaunch()
-{
-    pthread_t tid;
-    pthread_create(&tid, NULL, hook, this); // create a thread, and call the hook
-
-    return tid;
 }
 
 /**
@@ -43,7 +29,7 @@ void Avatar::Launch()
 {
     int count = 0;  // count for sending messages
 
-    while(!quit)
+    while(true)
     {
         RecvStateInfo();    // check if new message has recieved
 
@@ -94,64 +80,6 @@ void Avatar::SetFreq(int fq)
 void Avatar::ConnectAgent(Agent *agt)
 {
     agent = agt;
-}
-
-/**
-* \brief Join a cccnet
-* \param grp cccnet to join
-*/
-void Avatar::SetCCCNet(CCCNet *cn)
-{
-    cccnet = cn;
-}
-
-/**
-* \brief Send information of a specified state to all neighbours.
-* \param st state value to be sent
-*/
-void Avatar::SendStateInfo(Agent::State st)
-{
-    if (cccnet == NULL)  // no neighbours, nothing to do
-        return;
-
-    char si_buffer[SI_MAX_SIZE];
-    int len = agent->GetStateInfo(st, si_buffer);       // the st may not exist
-    if (len == -1)
-    {
-        return;
-    }
-
-    cccnet->Send(id, si_buffer, len);        // call the send facility in cccnet
-
-    return;
-}
-
-/**
-* \brief Recieve state information from neighbours.
-*/
-void Avatar::RecvStateInfo()
-{
-    if (cccnet == NULL)  // no neighbours, nothing to do
-        return;
-
-    char re_buf[SI_MAX_SIZE];   // buffer for recieved message
-    char sd_buf[SI_MAX_SIZE];   // buffer for message to be sent
-
-    while(cccnet->Recv(id, re_buf, 2048) != 0)   // message recieved
-    {
-        struct State_Info_Header *stif = (struct State_Info_Header *)re_buf;
-        int better = agent->MergeStateInfo(stif);   // merge the recieved state information to memory
-
-        if (better == 0)                // the state information wasn't better than mine and thus not accepted, it's my duty to send out my better information to others
-        {
-            int len = agent->GetStateInfo(stif->st, sd_buf);    // get my information of the same state
-            if (len != -1)
-            {
-                cccnet->Send(id, sd_buf, len);       // send it to all my neighbours
-            }
-        }
-    }
-    return;
 }
 
 /** \brief Get original payoff of each state.
