@@ -65,23 +65,6 @@ void Avatar::Launch()
     return;
 }
 
-/**
-* \brief Set communication frequence.
-*/
-void Avatar::SetFreq(int fq)
-{
-    freq = fq;
-}
-
-/**
-* \brief Connect to an agent.
-* \param agt agent to be connected
-*/
-void Avatar::ConnectAgent(Agent *agt)
-{
-    agent = agt;
-}
-
 /** \brief Get original payoff of each state.
  *  Return 1 for every state by default.
  * \param st state identity
