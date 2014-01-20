@@ -32,15 +32,6 @@ pthread_t CSSocialAvatar::ThreadLaunch()
 }
 
 /**
- * \brief Join a commnet
- * \param grp commnet to join
- */
-void CSSocialAvatar::SetCommNet(CommNet *cn)
-{
-    commnet = cn;
-}
-
-/**
  * \brief Send information of a specified state to all neighbours.
  * \param st state value to be sent
  */

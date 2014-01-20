@@ -20,8 +20,6 @@ class CSSocialAvatar : public Avatar
         virtual ~CSSocialAvatar();
 
         pthread_t ThreadLaunch();      /**< if it's a group, launch each of its  members in a thread */
-        void SetCommNet(CommNet *);        /**< set which communication network this avatar is belonged to */
-
     private:
         virtual void SendStateInfo(Agent::State);      /**< send information of a state to all its neighbours */
         virtual void RecvStateInfo();           /**< recieve state information from neighbours */
