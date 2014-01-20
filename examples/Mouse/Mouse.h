@@ -3,13 +3,13 @@
 #include <signal.h>
 #include "Avatar.h"
 
-class Robot1 : public Avatar
+class Mouse1 : public Avatar
 {
     public:
         /** Default constructor */
-        Robot1(int);
+        Mouse1(int);
         /** Default destructor */
-        virtual ~Robot1();
+        virtual ~Mouse1();
 
     protected:
     private:

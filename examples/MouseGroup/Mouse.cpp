@@ -6,24 +6,24 @@
 *
 *	@Modify date:
 ***********************************************************************/
-#include "Individual.h"
+#include "Mouse.h"
 
-Individual::Individual(int i):Avatar(i)
+Mouse::Mouse(int i):Avatar(i)
 {
     position = 5;
 }
 
-Individual::~Individual()
+Mouse::~Mouse()
 {
 
 }
 
-Agent::State Individual::GetCurrentState()
+Agent::State Mouse::GetCurrentState()
 {
     return position;
 }
 
-void Individual::DoAction(Agent::Action act)
+void Mouse::DoAction(Agent::Action act)
 {
     position += act;
 
@@ -34,7 +34,7 @@ void Individual::DoAction(Agent::Action act)
     return;
 }
 
-std::vector<Agent::Action> Individual::ActionCandidates(Agent::State st)
+std::vector<Agent::Action> Mouse::ActionCandidates(Agent::State st)
 {
 //    UNUSED(st);
     std::vector<Agent::Action> acts;
@@ -45,7 +45,7 @@ std::vector<Agent::Action> Individual::ActionCandidates(Agent::State st)
     return acts;
 }
 
-float Individual::OriginalPayoff(Agent::State st)
+float Mouse::OriginalPayoff(Agent::State st)
 {
     if (st == 9)
         return 1;

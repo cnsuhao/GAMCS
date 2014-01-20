@@ -42,3 +42,23 @@ void Agent::Update(float oripayoff)
     TSGIOM::Update();
     return;
 }
+
+void Agent::SetDiscountRate(float dr)
+{
+    discount_rate = dr;
+}
+
+float Agent::GetDiscountRate()
+{
+    return discount_rate;
+}
+
+void Agent::SetThreshold(float th)
+{
+    threshold = th;
+}
+
+float Agent::GetThreshold()
+{
+    return threshold;
+}

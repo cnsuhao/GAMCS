@@ -22,7 +22,7 @@ public:
     virtual ~GIOM();
     Output Process(Input, const std::vector<Output> &);          /**< generate an output value from a output list given an input value */
     float Entropy();                                        /**< calculate entropy of this GIOM */
-    void Update();
+    virtual void Update();      /**< derived classes may update their own inner states */
 protected:
     virtual std::vector<Output> Restrict(Input, const std::vector<Output> &);     /**< restrict the outputs */
     Input cur_in;       /**< input value */

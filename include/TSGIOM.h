@@ -11,8 +11,7 @@ class TSGIOM : public GIOM
     public:
         TSGIOM();
         virtual ~TSGIOM();
-        Output Process(Input, const std::vector<Output> &);          // reimplement Process, add time sequence functionality to the process
-        void Update();
+        virtual void Update();           // reimplement Update, add time sequence
     protected:
         virtual std::vector<Output> Restrict(Input, const std::vector<Output> &);     // reimplement Restrict
         /* bring in the time sequence feature */
