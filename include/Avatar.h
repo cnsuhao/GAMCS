@@ -2,7 +2,7 @@
 #define AVATAR_H
 #include <stdlib.h>
 #include "Agent.h"
-#include "Group.h"
+#include "CCCNet.h"
 
 /**
 * Avatar Interface.
@@ -15,11 +15,11 @@ class Avatar
         Avatar(int);
         virtual ~Avatar();
 
-        void Run();     /**< run this avatar */
-        pthread_t ThreadRun();      /**< if it's a group, run its every member in a thread */
+        void Launch();     /**< launch this avatar */
+        pthread_t ThreadLaunch();      /**< if it's a group, launch each of its  members in a thread */
 
         void ConnectAgent(Agent *);     /**< connect to an agent */
-        void JoinGroup(Group *);        /**< join a group */
+        void SetCCCNet(CCCNet *);        /**< set which communication network this avatar is belonged to */
         void SetFreq(int);              /**< set frequence of communication with neighbours */
 
         static bool quit;               /**< tell all Avatar instances to quit, it's class scope */
@@ -27,7 +27,7 @@ class Avatar
         int id;         /**< avatar Id */
         int freq;       /**< communication frequence */
         Agent *agent;   /**< connected agent */
-        Group *group;   /**< my group */
+        CCCNet *cccnet;   /**< my group */
 
         virtual Agent::Agent::State GetCurrentState() = 0;    /**< get current Agent::State */
         virtual void DoAction(Agent::Action) = 0;      /**< perform an Agent::Action */
@@ -37,8 +37,8 @@ class Avatar
         virtual void SendStateInfo(Agent::State);      /**< send information of a Agent::State to all its neighbours */
         virtual void RecvStateInfo();           /**< recieve Agent::State information from neighbours */
 
-        static void* hook(void* args) {         /**< hook to run a class function(Run() here) in a thread */
-            reinterpret_cast<Avatar *>(args)->Run();
+        static void* hook(void* args) {         /**< hook to run a class function(Launch() here) in a thread */
+            reinterpret_cast<Avatar *>(args)->Launch();
             return NULL;
         }
     private:

@@ -13,11 +13,11 @@
 
 bool Avatar::quit = false;  // set quit indicator to false
 
-Avatar::Avatar() : id(0), freq(100), agent(NULL), group(NULL)
+Avatar::Avatar() : id(0), freq(100), agent(NULL), cccnet(NULL)
 {
 }
 
-Avatar::Avatar(int i) : id(i), freq(100), agent(NULL), group(NULL)
+Avatar::Avatar(int i) : id(i), freq(100), agent(NULL), cccnet(NULL)
 {
 }
 
@@ -26,9 +26,9 @@ Avatar::~Avatar()
 }
 
 /**
-* \brief Run Run() function in a thread.
+* \brief Launch Launch() function in a thread.
 */
-pthread_t Avatar::ThreadRun()
+pthread_t Avatar::ThreadLaunch()
 {
     pthread_t tid;
     pthread_create(&tid, NULL, hook, this); // create a thread, and call the hook
@@ -37,9 +37,9 @@ pthread_t Avatar::ThreadRun()
 }
 
 /**
-* \brief Run a avatar continuously.
+* \brief Launch a avatar continuously.
 */
-void Avatar::Run()
+void Avatar::Launch()
 {
     int count = 0;  // count for sending messages
 
@@ -47,22 +47,25 @@ void Avatar::Run()
     {
         RecvStateInfo();    // check if new message has recieved
 
+        /* Perceive the outside world */
         Agent::State cs = GetCurrentState();   // get current state
-        printf("Id: %d, Current state: %ld\n", id, cs);
+        printf("Avata Id: %d, Current state: %ld\n", id, cs);
 
-//============= Process stage ===========
+        /* Process stage */
         std::vector<Agent::Action> acts = ActionCandidates(cs);   // get all action candidates of a state
 
         Agent::Action act = agent->Process(cs, acts);  // choose an action from candidates
 
-//============= Update stage ============
+        /* Update stage */
         float oripayoff = OriginalPayoff(cs);   // get original payoff of a state
-        agent->Update(oripayoff);
+        agent->Update(oripayoff);       // agent update inner states
 
+        /* Perform action */
         if (act == INVALID_ACTION)       // no valid actions available, reach a dead end, quit
             break;
         DoAction(act);      // otherwise, perform the action
 
+        /* Commmunication */
         if (count >= freq)      // check if it's time to send a message
         {
             SendStateInfo(cs);
@@ -82,7 +85,6 @@ void Avatar::Run()
 void Avatar::SetFreq(int fq)
 {
     freq = fq;
-    return;
 }
 
 /**
@@ -92,17 +94,15 @@ void Avatar::SetFreq(int fq)
 void Avatar::ConnectAgent(Agent *agt)
 {
     agent = agt;
-    return;
 }
 
 /**
-* \brief Join a group
-* \param grp group to join
+* \brief Join a cccnet
+* \param grp cccnet to join
 */
-void Avatar::JoinGroup(Group *grp)
+void Avatar::SetCCCNet(CCCNet *cn)
 {
-    group = grp;
-    return;
+    cccnet = cn;
 }
 
 /**
@@ -111,7 +111,7 @@ void Avatar::JoinGroup(Group *grp)
 */
 void Avatar::SendStateInfo(Agent::State st)
 {
-    if (group == NULL)  // no neighbours, nothing to do
+    if (cccnet == NULL)  // no neighbours, nothing to do
         return;
 
     char si_buffer[SI_MAX_SIZE];
@@ -121,7 +121,7 @@ void Avatar::SendStateInfo(Agent::State st)
         return;
     }
 
-    group->Send(id, si_buffer, len);        // call the send facility in group
+    cccnet->Send(id, si_buffer, len);        // call the send facility in cccnet
 
     return;
 }
@@ -131,13 +131,13 @@ void Avatar::SendStateInfo(Agent::State st)
 */
 void Avatar::RecvStateInfo()
 {
-    if (group == NULL)  // no neighbours, nothing to do
+    if (cccnet == NULL)  // no neighbours, nothing to do
         return;
 
     char re_buf[SI_MAX_SIZE];   // buffer for recieved message
     char sd_buf[SI_MAX_SIZE];   // buffer for message to be sent
 
-    while(group->Recv(id, re_buf, 2048) != 0)   // message recieved
+    while(cccnet->Recv(id, re_buf, 2048) != 0)   // message recieved
     {
         struct State_Info_Header *stif = (struct State_Info_Header *)re_buf;
         int better = agent->MergeStateInfo(stif);   // merge the recieved state information to memory
@@ -147,7 +147,7 @@ void Avatar::RecvStateInfo()
             int len = agent->GetStateInfo(stif->st, sd_buf);    // get my information of the same state
             if (len != -1)
             {
-                group->Send(id, sd_buf, len);       // send it to all my neighbours
+                cccnet->Send(id, sd_buf, len);       // send it to all my neighbours
             }
         }
     }
@@ -163,6 +163,6 @@ void Avatar::RecvStateInfo()
 float Avatar::OriginalPayoff(Agent::State st)
 {
     UNUSED(st);
-    return 1.0;
+    return 1.0;     // original payoff of states is 1.0 by default
 }
 

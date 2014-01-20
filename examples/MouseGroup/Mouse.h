@@ -8,14 +8,12 @@
 #include <vector>
 #include "Avatar.h"
 
-class Individual : public Avatar
+class Mouse : public Avatar
 {
     public:
-        Individual(int i);
-        virtual ~Individual();
+        Mouse(int i);
+        virtual ~Mouse();
 
-    protected:
-        void Run();
     private:
         Agent::State position;
 

@@ -17,18 +17,6 @@ TSGIOM::~TSGIOM()
 {
 }
 
-/** \brief Reimplement Process function.
- * Append time sequence functionaliy to GIOM.
- * \param in input value
- * \return GIOM::Output value
- *
- */
-GIOM::Output TSGIOM::Process(Input in, const std::vector<GIOM::Output> &outlist)
-{
-    GIOM::Output out = GIOM::Process(in, outlist);
-    return out;
-}
-
 /** \brief Update inner states
  *
  *

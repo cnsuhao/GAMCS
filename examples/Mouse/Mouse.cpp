@@ -6,24 +6,24 @@
 *
 *	@Modify date:
 ***********************************************************************/
-#include "Robot1.h"
+#include "Mouse.h"
 
-Robot1::Robot1(int i):Avatar(i)
+Mouse1::Mouse1(int i):Avatar(i)
 {
     position = 5;
 }
 
-Robot1::~Robot1()
+Mouse1::~Mouse1()
 {
     //dtor
 }
 
-Agent::State Robot1::GetCurrentState()
+Agent::State Mouse1::GetCurrentState()
 {
     return position;
 }
 
-void Robot1::DoAction(Agent::Action act)
+void Mouse1::DoAction(Agent::Action act)
 {
     position += act;
 
@@ -42,7 +42,7 @@ void Robot1::DoAction(Agent::Action act)
  *
  */
 
-std::vector<Agent::Action> Robot1::ActionCandidates(Agent::State st)
+std::vector<Agent::Action> Mouse1::ActionCandidates(Agent::State st)
 {
 //    UNUSED(st);
     st = st;
@@ -54,7 +54,7 @@ std::vector<Agent::Action> Robot1::ActionCandidates(Agent::State st)
     return acts;
 }
 
-float Robot1::OriginalPayoff(Agent::State st)
+float Mouse1::OriginalPayoff(Agent::State st)
 {
     if (st == 15)
         return 1;

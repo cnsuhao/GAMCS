@@ -1,10 +1,10 @@
-#include "Robot1.h"
+#include "Mouse.h"
 #include "CSAgent.h"
 
 void signal_handler(int sig)
 {
     if (sig == SIGINT)
-        Robot1::quit = 1;
+        Mouse1::quit = 1;
     return;
 }
 
@@ -15,7 +15,7 @@ int main(void)
     ma.SetDBArgs("localhost", "root", "huangk", "Robot1");
     ma.InitMemory();
 
-    Robot1 rb1(1);
+    Mouse1 rb1(1);
     rb1.ConnectAgent(&ma);
-    rb1.Run();
+    rb1.Launch();
 }

@@ -183,13 +183,13 @@ void CSAgent::SaveMemory()
         {
             if (mst->mark == NEW)
             {
-                dbgmoreprt("DB: %s, state: %ld, Mark: %d\n", db_name.c_str(),mst->st, mst->mark);
+                dbgmoreprt("DB", "%s, state: %ld, Mark: %d\n", db_name.c_str(),mst->st, mst->mark);
                 GetStateInfo(mst->st, si_buf);
                 DBAddStateInfo((struct State_Info_Header *)si_buf);
             }
             else if (mst->mark == MODIFIED)
             {
-                dbgmoreprt("DB: %s, state: %ld, Mark: %d\n", db_name.c_str(),mst->st, mst->mark);
+                dbgmoreprt("DB", "%s, state: %ld, Mark: %d\n", db_name.c_str(),mst->st, mst->mark);
                 GetStateInfo(mst->st, si_buf);
                 DBUpdateStateInfo((struct State_Info_Header *)si_buf);
             }
@@ -579,13 +579,13 @@ float CSAgent::CalStatePayoff(const struct m_State *mst) const
     // walk through all environment actions
     for (ea = mst->ealist; ea != NULL; ea = nea)
     {
-        dbgmoreprt("=============== Ealist ===================\n");
+        dbgmoreprt("", "=============== Ealist ===================\n");
         dbgmoreprt("eid: %ld, count: %ld\n", ea->eat, ea->count);
         tmp = Prob(ea, mst) * MaxPayoffInEat(ea->eat, mst);
         pf += tmp * discount_rate;  // accumulative total
         nea = ea->next;
     }
-    dbgmoreprt("=============== Ealist End ===================\n");
+    dbgmoreprt("", "=============== Ealist End ===================\n");
 
     return pf;
 }
@@ -598,12 +598,12 @@ void CSAgent::UpdateState(struct m_State *mst)
 {
     /* update state's payoff */
     float payoff = CalStatePayoff(mst);
-    dbgmoreprt("UpdateState(): state: %ld, payoff:%.1f\n", mst->st, payoff);
+    dbgmoreprt("UpdateState()", "state: %ld, payoff:%.1f\n", mst->st, payoff);
 
     if (fabsf(mst->payoff - payoff) >= threshold)    // compare with threshold, update if the diff exceeds threshold
     {
         mst->payoff  = payoff;
-        dbgmoreprt("Change to payoff: %.1f\n", payoff);
+        dbgmoreprt("UpdateState()", "Change to payoff: %.1f\n", payoff);
 
         /* update backwards recursively */
         struct m_BackArcState *bas, *nbas;
@@ -615,7 +615,7 @@ void CSAgent::UpdateState(struct m_State *mst)
     }
     else
     {
-        dbgmoreprt("Payoff no changes, it's smaller than %.1f\n", threshold);
+        dbgmoreprt("UpdateState()", "Payoff no changes, it's smaller than %.1f\n", threshold);
     }
 
     /* update actions' payoff */
@@ -674,7 +674,7 @@ float CSAgent::CalActPayoff(Agent::Action act, const struct m_State *mst) const
         }
         nea = ea->next;
     }
-    dbgmoreprt("CalActPayoff(): state: %ld, act: %ld, payoff:%.1f\n", mst->st, act, payoff);
+    dbgmoreprt("CalActPayoff()", "state: %ld, act: %ld, payoff:%.1f\n", mst->st, act, payoff);
     return payoff;
 }
 
@@ -692,6 +692,7 @@ std::vector<Agent::Action> CSAgent::BestActions(const struct m_State *mst, const
     std::vector<Agent::Action> max_acts;
 
     max_acts.clear();
+    // walk through every actions
     for (std::vector<Agent::Action>::const_iterator act = acts.begin();
             act!=acts.end(); ++act)
     {
@@ -720,8 +721,6 @@ std::vector<Agent::Action> CSAgent::BestActions(const struct m_State *mst, const
 */
 void CSAgent::UpdateMemory(float oripayoff)
 {
-    printf("pre_in: %ld\n", pre_in);
-
     if (pre_in == INVALID_STATE)    // previous state not exist, it's running for the first time
     {
         //NOTE: cur_mst is already set in MaxPayoffRule() function
@@ -811,7 +810,7 @@ void CSAgent::RemoveState(struct m_State *mst)
     // a state can only be removed when it's a ROOT state, which means no other states is linked to it.
     if (mst->blist != NULL)
     {
-        dbgprt("RemoveState(): This state is still linked to other states, can not be removed!\n");
+        dbgprt("RemoveState()", "RThis state is still linked to other states, can not be removed!\n");
         return;
     }
 
@@ -858,7 +857,7 @@ std::vector<Agent::Action> CSAgent::MaxPayoffRule(Agent::State st, const std::ve
     cur_mst = SearchState(st);  // get the state struct from state value
     std::vector<Agent::Action> re;
 
-    if (cur_mst == NULL)        // first time to encounter this state, we know nothing about it, so no rules applied, return the whole list
+    if (cur_mst == NULL)        // first time to encounter this state, we know nothing about it, so no restriction applied, return the whole list
     {
         re = acts;
     }
@@ -880,7 +879,7 @@ int CSAgent::GetStateInfo(Agent::State st, void *buffer) const
 {
     if (buffer == NULL) // error, buffer is null
     {
-        dbgprt("GetStateInfo(): incoming buffer is NULL, no space to put the information!\n");
+        dbgprt("GetStateInfo()", "incoming buffer is NULL, no space to put the information!\n");
         return -1;
     }
 
@@ -889,7 +888,7 @@ int CSAgent::GetStateInfo(Agent::State st, void *buffer) const
 
     if (mst == NULL)    // error, not found
     {
-        dbgprt("GetStateInfo(): state: %ld not found!\n", st);
+        dbgprt("GetStateInfo()", "state: %ld not found!\n", st);
         return -1;
     }
 
@@ -919,7 +918,7 @@ int CSAgent::GetStateInfo(Agent::State st, void *buffer) const
         act_num++;
         if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)   // exceeds maximun buffer size, finish the filling
         {
-            dbgprt("WARNNING: StateInfo size exceeds SI_MAX_SIZE!\n");
+            WARNNING("StateInfo size exceeds SI_MAX_SIZE!\n");
             goto finish;
         }
 
@@ -938,7 +937,7 @@ int CSAgent::GetStateInfo(Agent::State st, void *buffer) const
         eat_num++;
         if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)  // exceeds maximun buffer size, finish the filling
         {
-            dbgprt("WARNNING: StateInfo size exceeds SI_MAX_SIZE!\n");
+            WARNNING("StateInfo size exceeds SI_MAX_SIZE!\n");
             goto finish;
         }
         nea = ea->next;
@@ -965,7 +964,7 @@ int CSAgent::GetStateInfo(Agent::State st, void *buffer) const
                 lk_num++;
                 if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)  // exceeds maximun buffer size, finish the filling
                 {
-                    dbgprt("WARNNING: StateInfo size exceeds SI_MAX_SIZE!\n");
+                    WARNNING("StateInfo size exceeds SI_MAX_SIZE!\n");
                     goto finish;
                 }
             }
@@ -1296,7 +1295,7 @@ Agent::State CSAgent::DBStateByIndex(unsigned long index) const
 
     if (result == NULL)
     {
-        dbgmoreprt("DBStateByIndex(): result is  NULL!\n");
+        dbgmoreprt("DBStateByIndex()", "result is  NULL!\n");
         return INVALID_STATE;
     }
 
@@ -1305,7 +1304,7 @@ Agent::State CSAgent::DBStateByIndex(unsigned long index) const
 
     if (lengths == NULL)
     {
-        dbgmoreprt("DBStateByIndex(): lengths is null\n");
+        dbgmoreprt("DBStateByIndex()", "lengths is null\n");
         mysql_free_result(result);
         return INVALID_STATE;
     }
@@ -1336,7 +1335,7 @@ int CSAgent::DBFetchStateInfo(Agent::State st, void *buffer) const
 
     if (result == NULL)
     {
-        dbgmoreprt("DBFetchStateInfo(): result is NULL!\n");
+        dbgmoreprt("DBFetchStateInfo()", "result is NULL!\n");
         return -1;
     }
 
@@ -1344,14 +1343,14 @@ int CSAgent::DBFetchStateInfo(Agent::State st, void *buffer) const
     int num_fields = mysql_num_fields(result);
     if (num_fields != 7)
     {
-        dbgmoreprt("DBFetchStateInfo(): Fields don't match!\n");
+        dbgmoreprt("DBFetchStateInfo()", "Fields don't match!\n");
         return -1;
     }
     unsigned long *lengths = mysql_fetch_lengths(result);
 
     if (lengths == NULL)
     {
-        dbgmoreprt("DBFetchStateInfo(): lengths is null\n");
+        dbgmoreprt("DBFetchStateInfo()", "lengths is null\n");
         return -1;
     }
 
@@ -1380,7 +1379,7 @@ int CSAgent::DBFetchStateInfo(Agent::State st, void *buffer) const
     memcpy(ptr, row[4], ai_len);
     if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)      // buffer is full
     {
-        dbgprt("WARNNING: StateInfo size exceeds SI_MAX_SIZE!\n");
+        WARNNING("StateInfo size exceeds SI_MAX_SIZE!\n");
         goto finish;
     }
 
@@ -1389,7 +1388,7 @@ int CSAgent::DBFetchStateInfo(Agent::State st, void *buffer) const
     memcpy(ptr, row[5], ea_len);
     if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)          // CHECK NEEDED
     {
-        dbgprt("WARNNING: StateInfo size exceeds SI_MAX_SIZE!\n");
+        WARNNING("StateInfo size exceeds SI_MAX_SIZE!\n");
         goto finish;
     }
 
@@ -1398,7 +1397,7 @@ int CSAgent::DBFetchStateInfo(Agent::State st, void *buffer) const
     memcpy(ptr, row[6], lk_len);
     if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)  // buffer is full
     {
-        dbgprt("WARNNING: StateInfo size exceeds SI_MAX_SIZE!\n");
+        WARNNING("StateInfo size exceeds SI_MAX_SIZE!\n");
         goto finish;
     }
 
@@ -1477,7 +1476,6 @@ void CSAgent::DBAddStateInfo(const struct State_Info_Header *stif)
     char query[str_len + 2*(ai_len+ea_len+lk_len)+1];
     int len = snprintf(query, str_len + 2*(ai_len+ea_len+lk_len)+1, str, ai_chunk, ea_chunk, lk_chunk);     // final stag of building insert query
 
-//    dbgprt("query: %s\n", query);
     if (mysql_real_query(db_con, query, len))       // perform the query, and insert st to database
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
@@ -1586,7 +1584,7 @@ struct m_Memory_Info *CSAgent::DBFetchMemoryInfo()
 
     if (result == NULL)
     {
-        dbgmoreprt("DBFetchMemoryInfo(): result is NULL!\n");
+        dbgmoreprt("DBFetchMemoryInfo()", "result is NULL!\n");
         return NULL;
     }
 
@@ -1595,13 +1593,13 @@ struct m_Memory_Info *CSAgent::DBFetchMemoryInfo()
 
     if (lengths == NULL)
     {
-        dbgmoreprt("DBFetchMemoryInfo(): lengths is null\n");
+        dbgmoreprt("DBFetchMemoryInfo()", "lengths is null\n");
         mysql_free_result(result);
         return NULL;
     }
 
     struct m_Memory_Info *memif = (struct m_Memory_Info *)malloc(sizeof(struct m_Memory_Info));
-    dbgprt("DB: %s, Memory TimeStamp: %s\n", db_name.c_str(), row[0]);
+    dbgprt("DB", "%s, Memory TimeStamp: %s\n", db_name.c_str(), row[0]);
     // fill in the memory struct
     memif->discount_rate = atof(row[1]);
     memif->threshold = atof(row[2]);
