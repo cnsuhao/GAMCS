@@ -43,7 +43,7 @@ class CSCommNet : public CommNet
         int NumberOfMembers();
         bool IsConnectedTo(int, int);
 
-        int Send(int, const void *, size_t);      /**< the interface members can use to send messages to others */
+        int Send(int, void *, size_t);      /**< the interface members can use to send messages to others */
         int Recv(int, void *, size_t);      /**< the interface members can use to recv messages from others */
     private:
         std::string topofile;        /**< the file which has topological structure of the group */

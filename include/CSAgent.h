@@ -21,7 +21,7 @@ public:
     CSAgent(float, float);
     virtual ~CSAgent();
 
-    int GetStateInfo(Agent::State, void *) const;                 /**< implementing GetStateInfo function */
+    struct State_Info_Header *GetStateInfo(Agent::State) const;                 /**< implementing GetStateInfo function */
     int MergeStateInfo(const struct State_Info_Header *);               /**< implementing MergeStateInfo function */
     static void PrintStateInfo(const struct State_Info_Header *);         /**< print state information gracefully */
     void SetDBArgs(std::string, std::string, std::string, std::string);                 /**< set database related arguments */

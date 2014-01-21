@@ -1,9 +1,8 @@
 #ifndef AGENT_H
 #define AGENT_H
 
+#include <stddef.h>
 #include "TSGIOM.h"
-
-const int SI_MAX_SIZE = 2048; /**< maximum size of state information */
 
 const unsigned long INVALID_STATE = INVALID_INPUT;
 const long INVALID_ACTION = INVALID_OUTPUT;
@@ -24,7 +23,7 @@ class Agent: public TSGIOM
         virtual ~Agent();
 
         /** These two functions are implementation dependant, declared as pure virtual functions */
-        virtual int GetStateInfo(State, void *) const = 0; /**<  collect information of specified state from memory */
+        virtual struct State_Info_Header *GetStateInfo(State) const = 0; /**<  collect information of specified state from memory */
         virtual int MergeStateInfo(const struct State_Info_Header *) = 0; /**<  merge recieved state information into memory */
         void Update(float); /**< update memory, this function will call UpdateMemory() to do the real update */
 
@@ -78,6 +77,7 @@ struct State_Info_Header
         int act_num; /**< number of actions which have been performed */
         int eat_num; /**< number of environment actions which have been observed */
         int lk_num; /**< number of links to other states */
+        size_t size; /**< size of the header (in Byte) */
 };
 
 /** memory information */

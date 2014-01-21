@@ -30,7 +30,7 @@ class Mysql: public Storage
         void Close();
         void SetDBArgs(std::string, std::string, std::string, std::string);
         Agent::State StateByIndex(unsigned long) const;
-        int FetchStateInfo(Agent::State, void *) const;
+        struct State_Info_Header *FetchStateInfo(Agent::State) const;
         int SearchState(Agent::State) const;
         void AddStateInfo(const struct State_Info_Header *);
         void UpdateStateInfo(const struct State_Info_Header *);
