@@ -69,24 +69,26 @@ CSCommNet::~CSCommNet()
  * \param length length of the message
  * \return length of message that has been sent
  */
-int CSCommNet::Send(int id, const void *buffer, size_t length)
+int CSCommNet::Send(int sender_id, void *buffer, size_t buf_size)
 {
     size_t re = 0;
-    if (length > DATA_SIZE)    // check length
+    if (buf_size > DATA_SIZE)    // check size
     {
-        dbgprt("Send()", "data length exceeds %d, not send!\n", DATA_SIZE);
+        dbgprt("Send()", "data size exceeds %d, not send!\n", DATA_SIZE);
         re = 0;
     }
     else
     {
-        struct State_Info_Header *si = (struct State_Info_Header *)buffer;
 #ifdef _DEBUG_
-        printf("*************************** Id: %d, Send ********************************\n", id);
-        CSAgent::PrintStateInfo(si);
-        printf("------------------------------ Send End----------------------------------\n\n");
+        printf(
+                "*************************** Id: %d, Send ********************************\n",
+                id);
+        CSAgent::PrintStateInfo((struct State_Info_Header *) buffer);
+        printf(
+                "------------------------------ Send End----------------------------------\n\n");
 #endif // _DEBUG_
 
-        std::vector<int> neighs = GetNeighbours(id);    // get all its neightbours, the message will send to all of they
+        std::vector<int> neighs = GetNeighbours(sender_id);    // get all its neightbours, the message will send to all of they
         // walk through all its neighbours, send message to they one by one
         for (std::vector<int>::iterator it = neighs.begin(); it != neighs.end();
                 ++it)
@@ -99,13 +101,13 @@ int CSCommNet::Send(int id, const void *buffer, size_t length)
                 chan->ptr = CHANNEL_SIZE - 1;    // move point, make room for the new msg, the oldest message will be lost
             else
                 chan->ptr -= 1;
-            memcpy(chan->msg[chan->ptr].data, buffer, length);    // copy message to the channel
-            chan->msg[chan->ptr].sender_id = id;
+            memcpy(chan->msg[chan->ptr].data, buffer, buf_size);    // copy message to the channel
+            chan->msg[chan->ptr].sender_id = sender_id;
 
             if (chan->msg_num < CHANNEL_SIZE) chan->msg_num++;    // maximum num is CHANNEL_SIZE
 
             pthread_mutex_unlock(&chan->mutex);    // unlock
-            re = length;
+            re = buf_size;
         }
     }
     return re;
@@ -118,16 +120,15 @@ int CSCommNet::Send(int id, const void *buffer, size_t length)
  * \param length of the message to be recieved
  * \return length of message recieved
  */
-int CSCommNet::Recv(int id, void *buffer, size_t length)
+int CSCommNet::Recv(int recver_id, void *buffer, size_t buf_size)
 {
-    if (length > DATA_SIZE)    // check length
+    if (buf_size > DATA_SIZE)    // check length
     {
-        WARNNING("Recv()- requested data length exceeds %d!\n", DATA_SIZE);
-        return 0;
+        WARNNING("Recv()- requested data length exceeds DATA_SIZE.\n");
     }
 
     struct Channel *chan = GetChannel(id);    // get my channel
-    size_t re;
+    size_t re = 0;
     pthread_mutex_lock(&chan->mutex);    // lock it before reading, prevent concurrent writtings
 
     if (chan->msg_num == 0)    // no new messages
@@ -136,7 +137,7 @@ int CSCommNet::Recv(int id, void *buffer, size_t length)
     }
     else
     {
-        memcpy(buffer, chan->msg[chan->ptr].data, length);    // copy message to buffer
+        memcpy(buffer, chan->msg[chan->ptr].data, buf_size);    // copy message to buffer
         int sid = chan->msg[chan->ptr].sender_id;    // get sender's id
         UNUSED(sid);    // FIXME: we didn't use it.
         chan->msg_num--;    // dec the message number
@@ -145,12 +146,21 @@ int CSCommNet::Recv(int id, void *buffer, size_t length)
         else
             chan->ptr += 1;
 
-        re = length;
-        struct State_Info_Header *si = (struct State_Info_Header *)buffer;
+        struct State_Info_Header *stif = (struct State_Info_Header *) buffer;
+        if (stif->size > buf_size)    // check size
+        {
+            WARNNING(
+                    "Recv()- requested state information exceeds buffer size!.\n");
+            re = 0;    // don't return incompelte information
+        }
+        else
+            re = buf_size;    // ok, msg is recieved
 #ifdef _DEBUG_
-        printf("++++++++++++++++++++++++ Id: %d, Recv from: %d ++++++++++++++++++++++++\n", id, sid);
-        CSAgent::PrintStateInfo(si);
-        printf("|||||||||||||||||||||||||||||| Recv End |||||| |||||||||||||||||||||||\n\n");
+        printf(
+                "++++++++++++++++++++++++ Id: %d, Recv from: %d ++++++++++++++++++++++++\n",
+                recver_id, sid);
+        printf(
+                "|||||||||||||||||||||||||||||| Recv End |||||| |||||||||||||||||||||||\n\n");
 #endif // _DEBUG_
     }
 
@@ -262,11 +272,10 @@ void CSCommNet::BuildNeighsChannels()
     return;
 }
 
-
 void CSCommNet::AddMember(int mid, const std::vector<int> &neighbours)
 {
-    AddMember(mid); // add member first
-    AddNeighbour(mid, neighbours);  // add neighbours
+    AddMember(mid);    // add member first
+    AddNeighbour(mid, neighbours);    // add neighbours
 }
 
 void CSCommNet::AddNeighbour(int who, const std::vector<int> &neighbours)
@@ -366,7 +375,7 @@ void CSCommNet::RemoveMember(int mem)
         nneigh = neigh->next;
         free(neigh);
     }
-    neighlist[mem] = NULL;      //don't forget to set to NULL
+    neighlist[mem] = NULL;    //don't forget to set to NULL
 
     /* destroy mutex */
     pthread_mutex_destroy(&(channels[mem].mutex));
@@ -375,9 +384,10 @@ void CSCommNet::RemoveMember(int mem)
     free(channels[mem].msg);
 
     // remove member
-    for (std::vector<int>::iterator mit = members.begin(); mit!=members.end();)
+    for (std::vector<int>::iterator mit = members.begin(); mit != members.end();
+            )
     {
-        if ((*mit) == mem)  // found
+        if ((*mit) == mem)    // found
         {
             members.erase(mit);
             break;
@@ -395,7 +405,8 @@ void CSCommNet::RemoveNeighbour(int mem, int neighbour)
             mem);
     if (it == members.end())    // not found
     {
-        dbgprt("Error", "Member %d not exists, can not remove its neighbour\n", mem);
+        dbgprt("Error", "Member %d not exists, can not remove its neighbour\n",
+                mem);
         return;
     }
 

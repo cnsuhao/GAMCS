@@ -41,14 +41,15 @@ void Avatar::Launch()
         std::vector<Agent::Action> acts = ActionCandidates(cs);   // get all action candidates of a state
 
         Agent::Action act = agent->Process(cs, acts);  // choose an action from candidates
+        // check validation
+        if (act == INVALID_ACTION)       // no valid actions available, reach a dead end, quit. !!!: be sure to check this before update stage
+            break;  // exit point here
 
         /* Update stage */
         float oripayoff = OriginalPayoff(cs);   // get original payoff of a state
         agent->Update(oripayoff);       // agent update inner states
 
         /* Perform action */
-        if (act == INVALID_ACTION)       // no valid actions available, reach a dead end, quit
-            break;
         DoAction(act);      // otherwise, perform the action
 
         /* Commmunication */

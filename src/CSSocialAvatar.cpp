@@ -40,14 +40,15 @@ void CSSocialAvatar::SendStateInfo(Agent::State st)
     if (commnet == NULL)    // no neighbours, nothing to do
         return;
 
-    char si_buffer[SI_MAX_SIZE];
-    int len = agent->GetStateInfo(st, si_buffer);    // the st may not exist
-    if (len == -1)
+    struct State_Info_Header *stif = NULL;
+    stif = agent->GetStateInfo(st);    // the st may not exist
+    if (stif == NULL)
     {
         return;
     }
 
-    commnet->Send(id, si_buffer, len);    // call the send facility in commnet
+    commnet->Send(id, stif, stif->size);    // call the send facility in commnet
+    free(stif); // free
 
     return;
 }
@@ -60,22 +61,23 @@ void CSSocialAvatar::RecvStateInfo()
     if (commnet == NULL)    // no neighbours, nothing to do
         return;
 
-    char re_buf[SI_MAX_SIZE];    // buffer for recieved message
-    char sd_buf[SI_MAX_SIZE];    // buffer for message to be sent
+    char re_buf[2048];    // buffer for recieved message
+    struct State_Info_Header *stif = NULL;
 
-    while (commnet->Recv(id, re_buf, SI_MAX_SIZE) != 0)    // message recieved
+    while (commnet->Recv(id, re_buf, 2048) != 0)    // message recieved
     {
         struct State_Info_Header *stif = (struct State_Info_Header *) re_buf;
         int better = agent->MergeStateInfo(stif);    // merge the recieved state information to memory
 
         if (better == 0)    // the state information wasn't better than mine and thus not accepted, it's my duty to send out my better information to others
         {
-            int len = agent->GetStateInfo(stif->st, sd_buf);    // get my information of the same state
-            if (len != -1)
+            stif = agent->GetStateInfo(stif->st);    // get my information of the same state
+            if (stif != NULL)
             {
-                commnet->Send(id, sd_buf, len);    // send it to all my neighbours
+                commnet->Send(id, stif, stif->size);    // send it to all my neighbours
             }
         }
     }
+    free(stif);
     return;
 }

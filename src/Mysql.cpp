@@ -140,13 +140,19 @@ Agent::State Mysql::StateByIndex(unsigned long index) const
 }
 
 /**
- * \brief Fetch state information from database, and put it in a buffer.
+ * \brief Fetch state information from database.
  * \param st state value
- * \param buffer buffer to put state information in
- * \return length of the fetched state information, -1 if error
+ * \return fetched state information, NULL if error
  */
-int Mysql::FetchStateInfo(Agent::State st, void *buffer) const
+struct State_Info_Header *Mysql::FetchStateInfo(Agent::State st) const
 {
+    if (st == INVALID_STATE)
+    {
+        dbgprt("FetchStateInfo()", "invalid state value\n");
+        return NULL;
+    }
+
+    // do mysql query
     char query_string[256];
     sprintf(query_string, "SELECT * FROM %s WHERE State=%ld",
             db_t_stateinfo.c_str(), st);    // build mysql query
@@ -154,84 +160,76 @@ int Mysql::FetchStateInfo(Agent::State st, void *buffer) const
     if (mysql_query(db_con, query_string))
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
-        return -1;
+        return NULL;
     }
 
     MYSQL_RES *result = mysql_store_result(db_con);
 
     if (result == NULL)
     {
-        dbgmoreprt("DBFetchStateInfo()", "result is NULL!\n");
-        return -1;
+        dbgmoreprt("FetchStateInfo()", "result is NULL!\n");
+        return NULL;
     }
 
     MYSQL_ROW row = mysql_fetch_row(result);
     int num_fields = mysql_num_fields(result);
     if (num_fields != 7)
     {
-        dbgmoreprt("DBFetchStateInfo()", "Fields don't match!\n");
-        return -1;
+        dbgmoreprt("FetchStateInfo()", "Fields don't match!\n");
+        return NULL;
     }
     unsigned long *lengths = mysql_fetch_lengths(result);
 
     if (lengths == NULL)
     {
-        dbgmoreprt("DBFetchStateInfo()", "lengths is null\n");
-        return -1;
+        dbgmoreprt("FetchStateInfo()", "lengths is null\n");
+        return NULL;
     }
 
-    unsigned char *ptr = (unsigned char *) buffer;    // use point ptr to travel through each subpart
-
+    // size of actions, env actions and links
     unsigned long ai_len = lengths[4];
     unsigned long ea_len = lengths[5];
     unsigned long lk_len = lengths[6];
 
-    // build header
-    struct State_Info_Header stif;
-    stif.st = atol(row[0]);
-    stif.original_payoff = atof(row[1]);
-    stif.payoff = atof(row[2]);
-    stif.count = atol(row[3]);
+    // total size of state info
+    int stif_size = sizeof(struct State_Info_Header) + ai_len + ea_len + lk_len;
+    // allocate memory and build header
+    struct State_Info_Header *stif = (struct State_Info_Header *) malloc(
+            stif_size);
 
-    stif.act_num = ai_len / sizeof(struct Action_Info);
-    stif.eat_num = ea_len / sizeof(struct EnvAction_Info);
-    stif.lk_num = lk_len / sizeof(struct BackLink);
+    stif->st = atol(row[0]);
+    stif->original_payoff = atof(row[1]);
+    stif->payoff = atof(row[2]);
+    stif->count = atol(row[3]);
+    stif->act_num = ai_len / sizeof(struct Action_Info);
+    stif->eat_num = ea_len / sizeof(struct EnvAction_Info);
+    stif->lk_num = lk_len / sizeof(struct BackLink);
+    stif->size = stif_size;
 
-    // copy header to buffer
-    memcpy(ptr, &stif, sizeof(struct State_Info_Header));
+    unsigned char *ptr = (unsigned char *) stif;    // use point ptr to travel through each subpart
 
-    // action information part
+    // fill action information part
     ptr += sizeof(struct State_Info_Header);
     memcpy(ptr, row[4], ai_len);
-    if ((ptr - (unsigned char *) buffer) > SI_MAX_SIZE)    // buffer is full
-    {
-        WARNNING("StateInfo size exceeds SI_MAX_SIZE!\n");
-        goto finish;
-    }
 
-    // environment action information part
+    // fill environment action information part
     ptr += ai_len;
     memcpy(ptr, row[5], ea_len);
-    if ((ptr - (unsigned char *) buffer) > SI_MAX_SIZE)    // CHECK NEEDED
-    {
-        WARNNING("StateInfo size exceeds SI_MAX_SIZE!\n");
-        goto finish;
-    }
 
-    // backward links part
+    // fill backward links part
     ptr += ea_len;
     memcpy(ptr, row[6], lk_len);
-    if ((ptr - (unsigned char *) buffer) > SI_MAX_SIZE)    // buffer is full
-    {
-        WARNNING("StateInfo size exceeds SI_MAX_SIZE!\n");
-        goto finish;
-    }
+
+    // move to the end
+    ptr += lk_len;
 
     mysql_free_result(result);    // free result
 
-    finish:    // the buffer is filled up now
-    int length = ptr - (unsigned char *) buffer;
-    return length;
+    if ((ptr - (unsigned char *)stif) != stif_size)    // check size
+    {
+        ERROR("Mysql FetchStateInfo(): state information header size not match!\n");
+    }
+    return stif;
 }
 
 /**
