@@ -67,6 +67,7 @@ private:
     void FreeAc(struct m_Action *);
     void FreeFas(struct m_ForwardArcState *);
     void FreeBas(struct m_BackArcState *);
+    void AddStateToMemory(struct m_State *);    /**< add a state struct to memory */
 
     struct m_Action *Act2Struct(Agent::Action, const struct m_State *) const;                  /**< find the Agent::Action struct address according to identity */
     struct m_EnvAction *Eat2Struct(Agent::EnvAction, const struct m_State *) const;              /**< find the exact strut address according to identity */

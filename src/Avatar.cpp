@@ -62,7 +62,7 @@ void Avatar::Launch()
             count++;        // inc count
     }
     // quit
-    dbgmoreprt("Id: %d, Run() Exit!\n", id);
+    dbgmoreprt("Launch()", "Id: %d, Run() Exit!\n", id);
     return;
 }
 
