@@ -63,7 +63,7 @@ void CSSocialAvatar::RecvStateInfo()
     char re_buf[SI_MAX_SIZE];    // buffer for recieved message
     char sd_buf[SI_MAX_SIZE];    // buffer for message to be sent
 
-    while (commnet->Recv(id, re_buf, 2048) != 0)    // message recieved
+    while (commnet->Recv(id, re_buf, SI_MAX_SIZE) != 0)    // message recieved
     {
         struct State_Info_Header *stif = (struct State_Info_Header *) re_buf;
         int better = agent->MergeStateInfo(stif);    // merge the recieved state information to memory

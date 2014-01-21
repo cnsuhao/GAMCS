@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "CSAgent.h"
+#include "Mysql.h"
 #include "Debug.h"
 
 /** \brief Load a specified state from a previous memory stored in database.
@@ -34,9 +35,9 @@ void CSAgent::LoadState(Agent::State st)
         states_map.insert(StatesMap::value_type(mst->st, mst)); // don't forget to update hash map
     }
 
-    int len = DBFetchStateInfo(st, si_buf);     // get state information from database, return the size
+    int len = storage->FetchStateInfo(st, si_buf);     // get state information from database, return the size
     if (len == -1)       // should not happen, otherwise database corrupted!!
-        ERROR("state: %ld should exist, but fetch from Database: %s returns NULL!\n", st, db_name.c_str());
+        ERROR("state: %ld should exist, but fetch from storage returns NULL!\n", st);
 
     struct State_Info_Header *stif = (struct State_Info_Header *)si_buf;
 
@@ -117,18 +118,18 @@ void CSAgent::LoadState(Agent::State st)
 
 void CSAgent::InitMemory()
 {
-    if (db_name.empty())    // no database specified, do nothing
+    if (storage == NULL)    // no database specified, do nothing
         return;
 
-    int re = DBConnect();   // otherwise, load memory from database
+    int re = storage->Connect();   // otherwise, load memory from database
     if (re == 0)        // successfully connected
     {
         char label[64] = "Loading: ";
-        printf("Initializing Memory from Database: %s ", db_name.c_str());
+        printf("Initializing Memory from Storage: ");
         fflush(stdout);
 
         /* load memory information */
-        struct m_Memory_Info *memif = DBFetchMemoryInfo();
+        struct Memory_Info *memif = storage->FetchMemoryInfo();
         if (memif != NULL)
         {
             /*FIXME: last_st and last_act are not used yet */
@@ -143,7 +144,7 @@ void CSAgent::InitMemory()
         /* load states information */
         Agent::State st;
         unsigned long index = 0;    // load states from database one by one
-        while((st = DBStateByIndex(index)) != INVALID_STATE)
+        while((st = storage->StateByIndex(index)) != INVALID_STATE)
         {
             dbgmoreprt("DB: %s, LoadState: %ld\n", db_name.c_str(), st);
             LoadState(st);
@@ -153,10 +154,10 @@ void CSAgent::InitMemory()
     }
     else    // connect database failed!
     {
-        fprintf(stderr, "%s\n", mysql_error(db_con));
+        printf("Connecting storage failed!\n");
     }
 
-    DBClose();
+    storage->Close();
     return;
 }
 
@@ -165,16 +166,25 @@ void CSAgent::InitMemory()
  */
 void CSAgent::SaveMemory()
 {
-    if (db_name.empty())    // no database specified, no need to save
+    if (storage == NULL)    // no database specified, no need to save
         return;
 
     char label[64] = "Saving: ";
-    printf("Saving Memory to DataBase: %s ", db_name.c_str());
-    int re = DBConnect();
+    printf("Saving Memory to: ");
+    int re = storage->Connect();
     if (re == 0)
     {
         /* save memory information */
-        DBAddMemoryInfo();
+        struct Memory_Info *memif = (struct Memory_Info *)malloc(sizeof(struct Memory_Info));
+        memif->discount_rate = discount_rate;
+        memif->threshold = threshold;
+        memif->lk_num = lk_num;
+        memif->state_num = state_num;
+        memif->last_st = pre_in;
+        memif->last_act = pre_out;
+
+        storage->AddMemoryInfo(memif);  // add to storage
+        free(memif);    // free it
         /* save states information */
         char si_buf[SI_MAX_SIZE];
         struct m_State *mst, *nmst;
@@ -185,13 +195,13 @@ void CSAgent::SaveMemory()
             {
                 dbgmoreprt("DB", "%s, state: %ld, Mark: %d\n", db_name.c_str(),mst->st, mst->mark);
                 GetStateInfo(mst->st, si_buf);
-                DBAddStateInfo((struct State_Info_Header *)si_buf);
+                storage->AddStateInfo((const struct State_Info_Header *)si_buf);
             }
             else if (mst->mark == MODIFIED)
             {
                 dbgmoreprt("DB", "%s, state: %ld, Mark: %d\n", db_name.c_str(),mst->st, mst->mark);
                 GetStateInfo(mst->st, si_buf);
-                DBUpdateStateInfo((struct State_Info_Header *)si_buf);
+                storage->UpdateStateInfo((const struct State_Info_Header *)si_buf);
             }
             mst->mark = SAVED;
 
@@ -200,27 +210,25 @@ void CSAgent::SaveMemory()
             nmst = mst->next;
         }
     }
-    DBClose();
+    storage->Close();
     return;
 }
 
 CSAgent::CSAgent() :
-    state_num(0), lk_num(0), db_con(NULL), db_server(""), db_user(""), db_password(""), db_name(""),
-    db_t_stateinfo("StateInfo"), db_t_meminfo("MemoryInfo"), head(NULL), cur_mst(NULL), actions_original_payoff(0.0)
+    state_num(0), lk_num(0), storage(NULL), head(NULL), cur_mst(NULL), actions_original_payoff(0.0)
 {
     states_map.clear();
 }
 
 CSAgent::CSAgent(float dr, float th):
-    Agent(dr, th), state_num(0), lk_num(0), db_con(NULL), db_server(""), db_user(""), db_password(""), db_name(""),
-    db_t_stateinfo("StateInfo"), db_t_meminfo("MemoryInfo"), head(NULL), cur_mst(NULL), actions_original_payoff(0.0)
+    Agent(dr, th), state_num(0), lk_num(0), storage(NULL), head(NULL), cur_mst(NULL), actions_original_payoff(0.0)
 {
     states_map.clear();
 }
 
 CSAgent::~CSAgent()
 {
-    if (!db_name.empty())   // save memory if database not empty
+    if (storage != NULL)   // save memory if storage exists
         SaveMemory();
     FreeMemory();       // free computer memory
 }
@@ -1190,427 +1198,6 @@ void CSAgent::PrintStateInfo(const struct State_Info_Header *stif)
     printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n");
 
     return;
-}
-
-/**
-* \brief Set arguments for connecting database.
-* \param srv database server location
-* \param usr username of database
-* \param passwd password of username
-* \param name of the database
-*/
-void CSAgent::SetDBArgs(std::string srv, std::string usr, std::string passwd, std::string db)
-{
-    db_server = srv;
-    db_user = usr;
-    db_password = passwd;
-    db_name = db;
-    return;
-}
-
-/**
-* \brief Connect to database.
-* \return -1 for error, 0 for success
-*/
-int CSAgent::DBConnect()
-{
-    if (mysql_library_init(0, NULL, NULL))
-    {
-        fprintf(stderr, "could not initialize MySQL library!\n");
-        return -1;
-    }
-
-    db_con = mysql_init(NULL);
-
-    if (db_con == NULL)
-    {
-        fprintf(stderr, "%s\n", mysql_error(db_con));
-        return -1;
-    }
-
-    if (mysql_real_connect(db_con, db_server.c_str(), db_user.c_str(), db_password.c_str(), NULL,
-                           0, NULL, 0) == NULL)
-    {
-        fprintf(stderr, "%s\n", mysql_error(db_con));
-        return -1;
-    }
-
-    /* create database if not exists */
-    char db_string[128];
-    sprintf(db_string, "CREATE DATABASE IF NOT EXISTS %s", db_name.c_str());
-    if (mysql_query(db_con, db_string))
-    {
-        fprintf(stderr, "%s\n", mysql_error(db_con));
-        return -1;
-    }
-
-    mysql_select_db(db_con, db_name.c_str());               // use database
-    /* create table if not exists */
-    char tb_string[256];
-    sprintf(tb_string, "CREATE TABLE IF NOT EXISTS %s.%s(State BIGINT PRIMARY KEY, OriPayoff FLOAT, Payoff FLOAT, Count BIGINT, ActInfos BLOB, ExActInfos BLOB, BackLinks BLOB) \
-            ENGINE MyISAM ", db_name.c_str(), db_t_stateinfo.c_str());
-    if (mysql_query(db_con, tb_string))
-    {
-        fprintf(stderr, "%s\n", mysql_error(db_con));
-        return -1;
-    }
-
-    sprintf(tb_string, "CREATE TABLE IF NOT EXISTS %s.%s(TimeStamp TIMESTAMP PRIMARY KEY, DiscountRate FLOAT, Threshold FLOAT, NumStates BIGINT, NumLinks BIGINT, LastState BIGINT, LastAction BIGINT) \
-            ENGINE MyISAM ", db_name.c_str(), db_t_meminfo.c_str());
-    if (mysql_query(db_con, tb_string))
-    {
-        fprintf(stderr, "%s\n", mysql_error(db_con));
-        return -1;
-    }
-
-    return 0;
-}
-
-/**
-* \brief Close database.
-*/
-void CSAgent::DBClose()
-{
-    mysql_close(db_con);
-    return mysql_library_end();
-}
-
-/**
-* \brief Get state value from database by specified index.
-* \param index index
-* \return state value of that index, INVALID_STATE for error or not found
-*/
-Agent::State CSAgent::DBStateByIndex(unsigned long index) const
-{
-    char query_str[256];
-    sprintf(query_str, "SELECT * FROM %s LIMIT %ld, 1", db_t_stateinfo.c_str(), index);
-
-    if (mysql_query(db_con, query_str))
-    {
-        fprintf(stderr, "%s\n", mysql_error(db_con));
-        return INVALID_STATE;
-    }
-
-    MYSQL_RES *result = mysql_store_result(db_con);
-
-    if (result == NULL)
-    {
-        dbgmoreprt("DBStateByIndex()", "result is  NULL!\n");
-        return INVALID_STATE;
-    }
-
-    MYSQL_ROW row = mysql_fetch_row(result);
-    unsigned long *lengths = mysql_fetch_lengths(result);
-
-    if (lengths == NULL)
-    {
-        dbgmoreprt("DBStateByIndex()", "lengths is null\n");
-        mysql_free_result(result);
-        return INVALID_STATE;
-    }
-    Agent::State rs = atol(row[0]);
-
-    mysql_free_result(result);          // free result
-    return rs;
-}
-
-/**
-* \brief Fetch state information from database, and put it in a buffer.
-* \param st state value
-* \param buffer buffer to put state information in
-* \return length of the fetched state information, -1 if error
-*/
-int CSAgent::DBFetchStateInfo(Agent::State st, void *buffer) const
-{
-    char query_string[256];
-    sprintf(query_string, "SELECT * FROM %s WHERE State=%ld", db_t_stateinfo.c_str(), st);  // build mysql query
-
-    if (mysql_query(db_con, query_string))
-    {
-        fprintf(stderr, "%s\n", mysql_error(db_con));
-        return -1;
-    }
-
-    MYSQL_RES *result = mysql_store_result(db_con);
-
-    if (result == NULL)
-    {
-        dbgmoreprt("DBFetchStateInfo()", "result is NULL!\n");
-        return -1;
-    }
-
-    MYSQL_ROW row = mysql_fetch_row(result);
-    int num_fields = mysql_num_fields(result);
-    if (num_fields != 7)
-    {
-        dbgmoreprt("DBFetchStateInfo()", "Fields don't match!\n");
-        return -1;
-    }
-    unsigned long *lengths = mysql_fetch_lengths(result);
-
-    if (lengths == NULL)
-    {
-        dbgmoreprt("DBFetchStateInfo()", "lengths is null\n");
-        return -1;
-    }
-
-    unsigned char *ptr = (unsigned char *)buffer;       // use point ptr to travel through each subpart
-
-    unsigned long ai_len = lengths[4];
-    unsigned long ea_len = lengths[5];
-    unsigned long lk_len = lengths[6];
-
-    // build header
-    struct State_Info_Header stif;
-    stif.st = atol(row[0]);
-    stif.original_payoff = atof(row[1]);
-    stif.payoff = atof(row[2]);
-    stif.count = atol(row[3]);
-
-    stif.act_num = ai_len / sizeof(struct Action_Info);
-    stif.eat_num = ea_len / sizeof(struct EnvAction_Info);
-    stif.lk_num = lk_len / sizeof(struct BackLink);
-
-    // copy header to buffer
-    memcpy(ptr, &stif, sizeof(struct State_Info_Header));
-
-    // action information part
-    ptr += sizeof(struct State_Info_Header);
-    memcpy(ptr, row[4], ai_len);
-    if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)      // buffer is full
-    {
-        WARNNING("StateInfo size exceeds SI_MAX_SIZE!\n");
-        goto finish;
-    }
-
-    // environment action information part
-    ptr += ai_len;
-    memcpy(ptr, row[5], ea_len);
-    if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)          // CHECK NEEDED
-    {
-        WARNNING("StateInfo size exceeds SI_MAX_SIZE!\n");
-        goto finish;
-    }
-
-    // backward links part
-    ptr += ea_len;
-    memcpy(ptr, row[6], lk_len);
-    if ((ptr - (unsigned char *)buffer) > SI_MAX_SIZE)  // buffer is full
-    {
-        WARNNING("StateInfo size exceeds SI_MAX_SIZE!\n");
-        goto finish;
-    }
-
-    mysql_free_result(result);          // free result
-
-finish: // the buffer is filled up now
-    int length = ptr - (unsigned char *)buffer;
-    return length;
-}
-
-/**
-* \brief Search for specified state in database.
-* \param state value
-* \return 1 if found, 0 if not
-*/
-int CSAgent::DBSearchState(Agent::State st) const
-{
-    char query_string[256];
-    sprintf(query_string, "SELECT * FROM %s WHERE State=%ld", db_t_stateinfo.c_str(), st);
-
-    if (mysql_query(db_con, query_string))
-    {
-        fprintf(stderr, "%s\n", mysql_error(db_con));
-        return 0;
-    }
-
-    MYSQL_RES *result = mysql_store_result(db_con);
-
-    int re;
-    if (result == NULL)
-        re = 0;
-    else
-        re = 1;
-
-    mysql_free_result(result);          // free result
-    return re;
-}
-
-/**
-* \brief Add state information to database.
-* \param stif header pointed to state information
-*/
-void CSAgent::DBAddStateInfo(const struct State_Info_Header *stif)
-{
-    char str[256];
-    sprintf(str, "INSERT INTO %s(State, OriPayoff, Payoff, Count, ActInfos, ExActInfos, BackLinks) VALUES(%ld, %.2f, %.2f, %ld, '%%s', '%%s', '%%s')",
-            db_t_stateinfo.c_str(), stif->st, stif->original_payoff, stif->payoff, stif->count);    // first stag of building mysql insert query, actlist, eactlist and links are build below
-    size_t str_len = strlen(str);
-
-    // get lenght of several subparts
-    unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
-    unsigned long ea_len = stif->eat_num * sizeof(struct EnvAction_Info);
-    unsigned long lk_len = stif->lk_num * sizeof(struct BackLink);
-
-    unsigned char *p = (unsigned char *)stif;   // use p to travel
-
-    // point to action information part
-    p += sizeof(struct State_Info_Header);
-    struct Action_Info *atif = (struct Action_Info *)p;
-
-    // point to environment action information part
-    p += ai_len;
-    struct EnvAction_Info *eaif = (struct EnvAction_Info *)p;
-
-    // point to backward link part
-    p += ea_len;
-    struct BackLink *lk = (struct BackLink *)p;
-
-    char ai_chunk[2*ai_len +1]; // temporary buffer to put action information
-    mysql_real_escape_string(db_con, ai_chunk, (char *)atif, ai_len);
-    char ea_chunk[2*ea_len +1]; // temporary buffer to put envir action info
-    mysql_real_escape_string(db_con, ea_chunk, (char *)eaif, ea_len);
-    char lk_chunk[2*lk_len +1]; // temporary buffer for links
-    mysql_real_escape_string(db_con, lk_chunk, (char *)lk, lk_len);
-
-    char query[str_len + 2*(ai_len+ea_len+lk_len)+1];
-    int len = snprintf(query, str_len + 2*(ai_len+ea_len+lk_len)+1, str, ai_chunk, ea_chunk, lk_chunk);     // final stag of building insert query
-
-    if (mysql_real_query(db_con, query, len))       // perform the query, and insert st to database
-    {
-        fprintf(stderr, "%s\n", mysql_error(db_con));
-        return;     // FIXME: indicator of error?
-    }
-
-    return;
-}
-
-/**
-* \brief Update information of a state already exists in database.
-* \param stif header pointed to the modified state information
-*/
-void CSAgent::DBUpdateStateInfo(const struct State_Info_Header *stif)
-{
-    char str[256];
-    sprintf(str, "UPDATE %s SET OriPayoff=%.2f, Payoff=%.2f, Count=%ld, ActInfos='%%s', ExActInfos='%%s', BackLinks='%%s' WHERE State=%ld",
-            db_t_stateinfo.c_str(), stif->original_payoff, stif->payoff, stif->count, stif->st);    // first stage of building the update query
-    size_t str_len = strlen(str);
-
-    unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
-    unsigned long ea_len = stif->eat_num * sizeof(struct EnvAction_Info);
-    unsigned long lk_len = stif->lk_num * sizeof(struct BackLink);
-
-    unsigned char *p = (unsigned char *)stif;
-    p += sizeof(struct State_Info_Header);
-    struct Action_Info *atif = (struct Action_Info *)p;
-
-    p += ai_len;
-    struct EnvAction_Info *eaif = (struct EnvAction_Info *)p;
-
-    p += ea_len;
-    struct BackLink *lk = (struct BackLink *)p;
-
-    char ai_chunk[2*ai_len +1];
-    mysql_real_escape_string(db_con, ai_chunk, (char *)atif, ai_len);
-    char ea_chunk[2*ea_len +1];
-    mysql_real_escape_string(db_con, ea_chunk, (char *)eaif, ea_len);
-    char lk_chunk[2*lk_len +1];
-    mysql_real_escape_string(db_con, lk_chunk, (char *)lk, lk_len);
-
-    char query[str_len + 2*(ai_len+ea_len+lk_len)+1];
-    int len = snprintf(query, str_len + 2*(ai_len+ea_len+lk_len)+1, str, ai_chunk, ea_chunk, lk_chunk);     // final stage of building query
-
-    if (mysql_real_query(db_con, query, len))   // perform the query, and update database
-    {
-        fprintf(stderr, "%s\n", mysql_error(db_con));
-        return;
-    }
-
-    return;
-}
-
-/**
-* \brief Delete a state from database by its value
-* \param st state value to be delete
-*/
-void CSAgent::DBDeleteState(Agent::State st)
-{
-    char query_string[256];
-    sprintf(query_string, "DELETE  FROM %s WHERE State=%ld", db_t_stateinfo.c_str(), st);   // build delete query
-
-    if (mysql_query(db_con, query_string))  // perform query
-    {
-        fprintf(stderr, "%s\n", mysql_error(db_con));
-        return;
-    }
-    return;
-}
-
-/**
-* \brief Add memory statistics to database.
-*/
-void CSAgent::DBAddMemoryInfo()
-{
-    char query_str[256];
-
-    sprintf(query_str, "INSERT INTO %s(TimeStamp, DiscountRate, Threshold, NumStates, NumLinks, LastState, LastAction) VALUES(NULL, %.2f, %.2f, %ld, %ld, %ld, %ld)",
-            db_t_meminfo.c_str(), discount_rate, threshold, state_num, lk_num, pre_in, pre_out); // build insert query
-
-    int len = strlen(query_str);
-    if (mysql_real_query(db_con, query_str, len))   // perform query
-    {
-        fprintf(stderr, "%s\n", mysql_error(db_con));
-        return;
-    }
-    return;
-}
-
-/**
-* \brief Fetch memory statistics from database.
-* \return memory info struct, NULL if error
-*/
-struct m_Memory_Info *CSAgent::DBFetchMemoryInfo()
-{
-    char query_str[256];
-    sprintf(query_str, "SELECT * FROM %s ORDER BY TimeStamp DESC LIMIT 1", db_t_meminfo.c_str());   // select the lastest one
-
-    if (mysql_query(db_con, query_str))
-    {
-        fprintf(stderr, "%s\n", mysql_error(db_con));
-        return NULL;
-    }
-
-    MYSQL_RES *result = mysql_store_result(db_con);
-
-    if (result == NULL)
-    {
-        dbgmoreprt("DBFetchMemoryInfo()", "result is NULL!\n");
-        return NULL;
-    }
-
-    MYSQL_ROW row = mysql_fetch_row(result);
-    unsigned long *lengths = mysql_fetch_lengths(result);
-
-    if (lengths == NULL)
-    {
-        dbgmoreprt("DBFetchMemoryInfo()", "lengths is null\n");
-        mysql_free_result(result);
-        return NULL;
-    }
-
-    struct m_Memory_Info *memif = (struct m_Memory_Info *)malloc(sizeof(struct m_Memory_Info));
-    dbgprt("DB", "%s, Memory TimeStamp: %s\n", db_name.c_str(), row[0]);
-    // fill in the memory struct
-    memif->discount_rate = atof(row[1]);
-    memif->threshold = atof(row[2]);
-    memif->state_num = atol(row[3]);
-    memif->lk_num = atol(row[4]);
-    memif->last_st = atol(row[5]);
-    memif->last_act = atol(row[6]);
-
-    mysql_free_result(result);          // free result
-
-    return memif;
 }
 
 /**

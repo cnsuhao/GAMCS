@@ -6,6 +6,8 @@
 #include <mysql/mysql.h>
 #include "Agent.h"
 
+class Storage;
+
 /**
 * Computer Simulation of Agent, which uses computers to implement an agent.
 */
@@ -26,31 +28,17 @@ public:
     void InitMemory();              /**< load memory from database */
     void SaveMemory();              /**< save memory to database */
 
+    void SetStorage(Storage *);     /**< set storage device */
+
 private:
     unsigned long state_num;                  /**< total number of states in memory */
     unsigned long lk_num;                    /**< total number of links between states in memory */
 
+    Storage *storage;   /**< dump memroy to a mass storage device */
+
     std::vector<Agent::Action> MaxPayoffRule(Agent::State, const std::vector<Agent::Action> &);    /**< implementing maximun payoff rule */
     void UpdateMemory(float);            /**< implementing UpdateMemory of Agent */
 
-    MYSQL *db_con;      /**< database connection handler */
-    std::string db_server;   /**< database server address */
-    std::string db_user;     /**< database username */
-    std::string db_password; /**< database password */
-    std::string db_name;     /**< database name */
-    std::string db_t_stateinfo;  /**< table name for storing state information */
-    std::string db_t_meminfo;    /**< table name for storing memory information */
-
-    int DBConnect();    /**< connect database */
-    void DBClose();     /**< close database */
-    Agent::State DBStateByIndex(unsigned long) const;
-    int DBFetchStateInfo(Agent::State, void *) const;
-    int DBSearchState(Agent::State) const;
-    void DBAddStateInfo(const struct State_Info_Header *);
-    void DBUpdateStateInfo(const struct State_Info_Header *);
-    void DBDeleteState(Agent::State);
-    void DBAddMemoryInfo();
-    struct m_Memory_Info *DBFetchMemoryInfo();
     void PrintProcess(unsigned long, unsigned long, char *) const;
 
     struct m_State *head;           /**< memory head*/
@@ -89,6 +77,11 @@ private:
     float CalStatePayoff(const struct m_State *) const;             /**< calculate payoff of a state */
     float CalActPayoff(Agent::Action, const struct m_State *) const;       /**< calculate payoff of an Agent::Action */
 };
+
+inline void CSAgent::SetStorage(Storage *stg)
+{
+    storage = stg;
+}
 
 /** implementation of environment Agent::Action information */
 struct m_EnvAction
@@ -135,17 +128,6 @@ struct m_State
     struct m_ForwardArcState *flist;    /**< forward links */
     struct m_BackArcState *blist;       /**< backward links */
     struct m_State *next;
-};
-
-/** memory information */
-struct m_Memory_Info
-{
-    float discount_rate;    /**< discount rate */
-    float threshold;        /**< threshold */
-    unsigned long state_num;    /**< total number of states in memroy */
-    unsigned long lk_num;       /**< total number of links between states in memory */
-    Agent::State last_st;      /**< last experienced state when saving memory */
-    Agent::Action last_act;    /**< last performed Agent::Action when saving memory */
 };
 
 #endif // CSAGENT_H
