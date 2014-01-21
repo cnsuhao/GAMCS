@@ -1,5 +1,6 @@
 #include "Mouse.h"
 #include "CSAgent.h"
+#include "Mysql.h"
 
 void signal_handler(int sig)
 {
@@ -13,8 +14,10 @@ void signal_handler(int sig)
 int main(void)
 {
     signal(SIGINT, signal_handler);
+    Mysql mysql;
+    mysql.SetDBArgs("localhost", "root", "huangk", "Mouse");
     CSAgent ma(0.9, 0.01);
-    ma.SetDBArgs("localhost", "root", "huangk", "Mouse");
+    ma.SetStorage(&mysql);
     ma.InitMemory();
 
     Mouse mouse(1);

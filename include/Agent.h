@@ -80,4 +80,15 @@ struct State_Info_Header
         int lk_num; /**< number of links to other states */
 };
 
+/** memory information */
+struct Memory_Info
+{
+    float discount_rate;    /**< discount rate */
+    float threshold;        /**< threshold */
+    unsigned long state_num;    /**< total number of states in memroy */
+    unsigned long lk_num;       /**< total number of links between states in memory */
+    Agent::State last_st;      /**< last experienced state when saving memory */
+    Agent::Action last_act;    /**< last performed Agent::Action when saving memory */
+};
+
 #endif // AGENT_H
