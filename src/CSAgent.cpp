@@ -25,22 +25,21 @@
 void CSAgent::LoadState(Agent::State st)
 {
     struct m_State *mst = SearchState(st);    // search memory for the state first
-    if (mst == NULL)    // not found, create a new state struct
+    if (mst == NULL)    // not found, create a new empty state struct, this struct will be filled up below
     {
         mst = NewState(st);
         /* Add to memory */
-        mst->next = head;
-        head = mst;
-        states_map.insert(StatesMap::value_type(mst->st, mst));    // don't forget to update hash map
+        AddStateToMemory(mst);
     }
 
     struct State_Info_Header *stif = NULL;
     stif = storage->FetchStateInfo(st);    // get state information from database, return the size
-    if (stif == NULL)    // should not happen, otherwise database corrupted!!
-        ERROR("state: %ld should exist, but fetch from storage returns NULL!\n",
+    if (stif == NULL)    // should not happen, otherwise database corrupted!
+        ERROR(
+                "state: %ld should exist, but fetch from storage returns NULL, the database may be corrupted!\n",
                 st);
 
-    mst->mark = SAVED;    // it's SAVED when just load
+    mst->mark = SAVED;    // it's SAVED when just loaded
     mst->st = stif->st;
     mst->original_payoff = stif->original_payoff;
     mst->payoff = stif->payoff;
@@ -68,7 +67,7 @@ void CSAgent::LoadState(Agent::State st)
     {
         struct m_Action *mac = NewAc(atif[i].act);
         mac->payoff = atif[i].payoff;
-
+        // add to mst's atlist
         mac->next = mst->atlist;
         mst->atlist = mac;
     }
@@ -77,7 +76,7 @@ void CSAgent::LoadState(Agent::State st)
     {
         struct m_EnvAction *mea = NewEa(eaif[i].eat);
         mea->count = eaif[i].count;
-
+        // add to mst's ealist
         mea->next = mst->ealist;
         mst->ealist = mea;
     }
@@ -90,23 +89,23 @@ void CSAgent::LoadState(Agent::State st)
         {
             pmst = NewState(lk[i].pst);
             /* Add to memory */
-            pmst->next = head;
-            head = pmst;
-            states_map.insert(StatesMap::value_type(pmst->st, pmst));
+            AddStateToMemory(pmst);
         }
         /* build mst's backward list */
         struct m_BackArcState *mbas = NewBas();
         mbas->pstate = pmst;
-
+        // add to mst's blist
         mbas->next = mst->blist;
         mst->blist = mbas;
         /* build pmst's forward list */
         struct m_ForwardArcState *mfas = NewFas(lk[i].peat, lk[i].pact);
         mfas->nstate = mst;
-
+        // add to mst's flist
         mfas->next = pmst->flist;
         pmst->flist = mfas;
     }
+
+    free(stif);    // dont't forget to free
 
     return;
 }
@@ -123,11 +122,12 @@ void CSAgent::InitMemory()
     int re = storage->Connect();    // otherwise, load memory from database
     if (re == 0)    // successfully connected
     {
-        char label[64] = "Loading: ";
+        char label[10] = "Loading: ";
         printf("Initializing Memory from Storage: ");
         fflush(stdout);
 
         /* load memory information */
+        unsigned long saved_state_num = 0;
         struct Memory_Info *memif = storage->FetchMemoryInfo();
         if (memif != NULL)
         {
@@ -135,7 +135,7 @@ void CSAgent::InitMemory()
             // update memory struct
             discount_rate = memif->discount_rate;
             threshold = memif->threshold;
-            state_num = memif->state_num;
+            saved_state_num = memif->state_num;
             lk_num = memif->lk_num;
             free(memif);    // free it, the memory struct are not a substaintial struct for running, it's just used to store meta-memory information
         }
@@ -145,15 +145,22 @@ void CSAgent::InitMemory()
         unsigned long index = 0;    // load states from database one by one
         while ((st = storage->StateByIndex(index)) != INVALID_STATE)
         {
-            dbgmoreprt("DB: %s, LoadState: %ld\n", db_name.c_str(), st);
+            dbgmoreprt("InitMemory()", "LoadState: %ld\n", st);
             LoadState(st);
             index++;
-            PrintProcess(index, state_num, label);
+            PrintProcess(index, saved_state_num, label);
+        }
+        // check if number of states consistent
+        if (saved_state_num != state_num)
+        {
+            WARNNING(
+                    "InitMemory(): Number of states not consistent,which says to be %ld, but actually is %ld, the storage may be conrupted!\n",
+                    saved_state_num, state_num);
         }
     }
     else    // connect database failed!
     {
-        printf("Connecting storage failed!\n");
+        WARNNING("InitMemory(): Connecting storage failed!\n");
     }
 
     storage->Close();
@@ -168,10 +175,10 @@ void CSAgent::SaveMemory()
     if (storage == NULL)    // no database specified, no need to save
         return;
 
-    char label[64] = "Saving: ";
+    char label[10] = "Saving: ";
     printf("Saving Memory to: ");
     int re = storage->Connect();
-    if (re == 0)
+    if (re == 0)    // successfully connected
     {
         /* save memory information */
         struct Memory_Info *memif = (struct Memory_Info *) malloc(
@@ -185,15 +192,17 @@ void CSAgent::SaveMemory()
 
         storage->AddMemoryInfo(memif);    // add to storage
         free(memif);    // free it
+
         /* save states information */
         struct State_Info_Header *stif = NULL;
         struct m_State *mst, *nmst;
         unsigned long index = 0;
+        // walk through all state structs
         for (mst = head; mst != NULL; mst = nmst)
         {
             if (mst->mark == NEW)
             {
-                dbgmoreprt("DB", "%s, state: %ld, Mark: %d\n", db_name.c_str(),mst->st, mst->mark);
+                dbgmoreprt("SaveMemory()", "state: %ld, Mark: %d\n", mst->st, mst->mark);
                 stif = GetStateInfo(mst->st);
                 assert(stif!=NULL);
                 storage->AddStateInfo(stif);
@@ -201,13 +210,13 @@ void CSAgent::SaveMemory()
             }
             else if (mst->mark == MODIFIED)
             {
-                dbgmoreprt("DB", "%s, state: %ld, Mark: %d\n", db_name.c_str(),mst->st, mst->mark);
+                dbgmoreprt("SaveMemory()", "state: %ld, Mark: %d\n", mst->st, mst->mark);
                 stif = GetStateInfo(mst->st);
                 assert(stif!=NULL);
                 storage->UpdateStateInfo(stif);
-                free(stif);     // free
+                free(stif);    // free
             }
-            mst->mark = SAVED;
+            mst->mark = SAVED;    // update flag
 
             index++;
             PrintProcess(index, state_num, label);
@@ -262,10 +271,11 @@ struct m_State *CSAgent::SearchState(Agent::State st) const
 struct m_State *CSAgent::NewState(Agent::State st)
 {
     struct m_State *mst = (struct m_State *) malloc(sizeof(struct m_State));
+    assert(mst!=NULL);
     // fill in default values
     mst->st = st;
-    mst->original_payoff = 0.0;    // any value, doesn't master
-    mst->payoff = 0.0;    // set payoff to original payoff, it's important! //????? FIXME
+    mst->original_payoff = 0.0;    // any value, doesn't master, it'll be set when used
+    mst->payoff = 0.0;    // set payoff to original payoff, it's important! //??? FIXME
     mst->count = 1;    // it's created when we first encounter it
     mst->flist = NULL;    // we just create a struct here, no links considered
     mst->blist = NULL;
@@ -471,11 +481,11 @@ void CSAgent::LinkStates(struct m_State *pmst, EnvAction eat, Agent::Action act,
 {
     /* check if the link already exists, if so simply update the count of environment action */
     struct m_ForwardArcState *f, *nf;
-
     for (f = pmst->flist; f != NULL; f = nf)
     {
         if (f->nstate->st == mst->st && f->act == act && f->eat == eat)    // two links equal if and only if their states equal, and actions equal, and environment action equal
         {
+            dbgmoreprt("LinkStates()", "link exists: %ld = %ld + %ld ==> %ld\n", pmst->st, eat, act, mst->st);
             struct m_EnvAction *ea = Eat2Struct(eat, pmst);    // get the environment action struct
             ea->count++;    // inc count
             UpdateState(pmst);    // update previous state's payoff recursively
@@ -485,6 +495,7 @@ void CSAgent::LinkStates(struct m_State *pmst, EnvAction eat, Agent::Action act,
         nf = f->next;
     }
 
+    dbgmoreprt("LinkStates()", "create new link: %ld = %ld + %ld ==> %ld\n", pmst->st, eat, act, mst->st);
     /* link not exists, create a new link from pmst to mst */
     /* add mst to pmst's flist */
     struct m_ForwardArcState *fas = NewFas(eat, act);
@@ -523,13 +534,10 @@ void CSAgent::LinkStates(struct m_State *pmst, EnvAction eat, Agent::Action act,
     if (ac == NULL)    // action not exist, add a new one to atlist of pmst and calculate it's payoff
     {
         struct m_Action *nac = NewAc(act);
-        nac->payoff = 0.0;    //CalActPayoff(nac->act, pmst);?
         // add nac to pmst's action list
         nac->next = pmst->atlist;
         pmst->atlist = nac;
     }
-//    else                    // simply update payoff if exists
-//        ac->payoff = CalActPayoff(ac->act, pmst);
 
     UpdateState(pmst);    // update payoff beginning from previous state recursively
     return;
@@ -573,9 +581,9 @@ float CSAgent::MaxPayoffInEat(EnvAction eat, const struct m_State *mst) const
 float CSAgent::Prob(const struct m_EnvAction *ea,
         const struct m_State *mst) const
 {
-    float eacount = ea->count;
-    float stcount = mst->count;
-    return eacount / stcount;    // number of ea divided by the total number
+    unsigned long eacount = ea->count;
+    unsigned long stcount = mst->count;
+    return 1.0 * eacount / stcount;    // number of env actions divided by the total number
 }
 
 /**
@@ -585,7 +593,7 @@ float CSAgent::Prob(const struct m_EnvAction *ea,
  */
 float CSAgent::CalStatePayoff(const struct m_State *mst) const
 {
-    dbgmoreprt("CalStatePayoff(): state: %ld, count: %ld\n", mst->st, mst->count);
+    dbgmoreprt("CalStatePayoff()", "state: %ld, count: %ld\n", mst->st, mst->count);
 
     float u0 = mst->original_payoff;
     float pf = u0;    // set initial value as original payoff
@@ -596,11 +604,11 @@ float CSAgent::CalStatePayoff(const struct m_State *mst) const
     // walk through all environment actions
     for (ea = mst->ealist; ea != NULL; ea = nea)
     {
-        dbgmoreprt("", "=============== Ealist ===================\n");dbgmoreprt("eid: %ld, count: %ld\n", ea->eat, ea->count);
+        dbgmoreprt("Ealist", "=======================================\n");dbgmoreprt("", "eid: %ld, count: %ld\n", ea->eat, ea->count);
         tmp = Prob(ea, mst) * MaxPayoffInEat(ea->eat, mst);
         pf += tmp * discount_rate;    // accumulative total
         nea = ea->next;
-    }dbgmoreprt("", "=============== Ealist End ===================\n");
+    }dbgmoreprt("Ealist End", "==================================\n");
 
     return pf;
 }
@@ -624,7 +632,7 @@ void CSAgent::UpdateState(struct m_State *mst)
         struct m_BackArcState *bas, *nbas;
         for (bas = mst->blist; bas != NULL; bas = nbas)
         {
-            UpdateState(bas->pstate);
+            UpdateState(bas->pstate);    // recursively update
             nbas = bas->next;
         }
     }
@@ -641,7 +649,7 @@ void CSAgent::UpdateState(struct m_State *mst)
         nac = ac->next;
     }
 
-    if (mst->mark == SAVED) mst->mark = MODIFIED;    // set mark to indicate the modification
+    if (mst->mark == SAVED) mst->mark = MODIFIED;    // set mark to indicate the modification, no nedd to change if it's NEW
     return;
 }
 
@@ -731,13 +739,14 @@ std::vector<Agent::Action> CSAgent::BestActions(const struct m_State *mst,
 }
 
 /**
- * \brief Update states in memory.
+ * \brief Update states in memory. Note: This function should be called AFTER MaxPayoffRule() in every step!
  * \param oripayoff original payoff of current state
  */
 void CSAgent::UpdateMemory(float oripayoff)
 {
     if (pre_in == INVALID_STATE)    // previous state not exist, it's running for the first time
     {
+        dbgprt("UpdateMemory()", "Previous state not exists.\n");
         //NOTE: cur_mst is already set in MaxPayoffRule() function
         if (cur_mst == NULL)    // first time without memory, create current state struct in memory
         {
@@ -746,11 +755,7 @@ void CSAgent::UpdateMemory(float oripayoff)
             cur_mst->payoff = oripayoff;    // set payoff as original payoff
 
             // add current state to memory
-            cur_mst->next = head;
-            head = cur_mst;
-
-            states_map.insert(StatesMap::value_type(cur_mst->st, cur_mst));    // insert to hash map
-            state_num++;    // inc global state number
+            AddStateToMemory(cur_mst);
         }
         else    // state found in memory, simply update its count
         {
@@ -762,10 +767,12 @@ void CSAgent::UpdateMemory(float oripayoff)
         return;
     }
 
+    dbgprt("UpdateMemory()", "Previous state exists.\n");
     /* previous state exists */
     struct m_State *pmst = SearchState(pre_in);    // found previous state struct
     if (pmst == NULL)
-    ERROR("Can not find previous state in memory, which should be existing!");
+        ERROR(
+                "UpdateMemory(): Can not find previous state in memory, which should be existing!");
 
     //NOTE: cur_mst is already set in MaxPayoffRule() function
     if (cur_mst == NULL)    // currrent state struct not exists in memory, create it in memory, and link it to the previous state
@@ -775,12 +782,9 @@ void CSAgent::UpdateMemory(float oripayoff)
         cur_mst->payoff = cur_mst->original_payoff;
 
         // add it to memory, and update counts
-        cur_mst->next = head;
-        head = cur_mst;
-        states_map.insert(StatesMap::value_type(cur_mst->st, cur_mst));
-        state_num++;
+        AddStateToMemory(cur_mst);
 
-        EnvAction peat = cur_in - pre_in - pre_out;    // calcuate previous environment action
+        EnvAction peat = cur_in - pre_in - pre_out;    // calcuate previous environment action. This formula is important!!!
         LinkStates(pmst, peat, pre_out, cur_mst);    // build the link
     }
     else    // current state struct already exists, update the count and link it to the previous state (LinkStates will handle it if the link already exists.)
@@ -818,7 +822,10 @@ void CSAgent::FreeMemory()
 void CSAgent::RemoveState(struct m_State *mst)
 {
     if (mst == NULL)
-    ERROR("Cant remove state, state is NULL\n");
+    {
+        WARNNING("RemoveState() - Try to remove a NULL state struct\n");
+        return;
+    }
 
     // check if the state if connected by other states.
     // a state can only be removed when it's a ROOT state, which means no other states is linked to it.
@@ -875,6 +882,7 @@ std::vector<Agent::Action> CSAgent::MaxPayoffRule(Agent::State st,
 
     if (cur_mst == NULL)    // first time to encounter this state, we know nothing about it, so no restriction applied, return the whole list
     {
+        dbgprt("MaxPayoffRule()", "First time to encount state: %ld\n", st);
         re = acts;
     }
     else    // we have memories about this state, find the best action of it
@@ -1038,14 +1046,14 @@ int CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
 
     if (mst == NULL)    // if it's new, accept it in memory
     {
+        dbgprt("MergeStateInfo()",
+                "Recieve a new state: %ld, I'll accept it, thanks!\n",
+                stif->st);
         better = 1;    // anything is better than nothing
 
         mst = NewState(stif->st);
-        /* Add to memory, and update counts */
-        mst->next = head;
-        head = mst;
-        states_map.insert(StatesMap::value_type(mst->st, mst));
-        state_num++;
+        /* Add to memory */
+        AddStateToMemory(mst);
 
         // copy state information
         mst->payoff = stif->payoff;
@@ -1093,10 +1101,13 @@ int CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
     {
         if (stif->count <= mst->count)    // experience matters
         {
+            dbgprt("MergeStateInfo()",
+                    "Talking with a newbie, nothing to learn from.\n");
             better = 0;    // no lessons from a newbie
             return better;
         }
 
+        dbgprt("MergeStateInfo()", "Talking with a veteran, lots to learn from.\n");
         // it's a veteran
         better = 1;
         /* stif->count > mst->count */
@@ -1127,6 +1138,7 @@ int CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
                 mst->atlist = nmac;
             }
         }
+
         /* merge environment action information */
         long delta_count = 0;
 
@@ -1270,4 +1282,12 @@ void CSAgent::PrintProcess(unsigned long current, unsigned long total,
         free(pline_to_print);
     }
     return;
+}
+
+void CSAgent::AddStateToMemory(struct m_State *nstate)
+{
+    nstate->next = head;
+    head = nstate;
+    state_num++;
+    states_map.insert(StatesMap::value_type(nstate->st, nstate));    // don't forget to update hash map
 }

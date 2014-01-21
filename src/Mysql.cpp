@@ -388,7 +388,7 @@ void Mysql::AddMemoryInfo(const struct Memory_Info *memif)
     sprintf(query_str,
             "INSERT INTO %s(TimeStamp, DiscountRate, Threshold, NumStates, NumLinks, LastState, LastAction) VALUES(NULL, %.2f, %.2f, %ld, %ld, %ld, %ld)",
             db_t_meminfo.c_str(), memif->discount_rate, memif->threshold,
-            memif->state_num, memif->lk_num, memif->last_st, memif->last_st);    // build insert query
+            memif->state_num, memif->lk_num, memif->last_st, memif->last_act);    // build insert query
 
     int len = strlen(query_str);
     if (mysql_real_query(db_con, query_str, len))    // perform query
