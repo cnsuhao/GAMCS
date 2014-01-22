@@ -64,7 +64,7 @@ CSCommNet::~CSCommNet()
 
 /**
  * \brief Send message to all neighbours of a member.
- * \param id the message sender id
+ * \param sender_id the message sender id
  * \param buffer buffer where the message is stored
  * \param length length of the message
  * \return length of message that has been sent
@@ -82,10 +82,10 @@ int CSCommNet::Send(int sender_id, void *buffer, size_t buf_size)
 #ifdef _DEBUG_
         printf(
                 "*************************** Id: %d, Send ********************************\n",
-                id);
+                sender_id);
         CSAgent::PrintStateInfo((struct State_Info_Header *) buffer);
         printf(
-                "------------------------------ Send End----------------------------------\n\n");
+                "****************************** Send End **********************************\n\n");
 #endif // _DEBUG_
 
         std::vector<int> neighs = GetNeighbours(sender_id);    // get all its neightbours, the message will send to all of they
@@ -115,7 +115,7 @@ int CSCommNet::Send(int sender_id, void *buffer, size_t buf_size)
 
 /**
  * \brief Recieve one message of a specified member.
- * \param id member id who want to recieve
+ * \param recver_id member id who want to recieve
  * \param buffer buffer where to store the recieved message
  * \param length of the message to be recieved
  * \return length of message recieved
@@ -127,7 +127,7 @@ int CSCommNet::Recv(int recver_id, void *buffer, size_t buf_size)
         WARNNING("Recv()- requested data length exceeds DATA_SIZE.\n");
     }
 
-    struct Channel *chan = GetChannel(id);    // get my channel
+    struct Channel *chan = GetChannel(recver_id);    // get my channel
     size_t re = 0;
     pthread_mutex_lock(&chan->mutex);    // lock it before reading, prevent concurrent writtings
 
@@ -159,8 +159,9 @@ int CSCommNet::Recv(int recver_id, void *buffer, size_t buf_size)
         printf(
                 "++++++++++++++++++++++++ Id: %d, Recv from: %d ++++++++++++++++++++++++\n",
                 recver_id, sid);
+        CSAgent::PrintStateInfo(stif);
         printf(
-                "|||||||||||||||||||||||||||||| Recv End |||||| |||||||||||||||||||||||\n\n");
+                "++++++++++++++++++++++++++++++ Recv End ++++++++++++++++++++++++++++++\n\n");
 #endif // _DEBUG_
     }
 
