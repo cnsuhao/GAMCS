@@ -22,7 +22,7 @@ public:
     virtual ~CSAgent();
 
     struct State_Info_Header *GetStateInfo(Agent::State) const;                 /**< implementing GetStateInfo function */
-    int MergeStateInfo(const struct State_Info_Header *);               /**< implementing MergeStateInfo function */
+    void MergeStateInfo(const struct State_Info_Header *);               /**< implementing MergeStateInfo function */
     static void PrintStateInfo(const struct State_Info_Header *);         /**< print state information gracefully */
     void SetDBArgs(std::string, std::string, std::string, std::string);                 /**< set database related arguments */
     void InitMemory();              /**< load memory from database */

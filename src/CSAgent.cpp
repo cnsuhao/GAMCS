@@ -274,7 +274,7 @@ struct m_State *CSAgent::NewState(Agent::State st)
     assert(mst!=NULL);
     // fill in default values
     mst->st = st;
-    mst->original_payoff = 0.0;    // any value, doesn't master, it'll be set when used
+    mst->original_payoff = 0.0;    // any value, doesn't master, it'll be set when used. Note: this value is also used for unseen previous state recieved in links from others.
     mst->payoff = 0.0;    // set payoff to original payoff, it's important! //??? FIXME
     mst->count = 1;    // it's created when we first encounter it
     mst->flist = NULL;    // we just create a struct here, no links considered
@@ -526,8 +526,10 @@ void CSAgent::LinkStates(struct m_State *pmst, EnvAction eat, Agent::Action act,
         pmst->ealist = nea;
     }
     else
+    {
         // update count if exists
-        ea->count++;
+        ea->count++;    // inc count
+    }
 
     /* check action */
     struct m_Action *ac = Act2Struct(act, pmst);
@@ -583,7 +585,15 @@ float CSAgent::Prob(const struct m_EnvAction *ea,
 {
     unsigned long eacount = ea->count;
     unsigned long stcount = mst->count;
-    return 1.0 * eacount / stcount;    // number of env actions divided by the total number
+    float re = (1.0 / stcount) * eacount;    // number of env actions divided by the total number
+    // check if re is in range (0, 1]
+    if (re <= 0 || re > 1)    // check failed
+    {
+        ERROR(
+                "Prob(): probability is %.2f, which must in range (0, 1]. eacount is %ld, stcount is %ld.\n",
+                re, eacount, stcount);
+    }
+    return re;
 }
 
 /**
@@ -757,9 +767,10 @@ void CSAgent::UpdateMemory(float oripayoff)
             // add current state to memory
             AddStateToMemory(cur_mst);
         }
-        else    // state found in memory, simply update its count
+        else    // state found in memory, update its count and original payoff (which means state's original payoff can be changed on runtime!)
         {
-            cur_mst->count++;
+            cur_mst->count++;    // inc state count
+            cur_mst->original_payoff = oripayoff;   // reset original payoff
             if (cur_mst->mark == SAVED)    // don't forget to change the storage flag
                 cur_mst->mark = MODIFIED;
         }
@@ -789,7 +800,8 @@ void CSAgent::UpdateMemory(float oripayoff)
     }
     else    // current state struct already exists, update the count and link it to the previous state (LinkStates will handle it if the link already exists.)
     {
-        cur_mst->count++;
+        cur_mst->count++;    // inc state count
+        cur_mst->original_payoff = oripayoff;   // reset original payoff
 
         if (cur_mst->mark == SAVED) cur_mst->mark = MODIFIED;
 
@@ -1023,8 +1035,14 @@ struct State_Info_Header *CSAgent::GetStateInfo(Agent::State st) const
  * \param stif the state information to be merged
  * \return if the state information is finally accepted and merged, 1 for yes, 0 for no.
  */
-int CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
+void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
 {
+    // test ++
+    if (stif->st == 13)
+    {
+        printf("test");
+    }
+    // test --
     unsigned char *p = (unsigned char *) stif;    // use point p to travel through each subpart
     // action information
     p += sizeof(struct State_Info_Header);
@@ -1042,25 +1060,21 @@ int CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
 
     int i;
     struct m_State *mst = SearchState(stif->st);    // search for the state
-    int better = 0;    // if sender's info is better than mine
 
     if (mst == NULL)    // if it's new, accept it in memory
     {
         dbgprt("MergeStateInfo()",
-                "Recieve a new state: %ld, I'll accept it, thanks!\n",
-                stif->st);
-        better = 1;    // anything is better than nothing
+                "Recieve a new state: %ld, create it in memory.\n", stif->st);
 
         mst = NewState(stif->st);
         /* Add to memory */
         AddStateToMemory(mst);
 
         // copy state information
-        mst->payoff = stif->payoff;
-        mst->original_payoff = stif->original_payoff;
-        mst->count = stif->count;
+        mst->count = stif->count;    // copy count
+        mst->original_payoff = stif->payoff;    // set my original payoff to the payoff of recieved state, this reflects the essence of original payoff
 
-        /* copy actions information */
+        /* create and copy actions information */
         for (i = 0; i < stif->act_num; i++)
         {
             struct m_Action *mac = (struct m_Action *) malloc(
@@ -1072,56 +1086,55 @@ int CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
             mst->atlist = mac;
         }
 
-        /* copy ExActions information */
+        /* create and copy ExActions information */
         for (i = 0; i < stif->eat_num; i++)
         {
             struct m_EnvAction *meat = (struct m_EnvAction *) malloc(
                     sizeof(struct m_EnvAction));
             meat->eat = eaif[i].eat;
-            meat->count = eaif[i].count;
+            meat->count = eaif[i].count;    // copy count
 
             meat->next = mst->ealist;
             mst->ealist = meat;
         }
 
-        /* copy links information */
+        /* create and copy backward links information */
         for (i = 0; i < stif->lk_num; i++)
         {
-            Agent::State pst = lk[i].pst;
+            Agent::State pst = lk[i].pst;       // previous state value
             struct m_State *pmst = SearchState(pst);    // find if the previous state exists
-            if (pmst != NULL)    // if so, make the link, otherwise do nothing
+            if (pmst != NULL)    // if so, make the link, otherwise update count, the link checking and env action count updating are handled by LinkStates()
             {
-                pmst->count++;    // as if we were coming from pmst, increase its count
-                LinkStates(pmst, lk[i].peat, lk[i].pact, mst);
+                pmst->count++;    // inc previous state count, as if we were experiencing this from it. this inc will also mantain count consistent, which is state count = sum of env actions count
+                LinkStates(pmst, lk[i].peat, lk[i].pact, mst);    // LinkStates() will take care of the situation where the link is already existing, and it will also call UpdateState() to refresh memroy
             }
-
+            else // for a non-existing previous state, we will create it, and build the link
+            {
+                // create a new previous state
+                struct m_State *npmst = NewState(pst);
+                // add to memory
+                AddStateToMemory(npmst);
+                // build the link
+                LinkStates(npmst, lk[i].peat, lk[i].pact, mst);     // npmst will be updated in LinkStates() funciton
+            }
         }
     }    // mst == NULL
     else    // state already exists, merge the recieved one with it
     {
-        if (stif->count <= mst->count)    // experience matters
-        {
-            dbgprt("MergeStateInfo()",
-                    "Talking with a newbie, nothing to learn from.\n");
-            better = 0;    // no lessons from a newbie
-            return better;
-        }
+        dbgprt("MergeStateInfo()", "Merge with a existing state.\n");
+        mst->count = ceil((mst->count + stif->count)/2);    // set count as the average sum
+//        mst->payoff = stif->payoff;   // meanless to set payoff, since it's calculated on fly
 
-        dbgprt("MergeStateInfo()", "Talking with a veteran, lots to learn from.\n");
-        // it's a veteran
-        better = 1;
-        /* stif->count > mst->count */
-        mst->payoff = stif->payoff;
-
-        /* merge action information */
-        for (i = 0; i < stif->act_num; i++)
+        /* merge action information, if an action doesn't exist, create it and copy payoff, otherwise copy payoff */
+        for (i = 0; i < stif->act_num; i++)    // for each action in recieving list
         {
             struct m_Action *mac, *nmac;
+            // walk through my atlist, find the corresponding action in my atlist
             for (mac = mst->atlist; mac != NULL; mac = nmac)
             {
-                if ((mac->act == atif[i].act))
+                if ((mac->act == atif[i].act))    // found
                 {
-                    mac->payoff = atif[i].payoff;
+                    mac->payoff = atif[i].payoff;    // copy payoff
                     break;    // one action should occur only once, break if we found one
                 }
                 nmac = mac->next;
@@ -1132,65 +1145,67 @@ int CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
                 struct m_Action *nmac = (struct m_Action *) malloc(
                         sizeof(struct m_Action));
                 nmac->act = atif[i].act;
-                nmac->payoff = atif[i].payoff;
-
+                nmac->payoff = atif[i].payoff;    // copy payoff
+                // add to atlist
                 nmac->next = mst->atlist;
                 mst->atlist = nmac;
             }
         }
 
-        /* merge environment action information */
-        long delta_count = 0;
-
-        for (i = 0; i < stif->eat_num; i++)
+        /* merge environment action information, if an env action doesn't exist, create it and copy count, otherwise add up the count */
+        for (i = 0; i < stif->eat_num; i++)    // for each env action in recieving list
         {
             struct m_EnvAction *meat, *nmeat;
-
+            // walk through my ealist to find the corresponding one
             for (meat = mst->ealist; meat != NULL; meat = nmeat)
             {
-                if (meat->eat == eaif[i].eat)
+                if (meat->eat == eaif[i].eat)    // found
                 {
-                    delta_count += (eaif[i].count - meat->count);    // negative is ok
-                    meat->count = eaif[i].count;    // use the recieved eat count
+                    meat->count = ceil((meat->count + eaif[i].count)/2);    // set the env action count as average sum
                     break;
                 }
 
                 nmeat = meat->next;
             }
 
-            // new eat, create one
+            // not found, create a new one
             if (meat == NULL)
             {
                 struct m_EnvAction *neat = (struct m_EnvAction *) malloc(
                         sizeof(struct m_EnvAction));
                 neat->eat = eaif[i].eat;
-                neat->count = eaif[i].count;
-
+                neat->count = eaif[i].count;    // copy count
+                // add to ealist
                 neat->next = mst->ealist;
                 mst->ealist = neat;
-
-                delta_count += eaif[i].count;
             }
         }
 
-        mst->count += delta_count;    // update state count
-
-        /* links, make the link if previous state exists */
+        /* create and copy backward links information */
         for (i = 0; i < stif->lk_num; i++)
         {
             Agent::State pst = lk[i].pst;
-            struct m_State *pmst = SearchState(pst);
-            if (pmst != NULL)
+            struct m_State *pmst = SearchState(pst);    // find if the previous state exists
+            if (pmst != NULL)    // if so, make the link, otherwise update count, the link checking and env action count updating are handled by LinkStates()
             {
-                pmst->count++;
-                LinkStates(pmst, lk[i].peat, lk[i].pact, mst);
+                pmst->count++;    // inc previous state count, as if we were experiencing this from it. this inc will also mantain count consistent, which is state count = sum of env actions count
+                LinkStates(pmst, lk[i].peat, lk[i].pact, mst);    // LinkStates() will take care of the situation where the link is already existing, and it will also call UpdateState() to refresh memroy
+            }
+            else // for a non-existing previous state, we will create it, and build the link
+            {
+                // create a new previous state
+                struct m_State *npmst = NewState(pst);
+                // add to memory
+                AddStateToMemory(npmst);
+                // build the link
+                LinkStates(npmst, lk[i].peat, lk[i].pact, mst);     // npmst will be updated in LinkStates() funciton
             }
         }
 
     }
-    if (better == 1 && mst->mark == SAVED)    // no modification to my state if I didn't accept it
-    mst->mark = MODIFIED;
-    return better;
+    if (mst->mark == SAVED)    // change storage flag
+        mst->mark = MODIFIED;
+    return;
 }
 
 /**

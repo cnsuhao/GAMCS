@@ -419,7 +419,7 @@ struct Memory_Info *Mysql::FetchMemoryInfo()
 
     if (result == NULL)
     {
-        dbgmoreprt("DBFetchMemoryInfo()", "result is NULL!\n");
+        dbgmoreprt("Mysql FetchMemoryInfo()", "result is NULL!\n");
         return NULL;
     }
 
@@ -428,14 +428,14 @@ struct Memory_Info *Mysql::FetchMemoryInfo()
 
     if (lengths == NULL)
     {
-        dbgmoreprt("DBFetchMemoryInfo()", "lengths is null\n");
+        dbgmoreprt("Mysql FetchMemoryInfo()", "lengths is null\n");
         mysql_free_result(result);
         return NULL;
     }
 
     struct Memory_Info *memif = (struct Memory_Info *) malloc(
             sizeof(struct Memory_Info));
-    dbgprt("DB", "%s, Memory TimeStamp: %s\n", db_name.c_str(), row[0]);
+    dbgprt("Mysql FetchMemoryInfo()", "%s, Memory TimeStamp: %s\n", db_name.c_str(), row[0]);
     // fill in the memory struct
     memif->discount_rate = atof(row[1]);
     memif->threshold = atof(row[2]);
