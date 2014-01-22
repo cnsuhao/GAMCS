@@ -1072,7 +1072,8 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
 
         // copy state information
         mst->count = stif->count;    // copy count
-        mst->original_payoff = stif->payoff;    // set my original payoff to the payoff of recieved state, this reflects the essence of original payoff
+        mst->payoff = stif->payoff;
+        mst->original_payoff = stif->original_payoff;    // the original payoff is what really is important
 
         /* create and copy actions information */
         for (i = 0; i < stif->act_num; i++)
@@ -1111,7 +1112,7 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
             else // for a non-existing previous state, we will create it, and build the link
             {
                 // create a new previous state
-                struct m_State *npmst = NewState(pst);
+                struct m_State *npmst = NewState(pst);      // Note: the npmst's original payoff remains unset, since we have no information about it.
                 // add to memory
                 AddStateToMemory(npmst);
                 // build the link
@@ -1123,7 +1124,12 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
     {
         dbgprt("MergeStateInfo()", "Merge with a existing state.\n");
         mst->count = ceil((mst->count + stif->count)/2);    // set count as the average sum
-//        mst->payoff = stif->payoff;   // meanless to set payoff, since it's calculated on fly
+        mst->payoff = stif->payoff;   // meanless to set payoff, since it's calculated on fly
+        /* It's very important to set original payoff here, some un-experiencing states my be created as recieved previous states,
+         in this situation, the original payoff will remain empty, if we don't set it here, it will have no chance to be set.
+         it doesn't matter if the original payoff set here is wrong, because when it experiences the state by itself, it'll get
+         its own orignial payoff of this state from Avatar's OriginalPayoff() function. */
+        mst->original_payoff = stif->original_payoff;
 
         /* merge action information, if an action doesn't exist, create it and copy payoff, otherwise copy payoff */
         for (i = 0; i < stif->act_num; i++)    // for each action in recieving list
@@ -1194,7 +1200,7 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
             else // for a non-existing previous state, we will create it, and build the link
             {
                 // create a new previous state
-                struct m_State *npmst = NewState(pst);
+                struct m_State *npmst = NewState(pst);  // Note: the npmst's original payoff remains unset, since we have no information about it.
                 // add to memory
                 AddStateToMemory(npmst);
                 // build the link
