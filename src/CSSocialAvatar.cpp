@@ -48,7 +48,7 @@ void CSSocialAvatar::SendStateInfo(Agent::State st)
     }
 
     commnet->Send(id, stif, stif->size);    // call the send facility in commnet
-    free(stif); // free
+    free(stif);    // free
 
     return;
 }
@@ -66,7 +66,7 @@ void CSSocialAvatar::RecvStateInfo()
 
     while (commnet->Recv(id, re_buf, 2048) != 0)    // message recieved
     {
-        struct State_Info_Header *stif = (struct State_Info_Header *) re_buf;
+        stif = (struct State_Info_Header *) re_buf;
         int better = agent->MergeStateInfo(stif);    // merge the recieved state information to memory
 
         if (better == 0)    // the state information wasn't better than mine and thus not accepted, it's my duty to send out my better information to others
@@ -75,9 +75,9 @@ void CSSocialAvatar::RecvStateInfo()
             if (stif != NULL)
             {
                 commnet->Send(id, stif, stif->size);    // send it to all my neighbours
+                free(stif);     // free
             }
         }
     }
-    free(stif);
     return;
 }

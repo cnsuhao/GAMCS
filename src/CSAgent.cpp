@@ -746,7 +746,7 @@ void CSAgent::UpdateMemory(float oripayoff)
 {
     if (pre_in == INVALID_STATE)    // previous state not exist, it's running for the first time
     {
-        dbgprt("UpdateMemory()", "Previous state not exists.\n");
+        dbgmoreprt("UpdateMemory()", "Previous state not exists.\n");
         //NOTE: cur_mst is already set in MaxPayoffRule() function
         if (cur_mst == NULL)    // first time without memory, create current state struct in memory
         {
@@ -767,7 +767,7 @@ void CSAgent::UpdateMemory(float oripayoff)
         return;
     }
 
-    dbgprt("UpdateMemory()", "Previous state exists.\n");
+    dbgmoreprt("UpdateMemory()", "Previous state exists.\n");
     /* previous state exists */
     struct m_State *pmst = SearchState(pre_in);    // found previous state struct
     if (pmst == NULL)
