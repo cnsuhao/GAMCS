@@ -123,7 +123,7 @@ struct m_State
     float payoff;               /**< state payoff */
     float original_payoff;      /**< original payoff of state */
     unsigned long count;        /**< state count */
-    enum CSAgent::m_StMark mark;         /**< mark used for saving memory to disk */
+    enum CSAgent::m_StMark mark;         /**< mark used for storage */
     struct m_EnvAction *ealist;  /**< exacts of this state */
     struct m_Action *atlist;    /**< actions of this state */
     struct m_ForwardArcState *flist;    /**< forward links */
