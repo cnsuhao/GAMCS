@@ -19,7 +19,7 @@ int main(void)
     signal(SIGINT, signal_handler);
 
     CSCommNet cccnet(1);
-    int mouse_num = 4;
+    int mouse_num = 2;
     Mysql *mysql[mouse_num];
     char db_name[16];
     Mouse *mice[mouse_num];
@@ -29,24 +29,19 @@ int main(void)
     // set up CCCNet
     cccnet.AddMember(0);
     cccnet.AddMember(1);
-    cccnet.AddMember(2);
-    cccnet.AddMember(3);
-    cccnet.AddNeighbour(0, 2);
-    cccnet.AddNeighbour(0, 3);
+//    cccnet.AddMember(2);
+//    cccnet.AddMember(3);
+    cccnet.AddNeighbour(0, 1);
     cccnet.AddNeighbour(1, 0);
-    cccnet.AddNeighbour(1, 3);
-    cccnet.AddNeighbour(1, 2);
-    cccnet.AddNeighbour(2, 1);
-    cccnet.AddNeighbour(3, 0);
-    cccnet.AddNeighbour(3, 1);
-
-    printf("0's neighbour: ");
-    std::vector<int> nbs = cccnet.GetNeighbours(0);
-    for (std::vector<int>::iterator it=nbs.begin(); it!=nbs.end(); ++it)
-    {
-        printf("%d, ", *it);
-    }
-    printf("\n");
+//
+//    cccnet.AddNeighbour(0, 2);
+//    cccnet.AddNeighbour(0, 3);
+//    cccnet.AddNeighbour(1, 0);
+//    cccnet.AddNeighbour(1, 3);
+//    cccnet.AddNeighbour(1, 2);
+//    cccnet.AddNeighbour(2, 1);
+//    cccnet.AddNeighbour(3, 0);
+//    cccnet.AddNeighbour(3, 1);
 
     // set up each mouse
     for (int i=0; i<mouse_num; i++)
@@ -65,7 +60,7 @@ int main(void)
         Mouse *mouse = new Mouse(i);
         mouse->ConnectAgent(agent);
         mouse->SetCommNet(&cccnet);
-        mouse->SetFreq(100);
+        mouse->SetFreq(10);
 
         mysql[i] = ml;
         mice[i] = mouse;

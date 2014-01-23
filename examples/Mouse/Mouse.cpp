@@ -10,7 +10,7 @@
 
 Mouse::Mouse(int i):Avatar(i)
 {
-    position = 1;
+    position = 3;
 }
 
 Mouse::~Mouse()
@@ -62,7 +62,7 @@ std::vector<Agent::Action> Mouse::ActionCandidates(Agent::State st)
 
 float Mouse::OriginalPayoff(Agent::State st)
 {
-    if (st == 5)
+    if (st == 6)
         return 1;
     else
         return 0;
