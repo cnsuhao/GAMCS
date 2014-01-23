@@ -138,7 +138,7 @@ void CSAgent::InitMemory()
             saved_state_num = memif->state_num;
             lk_num = memif->lk_num;
             pre_in = memif->last_st;    // it's continuous
-            pre_out = memif->last_act;  //
+            pre_out = memif->last_act;    //
             free(memif);    // free it, the memory struct are not a substaintial struct for running, it's just used to store meta-memory information
         }
 
@@ -586,12 +586,16 @@ float CSAgent::Prob(const struct m_EnvAction *ea,
     // calculate the sum of env action counts
     unsigned long sum_eacount = 0;
     struct m_EnvAction *pea, *pnea;
-    for (pea = mst->ealist; pea!=NULL; pea=pnea)
+    printf("------- state: %ld, count %ld, ", mst->st, mst->count);
+    for (pea = mst->ealist; pea != NULL; pea = pnea)
     {
         sum_eacount += pea->count;
+        printf("eat: %ld, count %ld, ", pea->eat, pea->count);
 
         pnea = pea->next;
     }
+
+    printf("sum: %ld\n", sum_eacount);
 
     float re = (1.0 / sum_eacount) * eacount;    // number of env actions divided by the total number
     /* do some checks below */
@@ -602,21 +606,21 @@ float CSAgent::Prob(const struct m_EnvAction *ea,
                 "Prob(): probability is %.2f, which must in range (0, 1]. eacount is %ld, total eacount is %ld.\n",
                 re, eacount, sum_eacount);
     }
-
-    /* In every states loop, the count of conjoint state will temporarily be 1 bigger than the sum of its env action counts.
-     * otherwise something wrong might happen */
-    // check if total env action counts deviate too much from state count,
-    unsigned long stcount = mst->count;
-    unsigned long deviate = 0;
-
-    if ((deviate = labs(sum_eacount - stcount)) != 0)
-    {
-        ERROR("state %ld count: %ld and total env action counts: %ld, %ld deviation, this value shouldn't be bigger than one!\n", mst->st, stcount, sum_eacount, deviate);
-    }
-    else if (deviate != 0)
-    {
-        WARNNING("state %ld count: %ld and total env action counts: %ld, %ld deviation!\n", mst->st, stcount, sum_eacount, deviate);
-    }
+//
+//    /* In every states loop, the count of conjoint state will temporarily be 1 bigger than the sum of its env action counts.
+//     * otherwise something wrong might happen */
+//    // check if total env action counts deviate too much from state count,
+//    unsigned long stcount = mst->count;
+//    unsigned long deviate = 0;
+//
+//    if ((deviate = labs(sum_eacount - stcount)) != 0)
+//    {
+//        ERROR("state %ld count: %ld and total env action counts: %ld, %ld deviation, this value shouldn't be bigger than one!\n", mst->st, stcount, sum_eacount, deviate);
+//    }
+//    else if (deviate != 0)
+//    {
+//        WARNNING("state %ld count: %ld and total env action counts: %ld, %ld deviation!\n", mst->st, stcount, sum_eacount, deviate);
+//    }
 
     return re;
 }
@@ -684,7 +688,7 @@ void CSAgent::UpdateState(struct m_State *mst)
         nac = ac->next;
     }
 
-    if (mst->mark == SAVED) mst->mark = MODIFIED;    // set mark to indicate the modification, no nedd to change if it's NEW
+    if (mst->mark == SAVED) mst->mark = MODIFIED;    // set mark to indicate the modification, no need to change if it's NEW
     return;
 }
 
@@ -794,16 +798,15 @@ void CSAgent::UpdateMemory(float oripayoff)
         }
         else    // state found, this shouldn't happen, where does the memory come from?
         {
-            ERROR("First time to run, while there is something untracked in memory!");
+            ERROR(
+                    "First time to run, while there is something untracked in memory!");
         }
 
         return;
     }
 
     dbgmoreprt("UpdateMemory()", "Previous state exists.\n");
-    /* previous state exists
-     * Remember the rule: firstly update previous state, then update current state. The sequence is important!
-     * */
+    /* previous state exists */
     struct m_State *pmst = SearchState(pre_in);    // found previous state struct
     if (pmst == NULL)
         ERROR(
@@ -813,32 +816,27 @@ void CSAgent::UpdateMemory(float oripayoff)
     if (cur_mst == NULL)    // currrent state struct not exists in memory, create it in memory, and link it to the previous state
     {
         cur_mst = NewState(cur_in);
+        cur_mst->original_payoff = oripayoff;
+        cur_mst->payoff = oripayoff;
         // add it to memory
         AddStateToMemory(cur_mst);
 
-        // first update the previous state
+        // build the link
         EnvAction peat = cur_in - pre_in - pre_out;    // calcuate previous environment action. This formula is important!!!
         LinkStates(pmst, peat, pre_out, cur_mst);    // build the link
-        UpdateState(pmst);    // update previous state's payoff recursively
-
-        // then update current state
-        cur_mst->original_payoff = oripayoff;
-        cur_mst->payoff = cur_mst->original_payoff;
     }
     else    // current state struct already exists, update the count and link it to the previous state (LinkStates will handle it if the link already exists.)
     {
-        // first update previous state
-        EnvAction peat = cur_in - pre_in - pre_out;
-        LinkStates(pmst, peat, pre_out, cur_mst);
-        UpdateState(pmst);    // update payoff beginning from previous state recursively
-
         // then update current state
         cur_mst->count++;    // inc state count
         cur_mst->original_payoff = oripayoff;    // reset original payoff
 
-        if (cur_mst->mark == SAVED) cur_mst->mark = MODIFIED;
+        // build the link
+        EnvAction peat = cur_in - pre_in - pre_out;
+        LinkStates(pmst, peat, pre_out, cur_mst);
     }
 
+    UpdateState(cur_mst);    // update states recursively
     return;
 }
 
@@ -1091,13 +1089,13 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
                 "Recieve a new state: %ld, create it in memory.\n", stif->st);
 
         mst = NewState(stif->st);
-        /* Add to memory */
-        AddStateToMemory(mst);
-
         // copy state information
-        mst->count = stif->count;
+        mst->count = stif->count;    // copy count
         mst->payoff = stif->payoff;
         mst->original_payoff = stif->original_payoff;    // the original payoff is what really is important
+
+        /* Add to memory */
+        AddStateToMemory(mst);
 
         /* create and copy actions information */
         for (i = 0; i < stif->act_num; i++)
@@ -1130,9 +1128,8 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
             struct m_State *pmst = SearchState(pst);    // find if the previous state exists
             if (pmst != NULL)    // if so, make the link, otherwise update count, the link checking and env action count updating are handled by LinkStates()
             {
-                pmst->count++;    // inc previous state count, as if we were experiencing this from it. this inc will also mantain count consistent, which is state count = sum of env actions count
+                // build the link
                 LinkStates(pmst, lk[i].peat, lk[i].pact, mst);    // LinkStates() will take care of the situation where the link is already existing, and it will also call UpdateState() to refresh memroy
-                UpdateState(pmst);  // update state
             }
             else    // for a non-existing previous state, we will create it, and build the link
             {
@@ -1142,7 +1139,6 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
                 AddStateToMemory(npmst);
                 // build the link
                 LinkStates(npmst, lk[i].peat, lk[i].pact, mst);    // npmst will be updated in LinkStates() funciton
-                UpdateState(npmst);  // update state
             }
         }
     }    // mst == NULL
@@ -1220,9 +1216,8 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
             struct m_State *pmst = SearchState(pst);    // find if the previous state exists
             if (pmst != NULL)    // if so, make the link, otherwise update count, the link checking and env action count updating are handled by LinkStates()
             {
-                pmst->count++;    // inc previous state count, as if we were experiencing this from it. this inc will also mantain count consistent, which is state count = sum of env actions count
+                // build the link
                 LinkStates(pmst, lk[i].peat, lk[i].pact, mst);    // LinkStates() will take care of the situation where the link is already existing, and it will also call UpdateState() to refresh memroy
-                UpdateState(pmst);  // update state
             }
             else    // for a non-existing previous state, we will create it, and build the link
             {
@@ -1232,13 +1227,12 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
                 AddStateToMemory(npmst);
                 // build the link
                 LinkStates(npmst, lk[i].peat, lk[i].pact, mst);    // npmst will be updated in LinkStates() funciton
-                UpdateState(npmst);  // update state
             }
         }
 
     }
-    if (mst->mark == SAVED)    // change storage flag
-        mst->mark = MODIFIED;
+    UpdateState(mst);    // update state
+
     return;
 }
 

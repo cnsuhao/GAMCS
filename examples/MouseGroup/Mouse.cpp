@@ -37,7 +37,7 @@ std::vector<Agent::Action> Mouse::ActionCandidates(Agent::State st)
 {
     static int count;
 //    UNUSED(st);
-    if (count < 50000)
+    if (count < 50)
     {
         std::vector<Agent::Action> acts;
         acts.clear();
