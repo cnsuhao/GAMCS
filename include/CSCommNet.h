@@ -6,7 +6,7 @@
 #include "CommNet.h"
 
 #define MAX_MEMBER 1000     // maximun number of members in group
-#define CHANNEL_SIZE 10     // maximun number of messages a channel can store
+#define CHANNEL_SIZE 100     // maximun number of messages a channel can store
 #define DATA_SIZE 2048      // maximun size of message passed
 
 /**

@@ -15,7 +15,7 @@ class Agent: public TSGIOM
     public:
         typedef GIOM::Input State; /**< for agent we call an input as a state */
         typedef GIOM::Output Action; /**< action as output */
-        typedef unsigned long EnvAction; /**< environment action, "exact" for short */
+        typedef long EnvAction; /**< environment action, "exact" for short */
 
         Agent();
         Agent(float, float);
