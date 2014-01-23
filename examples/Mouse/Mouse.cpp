@@ -10,7 +10,7 @@
 
 Mouse::Mouse(int i):Avatar(i)
 {
-    position = 5;
+    position = 1;
 }
 
 Mouse::~Mouse()
@@ -27,8 +27,8 @@ void Mouse::DoAction(Agent::Action act)
 {
     position += act;
 
-    if (position > 20)
-        position = 20;
+    if (position > 8)
+        position = 8;
     if (position < 1)
         position = 1;
     return;
@@ -47,7 +47,7 @@ std::vector<Agent::Action> Mouse::ActionCandidates(Agent::State st)
 //    UNUSED(st);
     static int count;
 //    UNUSED(st);
-    if (count < 50000)
+    if (count < 50)
     {
         std::vector<Agent::Action> acts;
         acts.clear();
@@ -62,7 +62,7 @@ std::vector<Agent::Action> Mouse::ActionCandidates(Agent::State st)
 
 float Mouse::OriginalPayoff(Agent::State st)
 {
-    if (st == 15)
+    if (st == 5)
         return 1;
     else
         return 0;

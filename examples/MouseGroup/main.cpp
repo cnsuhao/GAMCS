@@ -26,6 +26,28 @@ int main(void)
     CSAgent *agents[mouse_num];
     pthread_t tids[mouse_num];
 
+    // set up CCCNet
+    cccnet.AddMember(0);
+    cccnet.AddMember(1);
+    cccnet.AddMember(2);
+    cccnet.AddMember(3);
+    cccnet.AddNeighbour(0, 2);
+    cccnet.AddNeighbour(0, 3);
+    cccnet.AddNeighbour(1, 0);
+    cccnet.AddNeighbour(1, 3);
+    cccnet.AddNeighbour(1, 2);
+    cccnet.AddNeighbour(2, 1);
+    cccnet.AddNeighbour(3, 0);
+    cccnet.AddNeighbour(3, 1);
+
+    printf("0's neighbour: ");
+    std::vector<int> nbs = cccnet.GetNeighbours(0);
+    for (std::vector<int>::iterator it=nbs.begin(); it!=nbs.end(); ++it)
+    {
+        printf("%d, ", *it);
+    }
+    printf("\n");
+
     // set up each mouse
     for (int i=0; i<mouse_num; i++)
     {
@@ -43,26 +65,13 @@ int main(void)
         Mouse *mouse = new Mouse(i);
         mouse->ConnectAgent(agent);
         mouse->SetCommNet(&cccnet);
+        mouse->SetFreq(100);
 
         mysql[i] = ml;
         mice[i] = mouse;
         agents[i] = agent;
         tids[i] = mice[i]->ThreadLaunch();      // launch
     }
-
-    // set up CCCNet
-    cccnet.AddMember(0);
-    cccnet.AddMember(1);
-    cccnet.AddMember(2);
-    cccnet.AddMember(3);
-    cccnet.AddNeighbour(0, 2);
-    cccnet.AddNeighbour(0, 3);
-    cccnet.AddNeighbour(1, 0);
-    cccnet.AddNeighbour(1, 3);
-    cccnet.AddNeighbour(1, 2);
-    cccnet.AddNeighbour(2, 1);
-    cccnet.AddNeighbour(3, 0);
-    cccnet.AddNeighbour(3, 1);
 
     // wait
     for (int i=0; i<mouse_num; i++)

@@ -137,6 +137,8 @@ void CSAgent::InitMemory()
             threshold = memif->threshold;
             saved_state_num = memif->state_num;
             lk_num = memif->lk_num;
+            pre_in = memif->last_st;    // it's continuous
+            pre_out = memif->last_act;  //
             free(memif);    // free it, the memory struct are not a substaintial struct for running, it's just used to store meta-memory information
         }
 
@@ -488,7 +490,6 @@ void CSAgent::LinkStates(struct m_State *pmst, EnvAction eat, Agent::Action act,
             dbgmoreprt("LinkStates()", "link exists: %ld = %ld + %ld ==> %ld\n", pmst->st, eat, act, mst->st);
             struct m_EnvAction *ea = Eat2Struct(eat, pmst);    // get the environment action struct
             ea->count++;    // inc count
-            UpdateState(pmst);    // update previous state's payoff recursively
             return;    // done, return
         }
 
@@ -540,8 +541,6 @@ void CSAgent::LinkStates(struct m_State *pmst, EnvAction eat, Agent::Action act,
         nac->next = pmst->atlist;
         pmst->atlist = nac;
     }
-
-    UpdateState(pmst);    // update payoff beginning from previous state recursively
     return;
 }
 
@@ -584,15 +583,41 @@ float CSAgent::Prob(const struct m_EnvAction *ea,
         const struct m_State *mst) const
 {
     unsigned long eacount = ea->count;
-    unsigned long stcount = mst->count;
-    float re = (1.0 / stcount) * eacount;    // number of env actions divided by the total number
+    // calculate the sum of env action counts
+    unsigned long sum_eacount = 0;
+    struct m_EnvAction *pea, *pnea;
+    for (pea = mst->ealist; pea!=NULL; pea=pnea)
+    {
+        sum_eacount += pea->count;
+
+        pnea = pea->next;
+    }
+
+    float re = (1.0 / sum_eacount) * eacount;    // number of env actions divided by the total number
+    /* do some checks below */
     // check if re is in range (0, 1]
     if (re <= 0 || re > 1)    // check failed
     {
         ERROR(
-                "Prob(): probability is %.2f, which must in range (0, 1]. eacount is %ld, stcount is %ld.\n",
-                re, eacount, stcount);
+                "Prob(): probability is %.2f, which must in range (0, 1]. eacount is %ld, total eacount is %ld.\n",
+                re, eacount, sum_eacount);
     }
+
+    /* In every states loop, the count of conjoint state will temporarily be 1 bigger than the sum of its env action counts.
+     * otherwise something wrong might happen */
+    // check if total env action counts deviate too much from state count,
+    unsigned long stcount = mst->count;
+    unsigned long deviate = 0;
+
+    if ((deviate = labs(sum_eacount - stcount)) != 0)
+    {
+        ERROR("state %ld count: %ld and total env action counts: %ld, %ld deviation, this value shouldn't be bigger than one!\n", mst->st, stcount, sum_eacount, deviate);
+    }
+    else if (deviate != 0)
+    {
+        WARNNING("state %ld count: %ld and total env action counts: %ld, %ld deviation!\n", mst->st, stcount, sum_eacount, deviate);
+    }
+
     return re;
 }
 
@@ -758,7 +783,7 @@ void CSAgent::UpdateMemory(float oripayoff)
     {
         dbgmoreprt("UpdateMemory()", "Previous state not exists.\n");
         //NOTE: cur_mst is already set in MaxPayoffRule() function
-        if (cur_mst == NULL)    // first time without memory, create current state struct in memory
+        if (cur_mst == NULL)    // create current state struct in memory
         {
             cur_mst = NewState(cur_in);
             cur_mst->original_payoff = oripayoff;    // set original payoff as given
@@ -767,19 +792,18 @@ void CSAgent::UpdateMemory(float oripayoff)
             // add current state to memory
             AddStateToMemory(cur_mst);
         }
-        else    // state found in memory, update its count and original payoff (which means state's original payoff can be changed on runtime!)
+        else    // state found, this shouldn't happen, where does the memory come from?
         {
-            cur_mst->count++;    // inc state count
-            cur_mst->original_payoff = oripayoff;   // reset original payoff
-            if (cur_mst->mark == SAVED)    // don't forget to change the storage flag
-                cur_mst->mark = MODIFIED;
+            ERROR("First time to run, while there is something untracked in memory!");
         }
 
         return;
     }
 
     dbgmoreprt("UpdateMemory()", "Previous state exists.\n");
-    /* previous state exists */
+    /* previous state exists
+     * Remember the rule: firstly update previous state, then update current state. The sequence is important!
+     * */
     struct m_State *pmst = SearchState(pre_in);    // found previous state struct
     if (pmst == NULL)
         ERROR(
@@ -789,24 +813,30 @@ void CSAgent::UpdateMemory(float oripayoff)
     if (cur_mst == NULL)    // currrent state struct not exists in memory, create it in memory, and link it to the previous state
     {
         cur_mst = NewState(cur_in);
-        cur_mst->original_payoff = oripayoff;
-        cur_mst->payoff = cur_mst->original_payoff;
-
-        // add it to memory, and update counts
+        // add it to memory
         AddStateToMemory(cur_mst);
 
+        // first update the previous state
         EnvAction peat = cur_in - pre_in - pre_out;    // calcuate previous environment action. This formula is important!!!
         LinkStates(pmst, peat, pre_out, cur_mst);    // build the link
+        UpdateState(pmst);    // update previous state's payoff recursively
+
+        // then update current state
+        cur_mst->original_payoff = oripayoff;
+        cur_mst->payoff = cur_mst->original_payoff;
     }
     else    // current state struct already exists, update the count and link it to the previous state (LinkStates will handle it if the link already exists.)
     {
-        cur_mst->count++;    // inc state count
-        cur_mst->original_payoff = oripayoff;   // reset original payoff
-
-        if (cur_mst->mark == SAVED) cur_mst->mark = MODIFIED;
-
+        // first update previous state
         EnvAction peat = cur_in - pre_in - pre_out;
         LinkStates(pmst, peat, pre_out, cur_mst);
+        UpdateState(pmst);    // update payoff beginning from previous state recursively
+
+        // then update current state
+        cur_mst->count++;    // inc state count
+        cur_mst->original_payoff = oripayoff;    // reset original payoff
+
+        if (cur_mst->mark == SAVED) cur_mst->mark = MODIFIED;
     }
 
     return;
@@ -1037,12 +1067,6 @@ struct State_Info_Header *CSAgent::GetStateInfo(Agent::State st) const
  */
 void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
 {
-    // test ++
-    if (stif->st == 13)
-    {
-        printf("test");
-    }
-    // test --
     unsigned char *p = (unsigned char *) stif;    // use point p to travel through each subpart
     // action information
     p += sizeof(struct State_Info_Header);
@@ -1071,7 +1095,7 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
         AddStateToMemory(mst);
 
         // copy state information
-        mst->count = stif->count;    // copy count
+        mst->count = stif->count;
         mst->payoff = stif->payoff;
         mst->original_payoff = stif->original_payoff;    // the original payoff is what really is important
 
@@ -1102,29 +1126,31 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
         /* create and copy backward links information */
         for (i = 0; i < stif->lk_num; i++)
         {
-            Agent::State pst = lk[i].pst;       // previous state value
+            Agent::State pst = lk[i].pst;    // previous state value
             struct m_State *pmst = SearchState(pst);    // find if the previous state exists
             if (pmst != NULL)    // if so, make the link, otherwise update count, the link checking and env action count updating are handled by LinkStates()
             {
                 pmst->count++;    // inc previous state count, as if we were experiencing this from it. this inc will also mantain count consistent, which is state count = sum of env actions count
                 LinkStates(pmst, lk[i].peat, lk[i].pact, mst);    // LinkStates() will take care of the situation where the link is already existing, and it will also call UpdateState() to refresh memroy
+                UpdateState(pmst);  // update state
             }
-            else // for a non-existing previous state, we will create it, and build the link
+            else    // for a non-existing previous state, we will create it, and build the link
             {
                 // create a new previous state
-                struct m_State *npmst = NewState(pst);      // Note: the npmst's original payoff remains unset, since we have no information about it.
+                struct m_State *npmst = NewState(pst);    // Note: the npmst's original payoff remains unset, since we have no information about it.
                 // add to memory
                 AddStateToMemory(npmst);
                 // build the link
-                LinkStates(npmst, lk[i].peat, lk[i].pact, mst);     // npmst will be updated in LinkStates() funciton
+                LinkStates(npmst, lk[i].peat, lk[i].pact, mst);    // npmst will be updated in LinkStates() funciton
+                UpdateState(npmst);  // update state
             }
         }
     }    // mst == NULL
     else    // state already exists, merge the recieved one with it
     {
         dbgprt("MergeStateInfo()", "Merge with a existing state.\n");
-        mst->count = ceil((mst->count + stif->count)/2);    // set count as the average sum
-        mst->payoff = stif->payoff;   // meanless to set payoff, since it's calculated on fly
+        mst->count = round((mst->count + stif->count) / 2);    // !!!set count as the average sum
+        mst->payoff = stif->payoff;    // meanless to set payoff, since it's calculated on fly
         /* It's very important to set original payoff here, some un-experiencing states my be created as recieved previous states,
          in this situation, the original payoff will remain empty, if we don't set it here, it will have no chance to be set.
          it doesn't matter if the original payoff set here is wrong, because when it experiences the state by itself, it'll get
@@ -1167,7 +1193,7 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
             {
                 if (meat->eat == eaif[i].eat)    // found
                 {
-                    meat->count = ceil((meat->count + eaif[i].count)/2);    // set the env action count as average sum
+                    meat->count = round((meat->count + eaif[i].count) / 2);    // set the env action count as average sum
                     break;
                 }
 
@@ -1196,15 +1222,17 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
             {
                 pmst->count++;    // inc previous state count, as if we were experiencing this from it. this inc will also mantain count consistent, which is state count = sum of env actions count
                 LinkStates(pmst, lk[i].peat, lk[i].pact, mst);    // LinkStates() will take care of the situation where the link is already existing, and it will also call UpdateState() to refresh memroy
+                UpdateState(pmst);  // update state
             }
-            else // for a non-existing previous state, we will create it, and build the link
+            else    // for a non-existing previous state, we will create it, and build the link
             {
                 // create a new previous state
-                struct m_State *npmst = NewState(pst);  // Note: the npmst's original payoff remains unset, since we have no information about it.
+                struct m_State *npmst = NewState(pst);    // Note: the npmst's original payoff remains unset, since we have no information about it.
                 // add to memory
                 AddStateToMemory(npmst);
                 // build the link
-                LinkStates(npmst, lk[i].peat, lk[i].pact, mst);     // npmst will be updated in LinkStates() funciton
+                LinkStates(npmst, lk[i].peat, lk[i].pact, mst);    // npmst will be updated in LinkStates() funciton
+                UpdateState(npmst);  // update state
             }
         }
 
