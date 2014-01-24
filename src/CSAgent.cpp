@@ -154,7 +154,7 @@ void CSAgent::InitMemory()
         if (saved_state_num != state_num)
         {
             WARNNING(
-                    "InitMemory(): Number of states not consistent,which says to be %ld, but actually is %ld, the storage may be conrupted!\n",
+                    "InitMemory(): Number of states not consistent,which by stored meminfo says to be %ld, but in stateinfo is %ld, the storage may be conrupted!\n",
                     saved_state_num, state_num);
         }
     }
@@ -596,16 +596,16 @@ float CSAgent::Prob(const struct m_EnvAction *ea,
     // calculate the sum of env action counts
     unsigned long sum_eacount = 0;
     struct m_EnvAction *pea, *pnea;
-//    dbgmoreprt("Prob","------- state: %ld, count %ld, ", mst->st, mst->count);
+    dbgprt("Prob","------- state: %ld, count %ld, ", mst->st, mst->count);
     for (pea = mst->ealist; pea != NULL; pea = pnea)
     {
         sum_eacount += pea->count;
-//        dbgmoreprt("Prob", "eat: %ld, count %ld, ", pea->eat, pea->count);
+//        dbgprt("Prob", "eat: %ld, count %ld, ", pea->eat, pea->count);
 
         pnea = pea->next;
     }
 
-//    dbgmoreprt("Prob", "sum: %ld\n", sum_eacount);
+    dbgprt("Prob", "sum: %ld\n", sum_eacount);
 
     float re = (1.0 / sum_eacount) * eacount;    // number of env actions divided by the total number
     /* do some checks below */
@@ -1229,7 +1229,7 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
                 struct m_EnvAction *neat = (struct m_EnvAction *) malloc(
                         sizeof(struct m_EnvAction));
                 neat->eat = eaif[i].eat;
-                neat->count = eaif[i].count;    // copy count
+                neat->count = round(eaif[i].count / 2);    // average as well
                 // add to ealist
                 neat->next = mst->ealist;
                 mst->ealist = neat;
