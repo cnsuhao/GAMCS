@@ -596,7 +596,7 @@ float CSAgent::Prob(const struct m_EnvAction *ea,
     // calculate the sum of env action counts
     unsigned long sum_eacount = 0;
     struct m_EnvAction *pea, *pnea;
-    dbgprt("Prob","------- state: %ld, count %ld, ", mst->st, mst->count);
+    dbgprt("Prob", "------- state: %ld, count %ld, ", mst->st, mst->count);
     for (pea = mst->ealist; pea != NULL; pea = pnea)
     {
         sum_eacount += pea->count;
@@ -610,11 +610,11 @@ float CSAgent::Prob(const struct m_EnvAction *ea,
     float re = (1.0 / sum_eacount) * eacount;    // number of env actions divided by the total number
     /* do some checks below */
     // check if re is in range (0, 1]
-    if (re <= 0 || re > 1)    // check failed
+    if (re < 0 || re > 1)    // check failed
     {
         ERROR(
-                "Prob(): probability is %.2f, which must in range (0, 1]. eacount is %ld, total eacount is %ld.\n",
-                re, eacount, sum_eacount);
+                "Prob(): probability is %.2f, which must in range [0, 1]. state: %ld, eact is %ld, count is %ld, total eacount is %ld.\n",
+                re, mst->st, ea->eat, eacount, sum_eacount);
     }
 //
 //    /* In every states loop, the count of conjoint state will temporarily be 1 bigger than the sum of its env action counts.
@@ -1152,6 +1152,7 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
             {
                 // build the link
                 dbgmoreprt("previous state", "%ld exists, build the link\n", pst);
+                pmst->count++;    // state count means the count we experience it either by reaching it or hearing of it.
                 LinkStates(pmst, lk[i].peat, lk[i].pact, mst);    // LinkStates() will take care of the situation where the link is already existing, and it will also call UpdateState() to refresh memroy
             }
             else    // for a non-existing previous state, we will create it, and build the link
@@ -1172,6 +1173,7 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
         dbgmoreprt("MergeStateInfo()", "state exists, do the merge.\n");
 
         mst->count = round((mst->count + stif->count) / 2);    // !!!set count as the average sum
+
         dbgmoreprt("state count round to ", "%ld\n", mst->count);
         mst->payoff = stif->payoff;    // meanless to set payoff, since it's calculated on fly
         /* It's very important to set original payoff here, some un-experiencing states my be created as recieved previous states,
@@ -1208,15 +1210,26 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
         }
 
         /* merge environment action information, if an env action doesn't exist, create it and copy count, otherwise add up the count */
+        // for all env action, divide its count by 2 first
+        struct m_EnvAction *meat, *nmeat;
+        for (meat = mst->ealist; meat != NULL; meat = nmeat)
+        {
+            meat->count = round(meat->count / 2);
+
+            nmeat = meat->next;
+        }
+
+        // add recieved count as the other half
         for (i = 0; i < stif->eat_num; i++)    // for each env action in recieving list
         {
-            struct m_EnvAction *meat, *nmeat;
+
             // walk through my ealist to find the corresponding one
             for (meat = mst->ealist; meat != NULL; meat = nmeat)
             {
                 if (meat->eat == eaif[i].eat)    // found
                 {
-                    meat->count = round((meat->count + eaif[i].count) / 2);    // set the env action count as average sum
+                    meat->count += round(eaif[i].count / 2);    // set the env action count as average sum
+
                     break;
                 }
 
@@ -1230,6 +1243,7 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
                         sizeof(struct m_EnvAction));
                 neat->eat = eaif[i].eat;
                 neat->count = round(eaif[i].count / 2);    // average as well
+
                 // add to ealist
                 neat->next = mst->ealist;
                 mst->ealist = neat;
@@ -1245,6 +1259,7 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
             {
                 dbgmoreprt("previous state", "%ld exists, build the link\n", pst);
                 // build the link
+                pmst->count++;    // state count means the count we experience it either by reaching it or hearing of it.
                 LinkStates(pmst, lk[i].peat, lk[i].pact, mst);    // LinkStates() will take care of the situation where the link is already existing, and it will also call UpdateState() to refresh memroy
             }
             else    // for a non-existing previous state, we will create it, and build the link
