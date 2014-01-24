@@ -148,7 +148,7 @@ struct State_Info_Header *Mysql::FetchStateInfo(Agent::State st) const
 {
     if (st == INVALID_STATE)
     {
-        dbgprt("FetchStateInfo()", "invalid state value\n");
+        dbgprt("Mysql FetchStateInfo()", "invalid state value\n");
         return NULL;
     }
 
@@ -167,7 +167,7 @@ struct State_Info_Header *Mysql::FetchStateInfo(Agent::State st) const
 
     if (result == NULL)
     {
-        dbgmoreprt("FetchStateInfo()", "result is NULL!\n");
+        dbgmoreprt("Mysql FetchStateInfo()", "result is NULL!\n");
         return NULL;
     }
 
@@ -175,14 +175,14 @@ struct State_Info_Header *Mysql::FetchStateInfo(Agent::State st) const
     int num_fields = mysql_num_fields(result);
     if (num_fields != 7)
     {
-        dbgmoreprt("FetchStateInfo()", "Fields don't match!\n");
+        dbgmoreprt("Mysql FetchStateInfo()", "Fields don't match!\n");
         return NULL;
     }
     unsigned long *lengths = mysql_fetch_lengths(result);
 
     if (lengths == NULL)
     {
-        dbgmoreprt("FetchStateInfo()", "lengths is null\n");
+        dbgmoreprt("Mysql FetchStateInfo()", "lengths is null\n");
         return NULL;
     }
 

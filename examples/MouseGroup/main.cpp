@@ -33,7 +33,7 @@ int main(void)
     cccnet.AddMember(3);
 //    cccnet.AddNeighbour(0, 1);
 //    cccnet.AddNeighbour(1, 0);
-
+//
     cccnet.AddNeighbour(0, 2);
     cccnet.AddNeighbour(0, 3);
     cccnet.AddNeighbour(1, 0);
