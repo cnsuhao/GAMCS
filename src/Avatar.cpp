@@ -7,16 +7,18 @@
  *	@Modify date:
  ***********************************************************************/
 #include <stdio.h>
+#include <sys/timeb.h>
+#include <unistd.h>
 #include "Avatar.h"
 #include "Debug.h"
 
 Avatar::Avatar() :
-        id(0), freq(100), agent(NULL), commnet(NULL)
+        id(0), freq(100), sps(64), agent(NULL), commnet(NULL), control_step_time((1000 / sps))
 {
 }
 
 Avatar::Avatar(int i) :
-        id(i), freq(100), agent(NULL), commnet(NULL)
+        id(i), freq(100), sps(64), agent(NULL), commnet(NULL), control_step_time((1000 / sps))
 {
 }
 
@@ -34,6 +36,9 @@ void Avatar::Launch()
     while (true)
     {
         dbgmoreprt("Enter Launch Loop ", "----------------------------------------------------------- count == %d\n", count);
+
+        unsigned long start_time = GetCurrentTime();
+
         RecvStateInfo();    // check if new message has recieved
 
         /* Perceive the outside world */
@@ -64,6 +69,21 @@ void Avatar::Launch()
         }
         else
             count++;    // inc count
+
+        // handle time related job
+        unsigned long end_time = GetCurrentTime();
+        unsigned long consumed_time = end_time - start_time;
+        long time_remaining = control_step_time - consumed_time;
+        if (time_remaining > 0) // remaining time
+        {
+            dbgprt("", "You got %ld milliseconds remaining to do other things.\n", time_remaining);
+            // do some useful things here if you don't want to sleep
+            usleep(time_remaining * 1000);
+        }
+        else
+        {
+            WARNNING("time is not enough to run a step, %ld in lack, try to decrease the sps!\n", -time_remaining);
+        }
         dbgmoreprt("","\n");
     }
     // quit
@@ -83,3 +103,9 @@ float Avatar::OriginalPayoff(Agent::State st)
     return 1.0;    // original payoff of states is 1.0 by default
 }
 
+unsigned long Avatar::GetCurrentTime()
+{
+    struct timeb tb;
+    ftime(&tb);
+    return 1000 * tb.time + tb.millitm;
+}
