@@ -131,8 +131,6 @@ void CSAgent::InitMemory()
         struct Memory_Info *memif = storage->FetchMemoryInfo();
         if (memif != NULL)
         {
-            /*FIXME: last_st and last_act are not used yet */
-            // update memory struct
             discount_rate = memif->discount_rate;
             threshold = memif->threshold;
             saved_state_num = memif->state_num;
@@ -230,15 +228,14 @@ void CSAgent::SaveMemory()
 }
 
 CSAgent::CSAgent() :
-        state_num(0), lk_num(0), storage(NULL), head(NULL), cur_mst(NULL), actions_original_payoff(
-                0.0)
+        state_num(0), lk_num(0), storage(NULL), head(NULL), cur_mst(NULL)
 {
     states_map.clear();
 }
 
 CSAgent::CSAgent(float dr, float th) :
         Agent(dr, th), state_num(0), lk_num(0), storage(NULL), head(NULL), cur_mst(
-        NULL), actions_original_payoff(0.0)
+        NULL)
 {
     states_map.clear();
 }
@@ -460,7 +457,7 @@ struct m_Action *CSAgent::NewAc(Agent::Action act)
     struct m_Action *ac = (struct m_Action *) malloc(sizeof(struct m_Action));
 
     ac->act = act;
-    ac->payoff = actions_original_payoff;
+    ac->payoff = unseen_action_payoff;
     ac->next = NULL;
     return ac;
 }
@@ -482,12 +479,13 @@ void CSAgent::LinkStates(struct m_State *pmst, EnvAction eat, Agent::Action act,
         struct m_State *mst)
 {
     /* check if the link already exists, if so simply update the count of environment action */
+    dbgmoreprt("Enter LinkStates()", "------------------------------------- Make Link: %ld == %ld + %ld => %ld\n", pmst->st, eat, act, mst->st);
     struct m_ForwardArcState *f, *nf;
     for (f = pmst->flist; f != NULL; f = nf)
     {
         if (f->nstate->st == mst->st && f->act == act && f->eat == eat)    // two links equal if and only if their states equal, and actions equal, and environment action equal
         {
-            dbgmoreprt("LinkStates()", "link exists: %ld = %ld + %ld ==> %ld\n", pmst->st, eat, act, mst->st);
+            dbgmoreprt("", "link already exists, increase ea count only\n");
             struct m_EnvAction *ea = Eat2Struct(eat, pmst);    // get the environment action struct
             ea->count++;    // inc count
             return;    // done, return
@@ -496,7 +494,7 @@ void CSAgent::LinkStates(struct m_State *pmst, EnvAction eat, Agent::Action act,
         nf = f->next;
     }
 
-    dbgmoreprt("LinkStates()", "create new link: %ld = %ld + %ld ==> %ld\n", pmst->st, eat, act, mst->st);
+    dbgmoreprt("", "create new link...\n");
     /* link not exists, create a new link from pmst to mst */
     /* add mst to pmst's flist */
     struct m_ForwardArcState *fas = NewFas(eat, act);
@@ -545,23 +543,33 @@ void CSAgent::LinkStates(struct m_State *pmst, EnvAction eat, Agent::Action act,
 }
 
 /**
- * \brief Find the maximum payoff of states linked in a specified environment action to one state
+ * \brief Find the maximum payoff of states linked in a specified environment action to one state.
+ * This function to env action is like CalActPayoff to action and CalStatePayoff to state.
  * \param eat specified environment action
  * \param mst to which state the link is
  * \return the maximum payoff
  */
 float CSAgent::MaxPayoffInEat(EnvAction eat, const struct m_State *mst) const
 {
+    dbgmoreprt("Enter MaxPayoffEat()", "-------------- eat: %ld, state: %ld\n", eat, mst->st);
     float max_pf = -FLT_MAX;    // set to a possibly minimun value
     struct m_State *nmst;
     struct m_ForwardArcState *fas, *nfas;
+    /* An env action may be on ealist but absent on flist, this could happen when the state information was recieved from others.
+     * Recall the struction of state information, state information sent contains ealist about this state, but the forward links are not included.
+     * */
+    bool eat_found_in_flist = false;    // indicate if an env action in ealist was found on forward list also.
 
     // walk through the forward links
     for (fas = mst->flist; fas != NULL; fas = nfas)
     {
+        dbgmoreprt("forward links", "eat: %ld, act: %ld, nstate: %ld\n", fas->eat, fas->act, fas->nstate->st);
         if (fas->eat == eat)
         {
+            eat_found_in_flist = true;    // env action found on flist
+
             nmst = fas->nstate;
+            dbgmoreprt("next state", "%ld, payoff: %.1f\n", nmst->st, nmst->payoff);
 
             if (nmst->payoff > max_pf)    // record the bigger one
                 max_pf = nmst->payoff;
@@ -569,6 +577,8 @@ float CSAgent::MaxPayoffInEat(EnvAction eat, const struct m_State *mst) const
 
         nfas = fas->next;
     }
+
+    if (eat_found_in_flist == false) max_pf = unseen_eaction_maxpayoff;    // if the env action was not found on flist, an default maxpayoff will be used.
 
     return max_pf;
 }
@@ -586,16 +596,16 @@ float CSAgent::Prob(const struct m_EnvAction *ea,
     // calculate the sum of env action counts
     unsigned long sum_eacount = 0;
     struct m_EnvAction *pea, *pnea;
-    printf("------- state: %ld, count %ld, ", mst->st, mst->count);
+//    dbgmoreprt("Prob","------- state: %ld, count %ld, ", mst->st, mst->count);
     for (pea = mst->ealist; pea != NULL; pea = pnea)
     {
         sum_eacount += pea->count;
-        printf("eat: %ld, count %ld, ", pea->eat, pea->count);
+//        dbgmoreprt("Prob", "eat: %ld, count %ld, ", pea->eat, pea->count);
 
         pnea = pea->next;
     }
 
-    printf("sum: %ld\n", sum_eacount);
+//    dbgmoreprt("Prob", "sum: %ld\n", sum_eacount);
 
     float re = (1.0 / sum_eacount) * eacount;    // number of env actions divided by the total number
     /* do some checks below */
@@ -632,7 +642,7 @@ float CSAgent::Prob(const struct m_EnvAction *ea,
  */
 float CSAgent::CalStatePayoff(const struct m_State *mst) const
 {
-    dbgmoreprt("CalStatePayoff()", "state: %ld, count: %ld\n", mst->st, mst->count);
+    dbgmoreprt("\nCalStatePayoff()", "-------------------------------- state: %ld, count: %ld\n", mst->st, mst->count);
 
     float u0 = mst->original_payoff;
     float pf = u0;    // set initial value as original payoff
@@ -645,6 +655,7 @@ float CSAgent::CalStatePayoff(const struct m_State *mst) const
     {
         dbgmoreprt("Ealist", "=======================================\n");dbgmoreprt("", "eid: %ld, count: %ld\n", ea->eat, ea->count);
         tmp = Prob(ea, mst) * MaxPayoffInEat(ea->eat, mst);
+        dbgmoreprt("", "tmp: %.1f, prob: %.1f, maxpayoffineat: %.1f\n", tmp, Prob(ea, mst), MaxPayoffInEat(ea->eat, mst));
         pf += tmp * discount_rate;    // accumulative total
         nea = ea->next;
     }dbgmoreprt("Ealist End", "==================================\n");
@@ -660,7 +671,7 @@ void CSAgent::UpdateState(struct m_State *mst)
 {
     /* update state's payoff */
     float payoff = CalStatePayoff(mst);
-    dbgmoreprt("UpdateState()", "state: %ld, payoff:%.1f\n", mst->st, payoff);
+    dbgmoreprt("\nUpdateState()", "------------------------------------------- state: %ld, intial payoff:%.1f to %.1f\n", mst->st, mst->payoff, payoff);
 
     if (fabsf(mst->payoff - payoff) >= threshold)    // compare with threshold, update if the diff exceeds threshold
     {
@@ -720,7 +731,7 @@ struct m_State *CSAgent::StateByEatAct(EnvAction eat, Agent::Action act,
  */
 float CSAgent::CalActPayoff(Agent::Action act, const struct m_State *mst) const
 {
-    float ori_payoff = actions_original_payoff;    // original payoff of actions
+    float ori_payoff = unseen_action_payoff;    // original payoff of actions
     float payoff = ori_payoff;
 
     struct m_EnvAction *ea, *nea;
@@ -749,7 +760,7 @@ std::vector<Agent::Action> CSAgent::BestActions(const struct m_State *mst,
         const std::vector<Agent::Action> &acts)
 {
     float max_payoff = -FLT_MAX;
-    float ori_payoff = actions_original_payoff;    // original payoff of actions
+    float ori_payoff = unseen_action_payoff;    // original payoff of actions
     float payoff;
     std::vector<Agent::Action> max_acts;
 
@@ -783,11 +794,12 @@ std::vector<Agent::Action> CSAgent::BestActions(const struct m_State *mst,
  */
 void CSAgent::UpdateMemory(float oripayoff)
 {
+    dbgmoreprt("\nEnter UpdateMemory()", "-------------------------------------------------\n");
     if (pre_in == INVALID_STATE)    // previous state not exist, it's running for the first time
     {
-        dbgmoreprt("UpdateMemory()", "Previous state not exists.\n");
+        dbgmoreprt("", "Previous state not exists, create current state in memory.\n");
         //NOTE: cur_mst is already set in MaxPayoffRule() function
-        if (cur_mst == NULL)    // create current state struct in memory
+        if (cur_mst == NULL)    // create current state in memory
         {
             cur_mst = NewState(cur_in);
             cur_mst->original_payoff = oripayoff;    // set original payoff as given
@@ -796,25 +808,29 @@ void CSAgent::UpdateMemory(float oripayoff)
             // add current state to memory
             AddStateToMemory(cur_mst);
         }
-        else    // state found, this shouldn't happen, where does the memory come from?
+        else    // state found, this could happen if others send state information to me before the first time I'm running
         {
-            ERROR(
-                    "First time to run, while there is something untracked in memory!");
+            dbgmoreprt("", "Previous state not exists, but I recieved some information of this state from others.\n");
+            // update current state
+            cur_mst->count++;    // inc state count
+            cur_mst->original_payoff = oripayoff;    // reset original payoff
+            // no previous state, so no link involved
         }
 
         return;
     }
 
-    dbgmoreprt("UpdateMemory()", "Previous state exists.\n");
+    dbgmoreprt("", "Previous state is %ld.\n", pre_in);
     /* previous state exists */
     struct m_State *pmst = SearchState(pre_in);    // found previous state struct
     if (pmst == NULL)
         ERROR(
-                "UpdateMemory(): Can not find previous state in memory, which should be existing!");
+                "UpdateMemory(): Can not find previous state in memory, which should be existing!\n");
 
     //NOTE: cur_mst is already set in MaxPayoffRule() function
     if (cur_mst == NULL)    // currrent state struct not exists in memory, create it in memory, and link it to the previous state
     {
+        dbgmoreprt("", "current state not exists, create it and build the link\n");
         cur_mst = NewState(cur_in);
         cur_mst->original_payoff = oripayoff;
         cur_mst->payoff = oripayoff;
@@ -827,7 +843,8 @@ void CSAgent::UpdateMemory(float oripayoff)
     }
     else    // current state struct already exists, update the count and link it to the previous state (LinkStates will handle it if the link already exists.)
     {
-        // then update current state
+        dbgmoreprt("", "current state is %ld, increase count and build the link\n", cur_mst->st);
+        // update current state
         cur_mst->count++;    // inc state count
         cur_mst->original_payoff = oripayoff;    // reset original payoff
 
@@ -917,17 +934,19 @@ void CSAgent::RemoveState(struct m_State *mst)
 std::vector<Agent::Action> CSAgent::MaxPayoffRule(Agent::State st,
         const std::vector<Agent::Action> &acts)
 {
+    dbgmoreprt("Enter MaxPayoffRule() ", "-------------------------------------------------- State: %ld\n", st);
     cur_mst = SearchState(st);    // get the state struct from state value
     std::vector<Agent::Action> re;
 
     if (cur_mst == NULL)    // first time to encounter this state, we know nothing about it, so no restriction applied, return the whole list
     {
-        dbgprt("MaxPayoffRule()", "First time to encount state: %ld\n", st);
+        dbgprt("", "State not found in memory.\n");
         re = acts;
     }
     else    // we have memories about this state, find the best action of it
     {
         re = BestActions(cur_mst, acts);
+        dbgprt("", "State found, the best action is %ld\n", re);
     }
 
     return re;
@@ -1065,6 +1084,10 @@ struct State_Info_Header *CSAgent::GetStateInfo(Agent::State st) const
  */
 void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
 {
+    dbgmoreprt("\nEnter MergeStateInfo()", "--------------------------------- state information to be merged: \n");
+#ifdef _DEBUG_MORE_
+    PrintStateInfo(stif);
+#endif
     unsigned char *p = (unsigned char *) stif;    // use point p to travel through each subpart
     // action information
     p += sizeof(struct State_Info_Header);
@@ -1085,8 +1108,8 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
 
     if (mst == NULL)    // if it's new, accept it in memory
     {
-        dbgprt("MergeStateInfo()",
-                "Recieve a new state: %ld, create it in memory.\n", stif->st);
+        dbgmoreprt("",
+                " it's a new state: %ld, create it in memory.\n", stif->st);
 
         mst = NewState(stif->st);
         // copy state information
@@ -1129,12 +1152,15 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
             if (pmst != NULL)    // if so, make the link, otherwise update count, the link checking and env action count updating are handled by LinkStates()
             {
                 // build the link
+                dbgmoreprt("previous state", "%ld exists, build the link\n", pst);
                 LinkStates(pmst, lk[i].peat, lk[i].pact, mst);    // LinkStates() will take care of the situation where the link is already existing, and it will also call UpdateState() to refresh memroy
             }
             else    // for a non-existing previous state, we will create it, and build the link
             {
                 // create a new previous state
-                struct m_State *npmst = NewState(pst);    // Note: the npmst's original payoff remains unset, since we have no information about it.
+                dbgmoreprt("previous state", "%ld not exists, create it and build the link\n", pst);
+                struct m_State *npmst = NewState(pst);
+                npmst->original_payoff = unseen_state_payoff;    // I don't know anything except the state value of this state, set its original payoff to default unseen_state_payoff
                 // add to memory
                 AddStateToMemory(npmst);
                 // build the link
@@ -1144,8 +1170,10 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
     }    // mst == NULL
     else    // state already exists, merge the recieved one with it
     {
-        dbgprt("MergeStateInfo()", "Merge with a existing state.\n");
+        dbgmoreprt("MergeStateInfo()", "state exists, do the merge.\n");
+
         mst->count = round((mst->count + stif->count) / 2);    // !!!set count as the average sum
+        dbgmoreprt("state count round to ", "%ld\n", mst->count);
         mst->payoff = stif->payoff;    // meanless to set payoff, since it's calculated on fly
         /* It's very important to set original payoff here, some un-experiencing states my be created as recieved previous states,
          in this situation, the original payoff will remain empty, if we don't set it here, it will have no chance to be set.
@@ -1216,13 +1244,16 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
             struct m_State *pmst = SearchState(pst);    // find if the previous state exists
             if (pmst != NULL)    // if so, make the link, otherwise update count, the link checking and env action count updating are handled by LinkStates()
             {
+                dbgmoreprt("previous state", "%ld exists, build the link\n", pst);
                 // build the link
                 LinkStates(pmst, lk[i].peat, lk[i].pact, mst);    // LinkStates() will take care of the situation where the link is already existing, and it will also call UpdateState() to refresh memroy
             }
             else    // for a non-existing previous state, we will create it, and build the link
             {
+                dbgmoreprt("previous state", "%ld not exists, create it and build the link\n", pst);
                 // create a new previous state
-                struct m_State *npmst = NewState(pst);    // Note: the npmst's original payoff remains unset, since we have no information about it.
+                struct m_State *npmst = NewState(pst);
+                npmst->original_payoff = unseen_state_payoff;    // I don't know anything except the state value of this state, set its original payoff to default unseen_state_payoff
                 // add to memory
                 AddStateToMemory(npmst);
                 // build the link

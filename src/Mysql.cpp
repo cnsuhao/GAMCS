@@ -120,7 +120,7 @@ Agent::State Mysql::StateByIndex(unsigned long index) const
 
     if (result == NULL)
     {
-        dbgmoreprt("DBStateByIndex()", "result is  NULL!\n");
+        dbgmoreprt("StateByIndex()", "result is  NULL!\n");
         return INVALID_STATE;
     }
 
@@ -129,7 +129,7 @@ Agent::State Mysql::StateByIndex(unsigned long index) const
 
     if (lengths == NULL)
     {
-        dbgmoreprt("DBStateByIndex()", "lengths is null\n");
+        dbgmoreprt("StateByIndex()", "lengths is null\n");
         mysql_free_result(result);
         return INVALID_STATE;
     }

@@ -32,9 +32,16 @@ class Agent: public TSGIOM
         float GetDiscountRate();
         void SetThreshold(float);
         float GetThreshold();
+        void SetUnseenStatePayoff(float);
+        void SetUnseenActionPayoff(float);
+        void SetUnseenEActionMaxpayoff(float);
     protected:
         float discount_rate; /**< discount rate (0<,<1)when calculate state payoff */
         float threshold; /**< threshold used in payoff updating */
+
+        float unseen_state_payoff;      /**< payoff of unseen states */
+        float unseen_action_payoff;   /**< payoff of unseen actions, this controls the agent's curiosity */
+        float unseen_eaction_maxpayoff;     /**< maxmun payoff of states belonging to an unseen environment action, this controls the agent's world view */
 
         std::vector<Action> Restrict(State, const std::vector<Action> &); /**< reimplement restrict using maximun payoff rule  */
 
@@ -42,6 +49,42 @@ class Agent: public TSGIOM
                 const std::vector<Action> &) = 0; /**< implementation of maximun payoff rule */
         virtual void UpdateMemory(float) = 0; /**<  update states in memory given current state's original payoff*/
 };
+
+
+inline void Agent::SetDiscountRate(float dr)
+{
+    discount_rate = dr;
+}
+
+inline float Agent::GetDiscountRate()
+{
+    return discount_rate;
+}
+
+inline void Agent::SetThreshold(float th)
+{
+    threshold = th;
+}
+
+inline float Agent::GetThreshold()
+{
+    return threshold;
+}
+
+inline void Agent::SetUnseenStatePayoff(float pf)
+{
+    unseen_state_payoff = pf;
+}
+
+inline void Agent::SetUnseenActionPayoff(float pf)
+{
+    unseen_action_payoff = pf;
+}
+
+inline void Agent::SetUnseenEActionMaxpayoff(float pf)
+{
+    unseen_eaction_maxpayoff = pf;
+}
 
 /** backward link struct for a state
  *  pst + pact + peat = current state
