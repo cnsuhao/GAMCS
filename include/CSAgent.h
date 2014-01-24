@@ -44,7 +44,6 @@ private:
     struct m_State *head;           /**< memory head*/
     StatesMap states_map;           /**< hash map from state values to state struct */
     struct m_State *cur_mst;        /**< state struct for current state value */
-    float actions_original_payoff;   /**< original payoff of actions */
 
     void LoadState(Agent::State);               /**< fetch state struct by state value */
 
