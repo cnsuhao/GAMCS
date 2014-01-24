@@ -946,7 +946,6 @@ std::vector<Agent::Action> CSAgent::MaxPayoffRule(Agent::State st,
     else    // we have memories about this state, find the best action of it
     {
         re = BestActions(cur_mst, acts);
-        dbgprt("", "State found, the best action is %ld\n", re);
     }
 
     return re;

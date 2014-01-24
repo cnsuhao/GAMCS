@@ -19,10 +19,12 @@ class Avatar
 
         void ConnectAgent(Agent *);     /**< connect to an agent */
         void SetFreq(int);              /**< set frequence of communication with neighbours */
+        void SetSps(int);
         void SetCommNet(CommNet *);        /**< set which communication network this avatar is belonged to */
     protected:
         int id;         /**< avatar Id */
         int freq;       /**< communication frequence */
+        int sps;        /**< number of steps per second */
         Agent *agent;   /**< connected agent */
         CommNet *commnet;   /**< which network this avatar is belonged to */
 
@@ -34,7 +36,15 @@ class Avatar
         virtual void SendStateInfo(Agent::State) = 0;      /**< send information of a state to all its neighbours */
         virtual void RecvStateInfo() = 0;           /**< recieve state information from neighbours */
     private:
+        unsigned long GetCurrentTime();     /**< current time in millisecond */
+        unsigned long control_step_time;    /**< delta time in millisecond requested bewteen two steps */
 };
+
+inline void Avatar::SetSps(int s)
+{
+    sps = s;
+    control_step_time = 1000 / sps;     // (1 / sps) * 1000
+}
 
 /**
  * \brief Join a commnet
