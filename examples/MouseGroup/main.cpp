@@ -1,24 +1,12 @@
 #include <pthread.h>
-#include <iostream>
-#include "CSCommNet.h"
+#include "CSThreadCommNet.h"
 #include "CSAgent.h"
 #include "Mouse.h"
 #include "Mysql.h"
 
-void signal_handler(int sig)
-{
-    if (sig == SIGINT)
-    {
-        // do something
-    }
-    return;
-}
-
 int main(void)
 {
-    signal(SIGINT, signal_handler);
-
-    CSCommNet cccnet(1);
+    CSThreadCommNet cccnet(1);
     int mouse_num = 4;
     Mysql *mysql[mouse_num];
     char db_name[16];
@@ -60,7 +48,7 @@ int main(void)
         Mouse *mouse = new Mouse(i);
         mouse->ConnectAgent(agent);
         mouse->SetCommNet(&cccnet);
-        mouse->SetFreq(10);
+        mouse->SetCommFreq(10);
 
         mysql[i] = ml;
         mice[i] = mouse;

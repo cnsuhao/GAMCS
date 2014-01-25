@@ -1,6 +1,6 @@
 #ifndef GROUP_H
 #define GROUP_H
-#include <stdlib.h>
+#include <stddef.h>     // size_t
 #include <vector>
 /**
  * Communication Network Interface

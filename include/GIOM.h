@@ -1,8 +1,7 @@
 #ifndef GIOM_H
 #define GIOM_H
 #include <vector>
-#include <limits.h>
-
+#include <limits.h>    // LONG_MAX
 
 const unsigned long INVALID_INPUT = 0;           /**< never use 0 for a valid state! */
 const long INVALID_OUTPUT = LONG_MAX;        /**< the maximun value is used to indicate invalidation, be careful! */

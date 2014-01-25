@@ -1,8 +1,7 @@
-#ifndef CSGROUP_H
-#define CSGROUP_H
-
-#include <string>
+#ifndef CSTHREADCOMMNET_H
+#define CSTHREADCOMMNET_H
 #include <vector>
+#include <string>
 #include "CommNet.h"
 
 #define MAX_MEMBER 1000     // maximun number of members in group
@@ -21,14 +20,14 @@ struct Channel
 };
 
 /**
-* Computer Simulation of CommNet, in which they can communicate and share knowledge with each other.
+* Computer Simulation of CommNet used for avatars simulated as threads, in which they can communicate and share knowledge with each other.
 */
-class CSCommNet : public CommNet
+class CSThreadCommNet : public CommNet
 {
     public:
-        CSCommNet();
-        CSCommNet(int);
-        virtual ~CSCommNet();
+        CSThreadCommNet();
+        CSThreadCommNet(int);
+        virtual ~CSThreadCommNet();
 
         void LoadTopoFile(std::string);      /**< load topological structure of the group from a file */
 
@@ -62,7 +61,7 @@ class CSCommNet : public CommNet
 * \brief Get member number in group.
 * \return number of members
 */
-inline int CSCommNet::NumberOfMembers()
+inline int CSThreadCommNet::NumberOfMembers()
 {
     return member_num;
 }
@@ -85,4 +84,4 @@ struct Neigh
     struct Neigh *next;     /**< next neigh */
 };
 
-#endif // CSGROUP_H
+#endif // CSTHREADCOMMNET_H

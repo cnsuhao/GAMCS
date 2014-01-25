@@ -4,7 +4,6 @@
  *  Created on: Jan 21, 2014
  *      Author: andy
  */
-#include <mysql/mysql.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
