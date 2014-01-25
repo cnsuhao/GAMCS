@@ -12,12 +12,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <signal.h>
-#include "CSCommNet.h"
-#include "CSAgent.h"
+#include "CSThreadCommNet.h"
+#include "Agent.h"
 #include "Debug.h"
 
-CSCommNet::CSCommNet() :
+CSThreadCommNet::CSThreadCommNet() :
         topofile(""), member_num(0)
 {
     members.clear();
@@ -28,7 +27,7 @@ CSCommNet::CSCommNet() :
     }
 }
 
-CSCommNet::CSCommNet(int i) :
+CSThreadCommNet::CSThreadCommNet(int i) :
         CommNet(i), topofile(""), member_num(0)
 {
     members.clear();
@@ -39,7 +38,7 @@ CSCommNet::CSCommNet(int i) :
     }
 }
 
-CSCommNet::~CSCommNet()
+CSThreadCommNet::~CSThreadCommNet()
 {
     for (std::vector<int>::iterator it = members.begin(); it != members.end();
             ++it)
@@ -69,7 +68,7 @@ CSCommNet::~CSCommNet()
  * \param length length of the message
  * \return length of message that has been sent
  */
-int CSCommNet::Send(int sender_id, void *buffer, size_t buf_size)
+int CSThreadCommNet::Send(int sender_id, void *buffer, size_t buf_size)
 {
     size_t re = 0;
     if (buf_size > DATA_SIZE)    // check size
@@ -79,11 +78,11 @@ int CSCommNet::Send(int sender_id, void *buffer, size_t buf_size)
     }
     else
     {
-#ifdef _DEBUG_
+#ifdef _DEBUG_MORE_
         printf(
                 "*************************** Id: %d, Send ********************************\n",
                 sender_id);
-        CSAgent::PrintStateInfo((struct State_Info_Header *) buffer);
+        Agent::PrintStateInfo((struct State_Info_Header *) buffer);
         printf(
                 "****************************** Send End **********************************\n\n");
 #endif // _DEBUG_
@@ -120,7 +119,7 @@ int CSCommNet::Send(int sender_id, void *buffer, size_t buf_size)
  * \param length of the message to be recieved
  * \return length of message recieved
  */
-int CSCommNet::Recv(int recver_id, void *buffer, size_t buf_size)
+int CSThreadCommNet::Recv(int recver_id, void *buffer, size_t buf_size)
 {
     if (buf_size > DATA_SIZE)    // check length
     {
@@ -155,11 +154,11 @@ int CSCommNet::Recv(int recver_id, void *buffer, size_t buf_size)
         }
         else
             re = buf_size;    // ok, msg is recieved
-#ifdef _DEBUG_
+#ifdef _DEBUG_MORE_
         printf(
                 "++++++++++++++++++++++++ Id: %d, Recv from: %d ++++++++++++++++++++++++\n",
                 recver_id, sid);
-        CSAgent::PrintStateInfo(stif);
+        Agent::PrintStateInfo(stif);
         printf(
                 "++++++++++++++++++++++++++++++ Recv End ++++++++++++++++++++++++++++++\n\n");
 #endif // _DEBUG_
@@ -173,7 +172,7 @@ int CSCommNet::Recv(int recver_id, void *buffer, size_t buf_size)
  * \brief Load topological structure of a group from a configure file.
  * \param tf file name
  */
-void CSCommNet::LoadTopoFile(std::string tf)
+void CSThreadCommNet::LoadTopoFile(std::string tf)
 {
     topofile = tf;
     BuildNeighsChannels();
@@ -185,7 +184,7 @@ void CSCommNet::LoadTopoFile(std::string tf)
  * \param id member id
  * \return channel address
  */
-struct Channel *CSCommNet::GetChannel(int id)
+struct Channel *CSThreadCommNet::GetChannel(int id)
 {
     return &channels[id];
 }
@@ -196,7 +195,7 @@ struct Channel *CSCommNet::GetChannel(int id)
  * \param id member id
  * \return neighbour list
  */
-std::vector<int> CSCommNet::GetNeighbours(int id)
+std::vector<int> CSThreadCommNet::GetNeighbours(int id)
 {
     std::vector<int> neighs;
     neighs.clear();
@@ -214,7 +213,7 @@ std::vector<int> CSCommNet::GetNeighbours(int id)
 /**
  * \brief Build up neighlist and channels for all members in the group.
  */
-void CSCommNet::BuildNeighsChannels()
+void CSThreadCommNet::BuildNeighsChannels()
 {
     if (topofile.empty())    // no topofile specified, the group will be emtpy, no members or neighbours
     {
@@ -273,13 +272,13 @@ void CSCommNet::BuildNeighsChannels()
     return;
 }
 
-void CSCommNet::AddMember(int mid, const std::vector<int> &neighbours)
+void CSThreadCommNet::AddMember(int mid, const std::vector<int> &neighbours)
 {
     AddMember(mid);    // add member first
     AddNeighbour(mid, neighbours);    // add neighbours
 }
 
-void CSCommNet::AddNeighbour(int who, const std::vector<int> &neighbours)
+void CSThreadCommNet::AddNeighbour(int who, const std::vector<int> &neighbours)
 {
     // add all neighbours
     for (std::vector<int>::const_iterator nit = neighbours.begin();
@@ -289,7 +288,7 @@ void CSCommNet::AddNeighbour(int who, const std::vector<int> &neighbours)
     }
 }
 
-void CSCommNet::RemoveNeighbour(int who, const std::vector<int> &neighbours)
+void CSThreadCommNet::RemoveNeighbour(int who, const std::vector<int> &neighbours)
 {
     // remove all neighbours
     for (std::vector<int>::const_iterator nit = neighbours.begin();
@@ -299,7 +298,7 @@ void CSCommNet::RemoveNeighbour(int who, const std::vector<int> &neighbours)
     }
 }
 
-void CSCommNet::AddMember(int mem)
+void CSThreadCommNet::AddMember(int mem)
 {
     // chech if alread exists
     std::vector<int>::iterator it = std::find(members.begin(), members.end(),
@@ -317,7 +316,7 @@ void CSCommNet::AddMember(int mem)
     channels[mem].ptr = CHANNEL_SIZE - 1;
 }
 
-void CSCommNet::AddNeighbour(int mem, int neb)
+void CSThreadCommNet::AddNeighbour(int mem, int neb)
 {
     // check if member exists
     std::vector<int>::iterator it = std::find(members.begin(), members.end(),
@@ -358,7 +357,7 @@ void CSCommNet::AddNeighbour(int mem, int neb)
     neighlist[mem] = nneigh;
 }
 
-void CSCommNet::RemoveMember(int mem)
+void CSThreadCommNet::RemoveMember(int mem)
 {
     // check if exists
     std::vector<int>::iterator it = std::find(members.begin(), members.end(),
@@ -399,7 +398,7 @@ void CSCommNet::RemoveMember(int mem)
 
 }
 
-void CSCommNet::RemoveNeighbour(int mem, int neighbour)
+void CSThreadCommNet::RemoveNeighbour(int mem, int neighbour)
 {
     // check if member exists
     std::vector<int>::iterator it = std::find(members.begin(), members.end(),
@@ -437,7 +436,7 @@ void CSCommNet::RemoveNeighbour(int mem, int neighbour)
 
 }
 
-bool CSCommNet::IsConnectedTo(int from, int to)
+bool CSThreadCommNet::IsConnectedTo(int from, int to)
 {
     bool connected = false;
     struct Neigh *nb, *nnb;

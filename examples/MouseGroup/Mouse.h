@@ -1,14 +1,9 @@
-#ifndef INDIVIDUAL_H
-#define INDIVIDUAL_H
-
-#include <unistd.h>
-#include <sys/syscall.h>
-#include <pthread.h>
-#include <signal.h>
+#ifndef MOUSE_H
+#define MOUSE_H
 #include <vector>
-#include "CSSocialAvatar.h"
+#include "CSThreadAvatar.h"
 
-class Mouse : public CSSocialAvatar
+class Mouse : public CSThreadAvatar
 {
     public:
         Mouse(int i);
@@ -23,4 +18,4 @@ class Mouse : public CSSocialAvatar
         float OriginalPayoff(Agent::State);
 };
 
-#endif // INDIVIDUAL_H
+#endif // MOUSE_H

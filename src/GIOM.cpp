@@ -13,7 +13,7 @@
 
 GIOM::GIOM() : cur_in(INVALID_INPUT), cur_out(INVALID_OUTPUT)
 {
-    srand(time(NULL));          // random seed, true random values needed
+    srand(time(NULL));          // random seed, here is the source of all possibilities!
 }
 
 GIOM::~GIOM()

@@ -7,19 +7,20 @@
  *	@Modify date:
  ***********************************************************************/
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/timeb.h>
 #include <unistd.h>
 #include "Avatar.h"
 #include "Debug.h"
 
 Avatar::Avatar() :
-        id(0), freq(100), sps(60), agent(NULL), commnet(NULL), control_step_time(
+        id(0), comm_freq(100), sps(60), agent(NULL), commnet(NULL), control_step_time(
                 (1000 / sps))
 {
 }
 
 Avatar::Avatar(int i) :
-        id(i), freq(100), sps(60), agent(NULL), commnet(NULL), control_step_time(
+        id(i), comm_freq(100), sps(60), agent(NULL), commnet(NULL), control_step_time(
                 (1000 / sps))
 {
 }
@@ -63,13 +64,15 @@ void Avatar::Launch()
         DoAction(act);    // otherwise, perform the action
 
         /* Commmunication */
-        if (count >= freq)    // check if it's time to send a message
+        if (count >= comm_freq)    // check if it's time to send a message
         {
             Agent::State state_to_send = agent->StateToSend();
-
-            dbgmoreprt("", "Count reach %d, send state %ld ...\n", freq, state_to_send);
-            SendStateInfo(state_to_send);
-            count = 0;    // reset count
+            if (state_to_send != INVALID_STATE)
+            {
+                dbgmoreprt("", "Count reach %d, send state %ld ...\n", comm_freq, state_to_send);
+                SendStateInfo(state_to_send);
+                count = 0;    // reset count
+            }
         }
         else
             count++;    // inc count
@@ -80,7 +83,7 @@ void Avatar::Launch()
         long time_remaining = control_step_time - consumed_time;
         if (time_remaining > 0)    // remaining time
         {
-            dbgprt("",
+            dbgmoreprt("",
                     "You got %ld milliseconds remaining to do other things.\n",
                     time_remaining);
             // do some useful things here if you don't want to sleep
@@ -91,10 +94,51 @@ void Avatar::Launch()
             WARNNING(
                     "time is not enough to run a step, %ld in lack, try to decrease the sps!\n",
                     -time_remaining);
-        } dbgmoreprt("","\n");
+        }dbgmoreprt("","\n");
     }
     // quit
     dbgmoreprt("Exit Launch Loop", "----------------------------------------------------------- Id: %d Exit!\n", id);
+    return;
+}
+
+
+/**
+ * \brief Send information of a specified state to all neighbours.
+ * \param st state value to be sent
+ */
+void Avatar::SendStateInfo(Agent::State st)
+{
+    if (commnet == NULL)    // no neighbours, nothing to do
+        return;
+
+    struct State_Info_Header *stif = NULL;
+    stif = agent->GetStateInfo(st);    // the st may not exist
+    if (stif == NULL)
+    {
+        return;
+    }
+
+    commnet->Send(id, stif, stif->size);    // call the send facility in commnet
+    free(stif);    // free
+
+    return;
+}
+
+
+/**
+ * \brief Recieve state information from neighbours.
+ */
+void Avatar::RecvStateInfo()
+{
+    if (commnet == NULL)    // no neighbours, nothing to do
+        return;
+
+    char re_buf[2048];    // buffer for recieved message
+
+    while (commnet->Recv(id, re_buf, 2048) != 0)    // message recieved
+    {
+        agent->MergeStateInfo((struct State_Info_Header *)re_buf);    // merge the recieved state information to memory
+    }
     return;
 }
 

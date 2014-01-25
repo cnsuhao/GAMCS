@@ -4,15 +4,14 @@
  *  Created on: Jan 21, 2014
  *      Author: andy
  */
-
 #ifndef MYSQL_H_
 #define MYSQL_H_
-
+#include <mysql/mysql.h>
 #include <string>
 #include "Storage.h"
 
-/*
- *
+/**
+ * Use Mysql databases as storage.
  */
 class Mysql: public Storage
 {
@@ -45,8 +44,6 @@ class Mysql: public Storage
         std::string db_name;     /**< database name */
         std::string db_t_stateinfo;  /**< table name for storing state information */
         std::string db_t_meminfo;    /**< table name for storing memory information */
-
-
 };
 
 #endif /* MYSQL_H_ */
