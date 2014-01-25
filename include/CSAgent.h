@@ -19,17 +19,16 @@ public:
 
     CSAgent();
     CSAgent(float, float);
-    virtual ~CSAgent();
+    ~CSAgent();
 
     struct State_Info_Header *GetStateInfo(Agent::State) const;                 /**< implementing GetStateInfo function */
     void MergeStateInfo(const struct State_Info_Header *);               /**< implementing MergeStateInfo function */
+    Agent::State StateToSend();            /**< implementing Agent's StateToSend */
+
     static void PrintStateInfo(const struct State_Info_Header *);         /**< print state information gracefully */
-    void SetDBArgs(std::string, std::string, std::string, std::string);                 /**< set database related arguments */
     void InitMemory();              /**< load memory from database */
     void SaveMemory();              /**< save memory to database */
-
     void SetStorage(Storage *);     /**< set storage device */
-
 private:
     unsigned long state_num;                  /**< total number of states in memory */
     unsigned long lk_num;                    /**< total number of links between states in memory */
@@ -44,6 +43,7 @@ private:
     struct m_State *head;           /**< memory head*/
     StatesMap states_map;           /**< hash map from state values to state struct */
     struct m_State *cur_mst;        /**< state struct for current state value */
+    struct m_State *state_to_send;   /**< point to next state to be sent to neighbours */
 
     void LoadState(Agent::State);               /**< fetch state struct by state value */
 

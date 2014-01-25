@@ -25,6 +25,7 @@ class Agent: public TSGIOM
         /** These two functions are implementation dependant, declared as pure virtual functions */
         virtual struct State_Info_Header *GetStateInfo(State) const = 0; /**<  collect information of specified state from memory */
         virtual void MergeStateInfo(const struct State_Info_Header *) = 0; /**<  merge recieved state information into memory */
+        virtual State StateToSend() = 0; /**< return the state to be sent to neighbour */
         void Update(float); /**< update memory, this function will call UpdateMemory() to do the real update */
 
         /* set and get functions */
@@ -39,9 +40,9 @@ class Agent: public TSGIOM
         float discount_rate; /**< discount rate (0<,<1)when calculate state payoff */
         float threshold; /**< threshold used in payoff updating */
 
-        float unseen_state_payoff;      /**< payoff of unseen states */
-        float unseen_action_payoff;   /**< payoff of unseen actions, this controls the agent's curiosity */
-        float unseen_eaction_maxpayoff;     /**< maxmun payoff of states belonging to an unseen environment action, this controls the agent's world view */
+        float unseen_state_payoff; /**< payoff of unseen states */
+        float unseen_action_payoff; /**< payoff of unseen actions, this controls the agent's curiosity */
+        float unseen_eaction_maxpayoff; /**< maxmun payoff of states belonging to an unseen environment action, this controls the agent's world view */
 
         std::vector<Action> Restrict(State, const std::vector<Action> &); /**< reimplement restrict using maximun payoff rule  */
 
@@ -49,7 +50,6 @@ class Agent: public TSGIOM
                 const std::vector<Action> &) = 0; /**< implementation of maximun payoff rule */
         virtual void UpdateMemory(float) = 0; /**<  update states in memory given current state's original payoff*/
 };
-
 
 inline void Agent::SetDiscountRate(float dr)
 {
@@ -126,12 +126,12 @@ struct State_Info_Header
 /** memory information */
 struct Memory_Info
 {
-    float discount_rate;    /**< discount rate */
-    float threshold;        /**< threshold */
-    unsigned long state_num;    /**< total number of states in memroy */
-    unsigned long lk_num;       /**< total number of links between states in memory */
-    Agent::State last_st;      /**< last experienced state when saving memory */
-    Agent::Action last_act;    /**< last performed Agent::Action when saving memory */
+        float discount_rate; /**< discount rate */
+        float threshold; /**< threshold */
+        unsigned long state_num; /**< total number of states in memroy */
+        unsigned long lk_num; /**< total number of links between states in memory */
+        Agent::State last_st; /**< last experienced state when saving memory */
+        Agent::Action last_act; /**< last performed Agent::Action when saving memory */
 };
 
 #endif // AGENT_H
