@@ -22,7 +22,7 @@ class Mysql: public Storage
         {
         }
 
-        virtual ~Mysql()
+        ~Mysql()
         {
         }
 

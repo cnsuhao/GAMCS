@@ -228,14 +228,15 @@ void CSAgent::SaveMemory()
 }
 
 CSAgent::CSAgent() :
-        state_num(0), lk_num(0), storage(NULL), head(NULL), cur_mst(NULL)
+        state_num(0), lk_num(0), storage(NULL), head(NULL), cur_mst(NULL), state_to_send(
+                head)
 {
     states_map.clear();
 }
 
 CSAgent::CSAgent(float dr, float th) :
         Agent(dr, th), state_num(0), lk_num(0), storage(NULL), head(NULL), cur_mst(
-        NULL)
+        NULL), state_to_send(head)
 {
     states_map.clear();
 }
@@ -1378,4 +1379,17 @@ void CSAgent::AddStateToMemory(struct m_State *nstate)
     head = nstate;
     state_num++;
     states_map.insert(StatesMap::value_type(nstate->st, nstate));    // don't forget to update hash map
+
+    state_to_send = head;       // new state has been added, send state from beginning
+}
+
+Agent::State CSAgent::StateToSend()
+{
+    State re = INVALID_STATE;
+    if (state_to_send != NULL)
+    {
+        re = state_to_send->st;
+        state_to_send = state_to_send->next;    // next state
+    }
+    return re;
 }

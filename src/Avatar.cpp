@@ -13,13 +13,13 @@
 #include "Debug.h"
 
 Avatar::Avatar() :
-        id(0), freq(100), sps(64), agent(NULL), commnet(NULL), control_step_time(
+        id(0), freq(100), sps(60), agent(NULL), commnet(NULL), control_step_time(
                 (1000 / sps))
 {
 }
 
 Avatar::Avatar(int i) :
-        id(i), freq(100), sps(64), agent(NULL), commnet(NULL), control_step_time(
+        id(i), freq(100), sps(60), agent(NULL), commnet(NULL), control_step_time(
                 (1000 / sps))
 {
 }
@@ -65,8 +65,10 @@ void Avatar::Launch()
         /* Commmunication */
         if (count >= freq)    // check if it's time to send a message
         {
-            dbgmoreprt("", "Count reach %d, send state info...\n", freq);
-            SendStateInfo(cs);
+            Agent::State state_to_send = agent->StateToSend();
+
+            dbgmoreprt("", "Count reach %d, send state %ld ...\n", freq, state_to_send);
+            SendStateInfo(state_to_send);
             count = 0;    // reset count
         }
         else
