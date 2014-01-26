@@ -65,7 +65,7 @@ CSThreadCommNet::~CSThreadCommNet()
  * \param sender_id the message sender id
  * \param buffer buffer where the message is stored
  * \param length length of the message
- * \return length of message that has been sent
+ * \return length of message that has been sent to the last neighbour
  */
 int CSThreadCommNet::Send(int sender_id, void *buffer, size_t buf_size)
 {
@@ -99,6 +99,14 @@ int CSThreadCommNet::Send(int sender_id, void *buffer, size_t buf_size)
                 chan->ptr = CHANNEL_SIZE - 1;    // move point, make room for the new msg, the oldest message will be lost
             else
                 chan->ptr -= 1;
+            // check if msg buffer is not NULL, this may happen when a member has a neighbour that has been removed from net.
+            if (chan->msg == NULL)  // neighbour has been removed from network
+            {
+                pthread_mutex_unlock(&chan->mutex);    // unlock
+                RemoveNeighbour(sender_id, *it);    // remove it from my neighbours, it's also ok to keep it
+                continue;
+            }
+
             memcpy(chan->msg[chan->ptr].data, buffer, buf_size);    // copy message to the channel
             chan->msg[chan->ptr].sender_id = sender_id;
 
@@ -169,6 +177,7 @@ int CSThreadCommNet::Recv(int recver_id, void *buffer, size_t buf_size)
 
 /**
  * \brief Load topological structure of a group from a configure file.
+ * This function will not add new members but just make neighbours.
  * \param tf file name
  */
 void CSThreadCommNet::LoadTopoFromFile()
@@ -182,7 +191,8 @@ void CSThreadCommNet::LoadTopoFromFile()
 
     if (!topofs.is_open())
     {
-        ERROR("LoadTopoFromFile: %d can't open topofile: %s!\n", id, topofile.c_str());
+        ERROR("LoadTopoFromFile: %d can't open topofile: %s!\n", id,
+                topofile.c_str());
     }
 
     /* parse file, add member and  build neighlist */
@@ -194,10 +204,17 @@ void CSThreadCommNet::LoadTopoFromFile()
         // get the member itself first
         char *p = strtok(line, delim);
         if (!p) break;
-        if (strcmp(const_cast<char *> (p),"#") == 0) continue;    // p is #, comment line
+        if (strcmp(const_cast<char *>(p), "#") == 0) continue;    // p is #, comment line
 
         int mid = atoi(p);
-        AddMember(mid);    // a new member, add it
+        // check if member has joined in network
+        if (!HasMember(mid))    // not join
+        {
+            WARNNING(
+                    "LoadTopoFromFile: can not add neighbours for member %d, it's not in network, join in first!\n",
+                    mid);
+            continue;
+        }
 
         // parse its neighbours
         while (p)
@@ -205,7 +222,7 @@ void CSThreadCommNet::LoadTopoFromFile()
             p = strtok(NULL, delim);
             if (p && (atoi(p) != mid))    // exclude self
             {
-                if (strcmp(const_cast<char *> (p),"#") == 0) break;        // p is #, comment begins
+                if (strcmp(const_cast<char *>(p), "#") == 0) break;    // p is #, comment begins
 
                 int nid = atoi(p);    // neighbour id
                 AddNeighbour(mid, nid);    // add nid as a neighbour of mid
@@ -227,7 +244,8 @@ void CSThreadCommNet::DumpTopoToFile()
 
     if (!topofs.is_open())
     {
-        ERROR("DumpTopoToFile: %d can't open topofile: %s!\n", id, topofile.c_str());
+        ERROR("DumpTopoToFile: %d can't open topofile: %s!\n", id,
+                topofile.c_str());
     }
 
     topofs << "# Topo file dumped by CommNet " << id << std::endl;    // write the stamp
@@ -279,7 +297,7 @@ void CSThreadCommNet::AddMember(int mem)
 
     members.insert(mem);
     /* initialize member's channel */
-    channels[mem].msg = (struct Msg *) malloc(
+    channels[mem].msg = (struct Msg *) malloc(    // allocate buffer for msgs
             sizeof(struct Msg) * CHANNEL_SIZE);
     assert(channels[mem].msg != NULL);
     pthread_mutex_init(&(channels[mem].mutex), NULL);
@@ -292,14 +310,16 @@ void CSThreadCommNet::AddNeighbour(int mem, int neb)
     // check if member exists
     if (members.find(mem) == members.end())    // not found
     {
-        dbgprt("AddNeighbour()", "Member %d not exists, add it first\n", mem);
+        WARNNING("AddNeighbour(): Member %d not exists, add it first\n", mem);
         return;
     }
 
     // check if neighbour exists
     if (members.find(neb) == members.end())    // not found
     {
-        dbgprt("AddNeighbour()", "Neighbour %d not exists, can not make neighbour with it!\n", mem);
+        WARNNING(
+                "AddNeighbour(): Neighbour %d not exists, can not make neighbour with it!\n",
+                mem);
         return;
     }
 
@@ -321,7 +341,8 @@ void CSThreadCommNet::AddNeighbour(int mem, int neb)
 
     if (neigh_exist == true)    // neighbour already exists, not add again
     {
-        dbgprt("Warnning", "member %d already has neighbour %d.", mem, neb);
+        WARNNING("AddNeighbour(): member %d already has neighbour %d.\n", mem,
+                neb);
         return;
     }
 
@@ -338,7 +359,7 @@ void CSThreadCommNet::RemoveMember(int mem)
     // check if exists
     if (members.find(mem) == members.end())    // not found
     {
-        dbgprt("Warnning", "member %d not exists, can not remove\n", mem);
+        WARNNING("RemoveMember(): member %d not exists, can not remove\n", mem);
         return;
     }
 
@@ -356,6 +377,7 @@ void CSThreadCommNet::RemoveMember(int mem)
 
     /* free messages in channels */
     free(channels[mem].msg);
+    channels[mem].msg = NULL;    //set to NULL
 
     // remove member
     members.erase(mem);
@@ -366,7 +388,8 @@ void CSThreadCommNet::RemoveNeighbour(int mem, int neighbour)
     // check if member exists
     if (members.find(mem) == members.end())    // not found
     {
-        dbgprt("Error", "Member %d not exists, can not remove its neighbour\n",
+        WARNNING(
+                "RemoveNeighbour(): Member %d not exists, can not remove its neighbour\n",
                 mem);
         return;
     }
