@@ -6,7 +6,7 @@
 
 int main(void)
 {
-    CSThreadCommNet cccnet(1);
+    CSThreadCommNet commnet(1);
     int mouse_num = 4;
     Mysql *mysql[mouse_num];
     char db_name[16];
@@ -14,24 +14,7 @@ int main(void)
     CSAgent *agents[mouse_num];
     pthread_t tids[mouse_num];
 
-    // set up CCCNet
-    cccnet.AddMember(0);
-    cccnet.AddMember(1);
-    cccnet.AddMember(2);
-    cccnet.AddMember(3);
-//    cccnet.AddNeighbour(0, 1);
-//    cccnet.AddNeighbour(1, 0);
-//
-    cccnet.AddNeighbour(0, 2);
-    cccnet.AddNeighbour(0, 3);
-    cccnet.AddNeighbour(1, 0);
-    cccnet.AddNeighbour(1, 3);
-    cccnet.AddNeighbour(1, 2);
-    cccnet.AddNeighbour(2, 1);
-    cccnet.AddNeighbour(3, 0);
-    cccnet.AddNeighbour(3, 1);
-
-    // set up each mouse
+    // create and set up each mouse
     for (int i=0; i<mouse_num; i++)
     {
         // storage
@@ -47,14 +30,28 @@ int main(void)
         // avatar
         Mouse *mouse = new Mouse(i);
         mouse->ConnectAgent(agent);
-        mouse->SetCommNet(&cccnet);
+        mouse->JoinCommNet(&commnet);
         mouse->SetCommFreq(10);
 
         mysql[i] = ml;
         mice[i] = mouse;
         agents[i] = agent;
-        tids[i] = mice[i]->ThreadLaunch();      // launch
     }
+
+    // build neighbours
+//    mice[0]->AddNeighbour(2);
+//    mice[0]->AddNeighbour(3);
+//    mice[1]->AddNeighbour(0);
+//    mice[1]->AddNeighbour(3);
+//    mice[1]->AddNeighbour(2);
+//    mice[2]->AddNeighbour(1);
+//    mice[3]->AddNeighbour(0);
+//    mice[3]->AddNeighbour(1);
+    commnet.LoadTopoFile("nettopo.dat");
+
+    /* launch mice */
+    for (int i=0; i<mouse_num; i++)
+        tids[i] = mice[i]->ThreadLaunch();      // launch
 
     // wait
     for (int i=0; i<mouse_num; i++)

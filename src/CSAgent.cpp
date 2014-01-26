@@ -123,7 +123,7 @@ void CSAgent::InitMemory()
     if (re == 0)    // successfully connected
     {
         char label[10] = "Loading: ";
-        printf("Initializing Memory from Storage: \n");
+        printf("Initializing Memory from Storage... \n");
         fflush(stdout);
 
         /* load memory information */
@@ -176,7 +176,7 @@ void CSAgent::SaveMemory()
         return;
 
     char label[10] = "Saving: ";
-    printf("Saving Memory to: \n");
+    printf("Saving Memory to Storage... \n");
     int re = storage->Connect();
     if (re == 0)    // successfully connected
     {
@@ -942,7 +942,7 @@ std::vector<Agent::Action> CSAgent::MaxPayoffRule(Agent::State st,
 
     if (cur_mst == NULL)    // first time to encounter this state, we know nothing about it, so no restriction applied, return the whole list
     {
-        dbgprt("", "State not found in memory.\n");
+        dbgmoreprt("MaxPayoffRule()", "State not found in memory.\n");
         re = acts;
     }
     else    // we have memories about this state, find the best action of it

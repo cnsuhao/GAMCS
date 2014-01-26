@@ -135,7 +135,7 @@ void Avatar::RecvStateInfo()
 
     char re_buf[2048];    // buffer for recieved message
 
-    while (commnet->Recv(id, re_buf, 2048) != 0)    // message recieved
+    if (commnet->Recv(id, re_buf, 2048) != 0)    // fetch one message
     {
         agent->MergeStateInfo((struct State_Info_Header *)re_buf);    // merge the recieved state information to memory
     }
@@ -159,4 +159,141 @@ unsigned long Avatar::GetCurrentTime()
     struct timeb tb;
     ftime(&tb);
     return 1000 * tb.time + tb.millitm;
+}
+
+/**
+ * \brief Join a communication network
+ * \param grp communication network to join
+ */
+void Avatar::JoinCommNet(CommNet *cn)
+{
+    commnet = cn;
+    commnet->AddMember(id);     // add me as a member
+}
+/**
+ * \brief Leave a communication network
+ */
+void Avatar::LeaveCommNet()
+{
+    // check first
+    if (commnet == NULL)    // not join in any net
+    {
+        return;
+    }
+
+    commnet->RemoveMember(id);  // remove me from network
+    commnet = NULL;     // set net as null
+    return;
+}
+
+void Avatar::AddNeighbour(int nid)
+{
+    // chech if joined in any network
+    if (commnet == NULL)
+    {
+        WARNNING("AddNeighbour(): menber %d hasn't joint any network yet, can not add a neighbour!\n", id);
+        return;
+    }
+
+    // check if member exists
+    if (!commnet->HasMember(nid))   // member not exists
+    {
+        WARNNING("AddNeighbour(): Member %d doesn't exist, can not make it as a neighbour!\n", nid);
+        return;
+    }
+
+    commnet->AddNeighbour(id, nid);
+}
+
+void Avatar::AddNeighbours(const std::vector<int> &neighbours)
+{
+    // chech if joined in any network
+    if (commnet == NULL)
+    {
+        WARNNING("AddNeighbour(): menber %d hasn't joint any network yet, can not add a neighbour!!\n", id);
+        return;
+    }
+
+    // add all neighbours
+    for (std::vector<int>::const_iterator nit = neighbours.begin();
+            nit != neighbours.end(); ++nit)
+    {
+        // check if member exists
+        if (!commnet->HasMember(*nit))   // member not exists
+        {
+            WARNNING("AddNeighbour(): Member %d doesn't exist, can not make it as a neighbour!\n", *nit);
+            return;
+        }
+
+        commnet->AddNeighbour(id, *nit);
+    }
+}
+
+void Avatar::RemoveNeighbour(int nid)
+{
+    // chech if joined in any network
+    if (commnet == NULL)
+    {
+        WARNNING("RemoveNeighbour(): menber %d hasn't joint any network yet, it has no neighbour to remove!\n", id);
+        return;
+    }
+
+    // check if member exists
+    if (!commnet->HasMember(nid))
+    {
+        WARNNING("RemoveNeighbour(): Member %d doesn't exist, are you sure it's your neighbour?\n", nid);
+        return;
+    }
+
+    commnet->RemoveNeighbour(id, nid);
+}
+
+
+void Avatar::RemoveNeighbours(const std::vector<int> &neighbours)
+{
+    // chech if joined in any network
+    if (commnet == NULL)
+    {
+        WARNNING("RemoveNeighbour(): menber %d hasn't joint any network yet, it has no neighbours to remove!\n", id);
+        return;
+    }
+
+    // remove all neighbours
+    for (std::vector<int>::const_iterator nit = neighbours.begin();
+            nit != neighbours.end(); ++nit)
+    {
+        // check if member exists
+        if (!commnet->HasMember(*nit))
+        {
+            WARNNING("RemoveNeighbour(): Member %d doesn't exist, are you sure it's your neighbour?\n", *nit);
+            return;
+        }
+
+        commnet->RemoveNeighbour(id, *nit);
+    }
+}
+
+
+std::vector<int> Avatar::GetMyNeighbours()
+{
+    // chech if joined in any network
+    if (commnet == NULL)
+    {
+        WARNNING("GetMyNeighbours(): menber %d hasn't joint any network yet, no neighbours at all!\n", id);
+        return std::vector<int>();
+    }
+
+    return commnet->GetNeighbours(id);
+}
+
+bool Avatar::CheckNeighbourShip(int nid)
+{
+    // chech if joined in any network
+    if (commnet == NULL)
+    {
+        WARNNING("CheckNeighbour(): menber %d hasn't joint any network yet, no neighbours at all!\n", id);
+        return false;
+    }
+
+    return commnet->CheckNeighbourShip(id, nid);
 }
