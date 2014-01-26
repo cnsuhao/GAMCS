@@ -7,7 +7,6 @@
  *	@Modify date:
  ***********************************************************************/
 #include <fstream>
-#include <algorithm>
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -183,7 +182,7 @@ void CSThreadCommNet::LoadTopoFromFile()
 
     if (!topofs.is_open())
     {
-        ERROR("Group: %d can't open topofile: %s!\n", id, topofile.c_str());
+        ERROR("LoadTopoFromFile: %d can't open topofile: %s!\n", id, topofile.c_str());
     }
 
     /* parse file, add member and  build neighlist */
@@ -195,6 +194,7 @@ void CSThreadCommNet::LoadTopoFromFile()
         // get the member itself first
         char *p = strtok(line, delim);
         if (!p) break;
+        if (strcmp(const_cast<char *> (p),"#") == 0) continue;    // p is #, comment line
 
         int mid = atoi(p);
         AddMember(mid);    // a new member, add it
@@ -205,6 +205,8 @@ void CSThreadCommNet::LoadTopoFromFile()
             p = strtok(NULL, delim);
             if (p && (atoi(p) != mid))    // exclude self
             {
+                if (strcmp(const_cast<char *> (p),"#") == 0) break;        // p is #, comment begins
+
                 int nid = atoi(p);    // neighbour id
                 AddNeighbour(mid, nid);    // add nid as a neighbour of mid
             }
@@ -222,6 +224,17 @@ void CSThreadCommNet::DumpTopoToFile()
     if (topofile.empty()) return;
 
     std::ofstream topofs(topofile.c_str(), std::ios::trunc);
+
+    if (!topofs.is_open())
+    {
+        ERROR("DumpTopoToFile: %d can't open topofile: %s!\n", id, topofile.c_str());
+    }
+
+    topofs << "# Topo file dumped by CommNet " << id << std::endl;    // write the stamp
+    topofs << "# Syntax: " << std::endl;
+    topofs << "#        member1 : neighbour1 neighbour2 ... " << std::endl;
+    topofs << "#        member2 : neighbour1 neighbour2 ... " << std::endl;
+    topofs << "#        ... " << std::endl;
 
     for (std::set<int>::iterator mit = members.begin(); mit != members.end();
             ++mit)
@@ -279,7 +292,14 @@ void CSThreadCommNet::AddNeighbour(int mem, int neb)
     // check if member exists
     if (members.find(mem) == members.end())    // not found
     {
-        dbgprt("Error", "Member %d not exists, add it first\n", mem);
+        dbgprt("AddNeighbour()", "Member %d not exists, add it first\n", mem);
+        return;
+    }
+
+    // check if neighbour exists
+    if (members.find(neb) == members.end())    // not found
+    {
+        dbgprt("AddNeighbour()", "Neighbour %d not exists, can not make neighbour with it!\n", mem);
         return;
     }
 
@@ -339,7 +359,6 @@ void CSThreadCommNet::RemoveMember(int mem)
 
     // remove member
     members.erase(mem);
-
 }
 
 void CSThreadCommNet::RemoveNeighbour(int mem, int neighbour)
