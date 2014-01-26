@@ -3,19 +3,20 @@
 #include "GIOM.h"
 
 /**
-* Time Sequence General Input Output Model
-*/
-class TSGIOM : public GIOM
+ * Time Sequence General Input Output Model
+ */
+class TSGIOM: public GIOM
 {
     public:
         TSGIOM();
         virtual ~TSGIOM();
-        virtual void Update();           // reimplement Update, add time sequence
+        virtual void Update();    // reimplement Update, add time sequence
     protected:
-        virtual std::vector<Output> Restrict(Input, const std::vector<Output> &);     // reimplement Restrict
+        virtual std::vector<Output> Restrict(Input,
+                const std::vector<Output> &);    // reimplement Restrict
         /* bring in the time sequence feature */
-        Input pre_in;           /**< previous input value */
-        Output pre_out;         /**< previous output value */
+        Input pre_in; /**< previous input value */
+        Output pre_out; /**< previous output value */
     private:
 };
 

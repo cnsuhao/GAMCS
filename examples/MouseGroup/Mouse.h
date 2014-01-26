@@ -3,7 +3,7 @@
 #include <vector>
 #include "CSThreadAvatar.h"
 
-class Mouse : public CSThreadAvatar
+class Mouse: public CSThreadAvatar
 {
     public:
         Mouse(int i);

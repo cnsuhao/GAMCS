@@ -77,8 +77,14 @@ int Mysql::Connect()
  */
 void Mysql::Close()
 {
-    mysql_close(db_con);
-    return mysql_library_end();
+    if (db_con == NULL)
+        return;
+    else
+    {
+        mysql_close(db_con);
+        mysql_library_end();
+        db_con = NULL;
+    }
 }
 
 /**
@@ -224,9 +230,10 @@ struct State_Info_Header *Mysql::FetchStateInfo(Agent::State st) const
 
     mysql_free_result(result);    // free result
 
-    if ((ptr - (unsigned char *)stif) != stif_size)    // check size
+    if ((ptr - (unsigned char *) stif) != stif_size)    // check size
     {
-        ERROR("Mysql FetchStateInfo(): state information header size not match!\n");
+        ERROR(
+                "Mysql FetchStateInfo(): state information header size not match!\n");
     }
     return stif;
 }
@@ -434,7 +441,8 @@ struct Memory_Info *Mysql::FetchMemoryInfo()
 
     struct Memory_Info *memif = (struct Memory_Info *) malloc(
             sizeof(struct Memory_Info));
-    dbgprt("Mysql FetchMemoryInfo()", "%s, Memory TimeStamp: %s\n", db_name.c_str(), row[0]);
+    dbgprt("Mysql FetchMemoryInfo()", "%s, Memory TimeStamp: %s\n",
+            db_name.c_str(), row[0]);
     // fill in the memory struct
     memif->discount_rate = atof(row[1]);
     memif->threshold = atof(row[2]);

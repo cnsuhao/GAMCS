@@ -1,4 +1,5 @@
 #include <pthread.h>
+#include <stdio.h>
 #include "CSThreadCommNet.h"
 #include "CSAgent.h"
 #include "Mouse.h"
@@ -6,16 +7,20 @@
 
 int main(void)
 {
-    CSThreadCommNet commnet(1);
-    int mouse_num = 4;
+    int mouse_num = 4;    // number of mouse
+
+    CSThreadCommNet commnet(1);    // communication network
+
+    // storage of each mouse
     Mysql *mysql[mouse_num];
     char db_name[16];
+
     Mouse *mice[mouse_num];
     CSAgent *agents[mouse_num];
     pthread_t tids[mouse_num];
 
     // create and set up each mouse
-    for (int i=0; i<mouse_num; i++)
+    for (int i = 0; i < mouse_num; i++)
     {
         // storage
         Mysql *ml = new Mysql();
@@ -25,7 +30,6 @@ int main(void)
         // agent
         CSAgent *agent = new CSAgent(0.8, 0.01);
         agent->SetStorage(ml);
-        agent->InitMemory();
 
         // avatar
         Mouse *mouse = new Mouse(i);
@@ -47,14 +51,15 @@ int main(void)
 //    mice[2]->AddNeighbour(1);
 //    mice[3]->AddNeighbour(0);
 //    mice[3]->AddNeighbour(1);
-    commnet.LoadTopoFile("nettopo.dat");
+
+    commnet.LoadTopoFile("commnet.topo");
 
     /* launch mice */
-    for (int i=0; i<mouse_num; i++)
-        tids[i] = mice[i]->ThreadLaunch();      // launch
+    for (int i = 0; i < mouse_num; i++)
+        tids[i] = mice[i]->ThreadLaunch();    // launch
 
     // wait
-    for (int i=0; i<mouse_num; i++)
+    for (int i = 0; i < mouse_num; i++)
     {
         pthread_join(tids[i], NULL);
 
