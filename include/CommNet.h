@@ -1,7 +1,7 @@
 #ifndef GROUP_H
 #define GROUP_H
 #include <stddef.h>     // size_t
-#include <vector>
+#include <set>
 
 class Avatar;
 
@@ -29,7 +29,7 @@ class CommNet
         virtual void RemoveMember(int) = 0; /**< remove a member from network */
         virtual void RemoveNeighbour(int, int) = 0; /**< remove a specified neighbour from a member */
         /* queries */
-        virtual std::vector<int> GetNeighbours(int) = 0; /**< get a neighbours list of a specified member */
+        virtual std::set<int> GetNeighbours(int) = 0; /**< get a neighbours list of a specified member */
         virtual bool CheckNeighbourShip(int, int) = 0; /**< detect if a member has a specified neighbour */
         /* Communication facilities which can be used by members in this group */
         virtual int Send(int, void *, size_t) = 0; /**< send message to one's neighbour */

@@ -52,7 +52,7 @@ int main(void)
 //    mice[3]->AddNeighbour(0);
 //    mice[3]->AddNeighbour(1);
 
-    commnet.LoadTopoFile("commnet.topo");
+    commnet.SetTopoFile("commnet.topo");
 
     /* launch mice */
     for (int i = 0; i < mouse_num; i++)
