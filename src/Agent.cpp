@@ -50,7 +50,6 @@ void Agent::Update(float oripayoff)
     return;
 }
 
-
 /**
  * \brief Pretty print State information
  * \param specified State information header

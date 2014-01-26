@@ -16,13 +16,16 @@
 class Mysql: public Storage
 {
     public:
-        Mysql() : db_con(NULL), db_server(""), db_user(""), db_password(""), db_name(""),
-        db_t_stateinfo("StateInfo"), db_t_meminfo("MemoryInfo")
+        Mysql() :
+                db_con(NULL), db_server(""), db_user(""), db_password(""), db_name(
+                        ""), db_t_stateinfo("StateInfo"), db_t_meminfo(
+                        "MemoryInfo")
         {
         }
 
         ~Mysql()
         {
+            Close();    // close just in case
         }
 
         int Connect();
@@ -37,13 +40,13 @@ class Mysql: public Storage
         void AddMemoryInfo(const struct Memory_Info *);
         struct Memory_Info *FetchMemoryInfo();
     private:
-        MYSQL *db_con;      /**< database connection handler */
-        std::string db_server;   /**< database server address */
-        std::string db_user;     /**< database username */
+        MYSQL *db_con; /**< database connection handler */
+        std::string db_server; /**< database server address */
+        std::string db_user; /**< database username */
         std::string db_password; /**< database password */
-        std::string db_name;     /**< database name */
-        std::string db_t_stateinfo;  /**< table name for storing state information */
-        std::string db_t_meminfo;    /**< table name for storing memory information */
+        std::string db_name; /**< database name */
+        std::string db_t_stateinfo; /**< table name for storing state information */
+        std::string db_t_meminfo; /**< table name for storing memory information */
 };
 
 #endif /* MYSQL_H_ */

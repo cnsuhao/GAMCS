@@ -8,7 +8,6 @@ int main(void)
     mysql.SetDBArgs("localhost", "root", "huangk", "Mouse");
     CSAgent ma(0.9, 0.01);
     ma.SetStorage(&mysql);
-    ma.InitMemory();
 
     Mouse mouse(1);
     mouse.ConnectAgent(&ma);

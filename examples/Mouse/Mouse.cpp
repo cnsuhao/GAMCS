@@ -1,14 +1,15 @@
 /**********************************************************************
-*	@File:
-*	@Created: 2013-8-19
-*	@Author: AndyHuang - andyspider@126.coom
-*	@Description:
-*
-*	@Modify date:
-***********************************************************************/
+ *	@File:
+ *	@Created: 2013-8-19
+ *	@Author: AndyHuang - andyspider@126.coom
+ *	@Description:
+ *
+ *	@Modify date:
+ ***********************************************************************/
 #include "Mouse.h"
 
-Mouse::Mouse(int i):Avatar(i)
+Mouse::Mouse(int i) :
+        Avatar(i)
 {
     position = 3;
 }
@@ -27,10 +28,8 @@ void Mouse::DoAction(Agent::Action act)
 {
     position += act;
 
-    if (position > 8)
-        position = 8;
-    if (position < 1)
-        position = 1;
+    if (position > 8) position = 8;
+    if (position < 1) position = 1;
     return;
 }
 

@@ -1,4 +1,7 @@
 #LINK_DIRECTORIES(${PROJECT_BINARY_DIR}/src) # 库目录搜索路径: -L
-SET(CMAKE_CXX_FLAGS "-std=c++0x -Wall -Wextra")
-ADD_EXECUTABLE(mg Mouse.cpp main.cpp)
+AUX_SOURCE_DIRECTORY(. MOUSEGROUP_SRCS)
+ADD_EXECUTABLE(mg ${MOUSEGROUP_SRCS})
+ADD_CUSTOM_COMMAND(TARGET mg PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+    ${CMAKE_SOURCE_DIR}/examples/MouseGroup/commnet.topo $<TARGET_FILE_DIR:mg>)     # copy topo file to bin directory
 TARGET_LINK_LIBRARIES(mg avatar mysqlclient pthread)   # 指定链接库

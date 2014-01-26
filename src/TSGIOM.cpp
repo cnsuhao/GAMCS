@@ -1,15 +1,16 @@
 /**********************************************************************
-*	@File:
-*	@Created: 2013-8-19
-*	@Author: AndyHuang - andyspider@126.coom
-*	@Description:
-*
-*	@Modify date:
-***********************************************************************/
+ *	@File:
+ *	@Created: 2013-8-19
+ *	@Author: AndyHuang - andyspider@126.coom
+ *	@Description:
+ *
+ *	@Modify date:
+ ***********************************************************************/
 #include "TSGIOM.h"
 #include "Debug.h"
 
-TSGIOM::TSGIOM(): pre_in(INVALID_INPUT), pre_out(INVALID_OUTPUT)
+TSGIOM::TSGIOM() :
+        pre_in(INVALID_INPUT), pre_out(INVALID_OUTPUT)
 {
 }
 
@@ -38,7 +39,8 @@ void TSGIOM::Update()
  * \return outputs distribution after restricting
  *
  */
-std::vector<GIOM::Output> TSGIOM::Restrict(Input in, const std::vector<GIOM::Output> &outlist)
+std::vector<GIOM::Output> TSGIOM::Restrict(Input in,
+        const std::vector<GIOM::Output> &outlist)
 {
     UNUSED(in);
     return outlist;

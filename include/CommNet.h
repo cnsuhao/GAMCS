@@ -15,11 +15,11 @@ class CommNet
         CommNet(int);
         virtual ~CommNet();
 
-        friend Avatar;      // Avatar could access functions in CommNet
+        friend Avatar;    // Avatar could access functions in CommNet
 
         /* network-scale queries */
         virtual int NumberOfMembers() = 0; /**< number of members in this network */
-        virtual bool HasMember(int) = 0;  /**< check if a member exists in network */
+        virtual bool HasMember(int) = 0; /**< check if a member exists in network */
     protected:
         int id; /**< network id */
         /* build the network */

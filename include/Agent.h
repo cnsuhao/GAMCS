@@ -27,7 +27,7 @@ class Agent: public TSGIOM
         virtual State StateToSend() = 0; /**< return the state to be sent to neighbour */
         void Update(float); /**< update memory, this function will call UpdateMemory() to do the real update */
 
-        static void PrintStateInfo(const struct State_Info_Header *);         /**< print state information gracefully */
+        static void PrintStateInfo(const struct State_Info_Header *); /**< print state information gracefully */
         /* set and get functions */
         void SetDiscountRate(float);
         float GetDiscountRate();

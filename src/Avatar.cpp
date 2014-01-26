@@ -6,7 +6,6 @@
  *
  *	@Modify date:
  ***********************************************************************/
-#include <stdio.h>
 #include <stdlib.h>
 #include <sys/timeb.h>
 #include <unistd.h>
@@ -46,7 +45,7 @@ void Avatar::Launch()
 
         /* Perceive the outside world */
         Agent::State cs = GetCurrentState();    // get current state
-        printf("Avata Id: %d, Current state: %ld\n ", id, cs);
+        dbgprt("Avata Id:", "%d, Current state: %ld\n ", id, cs);
 
         /* Process stage */
         std::vector<Agent::Action> acts = ActionCandidates(cs);    // get all action candidates of a state
@@ -101,7 +100,6 @@ void Avatar::Launch()
     return;
 }
 
-
 /**
  * \brief Send information of a specified state to all neighbours.
  * \param st state value to be sent
@@ -124,7 +122,6 @@ void Avatar::SendStateInfo(Agent::State st)
     return;
 }
 
-
 /**
  * \brief Recieve state information from neighbours.
  */
@@ -137,7 +134,7 @@ void Avatar::RecvStateInfo()
 
     if (commnet->Recv(id, re_buf, 2048) != 0)    // fetch one message
     {
-        agent->MergeStateInfo((struct State_Info_Header *)re_buf);    // merge the recieved state information to memory
+        agent->MergeStateInfo((struct State_Info_Header *) re_buf);    // merge the recieved state information to memory
     }
     return;
 }
@@ -168,7 +165,7 @@ unsigned long Avatar::GetCurrentTime()
 void Avatar::JoinCommNet(CommNet *cn)
 {
     commnet = cn;
-    commnet->AddMember(id);     // add me as a member
+    commnet->AddMember(id);    // add me as a member
 }
 /**
  * \brief Leave a communication network
@@ -181,8 +178,8 @@ void Avatar::LeaveCommNet()
         return;
     }
 
-    commnet->RemoveMember(id);  // remove me from network
-    commnet = NULL;     // set net as null
+    commnet->RemoveMember(id);    // remove me from network
+    commnet = NULL;    // set net as null
     return;
 }
 
@@ -191,14 +188,18 @@ void Avatar::AddNeighbour(int nid)
     // chech if joined in any network
     if (commnet == NULL)
     {
-        WARNNING("AddNeighbour(): menber %d hasn't joint any network yet, can not add a neighbour!\n", id);
+        WARNNING(
+                "AddNeighbour(): menber %d hasn't joint any network yet, can not add a neighbour!\n",
+                id);
         return;
     }
 
     // check if member exists
-    if (!commnet->HasMember(nid))   // member not exists
+    if (!commnet->HasMember(nid))    // member not exists
     {
-        WARNNING("AddNeighbour(): Member %d doesn't exist, can not make it as a neighbour!\n", nid);
+        WARNNING(
+                "AddNeighbour(): Member %d doesn't exist, can not make it as a neighbour!\n",
+                nid);
         return;
     }
 
@@ -210,7 +211,9 @@ void Avatar::AddNeighbours(const std::vector<int> &neighbours)
     // chech if joined in any network
     if (commnet == NULL)
     {
-        WARNNING("AddNeighbour(): menber %d hasn't joint any network yet, can not add a neighbour!!\n", id);
+        WARNNING(
+                "AddNeighbour(): menber %d hasn't joint any network yet, can not add a neighbour!!\n",
+                id);
         return;
     }
 
@@ -219,9 +222,11 @@ void Avatar::AddNeighbours(const std::vector<int> &neighbours)
             nit != neighbours.end(); ++nit)
     {
         // check if member exists
-        if (!commnet->HasMember(*nit))   // member not exists
+        if (!commnet->HasMember(*nit))    // member not exists
         {
-            WARNNING("AddNeighbour(): Member %d doesn't exist, can not make it as a neighbour!\n", *nit);
+            WARNNING(
+                    "AddNeighbour(): Member %d doesn't exist, can not make it as a neighbour!\n",
+                    *nit);
             return;
         }
 
@@ -234,27 +239,32 @@ void Avatar::RemoveNeighbour(int nid)
     // chech if joined in any network
     if (commnet == NULL)
     {
-        WARNNING("RemoveNeighbour(): menber %d hasn't joint any network yet, it has no neighbour to remove!\n", id);
+        WARNNING(
+                "RemoveNeighbour(): menber %d hasn't joint any network yet, it has no neighbour to remove!\n",
+                id);
         return;
     }
 
     // check if member exists
     if (!commnet->HasMember(nid))
     {
-        WARNNING("RemoveNeighbour(): Member %d doesn't exist, are you sure it's your neighbour?\n", nid);
+        WARNNING(
+                "RemoveNeighbour(): Member %d doesn't exist, are you sure it's your neighbour?\n",
+                nid);
         return;
     }
 
     commnet->RemoveNeighbour(id, nid);
 }
 
-
 void Avatar::RemoveNeighbours(const std::vector<int> &neighbours)
 {
     // chech if joined in any network
     if (commnet == NULL)
     {
-        WARNNING("RemoveNeighbour(): menber %d hasn't joint any network yet, it has no neighbours to remove!\n", id);
+        WARNNING(
+                "RemoveNeighbour(): menber %d hasn't joint any network yet, it has no neighbours to remove!\n",
+                id);
         return;
     }
 
@@ -265,7 +275,9 @@ void Avatar::RemoveNeighbours(const std::vector<int> &neighbours)
         // check if member exists
         if (!commnet->HasMember(*nit))
         {
-            WARNNING("RemoveNeighbour(): Member %d doesn't exist, are you sure it's your neighbour?\n", *nit);
+            WARNNING(
+                    "RemoveNeighbour(): Member %d doesn't exist, are you sure it's your neighbour?\n",
+                    *nit);
             return;
         }
 
@@ -273,13 +285,14 @@ void Avatar::RemoveNeighbours(const std::vector<int> &neighbours)
     }
 }
 
-
 std::vector<int> Avatar::GetMyNeighbours()
 {
     // chech if joined in any network
     if (commnet == NULL)
     {
-        WARNNING("GetMyNeighbours(): menber %d hasn't joint any network yet, no neighbours at all!\n", id);
+        WARNNING(
+                "GetMyNeighbours(): menber %d hasn't joint any network yet, no neighbours at all!\n",
+                id);
         return std::vector<int>();
     }
 
@@ -291,7 +304,9 @@ bool Avatar::CheckNeighbourShip(int nid)
     // chech if joined in any network
     if (commnet == NULL)
     {
-        WARNNING("CheckNeighbour(): menber %d hasn't joint any network yet, no neighbours at all!\n", id);
+        WARNNING(
+                "CheckNeighbour(): menber %d hasn't joint any network yet, no neighbours at all!\n",
+                id);
         return false;
     }
 

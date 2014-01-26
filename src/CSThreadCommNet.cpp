@@ -9,7 +9,6 @@
 #include <fstream>
 #include <algorithm>
 #include <assert.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "CSThreadCommNet.h"
@@ -154,12 +153,12 @@ int CSThreadCommNet::Recv(int recver_id, void *buffer, size_t buf_size)
         else
             re = buf_size;    // ok, msg is recieved
 #ifdef _DEBUG_MORE_
-        printf(
-                "++++++++++++++++++++++++ Id: %d, Recv from: %d ++++++++++++++++++++++++\n",
-                recver_id, sid);
-        Agent::PrintStateInfo(stif);
-        printf(
-                "++++++++++++++++++++++++++++++ Recv End ++++++++++++++++++++++++++++++\n\n");
+                    printf(
+                            "++++++++++++++++++++++++ Id: %d, Recv from: %d ++++++++++++++++++++++++\n",
+                            recver_id, sid);
+                    Agent::PrintStateInfo(stif);
+                    printf(
+                            "++++++++++++++++++++++++++++++ Recv End ++++++++++++++++++++++++++++++\n\n");
 #endif // _DEBUG_
     }
 
@@ -205,25 +204,14 @@ void CSThreadCommNet::LoadTopoFile(std::string tf)
             p = strtok(NULL, delim);
             if (p && (atoi(p) != mid))    // exclude self
             {
-                int nid = atoi(p);      // neighbour id
-                AddNeighbour(mid, nid); // add nid as a neighbour of mid
+                int nid = atoi(p);    // neighbour id
+                AddNeighbour(mid, nid);    // add nid as a neighbour of mid
             }
         }
     }
 
     return;
 }
-
-/**
- * \brief Get one's channel.
- * \param id member id
- * \return channel address
- */
-struct Channel *CSThreadCommNet::GetChannel(int id)
-{
-    return &channels[id];
-}
-;
 
 /**
  * \brief Get one's all neighbours.
@@ -403,9 +391,10 @@ bool CSThreadCommNet::CheckNeighbourShip(int from, int to)
 bool CSThreadCommNet::HasMember(int id)
 {
     bool re = false;
-    std::vector<int>::iterator it = std::find(members.begin(), members.end(), id);
+    std::vector<int>::iterator it = std::find(members.begin(), members.end(),
+            id);
     if (it != members.end())    // found
-        re = true;
+    re = true;
 
     return re;
 }

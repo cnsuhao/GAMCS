@@ -10,7 +10,6 @@
 #include <float.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <assert.h>
 #include "CSAgent.h"
 #include "Storage.h"
@@ -114,7 +113,7 @@ void CSAgent::LoadState(Agent::State st)
  *
  */
 
-void CSAgent::InitMemory()
+void CSAgent::LoadMemory()
 {
     if (storage == NULL)    // no database specified, do nothing
         return;
@@ -123,7 +122,7 @@ void CSAgent::InitMemory()
     if (re == 0)    // successfully connected
     {
         char label[10] = "Loading: ";
-        printf("Initializing Memory from Storage... \n");
+        printf("Loading Memory from Storage... \n");
         fflush(stdout);
 
         /* load memory information */
@@ -145,7 +144,7 @@ void CSAgent::InitMemory()
         unsigned long index = 0;    // load states from database one by one
         while ((st = storage->StateByIndex(index)) != INVALID_STATE)
         {
-            dbgmoreprt("InitMemory()", "LoadState: %ld\n", st);
+            dbgmoreprt("LoadMemory()", "LoadState: %ld\n", st);
             LoadState(st);
             index++;
             PrintProcess(index, saved_state_num, label);
@@ -154,13 +153,13 @@ void CSAgent::InitMemory()
         if (saved_state_num != state_num)
         {
             WARNNING(
-                    "InitMemory(): Number of states not consistent,which by stored meminfo says to be %ld, but in stateinfo is %ld, the storage may be conrupted!\n",
+                    "LoadMemory(): Number of states not consistent,which by stored meminfo says to be %ld, but in stateinfo is %ld, the storage may be conrupted!\n",
                     saved_state_num, state_num);
         }
     }
     else    // connect database failed!
     {
-        WARNNING("InitMemory(): Connecting storage failed!\n");
+        WARNNING("LoadMemory(): Connecting storage failed!\n");
     }
 
     storage->Close();
@@ -455,7 +454,8 @@ void CSAgent::FreeEa(struct cs_EnvAction *ea)
  */
 struct cs_Action *CSAgent::NewAc(Agent::Action act)
 {
-    struct cs_Action *ac = (struct cs_Action *) malloc(sizeof(struct cs_Action));
+    struct cs_Action *ac = (struct cs_Action *) malloc(
+            sizeof(struct cs_Action));
 
     ac->act = act;
     ac->payoff = unseen_action_payoff;
@@ -476,8 +476,8 @@ void CSAgent::FreeAc(struct cs_Action *ac)
  * \param mst state struct
  *
  */
-void CSAgent::LinkStates(struct cs_State *pmst, EnvAction eat, Agent::Action act,
-        struct cs_State *mst)
+void CSAgent::LinkStates(struct cs_State *pmst, EnvAction eat,
+        Agent::Action act, struct cs_State *mst)
 {
     /* check if the link already exists, if so simply update the count of environment action */
     dbgmoreprt("Enter LinkStates()", "------------------------------------- Make Link: %ld == %ld + %ld => %ld\n", pmst->st, eat, act, mst->st);
@@ -924,7 +924,7 @@ void CSAgent::RemoveState(struct cs_State *mst)
     }
 
     // remove the state itself
-    return FreeState(mst);      // FIXME: memory needs to be seamed after mst becomes NULL
+    return FreeState(mst);    // FIXME: memory needs to be seamed after mst becomes NULL
 }
 
 /**
@@ -1332,7 +1332,7 @@ void CSAgent::AddStateToMemory(struct cs_State *nstate)
     state_num++;
     states_map.insert(StatesMap::value_type(nstate->st, nstate));    // don't forget to update hash map
 
-    state_to_send = head;       // new state has been added, send state from beginning
+    state_to_send = head;    // new state has been added, send state from beginning
 }
 
 Agent::State CSAgent::StateToSend()
@@ -1345,7 +1345,7 @@ Agent::State CSAgent::StateToSend()
     }
     else
     {
-        state_to_send = head;   // wrap at beginning
+        state_to_send = head;    // wrap at beginning
     }
-        return re;
+    return re;
 }
