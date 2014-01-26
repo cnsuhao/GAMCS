@@ -45,7 +45,7 @@ void Avatar::Launch()
 
         /* Perceive the outside world */
         Agent::State cs = GetCurrentState();    // get current state
-        dbgprt("Avata Id:", "%d, Current state: %ld\n ", id, cs);
+        dbgprt("Avata Id", " %d, Current state: %ld\n ", id, cs);
 
         /* Process stage */
         std::vector<Agent::Action> acts = ActionCandidates(cs);    // get all action candidates of a state
@@ -93,7 +93,7 @@ void Avatar::Launch()
             WARNNING(
                     "time is not enough to run a step, %ld in lack, try to decrease the sps!\n",
                     -time_remaining);
-        }dbgmoreprt("","\n");
+        }
     }
     // quit
     dbgmoreprt("Exit Launch Loop", "----------------------------------------------------------- Id: %d Exit!\n", id);
