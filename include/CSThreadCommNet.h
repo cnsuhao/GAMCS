@@ -1,6 +1,6 @@
 #ifndef CSTHREADCOMMNET_H
 #define CSTHREADCOMMNET_H
-#include <vector>
+#include <set>
 #include <string>
 #include "CommNet.h"
 
@@ -29,16 +29,18 @@ class CSThreadCommNet: public CommNet
         CSThreadCommNet(int);
         ~CSThreadCommNet();
 
-        void LoadTopoFile(std::string); /**< load topological structure of the group from a file */
-
+        void SetTopoFile(std::string);
         int NumberOfMembers();
         bool HasMember(int);
     private:
+        void LoadTopoFromFile(); /**< load topological structure of network from a file */
+        void DumpTopoToFile();    /**< dump topological structure of network to file */
+
         void AddMember(int);
         void AddNeighbour(int, int);
         void RemoveMember(int);
         void RemoveNeighbour(int, int);
-        std::vector<int> GetNeighbours(int);
+        std::set<int> GetNeighbours(int);
         bool CheckNeighbourShip(int, int);
 
         int Send(int, void *, size_t); /**< the interface members can use to send messages to others */
@@ -47,10 +49,21 @@ class CSThreadCommNet: public CommNet
         struct Channel *GetChannel(int); /**< get channel of a specified member */
         void Notify(int); /**< notify a member of new messages recieved */
 
-        std::vector<int> members; /**< all members' Ids */
+        std::string topofile;
+        std::set<int> members; /**< all members' Ids */
         struct Channel channels[MAX_MEMBER]; /**< channels for all members */
         struct Neigh *neighlist[MAX_MEMBER]; /**< neighbour list for all members */
 };
+
+/**
+ * \brief Set file for loading and dumping topo structure of communication network.
+ * @param tf topofile to load and dump
+ */
+inline void CSThreadCommNet::SetTopoFile(std::string tf)
+{
+    topofile = tf;
+    LoadTopoFromFile();
+}
 
 /**
  * \brief Get member number in group.

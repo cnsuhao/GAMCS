@@ -38,7 +38,9 @@ CSThreadCommNet::CSThreadCommNet(int i) :
 
 CSThreadCommNet::~CSThreadCommNet()
 {
-    for (std::vector<int>::iterator it = members.begin(); it != members.end();
+    if (!topofile.empty()) DumpTopoToFile();    // dump topo file
+
+    for (std::set<int>::iterator it = members.begin(); it != members.end();
             ++it)
     {
         /* free neighlist */
@@ -85,9 +87,9 @@ int CSThreadCommNet::Send(int sender_id, void *buffer, size_t buf_size)
                 "****************************** Send End **********************************\n\n");
 #endif // _DEBUG_
 
-        std::vector<int> neighs = GetNeighbours(sender_id);    // get all its neightbours, the message will send to all of they
+        std::set<int> neighs = GetNeighbours(sender_id);    // get all its neightbours, the message will send to all of they
         // walk through all its neighbours, send message to they one by one
-        for (std::vector<int>::iterator it = neighs.begin(); it != neighs.end();
+        for (std::set<int>::iterator it = neighs.begin(); it != neighs.end();
                 ++it)
         {
             // for a neighbour
@@ -170,19 +172,18 @@ int CSThreadCommNet::Recv(int recver_id, void *buffer, size_t buf_size)
  * \brief Load topological structure of a group from a configure file.
  * \param tf file name
  */
-void CSThreadCommNet::LoadTopoFile(std::string tf)
+void CSThreadCommNet::LoadTopoFromFile()
 {
-    if (tf.empty())    // no topofile specified, the group will be emtpy, no members or neighbours
+    if (topofile.empty())    // no topofile specified, the group will be emtpy, no members or neighbours
     {
-        dbgprt("INFO", "topofile is NULL!\n");
         return;
     }
 
-    std::fstream topofs(tf.c_str());    // open topofile
+    std::ifstream topofs(topofile.c_str());    // open topofile
 
     if (!topofs.is_open())
     {
-        ERROR("Group: %d can't open topofile: %s!\n", id, tf.c_str());
+        ERROR("Group: %d can't open topofile: %s!\n", id, topofile.c_str());
     }
 
     /* parse file, add member and  build neighlist */
@@ -214,20 +215,44 @@ void CSThreadCommNet::LoadTopoFile(std::string tf)
 }
 
 /**
+ * \brief Dump structure of communication network to file
+ */
+void CSThreadCommNet::DumpTopoToFile()
+{
+    if (topofile.empty()) return;
+
+    std::ofstream topofs(topofile.c_str(), std::ios::trunc);
+
+    for (std::set<int>::iterator mit = members.begin(); mit != members.end();
+            ++mit)
+    {
+        topofs << *mit << " : ";
+        std::set<int> neighbours = GetNeighbours(*mit);
+        for (std::set<int>::iterator nit = neighbours.begin();
+                nit != neighbours.end(); ++nit)
+        {
+            topofs << *nit << " ";
+        }
+        topofs << std::endl;
+    }
+
+}
+
+/**
  * \brief Get one's all neighbours.
  * \param id member id
  * \return neighbour list
  */
-std::vector<int> CSThreadCommNet::GetNeighbours(int id)
+std::set<int> CSThreadCommNet::GetNeighbours(int id)
 {
-    std::vector<int> neighs;
+    std::set<int> neighs;
     neighs.clear();
 
     // walk through one's neighlist
     struct Neigh *nh, *nnh;
     for (nh = neighlist[id]; nh != NULL; nh = nnh)
     {
-        neighs.push_back(nh->id);    // get all its neighs
+        neighs.insert(nh->id);    // get all its neighs
         nnh = nh->next;
     }
     return neighs;
@@ -236,12 +261,10 @@ std::vector<int> CSThreadCommNet::GetNeighbours(int id)
 void CSThreadCommNet::AddMember(int mem)
 {
     // chech if alread exists
-    std::vector<int>::iterator it = std::find(members.begin(), members.end(),
-            mem);
-    if (it != members.end())    // found
+    if (members.find(mem) != members.end())    // found
     return;
 
-    members.push_back(mem);
+    members.insert(mem);
     /* initialize member's channel */
     channels[mem].msg = (struct Msg *) malloc(
             sizeof(struct Msg) * CHANNEL_SIZE);
@@ -254,9 +277,7 @@ void CSThreadCommNet::AddMember(int mem)
 void CSThreadCommNet::AddNeighbour(int mem, int neb)
 {
     // check if member exists
-    std::vector<int>::iterator it = std::find(members.begin(), members.end(),
-            mem);
-    if (it == members.end())    // not found
+    if (members.find(mem) == members.end())    // not found
     {
         dbgprt("Error", "Member %d not exists, add it first\n", mem);
         return;
@@ -295,9 +316,7 @@ void CSThreadCommNet::AddNeighbour(int mem, int neb)
 void CSThreadCommNet::RemoveMember(int mem)
 {
     // check if exists
-    std::vector<int>::iterator it = std::find(members.begin(), members.end(),
-            mem);
-    if (it == members.end())    // not found
+    if (members.find(mem) == members.end())    // not found
     {
         dbgprt("Warnning", "member %d not exists, can not remove\n", mem);
         return;
@@ -319,26 +338,14 @@ void CSThreadCommNet::RemoveMember(int mem)
     free(channels[mem].msg);
 
     // remove member
-    for (std::vector<int>::iterator mit = members.begin(); mit != members.end();
-            )
-    {
-        if ((*mit) == mem)    // found
-        {
-            members.erase(mit);
-            break;
-        }
-        else
-            ++mit;
-    }
+    members.erase(mem);
 
 }
 
 void CSThreadCommNet::RemoveNeighbour(int mem, int neighbour)
 {
     // check if member exists
-    std::vector<int>::iterator it = std::find(members.begin(), members.end(),
-            mem);
-    if (it == members.end())    // not found
+    if (members.find(mem) == members.end())    // not found
     {
         dbgprt("Error", "Member %d not exists, can not remove its neighbour\n",
                 mem);
@@ -391,9 +398,7 @@ bool CSThreadCommNet::CheckNeighbourShip(int from, int to)
 bool CSThreadCommNet::HasMember(int id)
 {
     bool re = false;
-    std::vector<int>::iterator it = std::find(members.begin(), members.end(),
-            id);
-    if (it != members.end())    // found
+    if (members.find(id) != members.end())    // found
     re = true;
 
     return re;

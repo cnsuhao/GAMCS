@@ -43,8 +43,8 @@ class CSAgent: public Agent
         struct cs_State *cur_mst; /**< state struct for current state value */
         struct cs_State *state_to_send; /**< point to next state to be sent to neighbours */
 
-        void LoadMemory(); /**< load memory from database */
-        void SaveMemory(); /**< save memory to database */
+        void LoadMemoryFromStorage(); /**< load memory from database */
+        void DumpMemoryToStorage(); /**< save memory to database */
         void LoadState(Agent::State); /**< fetch state struct by state value */
 
         void FreeMemory(); /**< free all space of memory in computer memory*/
@@ -86,7 +86,7 @@ class CSAgent: public Agent
 inline void CSAgent::SetStorage(Storage *stg)
 {
     storage = stg;
-    LoadMemory();
+    LoadMemoryFromStorage();
 }
 
 /** implementation of environment action information */

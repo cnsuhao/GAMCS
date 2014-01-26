@@ -1,6 +1,7 @@
 #ifndef AVATAR_H
 #define AVATAR_H
 #include <vector>
+#include <set>
 #include "Agent.h"
 #include "CommNet.h"
 
@@ -23,10 +24,10 @@ class Avatar
         void JoinCommNet(CommNet *); /**< set join a communication network */
         void LeaveCommNet(); /**< leave a network */
         void AddNeighbour(int); /**< add a neighbour */
-        void AddNeighbours(const std::vector<int> &); /**< add several neighbours at one time */
+        void AddNeighbours(const std::set<int> &); /**< add several neighbours at one time */
         void RemoveNeighbour(int); /**< remove a neighbour */
-        void RemoveNeighbours(const std::vector<int> &); /**< remove several neighbours at one time */
-        std::vector<int> GetMyNeighbours(); /**< get all my neighbours */
+        void RemoveNeighbours(const std::set<int> &); /**< remove several neighbours at one time */
+        std::set<int> GetMyNeighbours(); /**< get all my neighbours */
         bool CheckNeighbourShip(int); /**< check if a specified member is my neighbour */
         void SetCommFreq(int); /**< set frequence of communication with neighbours */
     protected:

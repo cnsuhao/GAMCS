@@ -206,7 +206,7 @@ void Avatar::AddNeighbour(int nid)
     commnet->AddNeighbour(id, nid);
 }
 
-void Avatar::AddNeighbours(const std::vector<int> &neighbours)
+void Avatar::AddNeighbours(const std::set<int> &neighbours)
 {
     // chech if joined in any network
     if (commnet == NULL)
@@ -218,7 +218,7 @@ void Avatar::AddNeighbours(const std::vector<int> &neighbours)
     }
 
     // add all neighbours
-    for (std::vector<int>::const_iterator nit = neighbours.begin();
+    for (std::set<int>::const_iterator nit = neighbours.begin();
             nit != neighbours.end(); ++nit)
     {
         // check if member exists
@@ -257,7 +257,7 @@ void Avatar::RemoveNeighbour(int nid)
     commnet->RemoveNeighbour(id, nid);
 }
 
-void Avatar::RemoveNeighbours(const std::vector<int> &neighbours)
+void Avatar::RemoveNeighbours(const std::set<int> &neighbours)
 {
     // chech if joined in any network
     if (commnet == NULL)
@@ -269,7 +269,7 @@ void Avatar::RemoveNeighbours(const std::vector<int> &neighbours)
     }
 
     // remove all neighbours
-    for (std::vector<int>::const_iterator nit = neighbours.begin();
+    for (std::set<int>::const_iterator nit = neighbours.begin();
             nit != neighbours.end(); ++nit)
     {
         // check if member exists
@@ -285,7 +285,7 @@ void Avatar::RemoveNeighbours(const std::vector<int> &neighbours)
     }
 }
 
-std::vector<int> Avatar::GetMyNeighbours()
+std::set<int> Avatar::GetMyNeighbours()
 {
     // chech if joined in any network
     if (commnet == NULL)
@@ -293,7 +293,7 @@ std::vector<int> Avatar::GetMyNeighbours()
         WARNNING(
                 "GetMyNeighbours(): menber %d hasn't joint any network yet, no neighbours at all!\n",
                 id);
-        return std::vector<int>();
+        return std::set<int>();
     }
 
     return commnet->GetNeighbours(id);

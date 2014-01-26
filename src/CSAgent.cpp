@@ -113,7 +113,7 @@ void CSAgent::LoadState(Agent::State st)
  *
  */
 
-void CSAgent::LoadMemory()
+void CSAgent::LoadMemoryFromStorage()
 {
     if (storage == NULL)    // no database specified, do nothing
         return;
@@ -169,7 +169,7 @@ void CSAgent::LoadMemory()
 /** \brief Save current memroy to database, including states information and memory-level statistics.
  *
  */
-void CSAgent::SaveMemory()
+void CSAgent::DumpMemoryToStorage()
 {
     if (storage == NULL)    // no database specified, no need to save
         return;
@@ -243,7 +243,7 @@ CSAgent::CSAgent(float dr, float th) :
 CSAgent::~CSAgent()
 {
     if (storage != NULL)    // save memory if storage exists
-        SaveMemory();
+        DumpMemoryToStorage();
     FreeMemory();    // free computer memory
 }
 
