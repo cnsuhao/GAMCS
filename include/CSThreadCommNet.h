@@ -6,7 +6,7 @@
 
 #define MAX_MEMBER 1000     // maximun number of members in group
 #define CHANNEL_SIZE 100     // maximun number of messages a channel can store
-#define DATA_SIZE 2048      // maximun size of message passed
+#define DATA_SIZE 4096      // maximun size of message passed
 
 /**
 * Channel used to transfer messages, every member has a channel.
@@ -27,28 +27,23 @@ class CSThreadCommNet : public CommNet
     public:
         CSThreadCommNet();
         CSThreadCommNet(int);
-        virtual ~CSThreadCommNet();
+        ~CSThreadCommNet();
 
         void LoadTopoFile(std::string);      /**< load topological structure of the group from a file */
 
+        int NumberOfMembers();
+        bool HasMember(int);
+    private:
         void AddMember(int);
         void AddNeighbour(int, int);
-        void AddMember(int, const std::vector<int> &);      /**< add a new member to network with its neighbours specified at the same time */
-        void AddNeighbour(int, const std::vector<int> &);   /**< add neighbours to a member */
         void RemoveMember(int);
         void RemoveNeighbour(int, int);
-        void RemoveNeighbour(int, const std::vector<int> &);    /**< remove specified neighbours from a member */
         std::vector<int> GetNeighbours(int);
-        int NumberOfMembers();
-        bool IsConnectedTo(int, int);
+        bool CheckNeighbourShip(int, int);
 
         int Send(int, void *, size_t);      /**< the interface members can use to send messages to others */
         int Recv(int, void *, size_t);      /**< the interface members can use to recv messages from others */
-    private:
-        std::string topofile;        /**< the file which has topological structure of the group */
-        int member_num;     /**< number of members in this network */
 
-        void BuildNeighsChannels();     /**< build neighbours and channels for all members */
         struct Channel *GetChannel(int);    /**< get channel of a specified member */
         void Notify(int);           /**< notify a member of new messages recieved */
 
@@ -63,7 +58,7 @@ class CSThreadCommNet : public CommNet
 */
 inline int CSThreadCommNet::NumberOfMembers()
 {
-    return member_num;
+    return members.size();
 }
 
 /**

@@ -16,8 +16,7 @@
 #include "Agent.h"
 #include "Debug.h"
 
-CSThreadCommNet::CSThreadCommNet() :
-        topofile(""), member_num(0)
+CSThreadCommNet::CSThreadCommNet()
 {
     members.clear();
     for (int i = 0; i < MAX_MEMBER; i++)    // set unused neightlist and channels to NULL
@@ -28,7 +27,7 @@ CSThreadCommNet::CSThreadCommNet() :
 }
 
 CSThreadCommNet::CSThreadCommNet(int i) :
-        CommNet(i), topofile(""), member_num(0)
+        CommNet(i)
 {
     members.clear();
     for (int i = 0; i < MAX_MEMBER; i++)
@@ -174,8 +173,44 @@ int CSThreadCommNet::Recv(int recver_id, void *buffer, size_t buf_size)
  */
 void CSThreadCommNet::LoadTopoFile(std::string tf)
 {
-    topofile = tf;
-    BuildNeighsChannels();
+    if (tf.empty())    // no topofile specified, the group will be emtpy, no members or neighbours
+    {
+        dbgprt("INFO", "topofile is NULL!\n");
+        return;
+    }
+
+    std::fstream topofs(tf.c_str());    // open topofile
+
+    if (!topofs.is_open())
+    {
+        ERROR("Group: %d can't open topofile: %s!\n", id, tf.c_str());
+    }
+
+    /* parse file, add member and  build neighlist */
+    char line[4096];    // buffer for reading a line in topofile, make sure it's big enough
+    const char *delim = ": ";    // delimiter bewteen member Id and its neighbour Ids
+    while (!topofs.eof())    // read till end
+    {
+        topofs.getline(line, 4096);
+        // get the member itself first
+        char *p = strtok(line, delim);
+        if (!p) break;
+
+        int mid = atoi(p);
+        AddMember(mid);    // a new member, add it
+
+        // parse its neighbours
+        while (p)
+        {
+            p = strtok(NULL, delim);
+            if (p && (atoi(p) != mid))    // exclude self
+            {
+                int nid = atoi(p);      // neighbour id
+                AddNeighbour(mid, nid); // add nid as a neighbour of mid
+            }
+        }
+    }
+
     return;
 }
 
@@ -208,94 +243,6 @@ std::vector<int> CSThreadCommNet::GetNeighbours(int id)
         nnh = nh->next;
     }
     return neighs;
-}
-
-/**
- * \brief Build up neighlist and channels for all members in the group.
- */
-void CSThreadCommNet::BuildNeighsChannels()
-{
-    if (topofile.empty())    // no topofile specified, the group will be emtpy, no members or neighbours
-    {
-        dbgprt("INFO", "topofile is NULL!\n");
-        return;
-    }
-
-    std::fstream tf(topofile.c_str());    // open topofile
-
-    if (!tf.is_open())
-    {
-        ERROR("Group: %d can't open topofile: %s!\n", id, topofile.c_str());
-    }
-
-    /* parse file and build neighlist */
-    char line[2048];    // buffer for reading a line in topofile
-    const char *delim = ": ";    // delimiter bewteen member Id and its neighbour Ids
-    while (!tf.eof())    // read till end
-    {
-        tf.getline(line, 2048);
-        // get the member itself first
-        char *p = strtok(line, delim);
-        if (!p) break;
-        int node = atoi(p);
-        members.push_back(node);    // a new member, save it
-        // parse its neighbours
-        while (p)
-        {
-            p = strtok(NULL, delim);
-            if (p && atoi(p) != node)    // exclude self
-            {
-                struct Neigh *nneigh = (struct Neigh *) malloc(
-                        sizeof(struct Neigh));
-                assert(nneigh != NULL);
-                nneigh->id = atoi(p);
-                nneigh->next = neighlist[node];
-                neighlist[node] = nneigh;
-            }
-        }
-    }
-
-    member_num = members.size();    // number of members
-
-    /* initialize channels */
-    for (std::vector<int>::iterator it = members.begin(); it != members.end();
-            ++it)
-    {
-        channels[*it].msg = (struct Msg *) malloc(
-                sizeof(struct Msg) * CHANNEL_SIZE);
-        assert(channels[*it].msg != NULL);
-        pthread_mutex_init(&(channels[*it].mutex), NULL);    // initialize mutex
-        channels[*it].msg_num = 0;
-        channels[*it].ptr = CHANNEL_SIZE - 1;
-    }
-
-    return;
-}
-
-void CSThreadCommNet::AddMember(int mid, const std::vector<int> &neighbours)
-{
-    AddMember(mid);    // add member first
-    AddNeighbour(mid, neighbours);    // add neighbours
-}
-
-void CSThreadCommNet::AddNeighbour(int who, const std::vector<int> &neighbours)
-{
-    // add all neighbours
-    for (std::vector<int>::const_iterator nit = neighbours.begin();
-            nit != neighbours.end(); ++nit)
-    {
-        AddNeighbour(who, *nit);
-    }
-}
-
-void CSThreadCommNet::RemoveNeighbour(int who, const std::vector<int> &neighbours)
-{
-    // remove all neighbours
-    for (std::vector<int>::const_iterator nit = neighbours.begin();
-            nit != neighbours.end(); ++nit)
-    {
-        RemoveNeighbour(who, *nit);
-    }
 }
 
 void CSThreadCommNet::AddMember(int mem)
@@ -436,7 +383,7 @@ void CSThreadCommNet::RemoveNeighbour(int mem, int neighbour)
 
 }
 
-bool CSThreadCommNet::IsConnectedTo(int from, int to)
+bool CSThreadCommNet::CheckNeighbourShip(int from, int to)
 {
     bool connected = false;
     struct Neigh *nb, *nnb;
@@ -451,4 +398,14 @@ bool CSThreadCommNet::IsConnectedTo(int from, int to)
             nnb = nb->next;
     }
     return connected;
+}
+
+bool CSThreadCommNet::HasMember(int id)
+{
+    bool re = false;
+    std::vector<int>::iterator it = std::find(members.begin(), members.end(), id);
+    if (it != members.end())    // found
+        re = true;
+
+    return re;
 }
