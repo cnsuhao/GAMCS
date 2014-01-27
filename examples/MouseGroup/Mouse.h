@@ -7,7 +7,7 @@ class Mouse: public CSThreadAvatar
 {
     public:
         Mouse(int i);
-        virtual ~Mouse();
+        ~Mouse();
 
     private:
         Agent::State position;

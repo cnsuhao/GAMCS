@@ -9,16 +9,14 @@ class Mouse: public Avatar
         /** Default constructor */
         Mouse(int);
         /** Default destructor */
-        virtual ~Mouse();
+        ~Mouse();
 
-    protected:
     private:
         Agent::State position;
 
         Agent::State GetCurrentState();
         void DoAction(Agent::Action);
         std::vector<Agent::Action> ActionCandidates(Agent::State);
-        Agent::State ExpectedState();
         float OriginalPayoff(Agent::State);
         void SendStateInfo(Agent::State)
         {
