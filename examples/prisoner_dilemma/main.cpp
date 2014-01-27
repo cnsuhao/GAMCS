@@ -16,7 +16,7 @@ int main(void)
     Mysql mysqlB;
     mysqlB.SetDBArgs("localhost", "root", "huangk",  "PrisonerB");
 
-    float discount_rate = 0.0;  // discount rate determines the final equilibrium!
+    float discount_rate = 0.9;  // discount rate determines the final equilibrium!
     CSAgent agentA(discount_rate, 0.01);
     CSAgent agentB(discount_rate, 0.01);
     agentA.SetUnseenActionPayoff(0.0);

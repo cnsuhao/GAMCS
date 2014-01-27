@@ -35,7 +35,7 @@ Agent::State current_state = 1; // start from state 1
 bool actA = false;
 bool actB = true;    // let A act first
 
-int runtimes = 1000;    // number of rounds
+int runtimes = 100;    // number of rounds
 bool quit_notification = false; // notify opponent to quit
 
 class PrisonerA: public CSThreadAvatar
@@ -142,7 +142,7 @@ class PrisonerB: public CSThreadAvatar
         Agent::State GetCurrentState()
         {
             while (actA == false)
-                usleep(10000);    // sleep, wait for B to act
+                usleep(10000);    // sleep, wait for A to act
             actA = false;
             return current_state;
         }

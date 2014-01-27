@@ -505,11 +505,27 @@ void CSAgent::LinkStates(struct cs_State *pmst, EnvAction eat,
     pmst->flist = fas;
 
     /* add pmst to mst's blist */
-    struct cs_BackArcState *bas = NewBas();
-    bas->pstate = pmst;    // previous state is pmst
-    // add bas to mst's blist
-    bas->next = mst->blist;
-    mst->blist = bas;
+    // state shouldn't repeat in backward list, check if already exists
+    struct cs_BackArcState *bas, *nbas;
+    for (bas = mst->blist; bas != NULL; bas = nbas)
+    {
+        if (bas->pstate == pmst)    // found
+            break;
+
+        nbas = bas->next;
+    }
+
+    if (bas == NULL)    // not found, create a new one and add to blist
+    {
+        bas = NewBas();
+        bas->pstate = pmst;    // previous state is pmst
+        // add bas to mst's blist
+        bas->next = mst->blist;
+        mst->blist = bas;
+    }
+    else    // found ,nothing to do
+    {
+    }
 
     lk_num++;    // update total link number
     /* A link is a combination of eaction AND aciton, either of them not existing means this link doesn't exist.
@@ -979,25 +995,40 @@ struct State_Info_Header *CSAgent::GetStateInfo(Agent::State st) const
     int act_num = 0;    // number of actions
     int eat_num = 0;    // number of envir actions
     int lk_num = 0;    // number of backward links
-    /* get numbers */
+    /* get action numbers */
     struct cs_Action *ac, *nac;
     for (ac = mst->atlist; ac != NULL; ac = nac)
     {
         act_num++;
         nac = ac->next;
     }
-
+    /* get env action numbers */
     struct cs_EnvAction *ea, *nea;
     for (ea = mst->ealist; ea != NULL; ea = nea)
     {
         eat_num++;
         nea = ea->next;
     }
-
+    /* get backward link numbers */
     struct cs_BackArcState *bas, *nbas;
+    struct cs_ForwardArcState *fas, *nfas;
     for (bas = mst->blist; bas != NULL; bas = nbas)
     {
-        lk_num++;
+        struct cs_State *pmst = SearchState(bas->pstate->st);
+        if (pmst == NULL)
+            ERROR(
+                    "GetStateInfo(): blist indicates a previous state existing, but search memory returns NULL!\n");
+        /* The same previous state may have more than one links pointed to mst, we
+         * need to walk through the previous state's forward link to find every one.
+         */
+        for (fas = pmst->flist; fas != NULL; fas = nfas)
+        {
+            if (fas->nstate->st == mst->st)
+            {
+                lk_num++;
+            }
+            nfas = fas->next;
+        }
         nbas = bas->next;
     }
 
@@ -1054,7 +1085,7 @@ struct State_Info_Header *CSAgent::GetStateInfo(Agent::State st) const
         if (pmst == NULL)
             ERROR(
                     "GetStateInfo(): blist indicates a previous state existing, but search memory returns NULL!\n");
-        struct cs_ForwardArcState *fas, *nfas;
+
         for (fas = pmst->flist; fas != NULL; fas = nfas)
         {
             if (fas->nstate->st == mst->st)
@@ -1113,7 +1144,7 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
                 " it's a new state: %ld, create it in memory.\n", stif->st);
 
         mst = NewState(stif->st);
-        // copy state information
+// copy state information
         mst->count = stif->count;    // copy count
         mst->payoff = stif->payoff;
         mst->original_payoff = stif->original_payoff;    // the original payoff is what really is important
@@ -1212,7 +1243,7 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
         }
 
         /* merge environment action information, if an env action doesn't exist, create it and copy count, otherwise add up the count */
-        // for all env action, divide its count by 2 first
+// for all env action, divide its count by 2 first
         struct cs_EnvAction *meat, *nmeat;
         for (meat = mst->ealist; meat != NULL; meat = nmeat)
         {
@@ -1221,7 +1252,7 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
             nmeat = meat->next;
         }
 
-        // add recieved count as the other half
+// add recieved count as the other half
         for (i = 0; i < stif->eat_num; i++)    // for each env action in recieving list
         {
 
