@@ -1012,12 +1012,15 @@ struct State_Info_Header *CSAgent::GetStateInfo(Agent::State st) const
     /* get backward link numbers */
     struct cs_BackArcState *bas, *nbas;
     struct cs_ForwardArcState *fas, *nfas;
+    std::vector<struct cs_State *> pre_states;  // save states, avoid repeated search
     for (bas = mst->blist; bas != NULL; bas = nbas)
     {
         struct cs_State *pmst = SearchState(bas->pstate->st);
         if (pmst == NULL)
             ERROR(
                     "GetStateInfo(): blist indicates a previous state existing, but search memory returns NULL!\n");
+
+        pre_states.push_back(pmst);
         /* The same previous state may have more than one links pointed to mst, we
          * need to walk through the previous state's forward link to find every one.
          */
@@ -1029,6 +1032,7 @@ struct State_Info_Header *CSAgent::GetStateInfo(Agent::State st) const
             }
             nfas = fas->next;
         }
+
         nbas = bas->next;
     }
 
@@ -1079,18 +1083,14 @@ struct State_Info_Header *CSAgent::GetStateInfo(Agent::State st) const
 
     /* links information */
     struct BackLink lk;
-    for (bas = mst->blist; bas != NULL; bas = nbas)
+    // walk through all previous states
+    for (std::vector<cs_State *>::iterator pit=pre_states.begin(); pit!=pre_states.end(); ++pit)
     {
-        struct cs_State *pmst = SearchState(bas->pstate->st);
-        if (pmst == NULL)
-            ERROR(
-                    "GetStateInfo(): blist indicates a previous state existing, but search memory returns NULL!\n");
-
-        for (fas = pmst->flist; fas != NULL; fas = nfas)
+        for (fas = (*pit)->flist; fas != NULL; fas = nfas)
         {
             if (fas->nstate->st == mst->st)
             {
-                lk.pst = bas->pstate->st;
+                lk.pst = (*pit)->st;
                 lk.pact = fas->act;
                 lk.peat = fas->eat;
                 memcpy(ptr, &lk, sizeof(struct BackLink));
@@ -1098,7 +1098,6 @@ struct State_Info_Header *CSAgent::GetStateInfo(Agent::State st) const
             }
             nfas = fas->next;
         }
-        nbas = bas->next;
     }
 
     if ((ptr - (unsigned char *) stif) != stif_size)    // check size
