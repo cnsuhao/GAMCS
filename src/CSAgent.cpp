@@ -686,7 +686,16 @@ float CSAgent::CalStatePayoff(const struct cs_State *mst) const
  */
 void CSAgent::UpdateState(struct cs_State *mst)
 {
-    /* update state's payoff */
+
+    /* update actions' payoff */
+    struct cs_Action *ac, *nac;
+    for (ac = mst->atlist; ac != NULL; ac = nac)
+    {
+        ac->payoff = CalActPayoff(ac->act, mst);
+        nac = ac->next;
+    }
+
+    /* update state's payoff recursively */
     float payoff = CalStatePayoff(mst);
     dbgmoreprt("\nUpdateState()", "------------------------------------------- state: %ld, intial payoff:%.1f to %.1f\n", mst->st, mst->payoff, payoff);
 
@@ -706,14 +715,6 @@ void CSAgent::UpdateState(struct cs_State *mst)
     else
     {
         dbgmoreprt("UpdateState()", "Payoff no changes, it's smaller than %.1f\n", threshold);
-    }
-
-    /* update actions' payoff */
-    struct cs_Action *ac, *nac;
-    for (ac = mst->atlist; ac != NULL; ac = nac)
-    {
-        ac->payoff = CalActPayoff(ac->act, mst);
-        nac = ac->next;
     }
 
     if (mst->mark == SAVED) mst->mark = MODIFIED;    // set mark to indicate the modification, no need to change if it's NEW

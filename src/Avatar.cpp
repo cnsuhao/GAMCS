@@ -10,6 +10,7 @@
 #include <sys/timeb.h>
 #include <unistd.h>
 #include "Avatar.h"
+#include "CommNet.h"
 #include "Debug.h"
 
 Avatar::Avatar() :

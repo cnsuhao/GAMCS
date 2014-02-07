@@ -9,6 +9,7 @@
  ***********************************************************************/
 #include <stdio.h>
 #include "Agent.h"
+#include "Debug.h"
 
 Agent::Agent() :
         discount_rate(0.8), threshold(0.01), unseen_state_payoff(0.0), unseen_action_payoff(
@@ -20,6 +21,12 @@ Agent::Agent(float dr, float th) :
         discount_rate(dr), threshold(th), unseen_state_payoff(0.0), unseen_action_payoff(
                 0.0), unseen_eaction_maxpayoff(0.0)
 {
+    // check validity
+    if (discount_rate >= 1.0 || discount_rate < 0)   // discount rate range [0, 1)
+        ERROR("Agent - discount rate must be bigger than 0 and smaller than 1.0!\n");
+
+    if (threshold < 0)
+        ERROR("Agent - threshold must be bigger than 0!\n");
 }
 
 Agent::~Agent()
