@@ -50,7 +50,7 @@ int Mysql::Connect()
     /* create table if not exists */
     char tb_string[256];
     sprintf(tb_string,
-            "CREATE TABLE IF NOT EXISTS %s.%s(State BIGINT PRIMARY KEY, OriPayoff FLOAT, Payoff FLOAT, Count BIGINT, ActInfos BLOB, ExActInfos BLOB, BackLinks BLOB) \
+            "CREATE TABLE IF NOT EXISTS %s.%s(State BIGINT PRIMARY KEY, OriPayoff FLOAT, Payoff FLOAT, Count BIGINT, ExActInfos BLOB, ActInfos BLOB, ForwardLinks BLOB) \
             ENGINE MyISAM ",
             db_name.c_str(), db_t_stateinfo.c_str());
     if (mysql_query(db_con, tb_string))
@@ -192,12 +192,12 @@ struct State_Info_Header *Mysql::FetchStateInfo(Agent::State st) const
     }
 
     // size of actions, env actions and links
-    unsigned long ai_len = lengths[4];
-    unsigned long ea_len = lengths[5];
+    unsigned long ea_len = lengths[4];
+    unsigned long ai_len = lengths[5];
     unsigned long lk_len = lengths[6];
 
     // total size of state info
-    int stif_size = sizeof(struct State_Info_Header) + ai_len + ea_len + lk_len;
+    int stif_size = sizeof(struct State_Info_Header) + ea_len + ai_len + lk_len;
     // allocate memory and build header
     struct State_Info_Header *stif = (struct State_Info_Header *) malloc(
             stif_size);
@@ -206,23 +206,23 @@ struct State_Info_Header *Mysql::FetchStateInfo(Agent::State st) const
     stif->original_payoff = atof(row[1]);
     stif->payoff = atof(row[2]);
     stif->count = atol(row[3]);
-    stif->act_num = ai_len / sizeof(struct Action_Info);
     stif->eat_num = ea_len / sizeof(struct EnvAction_Info);
-    stif->lk_num = lk_len / sizeof(struct BackLink);
+    stif->act_num = ai_len / sizeof(struct Action_Info);
+    stif->lk_num = lk_len / sizeof(struct Forward_Link);
     stif->size = stif_size;
 
     unsigned char *ptr = (unsigned char *) stif;    // use point ptr to travel through each subpart
 
-    // fill action information part
-    ptr += sizeof(struct State_Info_Header);
-    memcpy(ptr, row[4], ai_len);
-
     // fill environment action information part
-    ptr += ai_len;
-    memcpy(ptr, row[5], ea_len);
+    ptr += sizeof(struct State_Info_Header);
+    memcpy(ptr, row[4], ea_len);
 
-    // fill backward links part
+    // fill action information part
     ptr += ea_len;
+    memcpy(ptr, row[5], ai_len);
+
+    // fill forward links part
+    ptr += ai_len;
     memcpy(ptr, row[6], lk_len);
 
     // move to the end
@@ -275,40 +275,40 @@ void Mysql::AddStateInfo(const struct State_Info_Header *stif)
 {
     char str[256];
     sprintf(str,
-            "INSERT INTO %s(State, OriPayoff, Payoff, Count, ActInfos, ExActInfos, BackLinks) VALUES(%ld, %.2f, %.2f, %ld, '%%s', '%%s', '%%s')",
+            "INSERT INTO %s(State, OriPayoff, Payoff, Count, ExActInfos, ActInfos, ForwardLinks) VALUES(%ld, %.2f, %.2f, %ld, '%%s', '%%s', '%%s')",
             db_t_stateinfo.c_str(), stif->st, stif->original_payoff,
             stif->payoff, stif->count);    // first stag of building mysql insert query, actlist, eactlist and links are build below
     size_t str_len = strlen(str);
 
     // get lenght of several subparts
-    unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
     unsigned long ea_len = stif->eat_num * sizeof(struct EnvAction_Info);
-    unsigned long lk_len = stif->lk_num * sizeof(struct BackLink);
+    unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
+    unsigned long lk_len = stif->lk_num * sizeof(struct Forward_Link);
 
     unsigned char *p = (unsigned char *) stif;    // use p to travel
 
-    // point to action information part
-    p += sizeof(struct State_Info_Header);
-    struct Action_Info *atif = (struct Action_Info *) p;
-
     // point to environment action information part
-    p += ai_len;
+    p += sizeof(struct State_Info_Header);
     struct EnvAction_Info *eaif = (struct EnvAction_Info *) p;
 
-    // point to backward link part
+    // point to action information part
     p += ea_len;
-    struct BackLink *lk = (struct BackLink *) p;
+    struct Action_Info *atif = (struct Action_Info *) p;
 
-    char ai_chunk[2 * ai_len + 1];    // temporary buffer to put action information
-    mysql_real_escape_string(db_con, ai_chunk, (char *) atif, ai_len);
+    // point to forward link part
+    p += ai_len;
+    struct Forward_Link *lk = (struct Forward_Link *) p;
+
     char ea_chunk[2 * ea_len + 1];    // temporary buffer to put envir action info
     mysql_real_escape_string(db_con, ea_chunk, (char *) eaif, ea_len);
+    char ai_chunk[2 * ai_len + 1];    // temporary buffer to put action information
+    mysql_real_escape_string(db_con, ai_chunk, (char *) atif, ai_len);
     char lk_chunk[2 * lk_len + 1];    // temporary buffer for links
     mysql_real_escape_string(db_con, lk_chunk, (char *) lk, lk_len);
 
-    char query[str_len + 2 * (ai_len + ea_len + lk_len) + 1];
-    int len = snprintf(query, str_len + 2 * (ai_len + ea_len + lk_len) + 1, str,
-            ai_chunk, ea_chunk, lk_chunk);    // final stag of building insert query
+    char query[str_len + 2 * (ea_len + ai_len + lk_len) + 1];
+    int len = snprintf(query, str_len + 2 * (ea_len + ai_len + lk_len) + 1, str,
+            ea_chunk, ai_chunk, lk_chunk);    // final stag of building insert query
 
     if (mysql_real_query(db_con, query, len))    // perform the query, and insert st to database
     {
@@ -327,35 +327,35 @@ void Mysql::UpdateStateInfo(const struct State_Info_Header *stif)
 {
     char str[256];
     sprintf(str,
-            "UPDATE %s SET OriPayoff=%.2f, Payoff=%.2f, Count=%ld, ActInfos='%%s', ExActInfos='%%s', BackLinks='%%s' WHERE State=%ld",
+            "UPDATE %s SET OriPayoff=%.2f, Payoff=%.2f, Count=%ld, ExActInfos='%%s', ActInfos='%%s', ForwardLinks='%%s' WHERE State=%ld",
             db_t_stateinfo.c_str(), stif->original_payoff, stif->payoff,
             stif->count, stif->st);    // first stage of building the update query
     size_t str_len = strlen(str);
 
-    unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
     unsigned long ea_len = stif->eat_num * sizeof(struct EnvAction_Info);
-    unsigned long lk_len = stif->lk_num * sizeof(struct BackLink);
+    unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
+    unsigned long lk_len = stif->lk_num * sizeof(struct Forward_Link);
 
     unsigned char *p = (unsigned char *) stif;
     p += sizeof(struct State_Info_Header);
-    struct Action_Info *atif = (struct Action_Info *) p;
-
-    p += ai_len;
     struct EnvAction_Info *eaif = (struct EnvAction_Info *) p;
 
     p += ea_len;
-    struct BackLink *lk = (struct BackLink *) p;
+    struct Action_Info *atif = (struct Action_Info *) p;
 
-    char ai_chunk[2 * ai_len + 1];
-    mysql_real_escape_string(db_con, ai_chunk, (char *) atif, ai_len);
+    p += ai_len;
+    struct Forward_Link *lk = (struct Forward_Link *) p;
+
     char ea_chunk[2 * ea_len + 1];
     mysql_real_escape_string(db_con, ea_chunk, (char *) eaif, ea_len);
+    char ai_chunk[2 * ai_len + 1];
+    mysql_real_escape_string(db_con, ai_chunk, (char *) atif, ai_len);
     char lk_chunk[2 * lk_len + 1];
     mysql_real_escape_string(db_con, lk_chunk, (char *) lk, lk_len);
 
-    char query[str_len + 2 * (ai_len + ea_len + lk_len) + 1];
-    int len = snprintf(query, str_len + 2 * (ai_len + ea_len + lk_len) + 1, str,
-            ai_chunk, ea_chunk, lk_chunk);    // final stage of building query
+    char query[str_len + 2 * (ea_len + ai_len + lk_len) + 1];
+    int len = snprintf(query, str_len + 2 * (ea_len + ai_len + lk_len) + 1, str,
+            ea_chunk, ai_chunk, lk_chunk);    // final stage of building query
 
     if (mysql_real_query(db_con, query, len))    // perform the query, and update database
     {
