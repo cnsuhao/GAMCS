@@ -2,6 +2,7 @@
 #define AGENT_H
 #include <stddef.h>
 #include "TSGIOM.h"
+#include "Debug.h"
 
 const unsigned long INVALID_STATE = INVALID_INPUT;
 const long INVALID_ACTION = INVALID_OUTPUT;
@@ -53,6 +54,10 @@ class Agent: public TSGIOM
 
 inline void Agent::SetDiscountRate(float dr)
 {
+    // check validity
+    if (dr >= 1.0 || dr < 0)   // discount rate range [0, 1)
+        ERROR("Agent - discount rate must be bigger than 0 and smaller than 1.0!\n");
+
     discount_rate = dr;
 }
 
@@ -63,6 +68,9 @@ inline float Agent::GetDiscountRate()
 
 inline void Agent::SetThreshold(float th)
 {
+    if (th < 0)
+        ERROR("Agent - threshold must be bigger than 0!\n");
+
     threshold = th;
 }
 

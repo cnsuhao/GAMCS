@@ -3,7 +3,8 @@
 #include <vector>
 #include <set>
 #include "Agent.h"
-#include "CommNet.h"
+
+class CommNet;
 
 /**
  * Avatar Interface.
