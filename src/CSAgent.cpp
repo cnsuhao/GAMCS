@@ -16,7 +16,7 @@
 #include "Debug.h"
 
 /** \brief Load a specified state from a previous memory stored in database.
- * Note that it will load all states directly or indirectly connected to this state to the computer memory.
+ * Note that it will create all states directly or indirectly connected by this state to the computer memory.
  * \param st state value
  * \return state struct of st in computer memory
  *
@@ -44,32 +44,23 @@ void CSAgent::LoadState(Agent::State st)
     mst->payoff = stif->payoff;
     mst->count = stif->count;
 
-    unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
     unsigned long ea_len = stif->eat_num * sizeof(struct EnvAction_Info);
+    unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
 
     unsigned char *p = (unsigned char *) stif;    // use point p to travel through even parts
-    // point to actions
+    // point to env actions
     p += sizeof(struct State_Info_Header);
-    struct Action_Info *atif = (struct Action_Info *) p;
-
-    // point to environment actions
-    p += ai_len;
     struct EnvAction_Info *eaif = (struct EnvAction_Info *) p;
 
-    // point to backward links
+    // point to actions
     p += ea_len;
-    struct BackLink *lk = (struct BackLink *) p;
+    struct Action_Info *atif = (struct Action_Info *) p;
+
+    // point to forward links
+    p += ai_len;
+    struct Forward_Link *lk = (struct Forward_Link *) p;
 
     int i;
-    /* build actions list */
-    for (i = 0; i < stif->act_num; i++)
-    {
-        struct cs_Action *mac = NewAc(atif[i].act);
-        mac->payoff = atif[i].payoff;
-        // add to mst's atlist
-        mac->next = mst->atlist;
-        mst->atlist = mac;
-    }
     /* build exactions list */
     for (i = 0; i < stif->eat_num; i++)
     {
@@ -80,28 +71,40 @@ void CSAgent::LoadState(Agent::State st)
         mst->ealist = mea;
     }
 
-    /* build current state's backward list and previous state's forward lists */
+    /* build actions list */
+    for (i = 0; i < stif->act_num; i++)
+    {
+        struct cs_Action *mac = NewAc(atif[i].act);
+        mac->payoff = atif[i].payoff;
+        // add to mst's atlist
+        mac->next = mst->atlist;
+        mst->atlist = mac;
+    }
+
+    /* build current state's forward list and next states' backward list */
     for (i = 0; i < stif->lk_num; i++)
     {
-        struct cs_State *pmst = SearchState(lk[i].pst);    // search for previous state in memory
-        if (pmst == NULL)    // not found, create one
+        struct cs_State *nmst = SearchState(lk[i].nst);    // search for next state in memory
+        if (nmst == NULL)    // next state not found, create one
         {
-            pmst = NewState(lk[i].pst);
-            /* Add to memory */
-            AddStateToMemory(pmst);
+            nmst = NewState(lk[i].nst);
+            // Add to memory
+            AddStateToMemory(nmst);
         }
-        /* build mst's backward list */
-        struct cs_BackArcState *mbas = NewBas();
-        mbas->pstate = pmst;
-        // add to mst's blist
-        mbas->next = mst->blist;
-        mst->blist = mbas;
-        /* build pmst's forward list */
-        struct cs_ForwardArcState *mfas = NewFas(lk[i].peat, lk[i].pact);
-        mfas->nstate = mst;
+
+        // build mst's forward list
+        struct cs_ForwardArcState *mfas = NewFas(lk[i].eat, lk[i].act);
+        mfas->nstate = nmst;
         // add to mst's flist
-        mfas->next = pmst->flist;
-        pmst->flist = mfas;
+        mfas->next = mst->flist;
+        mst->flist = mfas;
+
+        // build nmst's backward list
+        struct cs_BackArcState *mbas = NewBas();
+        mbas->pstate = mst;
+        // add to nmst's blist
+        mbas->next = nmst->blist;
+        nmst->blist = mbas;
     }
 
     free(stif);    // dont't forget to free
@@ -993,16 +996,10 @@ struct State_Info_Header *CSAgent::GetStateInfo(Agent::State st) const
     }
 
     /* numbers */
-    int act_num = 0;    // number of actions
     int eat_num = 0;    // number of envir actions
-    int lk_num = 0;    // number of backward links
-    /* get action numbers */
-    struct cs_Action *ac, *nac;
-    for (ac = mst->atlist; ac != NULL; ac = nac)
-    {
-        act_num++;
-        nac = ac->next;
-    }
+    int act_num = 0;    // number of actions
+    int lk_num = 0;    // number of forward links
+
     /* get env action numbers */
     struct cs_EnvAction *ea, *nea;
     for (ea = mst->ealist; ea != NULL; ea = nea)
@@ -1010,38 +1007,26 @@ struct State_Info_Header *CSAgent::GetStateInfo(Agent::State st) const
         eat_num++;
         nea = ea->next;
     }
-    /* get backward link numbers */
-    struct cs_BackArcState *bas, *nbas;
-    struct cs_ForwardArcState *fas, *nfas;
-    std::vector<struct cs_State *> pre_states;  // save states, avoid repeated search
-    for (bas = mst->blist; bas != NULL; bas = nbas)
+    /* get action numbers */
+    struct cs_Action *ac, *nac;
+    for (ac = mst->atlist; ac != NULL; ac = nac)
     {
-        struct cs_State *pmst = SearchState(bas->pstate->st);
-        if (pmst == NULL)
-            ERROR(
-                    "GetStateInfo(): blist indicates a previous state existing, but search memory returns NULL!\n");
-
-        pre_states.push_back(pmst);
-        /* The same previous state may have more than one links pointed to mst, we
-         * need to walk through the previous state's forward link to find every one.
-         */
-        for (fas = pmst->flist; fas != NULL; fas = nfas)
-        {
-            if (fas->nstate->st == mst->st)
-            {
-                lk_num++;
-            }
-            nfas = fas->next;
-        }
-
-        nbas = bas->next;
+        act_num++;
+        nac = ac->next;
+    }
+    /* get forward link numbers */
+    struct cs_ForwardArcState *fas, *nfas;
+    for (fas = mst->flist; fas != NULL; fas = nfas)
+    {
+        lk_num++;
+        nfas = fas->next;
     }
 
     // allocate memory
     int stif_size = sizeof(struct State_Info_Header)
-            + act_num * sizeof(struct Action_Info)
             + eat_num * sizeof(struct EnvAction_Info)
-            + lk_num * sizeof(struct BackLink);
+            + act_num * sizeof(struct Action_Info)
+            + lk_num * sizeof(struct Forward_Link);
 
     struct State_Info_Header *stif = (struct State_Info_Header *) malloc(
             stif_size);
@@ -1051,14 +1036,26 @@ struct State_Info_Header *CSAgent::GetStateInfo(Agent::State st) const
     stif->original_payoff = mst->original_payoff;
     stif->payoff = mst->payoff;
     stif->count = mst->count;
-    stif->act_num = act_num;
     stif->eat_num = eat_num;
+    stif->act_num = act_num;
     stif->lk_num = lk_num;
     stif->size = stif_size;
 
     unsigned char *ptr = (unsigned char *) stif;    // use point ptr to travel through subparts of state information
-    /* fill action information */
+
+    /* fill env action information */
     ptr += sizeof(struct State_Info_Header);
+    struct EnvAction_Info eaif;
+    for (ea = mst->ealist; ea != NULL; ea = nea)
+    {
+        eaif.count = ea->count;
+        eaif.eat = ea->eat;
+        memcpy(ptr, &eaif, sizeof(struct EnvAction_Info));
+        ptr += sizeof(struct EnvAction_Info);
+
+        nea = ea->next;
+    }
+    /* fill action information */
     struct Action_Info acif;
     for (ac = mst->atlist; ac != NULL; ac = nac)
     {
@@ -1070,35 +1067,17 @@ struct State_Info_Header *CSAgent::GetStateInfo(Agent::State st) const
         nac = ac->next;
     }
 
-    /* EnvAction information */
-    struct EnvAction_Info eaif;
-    for (ea = mst->ealist; ea != NULL; ea = nea)
+    /* forward link information */
+    struct Forward_Link flk;
+    for (fas = mst->flist; fas != NULL; fas = nfas)
     {
-        eaif.count = ea->count;
-        eaif.eat = ea->eat;
-        memcpy(ptr, &eaif, sizeof(struct EnvAction_Info));
-        ptr += sizeof(struct EnvAction_Info);
+        flk.act = fas->act;
+        flk.eat = fas->eat;
+        flk.nst = fas->nstate->st;
+        memcpy(ptr, &flk, sizeof(struct Forward_Link));
+        ptr += sizeof(struct Forward_Link);
 
-        nea = ea->next;
-    }
-
-    /* links information */
-    struct BackLink lk;
-    // walk through all previous states
-    for (std::vector<cs_State *>::iterator pit=pre_states.begin(); pit!=pre_states.end(); ++pit)
-    {
-        for (fas = (*pit)->flist; fas != NULL; fas = nfas)
-        {
-            if (fas->nstate->st == mst->st)
-            {
-                lk.pst = (*pit)->st;
-                lk.pact = fas->act;
-                lk.peat = fas->eat;
-                memcpy(ptr, &lk, sizeof(struct BackLink));
-                ptr += sizeof(struct BackLink);
-            }
-            nfas = fas->next;
-        }
+        nfas = fas->next;
     }
 
     if ((ptr - (unsigned char *) stif) != stif_size)    // check size
@@ -1121,19 +1100,19 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
     PrintStateInfo(stif);
 #endif
     unsigned char *p = (unsigned char *) stif;    // use point p to travel through each subpart
-    // action information
-    p += sizeof(struct State_Info_Header);
-    struct Action_Info *atif = (struct Action_Info *) p;
-
     // environment action information
-    int len = stif->act_num * sizeof(struct Action_Info);
-    p += len;
+    p += sizeof(struct State_Info_Header);
     struct EnvAction_Info *eaif = (struct EnvAction_Info *) p;
 
-    // backward links information
-    len = stif->eat_num * sizeof(struct EnvAction_Info);
+    // action information
+    int len = stif->eat_num * sizeof(struct EnvAction_Info);
     p += len;
-    struct BackLink *lk = (struct BackLink *) p;
+    struct Action_Info *atif = (struct Action_Info *) p;
+
+    // forward links information
+    len = stif->act_num * sizeof(struct Action_Info);
+    p += len;
+    struct Forward_Link *flk = (struct Forward_Link *) p;
 
     int i;
     struct cs_State *mst = SearchState(stif->st);    // search for the state
@@ -1144,25 +1123,13 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
                 " it's a new state: %ld, create it in memory.\n", stif->st);
 
         mst = NewState(stif->st);
-// copy state information
+        // copy state information
         mst->count = stif->count;    // copy count
         mst->payoff = stif->payoff;
         mst->original_payoff = stif->original_payoff;    // the original payoff is what really is important
 
         /* Add to memory */
         AddStateToMemory(mst);
-
-        /* create and copy actions information */
-        for (i = 0; i < stif->act_num; i++)
-        {
-            struct cs_Action *mac = (struct cs_Action *) malloc(
-                    sizeof(struct cs_Action));
-            mac->act = atif[i].act;
-            mac->payoff = atif[i].payoff;
-
-            mac->next = mst->atlist;
-            mst->atlist = mac;
-        }
 
         /* create and copy ExActions information */
         for (i = 0; i < stif->eat_num; i++)
@@ -1176,28 +1143,41 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
             mst->ealist = meat;
         }
 
-        /* create and copy backward links information */
+        /* create and copy actions information */
+        for (i = 0; i < stif->act_num; i++)
+        {
+            struct cs_Action *mac = (struct cs_Action *) malloc(
+                    sizeof(struct cs_Action));
+            mac->act = atif[i].act;
+            mac->payoff = atif[i].payoff;
+
+            mac->next = mst->atlist;
+            mst->atlist = mac;
+        }
+
+        /* create and copy forward link information */
         for (i = 0; i < stif->lk_num; i++)
         {
-            Agent::State pst = lk[i].pst;    // previous state value
-            struct cs_State *pmst = SearchState(pst);    // find if the previous state exists
-            if (pmst != NULL)    // if so, make the link, otherwise update count, the link checking and env action count updating are handled by LinkStates()
+            //mst->count++;       // mantain consistence between state count and ea cout
+
+            Agent::State nst = flk[i].nst;    // next state value
+            struct cs_State *nmst = SearchState(nst);    // find if the next state exists
+            if (nmst != NULL)    // if so, inc count and make the link
             {
                 // build the link
-                dbgmoreprt("previous state", "%ld exists, build the link\n", pst);
-                pmst->count++;    // state count means the count we experience it either by reaching it or hearing of it.
-                LinkStates(pmst, lk[i].peat, lk[i].pact, mst);    // LinkStates() will take care of the situation where the link is already existing, and it will also call UpdateState() to refresh memroy
+                dbgmoreprt("next state", "%ld exists, build the link\n", nst);
+                LinkStates(mst, flk[i].eat, flk[i].act, nmst);
             }
-            else    // for a non-existing previous state, we will create it, and build the link
+            else    // for a non-existing next state, we will create it, and build the link
             {
                 // create a new previous state
-                dbgmoreprt("previous state", "%ld not exists, create it and build the link\n", pst);
-                struct cs_State *npmst = NewState(pst);
-                npmst->original_payoff = unseen_state_payoff;    // I don't know anything except the state value of this state, set its original payoff to default unseen_state_payoff
+                dbgmoreprt("next state", "%ld not exists, create it and build the link\n", nst);
+                struct cs_State *nmst = NewState(nst);
+                nmst->original_payoff = unseen_state_payoff;    // we don't know anything except the state value of this state, set its original payoff to default unseen_state_payoff
                 // add to memory
-                AddStateToMemory(npmst);
+                AddStateToMemory(nmst);
                 // build the link
-                LinkStates(npmst, lk[i].peat, lk[i].pact, mst);    // npmst will be updated in LinkStates() funciton
+                LinkStates(mst, flk[i].eat, flk[i].act, nmst);
             }
         }
     }    // mst == NULL
@@ -1214,6 +1194,46 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
          it doesn't matter if the original payoff set here is wrong, because when it experiences the state by itself, it'll get
          its own orignial payoff of this state from Avatar's OriginalPayoff() function. */
         mst->original_payoff = stif->original_payoff;
+
+        /* merge environment action information, if an env action doesn't exist, create it and copy count, otherwise add up the count */
+        // for all env action, divide its count by 2 first
+        struct cs_EnvAction *meat, *nmeat;
+        for (meat = mst->ealist; meat != NULL; meat = nmeat)
+        {
+            meat->count = round(meat->count / 2);
+
+            nmeat = meat->next;
+        }
+
+        // add recieved count as the other half
+        for (i = 0; i < stif->eat_num; i++)    // for each env action in recieving list
+        {
+            // walk through my ealist to find the corresponding one
+            for (meat = mst->ealist; meat != NULL; meat = nmeat)
+            {
+                if (meat->eat == eaif[i].eat)    // found
+                {
+                    meat->count += round(eaif[i].count / 2);    // set the env action count as average sum
+
+                    break;
+                }
+
+                nmeat = meat->next;
+            }
+
+            // not found, create a new one
+            if (meat == NULL)
+            {
+                struct cs_EnvAction *neat = (struct cs_EnvAction *) malloc(
+                        sizeof(struct cs_EnvAction));
+                neat->eat = eaif[i].eat;
+                neat->count = round(eaif[i].count / 2);    // average as well
+
+                // add to ealist
+                neat->next = mst->ealist;
+                mst->ealist = neat;
+            }
+        }
 
         /* merge action information, if an action doesn't exist, create it and copy payoff, otherwise copy payoff */
         for (i = 0; i < stif->act_num; i++)    // for each action in recieving list
@@ -1242,73 +1262,32 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
             }
         }
 
-        /* merge environment action information, if an env action doesn't exist, create it and copy count, otherwise add up the count */
-// for all env action, divide its count by 2 first
-        struct cs_EnvAction *meat, *nmeat;
-        for (meat = mst->ealist; meat != NULL; meat = nmeat)
-        {
-            meat->count = round(meat->count / 2);
-
-            nmeat = meat->next;
-        }
-
-// add recieved count as the other half
-        for (i = 0; i < stif->eat_num; i++)    // for each env action in recieving list
-        {
-
-            // walk through my ealist to find the corresponding one
-            for (meat = mst->ealist; meat != NULL; meat = nmeat)
-            {
-                if (meat->eat == eaif[i].eat)    // found
-                {
-                    meat->count += round(eaif[i].count / 2);    // set the env action count as average sum
-
-                    break;
-                }
-
-                nmeat = meat->next;
-            }
-
-            // not found, create a new one
-            if (meat == NULL)
-            {
-                struct cs_EnvAction *neat = (struct cs_EnvAction *) malloc(
-                        sizeof(struct cs_EnvAction));
-                neat->eat = eaif[i].eat;
-                neat->count = round(eaif[i].count / 2);    // average as well
-
-                // add to ealist
-                neat->next = mst->ealist;
-                mst->ealist = neat;
-            }
-        }
-
-        /* create and copy backward links information */
+        /* create and copy forward links information */
         for (i = 0; i < stif->lk_num; i++)
         {
-            Agent::State pst = lk[i].pst;
-            struct cs_State *pmst = SearchState(pst);    // find if the previous state exists
-            if (pmst != NULL)    // if so, make the link, otherwise update count, the link checking and env action count updating are handled by LinkStates()
+            //mst->count++;       // mantain consistence between state count and ea cout
+
+            Agent::State nst = flk[i].nst;
+            struct cs_State *nmst = SearchState(nst);    // find if the next state exists
+            if (nmst != NULL)    // if so, make the link,
             {
-                dbgmoreprt("previous state", "%ld exists, build the link\n", pst);
-                // build the link
-                pmst->count++;    // state count means the count we experience it either by reaching it or hearing of it.
-                LinkStates(pmst, lk[i].peat, lk[i].pact, mst);    // LinkStates() will take care of the situation where the link is already existing, and it will also call UpdateState() to refresh memroy
+                dbgmoreprt("next state", "%ld exists, build the link\n", nst);
+                LinkStates(mst, flk[i].eat, flk[i].act, nmst);    // LinkStates() will take care of the situation where the link is already existing, and it will also call UpdateState() to refresh memroy
             }
-            else    // for a non-existing previous state, we will create it, and build the link
+            else
             {
-                dbgmoreprt("previous state", "%ld not exists, create it and build the link\n", pst);
-                // create a new previous state
-                struct cs_State *npmst = NewState(pst);
-                npmst->original_payoff = unseen_state_payoff;    // I don't know anything except the state value of this state, set its original payoff to default unseen_state_payoff
+                dbgmoreprt("next state", "%ld not exists, create it and build the link\n", nst);
+                // create next state
+                struct cs_State *nmst = NewState(nst);
+                nmst->original_payoff = unseen_state_payoff;
                 // add to memory
-                AddStateToMemory(npmst);
+                AddStateToMemory(nmst);
                 // build the link
-                LinkStates(npmst, lk[i].peat, lk[i].pact, mst);    // npmst will be updated in LinkStates() funciton
+                LinkStates(mst, flk[i].eat, flk[i].act, nmst);    // nmst will be updated in LinkStates() funciton
             }
         }
-
     }
+
     UpdateState(mst);    // update state
 
     return;

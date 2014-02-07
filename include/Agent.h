@@ -94,14 +94,14 @@ inline void Agent::SetUnseenEActionMaxpayoff(float pf)
     unseen_eaction_maxpayoff = pf;
 }
 
-/** backward link struct for a state
- *  pst + pact + peat = current state
+/** forward link struct for a state
+ *  current state + act + eat = nst
  */
-struct BackLink
+struct Forward_Link
 {
-        Agent::State pst; /**< previous state */
-        Agent::Action pact; /**< previous action */
-        Agent::EnvAction peat; /**< previous exact */
+        Agent::Action act; /**< action */
+        Agent::EnvAction eat; /**< env act */
+        Agent::State nst; /**< next state */
 };
 
 /** action information */
@@ -125,9 +125,9 @@ struct State_Info_Header
         float original_payoff; /**< original payoff */
         float payoff; /**< payoff */
         unsigned long count; /**< times of travelling through this state */
-        int act_num; /**< number of actions which have been performed */
         int eat_num; /**< number of environment actions which have been observed */
-        int lk_num; /**< number of links to other states */
+        int act_num; /**< number of actions which have been performed */
+        int lk_num; /**< number of forward links to other states */
         size_t size; /**< size of the header (in Byte) */
 };
 
