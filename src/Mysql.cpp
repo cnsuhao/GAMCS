@@ -441,7 +441,7 @@ struct Memory_Info *Mysql::FetchMemoryInfo()
 
     struct Memory_Info *memif = (struct Memory_Info *) malloc(
             sizeof(struct Memory_Info));
-    dbgprt("Mysql FetchMemoryInfo()", "%s, Memory TimeStamp: %s\n",
+    dbgmoreprt("Mysql FetchMemoryInfo()", "%s, Memory TimeStamp: %s\n",
             db_name.c_str(), row[0]);
     // fill in the memory struct
     memif->discount_rate = atof(row[1]);
