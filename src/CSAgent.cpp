@@ -575,10 +575,8 @@ float CSAgent::MaxPayoffInEat(EnvAction eat, const struct cs_State *mst) const
     float max_pf = -FLT_MAX;    // set to a possibly minimun value
     struct cs_State *nmst;
     struct cs_ForwardArcState *fas, *nfas;
-    /* An env action may be on ealist but absent on flist, this could happen when the state information was recieved from others.
-     * Recall the struction of state information, state information sent contains ealist about this state, but the forward links are not included.
-     * */
-    bool eat_found_in_flist = false;    // indicate if an env action in ealist was found on forward list also.
+
+    bool eat_found_in_flist = false;    // indicate if an env action in ealist was found on forward list, it should be consistent!
 
     // walk through the forward links
     for (fas = mst->flist; fas != NULL; fas = nfas)
@@ -598,7 +596,12 @@ float CSAgent::MaxPayoffInEat(EnvAction eat, const struct cs_State *mst) const
         nfas = fas->next;
     }
 
-    if (eat_found_in_flist == false) max_pf = unseen_eaction_maxpayoff;    // if the env action was not found on flist, an default maxpayoff will be used.
+    if (eat_found_in_flist == false)
+    {
+        ERROR(
+                "MaxPayoffInEat(): env action: %ld is in ealist but not found in flist!\n",
+                eat);
+    }
 
     return max_pf;
 }
@@ -616,7 +619,6 @@ float CSAgent::Prob(const struct cs_EnvAction *ea,
     // calculate the sum of env action counts
     unsigned long sum_eacount = 0;
     struct cs_EnvAction *pea, *pnea;
-    dbgmoreprt("Prob", "------- state: %ld, count %ld, ", mst->st, mst->count);
     for (pea = mst->ealist; pea != NULL; pea = pnea)
     {
         sum_eacount += pea->count;
@@ -625,7 +627,8 @@ float CSAgent::Prob(const struct cs_EnvAction *ea,
         pnea = pea->next;
     }
 
-    dbgmoreprt("Prob", "sum: %ld\n", sum_eacount);
+    // state count donesn't equal to sum of eacount due to the merge operation (actually state count will become smaller than sum eacount gradually)
+    dbgmoreprt("Prob", "------- state: %ld, count %ld, ", mst->st, mst->count); dbgmoreprt("Prob", "sum: %ld\n", sum_eacount);
 
     float re = (1.0 / sum_eacount) * eacount;    // number of env actions divided by the total number
     /* do some checks below */
@@ -636,21 +639,6 @@ float CSAgent::Prob(const struct cs_EnvAction *ea,
                 "Prob(): probability is %.2f, which must in range [0, 1]. state: %ld, eact is %ld, count is %ld, total eacount is %ld.\n",
                 re, mst->st, ea->eat, eacount, sum_eacount);
     }
-//
-//    /* In every states loop, the count of conjoint state will temporarily be 1 bigger than the sum of its env action counts.
-//     * otherwise something wrong might happen */
-//    // check if total env action counts deviate too much from state count,
-//    unsigned long stcount = mst->count;
-//    unsigned long deviate = 0;
-//
-//    if ((deviate = labs(sum_eacount - stcount)) != 0)
-//    {
-//        ERROR("state %ld count: %ld and total env action counts: %ld, %ld deviation, this value shouldn't be bigger than one!\n", mst->st, stcount, sum_eacount, deviate);
-//    }
-//    else if (deviate != 0)
-//    {
-//        WARNNING("state %ld count: %ld and total env action counts: %ld, %ld deviation!\n", mst->st, stcount, sum_eacount, deviate);
-//    }
 
     return re;
 }
@@ -1185,7 +1173,7 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
     {
         dbgmoreprt("MergeStateInfo()", "state exists, do the merge.\n");
 
-        mst->count = round((mst->count + stif->count) / 2);    // !!!set count as the average sum
+        mst->count = round((mst->count + stif->count) / 2.0);    // !!!set count as the average sum
 
         dbgmoreprt("state count round to ", "%ld\n", mst->count);
         mst->payoff = stif->payoff;    // meanless to set payoff, since it's calculated on fly
@@ -1195,17 +1183,17 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
          its own orignial payoff of this state from Avatar's OriginalPayoff() function. */
         mst->original_payoff = stif->original_payoff;
 
-        /* merge environment action information, if an env action doesn't exist, create it and copy count, otherwise add up the count */
+        /* merge environment action information, if an env action doesn't exist, create it and copy count, otherwise merge the count half to half */
         // for all env action, divide its count by 2 first
         struct cs_EnvAction *meat, *nmeat;
         for (meat = mst->ealist; meat != NULL; meat = nmeat)
         {
-            meat->count = round(meat->count / 2);
+            meat->count = round(meat->count / 2.0);
 
             nmeat = meat->next;
         }
 
-        // add recieved count as the other half
+        // merge recieved count as the other half
         for (i = 0; i < stif->eat_num; i++)    // for each env action in recieving list
         {
             // walk through my ealist to find the corresponding one
@@ -1213,7 +1201,7 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
             {
                 if (meat->eat == eaif[i].eat)    // found
                 {
-                    meat->count += round(eaif[i].count / 2);    // set the env action count as average sum
+                    meat->count += round(eaif[i].count / 2.0);    // set the env action count as average sum
 
                     break;
                 }
@@ -1224,9 +1212,7 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
             // not found, create a new one
             if (meat == NULL)
             {
-                struct cs_EnvAction *neat = (struct cs_EnvAction *) malloc(
-                        sizeof(struct cs_EnvAction));
-                neat->eat = eaif[i].eat;
+                struct cs_EnvAction *neat = NewEa(eaif[i].eat);
                 neat->count = round(eaif[i].count / 2);    // average as well
 
                 // add to ealist
@@ -1272,7 +1258,7 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
             if (nmst != NULL)    // if so, make the link,
             {
                 dbgmoreprt("next state", "%ld exists, build the link\n", nst);
-                LinkStates(mst, flk[i].eat, flk[i].act, nmst);    // LinkStates() will take care of the situation where the link is already existing, and it will also call UpdateState() to refresh memroy
+                LinkStates(mst, flk[i].eat, flk[i].act, nmst);    // LinkStates() will take care of the situation where the link is already existing
             }
             else
             {
@@ -1283,7 +1269,7 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
                 // add to memory
                 AddStateToMemory(nmst);
                 // build the link
-                LinkStates(mst, flk[i].eat, flk[i].act, nmst);    // nmst will be updated in LinkStates() funciton
+                LinkStates(mst, flk[i].eat, flk[i].act, nmst);
             }
         }
     }
