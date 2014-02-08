@@ -53,6 +53,8 @@ class CSAgent: public Agent
 
         void LinkStates(struct cs_State *, Agent::EnvAction, Agent::Action,
                 struct cs_State *); /**< link two states in memory with specfic exact and action */
+        void MergeLink(struct cs_State *, Agent::EnvAction, Agent::Action,
+                struct cs_State *); /**< check and build link between states when the link info was fetched in state infomation recieved from other agents */
         std::vector<Agent::Action> BestActions(const struct cs_State *,
                 const std::vector<Agent::Action>&); /**< find the best action of a state */
         struct cs_State *SearchState(Agent::State) const; /**< search state in memory by its identity */

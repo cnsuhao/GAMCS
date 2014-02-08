@@ -245,7 +245,7 @@ void DotViewer::CleanDotStateInfo(const struct State_Info_Header *stif)
     for (int i = 0; i < stif->lk_num; i++)
     {
         printf("st%ld -> st%ld [label=\"<%ld, %ld>\"]\n", stif->st, lk[i].nst,
-        lk[i].eat, lk[i].act);
+                lk[i].eat, lk[i].act);
     }
 }
 
