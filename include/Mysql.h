@@ -39,6 +39,7 @@ class Mysql: public Storage
         void DeleteState(Agent::State);
         void AddMemoryInfo(const struct Memory_Info *);
         struct Memory_Info *FetchMemoryInfo();
+        std::string GetMemoryName();
     private:
         MYSQL *db_con; /**< database connection handler */
         std::string db_server; /**< database server address */
@@ -48,5 +49,11 @@ class Mysql: public Storage
         std::string db_t_stateinfo; /**< table name for storing state information */
         std::string db_t_meminfo; /**< table name for storing memory information */
 };
+
+
+inline std::string Mysql::GetMemoryName()
+{
+    return db_name;
+}
 
 #endif /* MYSQL_H_ */

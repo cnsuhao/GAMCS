@@ -8,6 +8,7 @@
 #ifndef MEMORYVIEWER_H_
 #define MEMORYVIEWER_H_
 #include "Debug.h"
+#include "Agent.h"
 
 class Storage;
 
@@ -22,7 +23,8 @@ class MemoryViewer
         virtual ~MemoryViewer();
 
         void SetStorage(Storage *);     /**< set storage in which memory is stored */
-        virtual void Show() = 0;    /**< show memory */
+        virtual void Show() = 0;    /**< show the whole memory */
+        virtual void ShowState(Agent::State) = 0;   /**< show a specified state */
 
     protected:
         Storage *storage;

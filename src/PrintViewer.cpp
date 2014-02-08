@@ -110,3 +110,16 @@ void PrintViewer::PrintStateInfo(const struct State_Info_Header *stif)
     return;
 }
 
+void PrintViewer::ShowState(Agent::State st)
+{
+    struct State_Info_Header *stif = storage->FetchStateInfo(st);
+    if (stif != NULL)
+    {
+        PrintStateInfo(stif);
+        free(stif);
+    }
+    else
+    {
+        dbgprt("Show()", "state: %ld information not found!\n", st);
+    }
+}
