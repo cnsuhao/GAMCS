@@ -1173,7 +1173,7 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
     {
         dbgmoreprt("MergeStateInfo()", "state exists, do the merge.\n");
 
-        mst->count = round((mst->count + stif->count) / 2.0);    // !!!set count as the average sum
+        mst->count = round((mst->count + stif->count) / 2.0);    // set count as the average sum
 
         dbgmoreprt("state count round to ", "%ld\n", mst->count);
         mst->payoff = stif->payoff;    // meanless to set payoff, since it's calculated on fly
@@ -1274,8 +1274,7 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
         }
     }
 
-    UpdateState(mst);    // update state
-
+    // UpdateState(mst);    // no need to update state here, it will be updated when personal experienced
     return;
 }
 

@@ -1,0 +1,3 @@
+AUX_SOURCE_DIRECTORY(. MONOMER_SRCS)
+ADD_EXECUTABLE(monomer ${MONOMER_SRCS})
+TARGET_LINK_LIBRARIES(monomer avatar mysqlclient)   # 指定链接库
