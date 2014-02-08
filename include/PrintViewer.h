@@ -9,6 +9,7 @@
 #define PRINTVEWER_H_
 
 #include <MemoryViewer.h>
+#include "Agent.h"
 
 class Storage;
 
@@ -23,7 +24,7 @@ class PrintViewer: public MemoryViewer
         virtual ~PrintViewer();
 
         void Show();
-
+        void ShowState(Agent::State);
     private:
         void PrintStateInfo(const struct State_Info_Header *);
 };

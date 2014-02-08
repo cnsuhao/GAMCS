@@ -6,6 +6,7 @@
  */
 #ifndef STORAGE_H_
 #define STORAGE_H_
+#include <string>
 #include "Agent.h"
 
 /**
@@ -33,6 +34,7 @@ class Storage
         virtual void DeleteState(Agent::State) = 0; /**< delete a state from storage */
         virtual void AddMemoryInfo(const struct Memory_Info *) = 0; /**< add memory informaiton to storage */
         virtual struct Memory_Info *FetchMemoryInfo() = 0; /**< fetch memory information from storage */
+        virtual std::string GetMemoryName() = 0;    /**< memory name */
 
 };
 
