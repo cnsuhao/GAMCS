@@ -5,13 +5,13 @@
 
 // debug on/off
 #ifdef _DEBUG_
-#define dbgprt(pref, fmt,...)  do{printf("%s:", pref);printf(fmt,##__VA_ARGS__);}while(0)
+#define dbgprt(pref, fmt,...)  do{printf("%s ", pref);printf(fmt,##__VA_ARGS__);}while(0)
 #else
 #define dbgprt(pref, fmt,...)
 #endif
 
 #ifdef _DEBUG_MORE_
-#define dbgmoreprt(pref, fmt,...)  do{printf("%s:", pref);printf(fmt,##__VA_ARGS__);}while(0)
+#define dbgmoreprt(pref, fmt,...)  do{printf("%s ", pref);printf(fmt,##__VA_ARGS__);}while(0)
 #else
 #define dbgmoreprt(pref, fmt,...)
 #endif

@@ -14,13 +14,13 @@
 #include "Debug.h"
 
 Avatar::Avatar() :
-        id(0), comm_freq(100), sps(60), agent(NULL), commnet(NULL), control_step_time(
+        id(0), sps(60), agent(NULL), commnet(NULL), control_step_time(
                 (1000 / sps))
 {
 }
 
 Avatar::Avatar(int i) :
-        id(i), comm_freq(100), sps(60), agent(NULL), commnet(NULL), control_step_time(
+        id(i), sps(60), agent(NULL), commnet(NULL), control_step_time(
                 (1000 / sps))
 {
 }
@@ -34,7 +34,7 @@ Avatar::~Avatar()
  */
 void Avatar::Launch()
 {
-    int count = 0;    // count for sending messages
+    int count = 1;    // loop count
 
     while (true)
     {
@@ -64,18 +64,37 @@ void Avatar::Launch()
         DoAction(act);    // otherwise, perform the action
 
         /* Commmunication */
-        if (count >= comm_freq)    // check if it's time to send a message
+        int each_comm_freq;
+        std::set<int> my_neighbours = GetMyNeighbours();    // walk through all neighbours to check frequence
+        for (std::set<int>::iterator nit = my_neighbours.begin();
+                nit != my_neighbours.end(); ++nit)
         {
-            Agent::State state_to_send = agent->StateToSend();
-            if (state_to_send != INVALID_STATE)
+            each_comm_freq = GetNeighFreq(*nit);    // get communication freq to this neighbour
+            if (count % each_comm_freq == 0)    // time to send msg
             {
-                dbgmoreprt("", "Count reach %d, send state %ld ...\n", comm_freq, state_to_send);
-                SendStateInfo(state_to_send);
-                count = 0;    // reset count
+                // prepare the state to be sent
+                if (states_to_send.find(*nit) == states_to_send.end())    // encounter a new neighbour
+                {
+                    Agent::State st_send = agent->NextStateToSend(
+                            INVALID_STATE);    // msg from beginning
+                    states_to_send[*nit] = st_send;    // record progress
+
+                    dbgprt("***", "%d sent state %ld to %d\n", id, st_send,
+                            *nit);
+                    SendStateInfo(*nit, st_send);    // send out
+                }
+                else    // this neighbour is an acquaintance
+                {
+                    Agent::State st_send = agent->NextStateToSend(
+                            states_to_send[*nit]);    // get the recorded state
+                    states_to_send[*nit] = st_send;    // record new progress
+
+                    dbgprt("***", "%d sent state %ld to %d\n", id, st_send,
+                            *nit);
+                    SendStateInfo(*nit, st_send);    // send out
+                }
             }
         }
-        else
-            count++;    // inc count
 
         // handle time related job
         unsigned long end_time = GetCurrentTime();
@@ -95,6 +114,8 @@ void Avatar::Launch()
                     "time is not enough to run a step, %ld in lack, try to decrease the sps!\n",
                     -time_remaining);
         }
+
+        count++;    // inc count
     }
     // quit
     dbgmoreprt("Exit Launch Loop", "----------------------------------------------------------- Id: %d Exit!\n", id);
@@ -105,7 +126,7 @@ void Avatar::Launch()
  * \brief Send information of a specified state to all neighbours.
  * \param st state value to be sent
  */
-void Avatar::SendStateInfo(Agent::State st)
+void Avatar::SendStateInfo(int toneb, Agent::State st)
 {
     if (commnet == NULL)    // no neighbours, nothing to do
         return;
@@ -117,7 +138,7 @@ void Avatar::SendStateInfo(Agent::State st)
         return;
     }
 
-    commnet->Send(id, stif, stif->size);    // call the send facility in commnet
+    commnet->Send(toneb, stif, stif->size);    // call the send facility in commnet
     free(stif);    // free
 
     return;
@@ -184,7 +205,7 @@ void Avatar::LeaveCommNet()
     return;
 }
 
-void Avatar::AddNeighbour(int nid)
+void Avatar::AddNeighbour(int nid, int freq)
 {
     // chech if joined in any network
     if (commnet == NULL)
@@ -195,44 +216,21 @@ void Avatar::AddNeighbour(int nid)
         return;
     }
 
-    // check if member exists
-    if (!commnet->HasMember(nid))    // member not exists
-    {
-        WARNNING(
-                "AddNeighbour(): Member %d doesn't exist, can not make it as a neighbour!\n",
-                nid);
-        return;
-    }
-
-    commnet->AddNeighbour(id, nid);
+    commnet->AddNeighbour(id, nid, freq);
 }
 
-void Avatar::AddNeighbours(const std::set<int> &neighbours)
+int Avatar::GetNeighFreq(int neb)
 {
     // chech if joined in any network
     if (commnet == NULL)
     {
         WARNNING(
-                "AddNeighbour(): menber %d hasn't joint any network yet, can not add a neighbour!!\n",
+                "AddNeighbour(): menber %d hasn't joint any network yet, can not add a neighbour!\n",
                 id);
-        return;
+        return INT_MAX;
     }
 
-    // add all neighbours
-    for (std::set<int>::const_iterator nit = neighbours.begin();
-            nit != neighbours.end(); ++nit)
-    {
-        // check if member exists
-        if (!commnet->HasMember(*nit))    // member not exists
-        {
-            WARNNING(
-                    "AddNeighbour(): Member %d doesn't exist, can not make it as a neighbour!\n",
-                    *nit);
-            return;
-        }
-
-        commnet->AddNeighbour(id, *nit);
-    }
+    return commnet->GetNeighFreq(id, neb);
 }
 
 void Avatar::RemoveNeighbour(int nid)
@@ -246,44 +244,7 @@ void Avatar::RemoveNeighbour(int nid)
         return;
     }
 
-    // check if member exists
-    if (!commnet->HasMember(nid))
-    {
-        WARNNING(
-                "RemoveNeighbour(): Member %d doesn't exist, are you sure it's your neighbour?\n",
-                nid);
-        return;
-    }
-
     commnet->RemoveNeighbour(id, nid);
-}
-
-void Avatar::RemoveNeighbours(const std::set<int> &neighbours)
-{
-    // chech if joined in any network
-    if (commnet == NULL)
-    {
-        WARNNING(
-                "RemoveNeighbour(): menber %d hasn't joint any network yet, it has no neighbours to remove!\n",
-                id);
-        return;
-    }
-
-    // remove all neighbours
-    for (std::set<int>::const_iterator nit = neighbours.begin();
-            nit != neighbours.end(); ++nit)
-    {
-        // check if member exists
-        if (!commnet->HasMember(*nit))
-        {
-            WARNNING(
-                    "RemoveNeighbour(): Member %d doesn't exist, are you sure it's your neighbour?\n",
-                    *nit);
-            return;
-        }
-
-        commnet->RemoveNeighbour(id, *nit);
-    }
 }
 
 std::set<int> Avatar::GetMyNeighbours()

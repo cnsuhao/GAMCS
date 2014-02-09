@@ -25,7 +25,7 @@ class Agent: public TSGIOM
         /** These two functions are implementation dependant, declared as pure virtual functions */
         virtual struct State_Info_Header *GetStateInfo(State) const = 0; /**<  collect information of specified state from memory */
         virtual void MergeStateInfo(const struct State_Info_Header *) = 0; /**<  merge recieved state information into memory */
-        virtual State StateToSend() = 0; /**< return the state to be sent to neighbour */
+        virtual State NextStateToSend(State) = 0; /**< return the next state to be sent */
         void Update(float); /**< update memory, this function will call UpdateMemory() to do the real update */
 
         static void PrintStateInfo(const struct State_Info_Header *); /**< print state information gracefully */
