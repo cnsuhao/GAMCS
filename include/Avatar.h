@@ -1,8 +1,7 @@
 #ifndef AVATAR_H
 #define AVATAR_H
 #include <vector>
-#include <set>
-#include <map>
+#include <string>
 #include "Agent.h"
 
 class CommNet;
@@ -15,7 +14,7 @@ class Avatar
 {
     public:
         Avatar();
-        Avatar(int);
+        Avatar(std::string);
         virtual ~Avatar();
 
         void Launch(); /**< launch this avatar */
@@ -23,30 +22,29 @@ class Avatar
         void ConnectAgent(Agent *); /**< connect to an agent */
         void SetSps(int);
         /* network related functions */
-        void JoinCommNet(CommNet *); /**< set join a communication network */
+        void JoinCommNet(CommNet *); /**< join a communication network */
         void LeaveCommNet(); /**< leave a network */
         void AddNeighbour(int, int); /**< add a neighbour */
-        int GetNeighFreq(int);  /**< get frequence to comminucate with this neighbour */
         void RemoveNeighbour(int); /**< remove a neighbour */
-        std::set<int> GetMyNeighbours(); /**< get all my neighbours */
-        bool CheckNeighbourShip(int); /**< check if a specified member is my neighbour */
     protected:
-        int id; /**< avatar Id */
+        std::string name; /**< avatar's name */
         int sps; /**< number of steps per second */
-        Agent *agent; /**< connected agent */
-        CommNet *commnet; /**< which network this avatar is belonged to */
 
-        virtual Agent::State GetCurrentState() = 0; /**< get current Agent::State */
-        virtual void DoAction(Agent::Action) = 0; /**< perform an Agent::Action */
-        virtual std::vector<Agent::Action> ActionCandidates(Agent::State) = 0; /**< return a list of all Agent::Action candidates of a Agent::State */
-        virtual float OriginalPayoff(Agent::State); /**< original payoff of a Agent::State */
+        Agent *myagent; /**< connected agent */
+
+        virtual Agent::State GetCurrentState() = 0; /**< get current state */
+        virtual void RealAction(Agent::Action) = 0; /**< perform an real action */
+        virtual std::vector<Agent::Action> ActionCandidates(Agent::State) = 0; /**< return a list of all action candidates of a Agent::State */
+        virtual float OriginalPayoff(Agent::State); /**< original payoff of a state */
+
+        virtual void RealJoinCommNet(CommNet *) = 0;
+        virtual void RealLeaveCommmNet() = 0;
+        virtual void RealAddNeighbour(int, int) = 0;
+        virtual void RealRemoveNeighbour(int) = 0;
+
     private:
-        void SendStateInfo(int, Agent::State); /**< send information of a state to a neighbour */
-        void RecvStateInfo(); /**< recieve state information from neighbours */
-
         unsigned long GetCurrentTime(); /**< current time in millisecond */
         unsigned long control_step_time; /**< delta time in millisecond requested bewteen two steps */
-        std::map<int, Agent::State> states_to_send;   /**< record state be sent to each neighbour */
 };
 
 inline void Avatar::SetSps(int s)
@@ -61,7 +59,7 @@ inline void Avatar::SetSps(int s)
  */
 inline void Avatar::ConnectAgent(Agent *agt)
 {
-    agent = agt;
+    myagent = agt;
 }
 
 #endif // AVATAR_H

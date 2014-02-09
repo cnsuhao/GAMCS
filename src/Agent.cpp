@@ -9,17 +9,24 @@
  ***********************************************************************/
 #include <stdio.h>
 #include "Agent.h"
+#include "CommNet.h"
 #include "Debug.h"
 
 Agent::Agent() :
-        discount_rate(0.8), threshold(0.01), unseen_state_payoff(0.0), unseen_action_payoff(
-                0.0), unseen_eaction_maxpayoff(0.0)
+        id(0), discount_rate(0.8), threshold(0.01), unseen_state_payoff(0.0), unseen_action_payoff(
+                0.0), unseen_eaction_maxpayoff(0.0), commnet(NULL)
 {
 }
 
-Agent::Agent(float dr, float th) :
-        discount_rate(dr), threshold(th), unseen_state_payoff(0.0), unseen_action_payoff(
-                0.0), unseen_eaction_maxpayoff(0.0)
+Agent::Agent(int i) :
+        id(i), discount_rate(0.8), threshold(0.01), unseen_state_payoff(0.0), unseen_action_payoff(
+                0.0), unseen_eaction_maxpayoff(0.0), commnet(NULL)
+{
+}
+
+Agent::Agent(int i, float dr, float th) :
+        id(i), discount_rate(dr), threshold(th), unseen_state_payoff(0.0), unseen_action_payoff(
+                0.0), unseen_eaction_maxpayoff(0.0), commnet(NULL)
 {
     // check validity
     if (discount_rate >= 1.0 || discount_rate < 0)    // discount rate range [0, 1)
@@ -55,6 +62,179 @@ void Agent::Update(float oripayoff)
 {
     UpdateMemory(oripayoff);    // update memory
     TSGIOM::Update();
+    return;
+}
+
+void Agent::Communicate()
+{
+    if (commnet == NULL)    // no commnet joined, nothing to do
+        return;
+
+    RecvStateInfo();    // check if new message has recieved
+
+    int each_comm_freq;
+    std::set<int> my_neighbours = GetMyNeighbours();    // walk through all neighbours to check frequence
+    for (std::set<int>::iterator nit = my_neighbours.begin();
+            nit != my_neighbours.end(); ++nit)
+    {
+        each_comm_freq = GetNeighFreq(*nit);    // get communication freq to this neighbour
+        if (process_count % each_comm_freq == 0)    // time to send msg
+        {
+            // prepare the state to be sent
+            if (states_to_send.find(*nit) == states_to_send.end())    // encounter a new neighbour
+            {
+                Agent::State st_send = NextStateToSend(INVALID_STATE);    // msg from beginning
+                states_to_send[*nit] = st_send;    // record progress
+
+                dbgprt("***", "%d sent state %ld to %d\n", id, st_send, *nit);
+                SendStateInfo(*nit, st_send);    // send out
+            }
+            else    // this neighbour is an acquaintance
+            {
+                Agent::State st_send = NextStateToSend(
+                        states_to_send[*nit]);    // get the recorded state
+                states_to_send[*nit] = st_send;    // record new progress
+
+                dbgprt("***", "%d sent state %ld to %d\n", id, st_send, *nit);
+                SendStateInfo(*nit, st_send);    // send out
+            }
+        }
+    }
+
+}
+
+/**
+ * \brief Join a communication network
+ * \param cn communication network to join
+ */
+void Agent::JoinCommNet(CommNet *cn)
+{
+    commnet = cn;
+    commnet->AddMember(id);    // add me as a member
+}
+
+/**
+ * \brief Leave a communication network
+ */
+void Agent::LeaveCommNet()
+{
+    // check first
+    if (commnet == NULL)    // not join in any net
+    {
+        return;
+    }
+
+    commnet->RemoveMember(id);    // remove me from network
+    commnet = NULL;    // set net as null
+    return;
+}
+
+void Agent::AddNeighbour(int nid, int freq)
+{
+    // chech if joined in any network
+    if (commnet == NULL)
+    {
+        WARNNING(
+                "AddNeighbour(): agent %d hasn't joint any network yet, can not add a neighbour!\n",
+                id);
+        return;
+    }
+
+    commnet->AddNeighbour(id, nid, freq);
+}
+
+void Agent::RemoveNeighbour(int nid)
+{
+    // chech if joined in any network
+    if (commnet == NULL)
+    {
+        WARNNING(
+                "RemoveNeighbour(): agent %d hasn't joint any network yet, it has no neighbour to remove!\n",
+                id);
+        return;
+    }
+
+    commnet->RemoveNeighbour(id, nid);
+}
+
+int Agent::GetNeighFreq(int neb)
+{
+    // chech if joined in any network
+    if (commnet == NULL)
+    {
+        WARNNING(
+                "AddNeighbour(): agent %d hasn't joint any network yet, can not add a neighbour!\n",
+                id);
+        return INT_MAX;
+    }
+
+    return commnet->GetNeighFreq(id, neb);
+}
+
+std::set<int> Agent::GetMyNeighbours()
+{
+    // chech if joined in any network
+    if (commnet == NULL)
+    {
+        WARNNING(
+                "GetMyNeighbours(): menber %d hasn't joint any network yet, no neighbours at all!\n",
+                id);
+        return std::set<int>();
+    }
+
+    return commnet->GetNeighbours(id);
+}
+
+bool Agent::CheckNeighbourShip(int nid)
+{
+    // chech if joined in any network
+    if (commnet == NULL)
+    {
+        WARNNING(
+                "CheckNeighbour(): menber %d hasn't joint any network yet, no neighbours at all!\n",
+                id);
+        return false;
+    }
+
+    return commnet->CheckNeighbourShip(id, nid);
+}
+
+/**
+ * \brief Send information of a specified state to a neighbour.
+ * \param st state value to be sent
+ */
+void Agent::SendStateInfo(int toneb, Agent::State st)
+{
+    if (commnet == NULL)    // no neighbours, nothing to do
+        return;
+
+    struct State_Info_Header *stif = NULL;
+    stif = GetStateInfo(st);    // the st may not exist
+    if (stif == NULL)
+    {
+        return;
+    }
+
+    commnet->Send(toneb, stif, stif->size);    // call the send facility in commnet
+    free(stif);    // free
+
+    return;
+}
+
+/**
+ * \brief Recieve state information from neighbours.
+ */
+void Agent::RecvStateInfo()
+{
+    if (commnet == NULL)    // no neighbours, nothing to do
+        return;
+
+    char re_buf[2048];    // buffer for recieved message
+
+    if (commnet->Recv(id, re_buf, 2048) != 0)    // fetch one message
+    {
+        MergeStateInfo((struct State_Info_Header *) re_buf);    // merge the recieved state information to memory
+    }
     return;
 }
 

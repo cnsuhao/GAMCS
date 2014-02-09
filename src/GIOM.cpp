@@ -12,7 +12,7 @@
 #include "GIOM.h"
 
 GIOM::GIOM() :
-        cur_in(INVALID_INPUT), cur_out(INVALID_OUTPUT)
+        cur_in(INVALID_INPUT), cur_out(INVALID_OUTPUT), process_count(0)
 {
     srand(time(NULL));    // random seed, here is the source of all possibilities!
 }
@@ -54,6 +54,7 @@ GIOM::Output GIOM::Process(Input in, const std::vector<GIOM::Output> &outlist)
     // store input and GIOM::Output
     cur_in = in;
     cur_out = out;
+    process_count++;    // inc count
     return out;
 }
 

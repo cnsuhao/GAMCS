@@ -15,7 +15,7 @@ class Monomer: public Avatar
         Agent::State position;
 
         Agent::State GetCurrentState();
-        void DoAction(Agent::Action);
+        void RealAction(Agent::Action);
         std::vector<Agent::Action> ActionCandidates(Agent::State);
         float OriginalPayoff(Agent::State);
         void SendStateInfo(Agent::State)

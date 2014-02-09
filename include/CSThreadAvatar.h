@@ -7,6 +7,7 @@
 #ifndef CSTHREADAVATAR_H
 #define CSTHREADAVATAR_H
 #include <pthread.h>
+#include <string>
 #include "Avatar.h"
 
 /**
@@ -16,7 +17,7 @@ class CSThreadAvatar: public Avatar
 {
     public:
         CSThreadAvatar();
-        CSThreadAvatar(int);
+        CSThreadAvatar(std::string);
         virtual ~CSThreadAvatar();
 
         pthread_t ThreadLaunch(); /**< if it's a group, launch each of its  members in a thread */

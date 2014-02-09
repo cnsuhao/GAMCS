@@ -235,8 +235,14 @@ CSAgent::CSAgent() :
     states_map.clear();
 }
 
-CSAgent::CSAgent(float dr, float th) :
-        Agent(dr, th), state_num(0), lk_num(0), storage(NULL), head(NULL), cur_mst(
+CSAgent::CSAgent(int i) :
+        Agent(i), state_num(0), lk_num(0), storage(NULL), head(NULL), cur_mst(NULL)
+{
+    states_map.clear();
+}
+
+CSAgent::CSAgent(int i, float dr, float th) :
+        Agent(i, dr, th), state_num(0), lk_num(0), storage(NULL), head(NULL), cur_mst(
         NULL)
 {
     states_map.clear();

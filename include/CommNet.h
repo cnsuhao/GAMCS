@@ -13,7 +13,7 @@ class CommNet
         CommNet(int);
         virtual ~CommNet();
 
-        friend class Avatar;    // Avatar could access functions in CommNet
+        friend class Agent;    // Avatar could access functions in CommNet
 
         /* network-scale queries */
         virtual int NumberOfMembers() = 0; /**< number of members in this network */

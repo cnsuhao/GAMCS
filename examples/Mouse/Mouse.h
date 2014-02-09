@@ -1,13 +1,14 @@
 #ifndef ROBOT1_H
 #define ROBOT1_H
 #include <vector>
+#include <string>
 #include "Avatar.h"
 
 class Mouse: public Avatar
 {
     public:
         /** Default constructor */
-        Mouse(int);
+        Mouse(std::string);
         /** Default destructor */
         ~Mouse();
 
@@ -15,7 +16,7 @@ class Mouse: public Avatar
         Agent::State position;
 
         Agent::State GetCurrentState();
-        void DoAction(Agent::Action);
+        void RealAction(Agent::Action);
         std::vector<Agent::Action> ActionCandidates(Agent::State);
         float OriginalPayoff(Agent::State);
         void SendStateInfo(Agent::State)

@@ -11,8 +11,8 @@ CSThreadAvatar::CSThreadAvatar()
 {
 }
 
-CSThreadAvatar::CSThreadAvatar(int i) :
-        Avatar(i)
+CSThreadAvatar::CSThreadAvatar(std::string n) :
+        Avatar(n)
 {
 }
 

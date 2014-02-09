@@ -1,11 +1,15 @@
 #ifndef AGENT_H
 #define AGENT_H
 #include <stddef.h>
+#include <set>
+#include <map>
 #include "TSGIOM.h"
 #include "Debug.h"
 
 const unsigned long INVALID_STATE = INVALID_INPUT;
 const long INVALID_ACTION = INVALID_OUTPUT;
+
+class CommNet;
 
 /**
  * Interface of an autonomous agent.
@@ -18,15 +22,12 @@ class Agent: public TSGIOM
         typedef long EnvAction; /**< environment action, "exact" for short */
 
         Agent();
-        Agent(float, float);
-
+        Agent(int);
+        Agent(int, float, float);
         virtual ~Agent();
 
-        /** These two functions are implementation dependant, declared as pure virtual functions */
-        virtual struct State_Info_Header *GetStateInfo(State) const = 0; /**<  collect information of specified state from memory */
-        virtual void MergeStateInfo(const struct State_Info_Header *) = 0; /**<  merge recieved state information into memory */
-        virtual State NextStateToSend(State) = 0; /**< return the next state to be sent */
         void Update(float); /**< update memory, this function will call UpdateMemory() to do the real update */
+        void Communicate(); /**< share memory with others */
 
         static void PrintStateInfo(const struct State_Info_Header *); /**< print state information gracefully */
         /* vector and get functions */
@@ -37,7 +38,15 @@ class Agent: public TSGIOM
         void SetUnseenStatePayoff(float);
         void SetUnseenActionPayoff(float);
         void SetUnseenEActionMaxpayoff(float);
+
+        /* network related stuff */
+        void JoinCommNet(CommNet *); /**< set join a communication network */
+        void LeaveCommNet(); /**< leave network */
+        void AddNeighbour(int, int); /**< add a neighbour */
+        void RemoveNeighbour(int); /**< remove a neighbour */
+
     protected:
+        int id; /**< agent Id */
         float discount_rate; /**< discount rate (0<,<1)when calculate state payoff */
         float threshold; /**< threshold used in payoff updating */
 
@@ -45,18 +54,35 @@ class Agent: public TSGIOM
         float unseen_action_payoff; /**< payoff of unseen actions, this controls the agent's curiosity */
         float unseen_eaction_maxpayoff; /**< maxmun payoff of states belonging to an unseen environment action, this controls the agent's world view */
 
+        CommNet *commnet; /**< which network this agent is belonged to */
+
         std::vector<Action> Restrict(State, const std::vector<Action> &); /**< reimplement restrict using maximun payoff rule  */
 
+        /** These two functions are implementation dependant, declared as pure virtual functions */
         virtual std::vector<Action> MaxPayoffRule(State,
                 const std::vector<Action> &) = 0; /**< implementation of maximun payoff rule */
         virtual void UpdateMemory(float) = 0; /**<  update states in memory given current state's original payoff*/
+        virtual struct State_Info_Header *GetStateInfo(State) const = 0; /**<  collect information of specified state from memory */
+        virtual void MergeStateInfo(const struct State_Info_Header *) = 0; /**<  merge recieved state information into memory */
+        virtual State NextStateToSend(State) = 0; /**< return the next state to be sent */
+
+    private:
+        std::set<int> GetMyNeighbours();
+        bool CheckNeighbourShip(int);
+        int GetNeighFreq(int); /**< get frequence to comminucate with this neighbour */
+
+        void SendStateInfo(int, State); /**< send information of a state to a neighbour */
+        void RecvStateInfo(); /**< recieve state information from neighbours */
+
+        std::map<int, State> states_to_send; /**< record state be sent to each neighbour */
 };
 
 inline void Agent::SetDiscountRate(float dr)
 {
     // check validity
-    if (dr >= 1.0 || dr < 0)   // discount rate range [0, 1)
-        ERROR("Agent - discount rate must be bigger than 0 and smaller than 1.0!\n");
+    if (dr >= 1.0 || dr < 0)    // discount rate range [0, 1)
+        ERROR(
+                "Agent - discount rate must be bigger than 0 and smaller than 1.0!\n");
 
     discount_rate = dr;
 }
@@ -69,7 +95,7 @@ inline float Agent::GetDiscountRate()
 inline void Agent::SetThreshold(float th)
 {
     if (th < 0)
-        ERROR("Agent - threshold must be bigger than 0!\n");
+    ERROR("Agent - threshold must be bigger than 0!\n");
 
     threshold = th;
 }

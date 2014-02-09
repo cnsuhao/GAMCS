@@ -8,8 +8,8 @@
  ***********************************************************************/
 #include "Mouse.h"
 
-Mouse::Mouse(int i) :
-        CSThreadAvatar(i)
+Mouse::Mouse(std::string n) :
+        CSThreadAvatar(n)
 {
     position = 5;
 }
@@ -24,7 +24,7 @@ Agent::State Mouse::GetCurrentState()
     return position;
 }
 
-void Mouse::DoAction(Agent::Action act)
+void Mouse::RealAction(Agent::Action act)
 {
     position += act;
 
