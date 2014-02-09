@@ -37,13 +37,14 @@ class CSThreadCommNet: public CommNet
         void DumpTopoToFile();    /**< dump topological structure of network to file */
 
         void AddMember(int);
-        void AddNeighbour(int, int);
+        void AddNeighbour(int, int, int);
+        int GetNeighFreq(int, int);
         void RemoveMember(int);
         void RemoveNeighbour(int, int);
         std::set<int> GetNeighbours(int);
         bool CheckNeighbourShip(int, int);
 
-        int Send(int, void *, size_t); /**< the interface members can use to send messages to others */
+        int Send(int, void *, size_t); /**< the interface members can use to send messages to a neighbour */
         int Recv(int, void *, size_t); /**< the interface members can use to recv messages from others */
 
         struct Channel *GetChannel(int); /**< get channel of a specified member */
@@ -89,7 +90,6 @@ inline struct Channel *CSThreadCommNet::GetChannel(int id)
  */
 struct Msg
 {
-        int sender_id;    // identity of sender
         char data[DATA_SIZE];    // message body
 };
 
@@ -99,6 +99,7 @@ struct Msg
 struct Neigh
 {
         int id; /**< the neigh's ID */
+        int freq;   /**< frequence to comminucate with this neighbour */
         struct Neigh *next; /**< next neigh */
 };
 

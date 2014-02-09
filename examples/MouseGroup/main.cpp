@@ -35,7 +35,6 @@ int main(void)
         Mouse *mouse = new Mouse(i);
         mouse->ConnectAgent(agent);
         mouse->JoinCommNet(&commnet);
-        mouse->SetCommFreq(10);
 
         mysql[i] = ml;
         mice[i] = mouse;

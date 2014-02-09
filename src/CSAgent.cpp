@@ -230,15 +230,14 @@ void CSAgent::DumpMemoryToStorage()
 }
 
 CSAgent::CSAgent() :
-        state_num(0), lk_num(0), storage(NULL), head(NULL), cur_mst(NULL), state_to_send(
-                head)
+        state_num(0), lk_num(0), storage(NULL), head(NULL), cur_mst(NULL)
 {
     states_map.clear();
 }
 
 CSAgent::CSAgent(float dr, float th) :
         Agent(dr, th), state_num(0), lk_num(0), storage(NULL), head(NULL), cur_mst(
-        NULL), state_to_send(head)
+        NULL)
 {
     states_map.clear();
 }
@@ -628,7 +627,7 @@ float CSAgent::Prob(const struct cs_EnvAction *ea,
     }
 
     // state count donesn't equal to sum of eacount due to the merge operation (actually state count will become smaller than sum eacount gradually)
-    dbgmoreprt("Prob", "------- state: %ld, count %ld, ", mst->st, mst->count); dbgmoreprt("Prob", "sum: %ld\n", sum_eacount);
+    dbgmoreprt("Prob", "------- state: %ld, count %ld, ", mst->st, mst->count);dbgmoreprt("Prob", "sum: %ld\n", sum_eacount);
 
     float re = (1.0 / sum_eacount) * eacount;    // number of env actions divided by the total number
     /* do some checks below */
@@ -1326,21 +1325,29 @@ void CSAgent::AddStateToMemory(struct cs_State *nstate)
     head = nstate;
     state_num++;
     states_map.insert(StatesMap::value_type(nstate->st, nstate));    // don't forget to update hash map
-
-    state_to_send = head;    // new state has been added, send state from beginning
 }
 
-Agent::State CSAgent::StateToSend()
+Agent::State CSAgent::NextStateToSend(Agent::State st)
 {
-    State re = INVALID_STATE;
-    if (state_to_send != NULL)
+    State older_state = INVALID_STATE;
+
+    if (st == INVALID_STATE)    // first time
+        return head->st;    // start from head
+
+    struct cs_State *mst = SearchState(st);    // search memory for the state
+    struct cs_State *nmst = NULL;
+
+    if (mst != NULL)
     {
-        re = state_to_send->st;
-        state_to_send = state_to_send->next;    // next state
+        nmst = mst->next;
+        if (nmst == NULL)    // reach the end
+            nmst = head;    // wrap at beginning
+
+        older_state = nmst->st;
     }
     else
-    {
-        state_to_send = head;    // wrap at beginning
-    }
-    return re;
+        // st not found in memory
+        WARNNING("NextStateToSend(): state %ld is valid but not found in memory!\n", st);
+
+    return older_state;
 }

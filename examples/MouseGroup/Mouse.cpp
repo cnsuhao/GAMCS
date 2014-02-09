@@ -36,11 +36,17 @@ void Mouse::DoAction(Agent::Action act)
 std::vector<Agent::Action> Mouse::ActionCandidates(Agent::State st)
 {
     static int count;
-//    UNUSED(st);
     if (count < 1000)
     {
         std::vector<Agent::Action> acts;
         acts.clear();
+        if (st == 1)    // position 1
+        {
+            acts.push_back(1);
+            count++;
+            return acts;
+        }
+
         acts.push_back(1);
         acts.push_back(-1);
         count++;

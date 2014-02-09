@@ -23,7 +23,7 @@ class CSAgent: public Agent
 
         struct State_Info_Header *GetStateInfo(Agent::State) const; /**< implementing GetStateInfo function */
         void MergeStateInfo(const struct State_Info_Header *); /**< implementing MergeStateInfo function */
-        Agent::State StateToSend(); /**< implementing Agent's StateToSend */
+        Agent::State NextStateToSend(Agent::State); /**< implementing Agent's OlderState */
 
         void SetStorage(Storage *); /**< set storage device */
     private:
@@ -41,7 +41,6 @@ class CSAgent: public Agent
         struct cs_State *head; /**< memory head*/
         StatesMap states_map; /**< hash map from state values to state struct */
         struct cs_State *cur_mst; /**< state struct for current state value */
-        struct cs_State *state_to_send; /**< point to next state to be sent to neighbours */
 
         void LoadMemoryFromStorage(); /**< load memory from database */
         void DumpMemoryToStorage(); /**< save memory to database */

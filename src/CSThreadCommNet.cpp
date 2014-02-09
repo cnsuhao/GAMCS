@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <climits>
 #include "CSThreadCommNet.h"
 #include "Agent.h"
 #include "Debug.h"
@@ -67,56 +68,45 @@ CSThreadCommNet::~CSThreadCommNet()
  * \param length length of the message
  * \return length of message that has been sent to the last neighbour
  */
-int CSThreadCommNet::Send(int sender_id, void *buffer, size_t buf_size)
+int CSThreadCommNet::Send(int toid, void *buffer, size_t buf_size)
 {
-    size_t re = 0;
     if (buf_size > DATA_SIZE)    // check size
     {
         dbgprt("Send()", "data size exceeds %d, not send!\n", DATA_SIZE);
-        re = 0;
+        return 0;
     }
-    else
-    {
-#ifdef _DEBUG_MORE_
-        printf(
-                "*************************** Id: %d, Send ********************************\n",
-                sender_id);
-        Agent::PrintStateInfo((struct State_Info_Header *) buffer);
-        printf(
-                "****************************** Send End **********************************\n\n");
+
+#ifdef _DEBUG_
+    printf(
+            "*************************** Send to %d ********************************\n",
+            toid);
+    Agent::PrintStateInfo((struct State_Info_Header *) buffer);
+    printf(
+            "****************************** Send End **********************************\n\n");
 #endif // _DEBUG_
 
-        std::set<int> neighs = GetNeighbours(sender_id);    // get all its neightbours, the message will send to all of they
-        // walk through all its neighbours, send message to they one by one
-        for (std::set<int>::iterator it = neighs.begin(); it != neighs.end();
-                ++it)
-        {
-            // for a neighbour
-            struct Channel *chan = GetChannel(*it);    // get its channel
-            pthread_mutex_lock(&chan->mutex);    // lock before write message to it
+    struct Channel *chan = GetChannel(toid);    // get its channel
+    pthread_mutex_lock(&chan->mutex);    // lock before write message to it
 
-            if (chan->ptr == 0)
-                chan->ptr = CHANNEL_SIZE - 1;    // move point, make room for the new msg, the oldest message will be lost
-            else
-                chan->ptr -= 1;
-            // check if msg buffer is not NULL, this may happen when a member has a neighbour that has been removed from net.
-            if (chan->msg == NULL)  // neighbour has been removed from network
-            {
-                pthread_mutex_unlock(&chan->mutex);    // unlock
-                RemoveNeighbour(sender_id, *it);    // remove it from my neighbours, it's also ok to keep it
-                continue;
-            }
+    if (chan->ptr == 0)
+        chan->ptr = CHANNEL_SIZE - 1;    // move point, make room for the new msg, the oldest message will be lost
+    else
+        chan->ptr -= 1;
 
-            memcpy(chan->msg[chan->ptr].data, buffer, buf_size);    // copy message to the channel
-            chan->msg[chan->ptr].sender_id = sender_id;
-
-            if (chan->msg_num < CHANNEL_SIZE) chan->msg_num++;    // maximum num is CHANNEL_SIZE
-
-            pthread_mutex_unlock(&chan->mutex);    // unlock
-            re = buf_size;
-        }
+    // check if msg buffer is not NULL, this may happen when a member has a neighbour that has been removed from net.
+    if (chan->msg == NULL)    // neighbour has been removed from network
+    {
+        pthread_mutex_unlock(&chan->mutex);    // unlock
+        return 0;    // no msg is sent
     }
-    return re;
+
+    memcpy(chan->msg[chan->ptr].data, buffer, buf_size);    // copy message to the channel
+
+    if (chan->msg_num < CHANNEL_SIZE) chan->msg_num++;    // maximum num is CHANNEL_SIZE
+
+    pthread_mutex_unlock(&chan->mutex);    // unlock
+
+    return buf_size;
 }
 
 /**
@@ -144,8 +134,6 @@ int CSThreadCommNet::Recv(int recver_id, void *buffer, size_t buf_size)
     else
     {
         memcpy(buffer, chan->msg[chan->ptr].data, buf_size);    // copy message to buffer
-        int sid = chan->msg[chan->ptr].sender_id;    // get sender's id
-        UNUSED(sid);    // FIXME: we didn't use it.
         chan->msg_num--;    // dec the message number
         if (chan->ptr == CHANNEL_SIZE - 1)
             chan->ptr = 0;    // move the message point
@@ -161,10 +149,10 @@ int CSThreadCommNet::Recv(int recver_id, void *buffer, size_t buf_size)
         }
         else
             re = buf_size;    // ok, msg is recieved
-#ifdef _DEBUG_MORE_
+#ifdef _DEBUG_
                     printf(
-                            "++++++++++++++++++++++++ Id: %d, Recv from: %d ++++++++++++++++++++++++\n",
-                            recver_id, sid);
+                            "++++++++++++++++++++++++ Id: %d, Recv ++++++++++++++++++++++++\n",
+                            recver_id);
                     Agent::PrintStateInfo(stif);
                     printf(
                             "++++++++++++++++++++++++++++++ Recv End ++++++++++++++++++++++++++++++\n\n");
@@ -225,7 +213,7 @@ void CSThreadCommNet::LoadTopoFromFile()
                 if (strcmp(const_cast<char *>(p), "#") == 0) break;    // p is #, comment begins
 
                 int nid = atoi(p);    // neighbour id
-                AddNeighbour(mid, nid);    // add nid as a neighbour of mid
+                AddNeighbour(mid, nid, 10);    // FIXME: add nid as a neighbour of mid
             }
         }
     }
@@ -305,7 +293,7 @@ void CSThreadCommNet::AddMember(int mem)
     channels[mem].ptr = CHANNEL_SIZE - 1;
 }
 
-void CSThreadCommNet::AddNeighbour(int mem, int neb)
+void CSThreadCommNet::AddNeighbour(int mem, int neb, int freq)
 {
     // check if member exists
     if (members.find(mem) == members.end())    // not found
@@ -350,8 +338,30 @@ void CSThreadCommNet::AddNeighbour(int mem, int neb)
     struct Neigh *nneigh = (struct Neigh *) malloc(sizeof(struct Neigh));
     assert(nneigh != NULL);
     nneigh->id = neb;
+    nneigh->freq = freq;
     nneigh->next = neighlist[mem];
     neighlist[mem] = nneigh;
+}
+
+int CSThreadCommNet::GetNeighFreq(int mem, int neb)
+{
+    struct Neigh *nb, *nnb;
+    for (nb = neighlist[mem]; nb != NULL; nb = nnb)
+    {
+        if (nb->id == neb)    // neighbour found
+        {
+            return nb->freq;
+        }
+
+        nnb = nb->next;
+    }
+
+    if (nb == NULL)    // neighbour not exists
+    {
+        WARNNING("GetNeighFreq(): member %d doesn't have neighbour %d\n", mem,
+                neb);
+    }
+    return INT_MAX;    // return a maximum possible freq
 }
 
 void CSThreadCommNet::RemoveMember(int mem)
@@ -390,6 +400,14 @@ void CSThreadCommNet::RemoveNeighbour(int mem, int neighbour)
     {
         WARNNING(
                 "RemoveNeighbour(): Member %d not exists, can not remove its neighbour\n",
+                mem);
+        return;
+    }
+
+    // check if neighbour exists
+    if (members.find(neighbour) == members.end())    // not found
+    {
+        WARNNING("RemoveNeighbour(): Neighbour %d not exists in network!\n",
                 mem);
         return;
     }
