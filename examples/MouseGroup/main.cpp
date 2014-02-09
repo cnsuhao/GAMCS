@@ -8,6 +8,7 @@
 int main(void)
 {
     int mouse_num = 4;    // number of mouse
+    char name[16];  // mouse name
 
     CSThreadCommNet commnet(1);    // communication network
 
@@ -28,11 +29,12 @@ int main(void)
         ml->SetDBArgs("localhost", "root", "huangk", db_name);
 
         // agent
-        CSAgent *agent = new CSAgent(0.8, 0.01);
+        CSAgent *agent = new CSAgent(i, 0.8, 0.01);
         agent->SetStorage(ml);
 
         // avatar
-        Mouse *mouse = new Mouse(i);
+        sprintf(name, "Mouse_%d", i);
+        Mouse *mouse = new Mouse(name);
         mouse->ConnectAgent(agent);
         mouse->JoinCommNet(&commnet);
 

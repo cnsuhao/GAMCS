@@ -1,19 +1,20 @@
 #ifndef MOUSE_H
 #define MOUSE_H
 #include <vector>
+#include <string>
 #include "CSThreadAvatar.h"
 
 class Mouse: public CSThreadAvatar
 {
     public:
-        Mouse(int i);
+        Mouse(std::string);
         ~Mouse();
 
     private:
         Agent::State position;
 
         Agent::State GetCurrentState();
-        void DoAction(Agent::Action);
+        void RealAction(Agent::Action);
         std::vector<Agent::Action> ActionCandidates(Agent::State);
         float OriginalPayoff(Agent::State);
 };

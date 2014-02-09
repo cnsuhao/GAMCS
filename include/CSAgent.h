@@ -18,7 +18,8 @@ class CSAgent: public Agent
         }; /**< storage status of a state */
 
         CSAgent();
-        CSAgent(float, float);
+        CSAgent(int);
+        CSAgent(int, float, float);
         ~CSAgent();
 
         struct State_Info_Header *GetStateInfo(Agent::State) const; /**< implementing GetStateInfo function */

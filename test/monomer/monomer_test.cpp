@@ -24,7 +24,7 @@ Agent::State Monomer::GetCurrentState()
     return position;
 }
 
-void Monomer::DoAction(Agent::Action act)
+void Monomer::RealAction(Agent::Action act)
 {
     position += act;
 

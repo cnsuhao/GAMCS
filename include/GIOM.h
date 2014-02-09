@@ -27,6 +27,7 @@ class GIOM
                 const std::vector<Output> &); /**< restrict the outputs */
         Input cur_in; /**< input value */
         Output cur_out; /**< output value corresponding to cur_in */
+        unsigned long process_count;    /**< process count */
     private:
 };
 
