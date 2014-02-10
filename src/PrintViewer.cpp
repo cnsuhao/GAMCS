@@ -24,6 +24,13 @@ PrintViewer::~PrintViewer()
 
 void PrintViewer::Show()
 {
+    int re = storage->Connect();
+    if (re != 0)    // connect failed
+    {
+        WARNNING("PrintViewer Show(): connect to storage failed!\n");
+        return;
+    }
+
     // print memory info
     struct Memory_Info *memif = storage->FetchMemoryInfo();
     if (memif != NULL)
@@ -41,7 +48,9 @@ void PrintViewer::Show()
     }
     else
     {
-        dbgprt("Show()", " storage is empty.\n");
+        printf("Memory not found in storage!\n");
+        storage->Close();
+        return;
     }
 
     // print states info
@@ -59,6 +68,7 @@ void PrintViewer::Show()
         else
             ERROR("Show(): state: %ld information is NULL!\n", st);
     }
+    storage->Close();
 }
 
 /**
@@ -70,11 +80,11 @@ void PrintViewer::PrintStateInfo(const struct State_Info_Header *stif)
     if (stif == NULL) return;
 
     int i = 0;
-    printf("======================= State: %ld ===========================\n",
+    printf("++++++++++++++++++++++++ State: %ld ++++++++++++++++++++++++++\n",
             stif->st);
     printf("Original payoff: %.2f,\t Payoff: %.2f,\t Count: %ld\n",
             stif->original_payoff, stif->payoff, stif->count);
-    printf("------------------- ExActions, Num: %d ------------------------\n",
+    printf("------------------- ExActions, Num: %d -----------------------\n",
             stif->eat_num);
     unsigned char *p = (unsigned char *) stif;
     p += sizeof(struct State_Info_Header);
@@ -95,7 +105,7 @@ void PrintViewer::PrintStateInfo(const struct State_Info_Header *stif)
                 atif[i].payoff);
     }
     printf(
-            "----------------------- ForwardLinks, Num: %d -------------------------\n",
+            "------------------- ForwardLinks, Num: %d --------------------\n",
             stif->lk_num);
     len = stif->act_num * sizeof(struct Action_Info);
     p += len;
@@ -105,13 +115,20 @@ void PrintViewer::PrintStateInfo(const struct State_Info_Header *stif)
         printf("\t ForwardLink:\t\t  .|+++ %ld +++ %ld ++> %ld\n", lk[i].eat,
                 lk[i].act, lk[i].nst);
     }
-    printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n");
+    printf("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n");
 
     return;
 }
 
 void PrintViewer::ShowState(Agent::State st)
 {
+    int re = storage->Connect();
+    if (re != 0)    // connect failed
+    {
+        WARNNING("PrintViewer ShowState(): connect to storage failed!\n");
+        return;
+    }
+
     struct State_Info_Header *stif = storage->FetchStateInfo(st);
     if (stif != NULL)
     {
@@ -120,6 +137,7 @@ void PrintViewer::ShowState(Agent::State st)
     }
     else
     {
-        dbgprt("Show()", "state: %ld information not found!\n", st);
+        printf("state %ld not found in memory!\n", st);
     }
+    storage->Close();
 }
