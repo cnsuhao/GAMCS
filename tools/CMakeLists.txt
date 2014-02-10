@@ -1,8 +1,2 @@
-ADD_EXECUTABLE(printviewer print_viewer.cpp)
-TARGET_LINK_LIBRARIES(printviewer avatar)
-ADD_EXECUTABLE(dotviewer dot_viewer.cpp)
-TARGET_LINK_LIBRARIES(dotviewer avatar) 
-ADD_EXECUTABLE(cleandotviewer clean_dotviewer.cpp)
-TARGET_LINK_LIBRARIES(cleandotviewer avatar) 
 ADD_EXECUTABLE(sgviewer sgviewer.cpp)
 TARGET_LINK_LIBRARIES(sgviewer avatar) 

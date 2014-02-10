@@ -15,15 +15,22 @@
 #include "DotViewer.h"
 #include "PrintViewer.h"
 
-void display_usage_mysql(void)
-{
-    std::cout << "mysql usage: " << std::endl;
-    exit(-1);
-}
-
 void display_usage(void)
 {
-    std::cout << "Usage: " << std::endl;
+    std::cout
+            << "Usage: sgviewer [-S<storage>] [-T<viewer>] [-(W)<state>] <storage related arguments>"
+            << std::endl << std::endl;
+    std::cout
+            << " -Sv        - Specify the storage type as v in which the memory was stored"
+            << std::endl;
+    std::cout << " -Tv        - Choose the viewer type as v to show the memory" << std::endl;
+    std::cout
+            << " -Wv        - Only view a single state v in memory, if this option is omitted, the whole memory will be shown"
+            << std::endl;
+    std::cout
+            << "(additional arguments for mysql)    (server) <username> <password> <database>"
+            << std::endl;
+
     exit(-1);
 }
 
@@ -36,7 +43,7 @@ int main(int argc, char *argv[])
     MemoryViewer *viewer;
     Agent::State st = INVALID_STATE;
 
-    static const char *optString = "T:V:S:?";
+    static const char *optString = "S:V:W:?";
 
     int opt = 0;
     opt = getopt(argc, argv, optString);
@@ -44,19 +51,20 @@ int main(int argc, char *argv[])
     {
         switch (opt)
         {
-            case 'T':    // storage name
+            case 'S':    // storage name
                 storage_name = optarg;
                 break;
             case 'V':    // viewer type
                 viewer_type = optarg;
                 break;
-            case 'S':    // specified state value
+            case 'W':    // which state
                 st = atol(optarg);
                 break;
             case '?':
                 display_usage();
                 break;
             default:
+                std::cout << "Unknown option!" << std::endl;
                 display_usage();
                 break;
         }
@@ -64,22 +72,25 @@ int main(int argc, char *argv[])
     }
 
     // check if storage and viewer are set
-    if (storage_name.empty() || viewer_type.empty())
-        display_usage();
+    if (storage_name.empty() || viewer_type.empty()) display_usage();
 
     // check storage names
     if (storage_name.compare("mysql") == 0)    // storage is mysql
     {
-        // number of remaining args must be 4: server, username, passwd, database
         int remain_arg = argc - optind;
-        if (remain_arg != 4)
+        if (remain_arg != 4 && remain_arg != 3)    // args: server username passwd database, in which server can be ommit
         {
-            display_usage_mysql();
+            std::cout << "Wrong number of arguments for mysql!" << std::endl;
+            display_usage();
         }
 
         Mysql *mysql = new Mysql();
-        mysql->SetDBArgs(argv[optind], argv[optind + 1], argv[optind + 2],
-                argv[optind + 3]);
+        if (remain_arg == 4)
+            mysql->SetDBArgs(argv[optind], argv[optind + 1], argv[optind + 2],
+                    argv[optind + 3]);
+        else if (remain_arg == 3)
+            mysql->SetDBArgs("localhost", argv[optind], argv[optind + 1],
+                    argv[optind + 2]);
         storage = mysql;
     }    // other storages come here
     else
@@ -112,6 +123,7 @@ int main(int argc, char *argv[])
     {
         std::cout << "Unkown viewer type: " << viewer_type << "!\n"
                 << std::endl;
+        delete storage;
         display_usage();
     }
 

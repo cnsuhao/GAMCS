@@ -30,4 +30,8 @@ class MemoryViewer
         Storage *storage;
 };
 
+inline void MemoryViewer::SetStorage(Storage *sg)
+{
+    storage = sg;
+}
 #endif /* MEMORYVIEWER_H_ */

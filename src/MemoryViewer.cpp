@@ -17,21 +17,9 @@ MemoryViewer::MemoryViewer() :
 
 MemoryViewer::MemoryViewer(Storage *sg) : storage(sg)
 {
-    int re = storage->Connect();
-    if (re != 0)    // connect failed
-        ERROR("MemoryViewer: connect to storage failed!\n");
 }
 
 MemoryViewer::~MemoryViewer()
 {
-    if (storage != NULL)
-        storage->Close();
 }
 
-void MemoryViewer::SetStorage(Storage *sg)
-{
-    storage = sg;
-    int re = storage->Connect();
-    if (re != 0)    // connect failed
-        ERROR("MemoryViewer: connect to storage failed!\n");
-}

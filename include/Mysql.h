@@ -25,7 +25,6 @@ class Mysql: public Storage
 
         ~Mysql()
         {
-            Close();    // close just in case
         }
 
         int Connect();
