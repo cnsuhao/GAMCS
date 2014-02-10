@@ -6,11 +6,14 @@
  *
  *	@Modify date:
  ***********************************************************************/
-#include <fstream>
+#include <climits>
+#include <graphviz/cgraph.h>
 #include <assert.h>
+#include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <climits>
+#include <pthread.h>
 #include "CSThreadCommNet.h"
 #include "Agent.h"
 #include "Debug.h"
@@ -38,8 +41,6 @@ CSThreadCommNet::CSThreadCommNet(int i) :
 
 CSThreadCommNet::~CSThreadCommNet()
 {
-    if (!topofile.empty()) DumpTopoToFile();    // dump topo file
-
     for (std::set<int>::iterator it = members.begin(); it != members.end();
             ++it)
     {
@@ -171,100 +172,6 @@ int CSThreadCommNet::Recv(int toid, int fromid, void *buffer, size_t buf_size)
 
     pthread_mutex_unlock(&chan->mutex);    // unlock
     return re;
-}
-
-/**
- * \brief Load topological structure of a group from a configure file.
- * This function will not add new members but just make neighbours.
- * \param tf file name
- */
-void CSThreadCommNet::LoadTopoFromFile()
-{
-    if (topofile.empty())    // no topofile specified, the group will be emtpy, no members or neighbours
-    {
-        return;
-    }
-
-    std::ifstream topofs(topofile.c_str());    // open topofile
-
-    if (!topofs.is_open())
-    {
-        ERROR("LoadTopoFromFile: %d can't open topofile: %s!\n", id,
-                topofile.c_str());
-    }
-
-    /* parse file, add member and  build neighlist */
-    char line[4096];    // buffer for reading a line in topofile, make sure it's big enough
-    const char *delim = ": ";    // delimiter bewteen member Id and its neighbour Ids
-    while (!topofs.eof())    // read till end
-    {
-        topofs.getline(line, 4096);
-        // get the member itself first
-        char *p = strtok(line, delim);
-        if (!p) break;
-        if (strcmp(const_cast<char *>(p), "#") == 0) continue;    // p is #, comment line
-
-        int mid = atoi(p);
-        // check if member has joined in network
-        if (!HasMember(mid))    // not join
-        {
-            WARNNING(
-                    "LoadTopoFromFile: can not add neighbours for member %d, it's not in network, join in first!\n",
-                    mid);
-            continue;
-        }
-
-        // parse its neighbours
-        while (p)
-        {
-            p = strtok(NULL, delim);
-            if (p && (atoi(p) != mid))    // exclude self
-            {
-                if (strcmp(const_cast<char *>(p), "#") == 0) break;    // p is #, comment begins
-
-                int nid = atoi(p);    // neighbour id
-                AddNeighbour(mid, nid, 10);    // FIXME: add nid as a neighbour of mid
-            }
-        }
-    }
-
-    return;
-}
-
-/**
- * \brief Dump structure of communication network to file
- */
-void CSThreadCommNet::DumpTopoToFile()
-{
-    if (topofile.empty()) return;
-
-    std::ofstream topofs(topofile.c_str(), std::ios::trunc);
-
-    if (!topofs.is_open())
-    {
-        ERROR("DumpTopoToFile: %d can't open topofile: %s!\n", id,
-                topofile.c_str());
-    }
-
-    topofs << "# Topo file dumped by CommNet " << id << std::endl;    // write the stamp
-    topofs << "# Syntax: " << std::endl;
-    topofs << "#        member1 : neighbour1 neighbour2 ... " << std::endl;
-    topofs << "#        member2 : neighbour1 neighbour2 ... " << std::endl;
-    topofs << "#        ... " << std::endl;
-
-    for (std::set<int>::iterator mit = members.begin(); mit != members.end();
-            ++mit)
-    {
-        topofs << *mit << " : ";
-        std::set<int> neighbours = GetNeighbours(*mit);
-        for (std::set<int>::iterator nit = neighbours.begin();
-                nit != neighbours.end(); ++nit)
-        {
-            topofs << *nit << " ";
-        }
-        topofs << std::endl;
-    }
-
 }
 
 /**
@@ -487,11 +394,101 @@ bool CSThreadCommNet::CheckNeighbourShip(int from, int to)
     return connected;
 }
 
-bool CSThreadCommNet::HasMember(int id)
+/**
+ * \brief Load topological structure of a group from a configure file.
+ * This function will not add new members but just make neighbours.
+ * \param tf file name
+ */
+void CSThreadCommNet::LoadTopoFromFile(char *tf)
 {
-    bool re = false;
-    if (members.find(id) != members.end())    // found
-    re = true;
+    Agraph_t *graph;
+    Agnode_t *node, *neigh_node;
+    Agedge_t *edge;
 
-    return re;
+    FILE *topofs = fopen(tf, "r");
+    if (topofs == NULL)
+    ERROR("LoadTopoFromFile: network %d can't open topofile: %s!\n", id, tf);
+
+    // load graph from file
+    graph = agread(topofs, 0);
+    fclose(topofs);
+
+    // traversal each node in graph
+    for (node = agfstnode(graph); node; node = agnxtnode(graph, node))
+    {
+        int mid = atoi(agget(node, "id"));    // get agent id
+        // check if member has joined in network
+        if (!HasMember(mid))    // not join
+        {
+            WARNNING(
+                    "LoadTopoFromFile: can not add neighbours for member %d, it's not in network, join in first!\n",
+                    mid);
+            continue;
+        }
+
+        // get its neighbours
+        for (edge = agfstout(graph, node); edge; edge = agnxtout(graph, edge))
+        {
+            int freq = atoi(agget(edge, "freq"));    // get freq from edge
+            neigh_node = edge->node;
+            int neb = atoi(agget(neigh_node, "id"));    // get neighbour's id
+
+            AddNeighbour(mid, neb, freq);
+        }
+
+    }
+    agclose(graph);
+    return;
+}
+
+/**
+ * \brief Dump structure of communication network to file
+ */
+void CSThreadCommNet::DumpTopoToFile(char *tf)
+{
+    FILE *topofs = fopen(tf, "w+");
+    if (topofs == NULL)
+    ERROR("DumpTopoToFile: network %d can't open topofile: %s!\n", id, tf);
+
+    /* topo file example:
+     * diagraph CommNet_1 {
+     * label = "#members: 3, ..."
+     * node [color=black, shape=circle]
+     * rank="same"
+     *
+     * mem1 [label="1", id="1"]
+     * mem2 [label="2", id="2"]
+     * mem3 [label="3", id="3"]
+     *
+     * mem1 -> mem2 [label="100", freq="100"]
+     * mem3 -> mem1 [label="50" , freq="50"]
+     * }
+     */
+
+    fprintf(topofs, "/* Topological structure dumped by CommNet %d */\n\n", id);
+    fprintf(topofs, "digraph CommNet_%d \n{\n", id);
+    fprintf(topofs,
+            "label=\"Topo Structure of CommNet %d\\n#members: %d, ...\"\n", id,
+            NumberOfMembers());
+    fprintf(topofs, "node [color=\"black\", shape=\"circle\"]\n");
+    fprintf(topofs, "rank=\"same\"\n");
+
+    std::set<int> allmembers = GetAllMembers();
+    for (std::set<int>::iterator mit = allmembers.begin();
+            mit != allmembers.end(); ++mit)
+    {
+        fprintf(topofs, "\nmem%d [label=\"%d\", id=\"%d\"]\n", *mit, *mit,
+                *mit);
+        std::set<int> neighbours = GetNeighbours(*mit);
+        for (std::set<int>::iterator nit = neighbours.begin();
+                nit != neighbours.end(); ++nit)
+        {
+            int freq = GetNeighFreq(*mit, *nit);    // get frequence
+            fprintf(topofs, "mem%d -> mem%d [label=\"%d\", freq=\"%d\"]\n",
+                    *mit, *nit, freq, freq);
+        }
+    }
+
+    fprintf(topofs, "}\n");    // diagraph
+    fclose(topofs);
 }

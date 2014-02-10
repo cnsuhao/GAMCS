@@ -1,7 +1,6 @@
 #ifndef CSTHREADCOMMNET_H
 #define CSTHREADCOMMNET_H
 #include <set>
-#include <string>
 #include "CommNet.h"
 
 #define MAX_MEMBER 1000     // maximun number of members in group
@@ -29,20 +28,19 @@ class CSThreadCommNet: public CommNet
         CSThreadCommNet(int);
         ~CSThreadCommNet();
 
-        void SetTopoFile(std::string);
-        int NumberOfMembers();
-        bool HasMember(int);
-    private:
-        void LoadTopoFromFile(); /**< load topological structure of network from a file */
-        void DumpTopoToFile();    /**< dump topological structure of network to file */
+        void LoadTopoFromFile(char *); /**< load topological structure of network from a file */
+        void DumpTopoToFile(char *); /**< dump topological structure of network to file */
 
+    private:
         void AddMember(int);
         void AddNeighbour(int, int, int);
         int GetNeighFreq(int, int);
         void ChangeNeighFreq(int, int, int);
         void RemoveMember(int);
         void RemoveNeighbour(int, int);
+
         std::set<int> GetNeighbours(int);
+        std::set<int> GetAllMembers();
         bool CheckNeighbourShip(int, int);
 
         int Send(int, int, void *, size_t); /**< the interface members can use to send messages to a neighbour */
@@ -51,30 +49,10 @@ class CSThreadCommNet: public CommNet
         struct Channel *GetChannel(int); /**< get channel of a specified member */
         void Notify(int); /**< notify a member of new messages recieved */
 
-        std::string topofile;
-        std::set<int> members; /**< all members' Ids */
+        std::set<int> members; /**< save all members */
         struct Channel channels[MAX_MEMBER]; /**< channels for all members */
         struct Neigh *neighlist[MAX_MEMBER]; /**< neighbour list for all members */
 };
-
-/**
- * \brief Set file for loading and dumping topo structure of communication network.
- * @param tf topofile to load and dump
- */
-inline void CSThreadCommNet::SetTopoFile(std::string tf)
-{
-    topofile = tf;
-    LoadTopoFromFile();
-}
-
-/**
- * \brief Get member number in group.
- * \return number of members
- */
-inline int CSThreadCommNet::NumberOfMembers()
-{
-    return members.size();
-}
 
 /**
  * \brief Get one's channel.
@@ -84,6 +62,11 @@ inline int CSThreadCommNet::NumberOfMembers()
 inline struct Channel *CSThreadCommNet::GetChannel(int id)
 {
     return &channels[id];
+}
+
+inline std::set<int> CSThreadCommNet::GetAllMembers()
+{
+    return members;
 }
 
 /**

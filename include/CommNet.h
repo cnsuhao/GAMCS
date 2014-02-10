@@ -13,27 +13,39 @@ class CommNet
         CommNet(int);
         virtual ~CommNet();
 
-        friend class Agent;    // Avatar could access functions in CommNet
+        friend class Agent;    // Avatar need to access functions in CommNet
 
-        /* network-scale queries */
-        virtual int NumberOfMembers() = 0; /**< number of members in this network */
-        virtual bool HasMember(int) = 0; /**< check if a member exists in network */
+        /* pub can only do network-scale queries */
+        int NumberOfMembers(); /**< number of members in this network */
+        bool HasMember(int); /**< check if a member exists in network */
+
     protected:
         int id; /**< network id */
+
         /* build the network */
         virtual void AddMember(int) = 0; /**< add a new member to network */
         virtual void AddNeighbour(int, int, int) = 0; /**< add a neighbour to a member */
-        virtual int GetNeighFreq(int, int) = 0;  /**< get the frequence to communicate with a neighbour of a specified member */
-        virtual void ChangeNeighFreq(int, int, int) = 0;  /**< change the frequence to communicate with a neighbour */
+        virtual int GetNeighFreq(int, int) = 0; /**< get the frequence to communicate with a neighbour of a specified member */
+        virtual void ChangeNeighFreq(int, int, int) = 0; /**< change the frequence to communicate with a neighbour */
 
         virtual void RemoveMember(int) = 0; /**< remove a member from network */
         virtual void RemoveNeighbour(int, int) = 0; /**< remove a specified neighbour from a member */
         /* queries */
         virtual std::set<int> GetNeighbours(int) = 0; /**< get a neighbours list of a specified member */
+        virtual std::set<int> GetAllMembers() = 0; /**< get all members in this network */
         virtual bool CheckNeighbourShip(int, int) = 0; /**< detect if a member has a specified neighbour */
         /* Communication facilities which can be used by members in this group */
         virtual int Send(int, int, void *, size_t) = 0; /**< some agent send message to a neighbour */
         virtual int Recv(int, int, void *, size_t) = 0; /**< some agent recieve message from a neighbour */
 };
+
+/**
+ * \brief Get member number in group.
+ * \return number of members
+ */
+inline int CommNet::NumberOfMembers()
+{
+    return GetAllMembers().size();
+}
 
 #endif // GROUP_H

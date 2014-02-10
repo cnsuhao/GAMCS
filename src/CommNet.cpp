@@ -6,7 +6,9 @@
  *
  *	@Modify date:
  ***********************************************************************/
+#include <set>
 #include "CommNet.h"
+#include "Debug.h"
 
 CommNet::CommNet() :
         id(0)
@@ -21,3 +23,14 @@ CommNet::CommNet(int i) :
 CommNet::~CommNet()
 {
 }
+
+bool CommNet::HasMember(int mid)
+{
+    bool re = false;
+    std::set<int> allmembers = GetAllMembers();
+    if (allmembers.find(mid) != allmembers.end())    // found
+    re = true;
+
+    return re;
+}
+
