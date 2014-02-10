@@ -6,10 +6,12 @@ int main(void)
 {
     Mysql mysql;
     mysql.SetDBArgs("localhost", "root", "huangk", "Monomer");
-    CSAgent ma(0.9, 0.01);
-    ma.SetStorage(&mysql);
+    CSAgent ma(1, 0.9, 0.01);
+    ma.LoadMemoryFromStorage(&mysql);
 
     Monomer mouse(1);
     mouse.ConnectAgent(&ma);
     mouse.Launch();
+
+    ma.DumpMemoryToStorage(&mysql);
 }

@@ -15,13 +15,38 @@
 #include "Storage.h"
 #include "Debug.h"
 
+CSAgent::CSAgent() :
+        state_num(0), lk_num(0), head(NULL), cur_mst(NULL)
+{
+    states_map.clear();
+}
+
+CSAgent::CSAgent(int i) :
+        Agent(i), state_num(0), lk_num(0), head(NULL), cur_mst(
+        NULL)
+{
+    states_map.clear();
+}
+
+CSAgent::CSAgent(int i, float dr, float th) :
+        Agent(i, dr, th), state_num(0), lk_num(0), head(NULL), cur_mst(
+        NULL)
+{
+    states_map.clear();
+}
+
+CSAgent::~CSAgent()
+{
+    FreeMemory();    // free computer memory
+}
+
 /** \brief Load a specified state from a previous memory stored in database.
  * Note that it will create all states directly or indirectly connected by this state to the computer memory.
  * \param st state value
  * \return state struct of st in computer memory
  *
  */
-void CSAgent::LoadState(Agent::State st)
+void CSAgent::LoadState(Storage *storage, Agent::State st)
 {
     struct cs_State *mst = SearchState(st);    // search memory for the state first
     if (mst == NULL)    // not found, create a new empty state struct, this struct will be filled up below
@@ -116,7 +141,7 @@ void CSAgent::LoadState(Agent::State st)
  *
  */
 
-void CSAgent::LoadMemoryFromStorage()
+void CSAgent::LoadMemoryFromStorage(Storage *storage)
 {
     if (storage == NULL)    // no database specified, do nothing
         return;
@@ -148,7 +173,7 @@ void CSAgent::LoadMemoryFromStorage()
         while ((st = storage->StateByIndex(index)) != INVALID_STATE)
         {
             dbgmoreprt("LoadMemory()", "LoadState: %ld\n", st);
-            LoadState(st);
+            LoadState(storage, st);
             index++;
             PrintProcess(index, saved_state_num, label);
         }
@@ -172,7 +197,7 @@ void CSAgent::LoadMemoryFromStorage()
 /** \brief Save current memroy to database, including states information and memory-level statistics.
  *
  */
-void CSAgent::DumpMemoryToStorage()
+void CSAgent::DumpMemoryToStorage(Storage *storage)
 {
     if (storage == NULL)    // no database specified, no need to save
         return;
@@ -227,33 +252,6 @@ void CSAgent::DumpMemoryToStorage()
     }
     storage->Close();
     return;
-}
-
-CSAgent::CSAgent() :
-        state_num(0), lk_num(0), storage(NULL), head(NULL), cur_mst(NULL)
-{
-    states_map.clear();
-}
-
-CSAgent::CSAgent(int i) :
-        Agent(i), state_num(0), lk_num(0), storage(NULL), head(NULL), cur_mst(
-        NULL)
-{
-    states_map.clear();
-}
-
-CSAgent::CSAgent(int i, float dr, float th) :
-        Agent(i, dr, th), state_num(0), lk_num(0), storage(NULL), head(NULL), cur_mst(
-        NULL)
-{
-    states_map.clear();
-}
-
-CSAgent::~CSAgent()
-{
-    if (storage != NULL)    // save memory if storage exists
-        DumpMemoryToStorage();
-    FreeMemory();    // free computer memory
 }
 
 /** \brief search for state value in memory

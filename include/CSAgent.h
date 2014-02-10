@@ -23,12 +23,12 @@ class CSAgent: public Agent
         CSAgent(int, float, float);
         ~CSAgent();
 
-        void SetStorage(Storage *); /**< set storage device */
+        void LoadMemoryFromStorage(Storage *); /**< load memory from database */
+        void DumpMemoryToStorage(Storage *); /**< save memory to database */
+
     private:
         unsigned long state_num; /**< total number of states in memory */
         unsigned long lk_num; /**< total number of links between states in memory */
-
-        Storage *storage; /**< dump memroy to a mass storage device */
 
         std::vector<Agent::Action> MaxPayoffRule(Agent::State,
                 const std::vector<Agent::Action> &); /**< implementing maximun payoff rule */
@@ -45,9 +45,7 @@ class CSAgent: public Agent
         StatesMap states_map; /**< hash map from state values to state struct */
         struct cs_State *cur_mst; /**< state struct for current state value */
 
-        void LoadMemoryFromStorage(); /**< load memory from database */
-        void DumpMemoryToStorage(); /**< save memory to database */
-        void LoadState(Agent::State); /**< fetch state struct by state value */
+        void LoadState(Storage *, Agent::State); /**< load a state from storage to memory */
 
         void FreeMemory(); /**< free all space of memory in computer memory*/
 
@@ -86,12 +84,6 @@ class CSAgent: public Agent
         float CalStatePayoff(const struct cs_State *) const; /**< calculate payoff of a state */
         float CalActPayoff(Agent::Action, const struct cs_State *) const; /**< calculate payoff of an Agent::Action */
 };
-
-inline void CSAgent::SetStorage(Storage *stg)
-{
-    storage = stg;
-    LoadMemoryFromStorage();
-}
 
 /** implementation of environment action information */
 struct cs_EnvAction

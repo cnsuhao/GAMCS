@@ -17,15 +17,15 @@ int main(void)
     mysqlB.SetDBArgs("localhost", "root", "huangk",  "PrisonerB");
 
     float discount_rate = 0.9;  // discount rate determines the final equilibrium!
-    CSAgent agentA(discount_rate, 0.01);
-    CSAgent agentB(discount_rate, 0.01);
+    CSAgent agentA(1, discount_rate, 0.01);
+    CSAgent agentB(2, discount_rate, 0.01);
     agentA.SetUnseenActionPayoff(0.0);
     agentB.SetUnseenActionPayoff(0.0);
-    agentA.SetStorage(&mysqlA);
-    agentB.SetStorage(&mysqlB);
+    agentA.LoadMemoryFromStorage(&mysqlA);
+    agentB.LoadMemoryFromStorage(&mysqlB);
 
-    PrisonerA pA(1);
-    PrisonerB pB(2);
+    PrisonerA pA("prisonerA");
+    PrisonerB pB("prisonerB");
     pA.ConnectAgent(&agentA);
     pB.ConnectAgent(&agentB);
     pA.SetSps(50);
@@ -40,6 +40,8 @@ int main(void)
     pthread_join(tids[0], NULL);
     pthread_join(tids[1], NULL);
 
+    agentA.DumpMemoryToStorage(&mysqlA);
+    agentB.DumpMemoryToStorage(&mysqlB);
     return 0;
 }
 
