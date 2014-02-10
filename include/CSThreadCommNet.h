@@ -34,8 +34,8 @@ class CSThreadCommNet: public CommNet
     private:
         void AddMember(int);
         void AddNeighbour(int, int, int);
-        int GetNeighFreq(int, int);
-        void ChangeNeighFreq(int, int, int);
+        int GetNeighCommInterval(int, int);
+        void ChangeNeighCommInterval(int, int, int);
         void RemoveMember(int);
         void RemoveNeighbour(int, int);
 
@@ -84,7 +84,7 @@ struct Msg
 struct Neigh
 {
         int id; /**< the neigh's ID */
-        int freq;   /**< frequence to comminucate with this neighbour */
+        int interval;   /**< interval to comminucate with this neighbour */
         struct Neigh *next; /**< next neigh */
 };
 
