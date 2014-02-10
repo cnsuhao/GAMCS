@@ -59,7 +59,7 @@ void Avatar::Launch()
         myagent->Communicate();
 
         /* Perform action to the outside world */
-        RealAction(act);    // otherwise, perform the action
+        PerformAction(act);    // otherwise, perform the action
 
         // handle time related job
         unsigned long end_time = GetCurrentTime();
@@ -111,7 +111,7 @@ unsigned long Avatar::GetCurrentTime()
 void Avatar::JoinCommNet(CommNet *cn)
 {
     myagent->JoinCommNet(cn);
-    RealJoinCommNet();
+    ActualJoinCommNet(cn);
 }
 
 /**
@@ -120,17 +120,42 @@ void Avatar::JoinCommNet(CommNet *cn)
 void Avatar::LeaveCommNet()
 {
     myagent->LeaveCommNet();
-    RealLeaveCommmNet();
+    ActualLeaveCommmNet();
 }
 
 void Avatar::AddNeighbour(int nid, int freq)
 {
     myagent->AddNeighbour(nid, freq);
-    RealAddNeighbour(nid, freq);
+    ActualAddNeighbour(nid, freq);
 }
 
 void Avatar::RemoveNeighbour(int nid)
 {
     myagent->RemoveNeighbour(nid);
-    RealRemoveNeighbour(nid);
+    ActualRemoveNeighbour(nid);
 }
+
+void Avatar::ActualJoinCommNet(CommNet *cn)
+{
+    UNUSED(cn);
+    return;
+}
+
+void Avatar::ActualLeaveCommmNet()
+{
+    return;
+}
+
+void Avatar::ActualAddNeighbour(int neb, int freq)
+{
+    UNUSED(neb);
+    UNUSED(freq);
+    return;
+}
+
+void Avatar::ActualRemoveNeighbour(int neb)
+{
+    UNUSED(neb);
+    return;
+}
+

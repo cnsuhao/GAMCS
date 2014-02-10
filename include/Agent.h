@@ -2,7 +2,6 @@
 #define AGENT_H
 #include <stddef.h>
 #include <set>
-#include <map>
 #include "TSGIOM.h"
 #include "Debug.h"
 
@@ -64,17 +63,14 @@ class Agent: public TSGIOM
         virtual void UpdateMemory(float) = 0; /**<  update states in memory given current state's original payoff*/
         virtual struct State_Info_Header *GetStateInfo(State) const = 0; /**<  collect information of specified state from memory */
         virtual void MergeStateInfo(const struct State_Info_Header *) = 0; /**<  merge recieved state information into memory */
-        virtual State NextStateToSend(State) = 0; /**< return the next state to be sent */
+        virtual State NextStateToSend(int) = 0; /**< return the next state to be sent to a specified neighbour */
 
-    private:
         std::set<int> GetMyNeighbours();
         bool CheckNeighbourShip(int);
         int GetNeighFreq(int); /**< get frequence to comminucate with this neighbour */
 
         void SendStateInfo(int, State); /**< send information of a state to a neighbour */
         void RecvStateInfo(); /**< recieve state information from neighbours */
-
-        std::map<int, State> states_to_send; /**< record state be sent to each neighbour */
 };
 
 inline void Agent::SetDiscountRate(float dr)

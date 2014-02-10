@@ -44,8 +44,8 @@ class CSThreadCommNet: public CommNet
         std::set<int> GetNeighbours(int);
         bool CheckNeighbourShip(int, int);
 
-        int Send(int, void *, size_t); /**< the interface members can use to send messages to a neighbour */
-        int Recv(int, void *, size_t); /**< the interface members can use to recv messages from others */
+        int Send(int, int, void *, size_t); /**< the interface members can use to send messages to a neighbour */
+        int Recv(int, int, void *, size_t); /**< the interface members can use to recv message from a neighbour */
 
         struct Channel *GetChannel(int); /**< get channel of a specified member */
         void Notify(int); /**< notify a member of new messages recieved */
@@ -90,6 +90,7 @@ inline struct Channel *CSThreadCommNet::GetChannel(int id)
  */
 struct Msg
 {
+        int sender_id;
         char data[DATA_SIZE];    // message body
 };
 

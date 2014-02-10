@@ -33,14 +33,14 @@ class Avatar
         Agent *myagent; /**< connected agent */
 
         virtual Agent::State GetCurrentState() = 0; /**< get current state */
-        virtual void RealAction(Agent::Action) = 0; /**< perform an real action */
+        virtual void PerformAction(Agent::Action) = 0; /**< perform an real action */
         virtual std::vector<Agent::Action> ActionCandidates(Agent::State) = 0; /**< return a list of all action candidates of a Agent::State */
         virtual float OriginalPayoff(Agent::State); /**< original payoff of a state */
 
-        virtual void RealJoinCommNet(CommNet *) = 0;
-        virtual void RealLeaveCommmNet() = 0;
-        virtual void RealAddNeighbour(int, int) = 0;
-        virtual void RealRemoveNeighbour(int) = 0;
+        virtual void ActualJoinCommNet(CommNet *);
+        virtual void ActualLeaveCommmNet();
+        virtual void ActualAddNeighbour(int, int);
+        virtual void ActualRemoveNeighbour(int);
 
     private:
         unsigned long GetCurrentTime(); /**< current time in millisecond */

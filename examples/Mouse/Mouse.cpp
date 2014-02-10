@@ -24,7 +24,7 @@ Agent::State Mouse::GetCurrentState()
     return position;
 }
 
-void Mouse::RealAction(Agent::Action act)
+void Mouse::PerformAction(Agent::Action act)
 {
     position += act;
 
