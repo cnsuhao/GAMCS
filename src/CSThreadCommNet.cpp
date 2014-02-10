@@ -62,13 +62,13 @@ CSThreadCommNet::~CSThreadCommNet()
 }
 
 /**
- * \brief Send message to all neighbours of a member.
+ * \brief Send message to a neighbour
  * \param sender_id the message sender id
  * \param buffer buffer where the message is stored
  * \param length length of the message
- * \return length of message that has been sent to the last neighbour
+ * \return length of message that has been sent to the neighbour
  */
-int CSThreadCommNet::Send(int toid, void *buffer, size_t buf_size)
+int CSThreadCommNet::Send(int fromid, int toid, void *buffer, size_t buf_size)
 {
     if (buf_size > DATA_SIZE)    // check size
     {
@@ -78,8 +78,8 @@ int CSThreadCommNet::Send(int toid, void *buffer, size_t buf_size)
 
 #ifdef _DEBUG_
     printf(
-            "*************************** Send to %d ********************************\n",
-            toid);
+            "*************************** %d send msg to %d ********************************\n",
+            fromid, toid);
     Agent::PrintStateInfo((struct State_Info_Header *) buffer);
     printf(
             "****************************** Send End **********************************\n\n");
@@ -101,6 +101,7 @@ int CSThreadCommNet::Send(int toid, void *buffer, size_t buf_size)
     }
 
     memcpy(chan->msg[chan->ptr].data, buffer, buf_size);    // copy message to the channel
+    chan->msg[chan->ptr].sender_id = fromid;
 
     if (chan->msg_num < CHANNEL_SIZE) chan->msg_num++;    // maximum num is CHANNEL_SIZE
 
@@ -116,14 +117,14 @@ int CSThreadCommNet::Send(int toid, void *buffer, size_t buf_size)
  * \param length of the message to be recieved
  * \return length of message recieved
  */
-int CSThreadCommNet::Recv(int recver_id, void *buffer, size_t buf_size)
+int CSThreadCommNet::Recv(int toid, int fromid, void *buffer, size_t buf_size)
 {
     if (buf_size > DATA_SIZE)    // check length
     {
         WARNNING("Recv()- requested data length exceeds DATA_SIZE.\n");
     }
 
-    struct Channel *chan = GetChannel(recver_id);    // get my channel
+    struct Channel *chan = GetChannel(toid);    // get my channel
     size_t re = 0;
     pthread_mutex_lock(&chan->mutex);    // lock it before reading, prevent concurrent writtings
 
@@ -133,30 +134,38 @@ int CSThreadCommNet::Recv(int recver_id, void *buffer, size_t buf_size)
     }
     else
     {
-        memcpy(buffer, chan->msg[chan->ptr].data, buf_size);    // copy message to buffer
-        chan->msg_num--;    // dec the message number
-        if (chan->ptr == CHANNEL_SIZE - 1)
-            chan->ptr = 0;    // move the message point
-        else
-            chan->ptr += 1;
-
-        struct State_Info_Header *stif = (struct State_Info_Header *) buffer;
-        if (stif->size > buf_size)    // check size
+        if (fromid == -1)    // recieve msg from any agent
         {
-            WARNNING(
-                    "Recv()- requested state information exceeds buffer size!.\n");
-            re = 0;    // don't return incompelte information
+            memcpy(buffer, chan->msg[chan->ptr].data, buf_size);    // copy a message to buffer
+            int sid = chan->msg[chan->ptr].sender_id;    // get sender's id
+            UNUSED(sid);    // FIXME: we didn't use it.
+            chan->msg_num--;    // dec the message number
+            if (chan->ptr == CHANNEL_SIZE - 1)
+                chan->ptr = 0;    // move the message point
+            else
+                chan->ptr += 1;
+
+            struct State_Info_Header *stif = (struct State_Info_Header *) buffer;
+            if (stif->size > buf_size)    // check size
+            {
+                WARNNING(
+                        "Recv()- requested state information exceeds buffer size!.\n");
+                re = 0;    // don't return incompelte information
+            }
+            else
+                re = buf_size;    // ok, msg is recieved
+#ifdef _DEBUG_
+            printf(
+                    "++++++++++++++++++++++++ %d recv msg from %d ++++++++++++++++++++++++\n",
+                    toid, sid);
+            Agent::PrintStateInfo(stif);
+            printf(
+                    "++++++++++++++++++++++++++++++ Recv End ++++++++++++++++++++++++++++++\n\n");
+#endif // _DEBUG_
         }
         else
-            re = buf_size;    // ok, msg is recieved
-#ifdef _DEBUG_
-                    printf(
-                            "++++++++++++++++++++++++ Id: %d, Recv ++++++++++++++++++++++++\n",
-                            recver_id);
-                    Agent::PrintStateInfo(stif);
-                    printf(
-                            "++++++++++++++++++++++++++++++ Recv End ++++++++++++++++++++++++++++++\n\n");
-#endif // _DEBUG_
+            ERROR(
+                    "Recv(): This function doesn't support recieve message from a specified agent currently!\n");    // TODO
     }
 
     pthread_mutex_unlock(&chan->mutex);    // unlock

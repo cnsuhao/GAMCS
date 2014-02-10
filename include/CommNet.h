@@ -31,8 +31,8 @@ class CommNet
         virtual std::set<int> GetNeighbours(int) = 0; /**< get a neighbours list of a specified member */
         virtual bool CheckNeighbourShip(int, int) = 0; /**< detect if a member has a specified neighbour */
         /* Communication facilities which can be used by members in this group */
-        virtual int Send(int, void *, size_t) = 0; /**< send message to one's neighbour */
-        virtual int Recv(int, void *, size_t) = 0; /**< recieve one's message */
+        virtual int Send(int, int, void *, size_t) = 0; /**< some agent send message to a neighbour */
+        virtual int Recv(int, int, void *, size_t) = 0; /**< some agent recieve message from a neighbour */
 };
 
 #endif // GROUP_H

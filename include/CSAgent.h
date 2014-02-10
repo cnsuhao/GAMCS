@@ -1,6 +1,7 @@
 #ifndef CSAGENT_H
 #define CSAGENT_H
 #include <unordered_map>
+#include <map>
 #include "Agent.h"
 
 class Storage;
@@ -22,10 +23,6 @@ class CSAgent: public Agent
         CSAgent(int, float, float);
         ~CSAgent();
 
-        struct State_Info_Header *GetStateInfo(Agent::State) const; /**< implementing GetStateInfo function */
-        void MergeStateInfo(const struct State_Info_Header *); /**< implementing MergeStateInfo function */
-        Agent::State NextStateToSend(Agent::State); /**< implementing Agent's OlderState */
-
         void SetStorage(Storage *); /**< set storage device */
     private:
         unsigned long state_num; /**< total number of states in memory */
@@ -36,6 +33,11 @@ class CSAgent: public Agent
         std::vector<Agent::Action> MaxPayoffRule(Agent::State,
                 const std::vector<Agent::Action> &); /**< implementing maximun payoff rule */
         void UpdateMemory(float); /**< implementing UpdateMemory of Agent */
+        struct State_Info_Header *GetStateInfo(Agent::State) const; /**< implementing GetStateInfo function */
+        void MergeStateInfo(const struct State_Info_Header *); /**< implementing MergeStateInfo function */
+
+        Agent::State NextStateToSend(int); /**< implementing Agent's NextStateToSend() */
+        std::map<int, struct cs_State *> last_sent_states;  /**< record last state sent to each neighbour */
 
         void PrintProcess(unsigned long, unsigned long, char *) const;
 

@@ -58,7 +58,7 @@ class PrisonerA: public CSThreadAvatar
             return current_state;
         }
 
-        void RealAction(Agent::Action act)
+        void PerformAction(Agent::Action act)
         {
             current_state += act;
             actA = true;
@@ -147,7 +147,7 @@ class PrisonerB: public CSThreadAvatar
             return current_state;
         }
 
-        void RealAction(Agent::Action act)
+        void PerformAction(Agent::Action act)
         {
             current_state += act;
             actB = true;

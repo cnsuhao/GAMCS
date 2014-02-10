@@ -16,7 +16,7 @@ class Mouse: public Avatar
         Agent::State position;
 
         Agent::State GetCurrentState();
-        void RealAction(Agent::Action);
+        void PerformAction(Agent::Action);
         std::vector<Agent::Action> ActionCandidates(Agent::State);
         float OriginalPayoff(Agent::State);
         void SendStateInfo(Agent::State)

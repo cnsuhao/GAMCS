@@ -236,7 +236,8 @@ CSAgent::CSAgent() :
 }
 
 CSAgent::CSAgent(int i) :
-        Agent(i), state_num(0), lk_num(0), storage(NULL), head(NULL), cur_mst(NULL)
+        Agent(i), state_num(0), lk_num(0), storage(NULL), head(NULL), cur_mst(
+        NULL)
 {
     states_map.clear();
 }
@@ -1331,29 +1332,40 @@ void CSAgent::AddStateToMemory(struct cs_State *nstate)
     head = nstate;
     state_num++;
     states_map.insert(StatesMap::value_type(nstate->st, nstate));    // don't forget to update hash map
+
+    /* When new state has been added, resend state to all neighbours from head.
+     * This is an optional feature. */
+    for (std::map<int, struct cs_State *>::iterator sit =
+            last_sent_states.begin(); sit != last_sent_states.end(); ++sit)
+    {
+        sit->second = head;    // restart from head
+    }
 }
 
-Agent::State CSAgent::NextStateToSend(Agent::State st)
+Agent::State CSAgent::NextStateToSend(int neb)
 {
-    State older_state = INVALID_STATE;
 
-    if (st == INVALID_STATE)    // first time
-        return head->st;    // start from head
-
-    struct cs_State *mst = SearchState(st);    // search memory for the state
-    struct cs_State *nmst = NULL;
-
-    if (mst != NULL)
+    Agent::State st_send = INVALID_STATE;
+    // prepare the state to be sent to neb
+    if (last_sent_states.find(neb) == last_sent_states.end())    // encounter a new neighbour
     {
-        nmst = mst->next;
-        if (nmst == NULL)    // reach the end
-            nmst = head;    // wrap at beginning
-
-        older_state = nmst->st;
+        st_send = head->st;    // msg from beginning
+        last_sent_states[neb] = head;    // record progress
     }
-    else
-        // st not found in memory
-        WARNNING("NextStateToSend(): state %ld is valid but not found in memory!\n", st);
+    else    // this neighbour is an acquaintance, we should have record about it
+    {
+        struct cs_State *nst = last_sent_states[neb]->next;    // get the next state of recorded state
+        if (nst == NULL)    // reach the end
+        {
+            st_send = head->st;    // wrap from beginning
+            last_sent_states[neb] = head;    // record progress
+        }
+        else
+        {
+            st_send = nst->st;    // value of next state
+            last_sent_states[neb] = nst;
+        }
+    }
 
-    return older_state;
+    return st_send;
 }
