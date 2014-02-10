@@ -30,7 +30,7 @@ int main(void)
 
         // agent
         CSAgent *agent = new CSAgent(i, 0.8, 0.01);
-        agent->SetStorage(ml);
+        agent->LoadMemoryFromStorage(ml);
 
         // avatar
         sprintf(name, "Mouse_%d", i);
@@ -43,16 +43,7 @@ int main(void)
         agents[i] = agent;
     }
 
-    // build neighbours
-//    mice[0]->AddNeighbour(2);
-//    mice[0]->AddNeighbour(3);
-//    mice[1]->AddNeighbour(0);
-//    mice[1]->AddNeighbour(3);
-//    mice[1]->AddNeighbour(2);
-//    mice[2]->AddNeighbour(1);
-//    mice[3]->AddNeighbour(0);
-//    mice[3]->AddNeighbour(1);
-
+    // load topo
     commnet.LoadTopoFromFile("commnet.dot");
 
     /* launch mice */
@@ -65,11 +56,16 @@ int main(void)
         pthread_join(tids[i], NULL);
 
         // all threads quit now
+        // save memory to storage
+        agents[i]->DumpMemoryToStorage(mysql[i]);
+
+        // clear
         delete mice[i];
         delete agents[i];
         delete mysql[i];
     }
-
+    // save topo structure
     commnet.DumpTopoToFile("commnet.dot");
+
     return 0;
 }
