@@ -53,7 +53,7 @@ int main(void)
 //    mice[3]->AddNeighbour(0);
 //    mice[3]->AddNeighbour(1);
 
-    commnet.SetTopoFile("commnet.topo");
+    commnet.LoadTopoFromFile("commnet.dot");
 
     /* launch mice */
     for (int i = 0; i < mouse_num; i++)
@@ -70,5 +70,6 @@ int main(void)
         delete mysql[i];
     }
 
+    commnet.DumpTopoToFile("commnet.dot");
     return 0;
 }
