@@ -39,6 +39,7 @@ class CSThreadCommNet: public CommNet
         void AddMember(int);
         void AddNeighbour(int, int, int);
         int GetNeighFreq(int, int);
+        void ChangeNeighFreq(int, int, int);
         void RemoveMember(int);
         void RemoveNeighbour(int, int);
         std::set<int> GetNeighbours(int);

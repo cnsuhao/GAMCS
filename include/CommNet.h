@@ -24,6 +24,7 @@ class CommNet
         virtual void AddMember(int) = 0; /**< add a new member to network */
         virtual void AddNeighbour(int, int, int) = 0; /**< add a neighbour to a member */
         virtual int GetNeighFreq(int, int) = 0;  /**< get the frequence to communicate with a neighbour of a specified member */
+        virtual void ChangeNeighFreq(int, int, int) = 0;  /**< change the frequence to communicate with a neighbour */
 
         virtual void RemoveMember(int) = 0; /**< remove a member from network */
         virtual void RemoveNeighbour(int, int) = 0; /**< remove a specified neighbour from a member */
