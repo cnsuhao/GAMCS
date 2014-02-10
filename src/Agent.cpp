@@ -72,13 +72,13 @@ void Agent::Communicate()
 
     RecvStateInfo();    // check if new message has recieved
 
-    int each_comm_freq;
-    std::set<int> my_neighbours = GetMyNeighbours();    // walk through all neighbours to check frequence
+    int each_comm_interval;
+    std::set<int> my_neighbours = GetMyNeighbours();    // walk through all neighbours to check interval
     for (std::set<int>::iterator nit = my_neighbours.begin();
             nit != my_neighbours.end(); ++nit)
     {
-        each_comm_freq = GetNeighFreq(*nit);    // get communication freq to this neighbour
-        if (process_count % each_comm_freq == 0)    // time to send msg
+        each_comm_interval = GetNeighCommInterval(*nit);    // get communication interval to this neighbour
+        if (process_count % each_comm_interval == 0)    // time to send msg
         {
             State st_send = NextStateToSend(*nit);    // get the next state to be sent to this neighbour
 
@@ -114,7 +114,7 @@ void Agent::LeaveCommNet()
     return;
 }
 
-void Agent::AddNeighbour(int nid, int freq)
+void Agent::AddNeighbour(int nid, int interval)
 {
 // chech if joined in any network
     if (commnet == NULL)
@@ -125,10 +125,10 @@ void Agent::AddNeighbour(int nid, int freq)
         return;
     }
 
-    commnet->AddNeighbour(id, nid, freq);
+    commnet->AddNeighbour(id, nid, interval);
 }
 
-void Agent::ChangeNeighFreq(int nid, int newfreq)
+void Agent::ChangeNeighCommInterval(int nid, int newinterval)
 {
     // chech if joined in any network
     if (commnet == NULL)
@@ -138,7 +138,7 @@ void Agent::ChangeNeighFreq(int nid, int newfreq)
         return;
     }
 
-    commnet->ChangeNeighFreq(id, nid, newfreq);
+    commnet->ChangeNeighCommInterval(id, nid, newinterval);
 }
 
 void Agent::RemoveNeighbour(int nid)
@@ -155,7 +155,7 @@ void Agent::RemoveNeighbour(int nid)
     commnet->RemoveNeighbour(id, nid);
 }
 
-int Agent::GetNeighFreq(int neb)
+int Agent::GetNeighCommInterval(int neb)
 {
 // chech if joined in any network
     if (commnet == NULL)
@@ -166,7 +166,7 @@ int Agent::GetNeighFreq(int neb)
         return INT_MAX;
     }
 
-    return commnet->GetNeighFreq(id, neb);
+    return commnet->GetNeighCommInterval(id, neb);
 }
 
 std::set<int> Agent::GetMyNeighbours()

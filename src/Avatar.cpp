@@ -123,10 +123,10 @@ void Avatar::LeaveCommNet()
     ActualLeaveCommmNet();
 }
 
-void Avatar::AddNeighbour(int nid, int freq)
+void Avatar::AddNeighbour(int nid, int interval)
 {
-    myagent->AddNeighbour(nid, freq);
-    ActualAddNeighbour(nid, freq);
+    myagent->AddNeighbour(nid, interval);
+    ActualAddNeighbour(nid, interval);
 }
 
 void Avatar::RemoveNeighbour(int nid)
@@ -146,10 +146,10 @@ void Avatar::ActualLeaveCommmNet()
     return;
 }
 
-void Avatar::ActualAddNeighbour(int neb, int freq)
+void Avatar::ActualAddNeighbour(int neb, int interval)
 {
     UNUSED(neb);
-    UNUSED(freq);
+    UNUSED(interval);
     return;
 }
 

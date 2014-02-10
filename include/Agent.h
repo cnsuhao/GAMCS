@@ -42,7 +42,7 @@ class Agent: public TSGIOM
         void JoinCommNet(CommNet *); /**< set join a communication network */
         void LeaveCommNet(); /**< leave network */
         void AddNeighbour(int, int); /**< add a neighbour */
-        void ChangeNeighFreq(int, int); /**< change the frequence to communicate with a neighbour */
+        void ChangeNeighCommInterval(int, int); /**< change the interval to communicate with a neighbour */
         void RemoveNeighbour(int); /**< remove a neighbour */
 
     protected:
@@ -68,7 +68,7 @@ class Agent: public TSGIOM
 
         std::set<int> GetMyNeighbours();
         bool CheckNeighbourShip(int);
-        int GetNeighFreq(int); /**< get frequence to comminucate with this neighbour */
+        int GetNeighCommInterval(int); /**< get interval to comminucate with this neighbour */
 
         void SendStateInfo(int, State); /**< send information of a state to a neighbour */
         void RecvStateInfo(); /**< recieve state information from neighbours */

@@ -210,7 +210,7 @@ void CSThreadCommNet::AddMember(int mem)
     channels[mem].ptr = CHANNEL_SIZE - 1;
 }
 
-void CSThreadCommNet::AddNeighbour(int mem, int neb, int freq)
+void CSThreadCommNet::AddNeighbour(int mem, int neb, int interval)
 {
     // check if member exists
     if (members.find(mem) == members.end())    // not found
@@ -255,19 +255,19 @@ void CSThreadCommNet::AddNeighbour(int mem, int neb, int freq)
     struct Neigh *nneigh = (struct Neigh *) malloc(sizeof(struct Neigh));
     assert(nneigh != NULL);
     nneigh->id = neb;
-    nneigh->freq = freq;
+    nneigh->interval = interval;
     nneigh->next = neighlist[mem];
     neighlist[mem] = nneigh;
 }
 
-int CSThreadCommNet::GetNeighFreq(int mem, int neb)
+int CSThreadCommNet::GetNeighCommInterval(int mem, int neb)
 {
     struct Neigh *nb, *nnb;
     for (nb = neighlist[mem]; nb != NULL; nb = nnb)
     {
         if (nb->id == neb)    // neighbour found
         {
-            return nb->freq;
+            return nb->interval;
         }
 
         nnb = nb->next;
@@ -275,20 +275,20 @@ int CSThreadCommNet::GetNeighFreq(int mem, int neb)
 
     if (nb == NULL)    // neighbour not exists
     {
-        WARNNING("GetNeighFreq(): member %d doesn't have neighbour %d\n", mem,
+        WARNNING("GetNeighCommInterval(): member %d doesn't have neighbour %d\n", mem,
                 neb);
     }
-    return INT_MAX;    // return a maximum possible freq
+    return INT_MAX;    // return a maximum possible interval
 }
 
-void CSThreadCommNet::ChangeNeighFreq(int mem, int neb, int newfreq)
+void CSThreadCommNet::ChangeNeighCommInterval(int mem, int neb, int newinterval)
 {
     struct Neigh *nb, *nnb;
     for (nb = neighlist[mem]; nb != NULL; nb = nnb)
     {
         if (nb->id == neb)    // neighbour found
         {
-            nb->freq = newfreq;    // set new freq
+            nb->interval = newinterval;    // set new interval
             return;
         }
 
@@ -297,10 +297,10 @@ void CSThreadCommNet::ChangeNeighFreq(int mem, int neb, int newfreq)
 
     if (nb == NULL)    // neighbour not exists
     {
-        WARNNING("ChangeNeighFreq(): member %d doesn't have neighbour %d\n",
+        WARNNING("ChangeNeighCommInterval(): member %d doesn't have neighbour %d\n",
                 mem, neb);
     }
-    return;    // return a maximum possible freq
+    return;    // return a maximum possible interval
 }
 
 void CSThreadCommNet::RemoveMember(int mem)
@@ -429,11 +429,11 @@ void CSThreadCommNet::LoadTopoFromFile(char *tf)
         // get its neighbours
         for (edge = agfstout(graph, node); edge; edge = agnxtout(graph, edge))
         {
-            int freq = atoi(agget(edge, "freq"));    // get freq from edge
+            int interval = atoi(agget(edge, "interval"));    // get interval from edge
             neigh_node = edge->node;
             int neb = atoi(agget(neigh_node, "id"));    // get neighbour's id
 
-            AddNeighbour(mid, neb, freq);
+            AddNeighbour(mid, neb, interval);
         }
 
     }
@@ -460,8 +460,8 @@ void CSThreadCommNet::DumpTopoToFile(char *tf)
      * mem2 [label="2", id="2"]
      * mem3 [label="3", id="3"]
      *
-     * mem1 -> mem2 [label="100", freq="100"]
-     * mem3 -> mem1 [label="50" , freq="50"]
+     * mem1 -> mem2 [label="100", interval="100"]
+     * mem3 -> mem1 [label="50" , interval="50"]
      * }
      */
 
@@ -469,7 +469,7 @@ void CSThreadCommNet::DumpTopoToFile(char *tf)
     fprintf(topofs, "digraph CommNet_%d \n{\n", id);
     fprintf(topofs,
             "label=\"Topo Structure of CommNet %d\\n#members: %d, ...\"\n", id,
-            NumberOfMembers());
+            NumberOfMembers());     // statistics about the network can be put here
     fprintf(topofs, "node [color=\"black\", shape=\"circle\"]\n");
     fprintf(topofs, "rank=\"same\"\n");
 
@@ -483,9 +483,9 @@ void CSThreadCommNet::DumpTopoToFile(char *tf)
         for (std::set<int>::iterator nit = neighbours.begin();
                 nit != neighbours.end(); ++nit)
         {
-            int freq = GetNeighFreq(*mit, *nit);    // get frequence
-            fprintf(topofs, "mem%d -> mem%d [label=\"%d\", freq=\"%d\"]\n",
-                    *mit, *nit, freq, freq);
+            int interval = GetNeighCommInterval(*mit, *nit);    // get interval
+            fprintf(topofs, "mem%d -> mem%d [label=\"%d\", interval=\"%d\"]\n",
+                    *mit, *nit, interval, interval);
         }
     }
 
