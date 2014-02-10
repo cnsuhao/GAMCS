@@ -42,6 +42,7 @@ class Agent: public TSGIOM
         void JoinCommNet(CommNet *); /**< set join a communication network */
         void LeaveCommNet(); /**< leave network */
         void AddNeighbour(int, int); /**< add a neighbour */
+        void ChangeNeighFreq(int, int); /**< change the frequence to communicate with a neighbour */
         void RemoveNeighbour(int); /**< remove a neighbour */
 
     protected:

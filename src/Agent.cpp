@@ -128,6 +128,19 @@ void Agent::AddNeighbour(int nid, int freq)
     commnet->AddNeighbour(id, nid, freq);
 }
 
+void Agent::ChangeNeighFreq(int nid, int newfreq)
+{
+    // chech if joined in any network
+    if (commnet == NULL)
+    {
+        WARNNING("AddNeighbour(): agent %d hasn't joint any network yet!\n",
+                id);
+        return;
+    }
+
+    commnet->ChangeNeighFreq(id, nid, newfreq);
+}
+
 void Agent::RemoveNeighbour(int nid)
 {
 // chech if joined in any network

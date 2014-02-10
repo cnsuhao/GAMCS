@@ -97,6 +97,7 @@ int CSThreadCommNet::Send(int fromid, int toid, void *buffer, size_t buf_size)
     if (chan->msg == NULL)    // neighbour has been removed from network
     {
         pthread_mutex_unlock(&chan->mutex);    // unlock
+        RemoveNeighbour(fromid, toid);    // break up with removed member
         return 0;    // no msg is sent
     }
 
@@ -371,6 +372,28 @@ int CSThreadCommNet::GetNeighFreq(int mem, int neb)
                 neb);
     }
     return INT_MAX;    // return a maximum possible freq
+}
+
+void CSThreadCommNet::ChangeNeighFreq(int mem, int neb, int newfreq)
+{
+    struct Neigh *nb, *nnb;
+    for (nb = neighlist[mem]; nb != NULL; nb = nnb)
+    {
+        if (nb->id == neb)    // neighbour found
+        {
+            nb->freq = newfreq;    // set new freq
+            return;
+        }
+
+        nnb = nb->next;
+    }
+
+    if (nb == NULL)    // neighbour not exists
+    {
+        WARNNING("ChangeNeighFreq(): member %d doesn't have neighbour %d\n",
+                mem, neb);
+    }
+    return;    // return a maximum possible freq
 }
 
 void CSThreadCommNet::RemoveMember(int mem)
