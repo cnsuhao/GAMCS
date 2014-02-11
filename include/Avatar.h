@@ -50,7 +50,10 @@ class Avatar
 inline void Avatar::SetSps(int s)
 {
     sps = s;
-    control_step_time = 1000 / sps;    // (1 / sps) * 1000
+    if (sps <= 0)    // no control
+        control_step_time = 0;
+    else
+        control_step_time = 1000 / sps;    // (1 / sps) * 1000
 }
 
 /**

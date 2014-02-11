@@ -9,7 +9,7 @@
 #include "Mouse.h"
 
 Mouse::Mouse(std::string n) :
-        Avatar(n)
+        Avatar(n), count(0)
 {
     position = 3;
 }
@@ -43,8 +43,6 @@ void Mouse::PerformAction(Agent::Action act)
 
 std::vector<Agent::Action> Mouse::ActionCandidates(Agent::State st)
 {
-//    UNUSED(st);
-    static int count;
 //    UNUSED(st);
     if (count < 50)
     {

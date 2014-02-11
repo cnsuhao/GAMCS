@@ -19,8 +19,7 @@ Avatar::Avatar() :
 }
 
 Avatar::Avatar(std::string n) :
-        name(n), sps(60), myagent(NULL), control_step_time(
-                (1000 / sps))
+        name(n), sps(60), myagent(NULL), control_step_time((1000 / sps))
 {
 }
 
@@ -62,22 +61,25 @@ void Avatar::Launch()
         PerformAction(act);    // otherwise, perform the action
 
         // handle time related job
-        unsigned long end_time = GetCurrentTime();
-        unsigned long consumed_time = end_time - start_time;
-        long time_remaining = control_step_time - consumed_time;
-        if (time_remaining > 0)    // remaining time
+        if (sps > 0)    // no control when sps <= 0
         {
-            dbgmoreprt("",
-                    "You got %ld milliseconds remaining to do other things.\n",
-                    time_remaining);
-            // do some useful things here if you don't want to sleep
-            usleep(time_remaining * 1000);
-        }
-        else
-        {
-            WARNNING(
-                    "time is not enough to run a step, %ld in lack, try to decrease the sps!\n",
-                    -time_remaining);
+            unsigned long end_time = GetCurrentTime();
+            unsigned long consumed_time = end_time - start_time;
+            long time_remaining = control_step_time - consumed_time;
+            if (time_remaining > 0)    // remaining time
+            {
+                dbgmoreprt("",
+                        "You got %ld milliseconds remaining to do other things.\n",
+                        time_remaining);
+                // do some useful things here if you don't want to sleep
+                usleep(time_remaining * 1000);
+            }
+            else
+            {
+                WARNNING(
+                        "time is not enough to run a step, %ldms in lack, try to decrease the sps!\n",
+                        -time_remaining);
+            }
         }
     }
     // quit
