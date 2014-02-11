@@ -331,6 +331,10 @@ void CSAgent::FreeState(struct cs_State *mst)
         FreeBas(bas);
     }
 
+    /* cut off the state */
+    if (mst->prev != NULL) mst->prev->next = mst->next;
+    if (mst->next != NULL) mst->next->prev = mst->prev;
+
     return free(mst);
 }
 
@@ -904,7 +908,8 @@ void CSAgent::RemoveState(struct cs_State *mst)
     if (mst->blist != NULL)
     {
         dbgprt("RemoveState()",
-                "RThis state is still linked to other states, can not be removed!\n");
+                "State %ld is still linked by other states, can not be removed!\n",
+                mst->st);
         return;
     }
 
@@ -937,7 +942,7 @@ void CSAgent::RemoveState(struct cs_State *mst)
     }
 
     // remove the state itself
-    return FreeState(mst);    // FIXME: memory needs to be seamed after mst becomes NULL
+    return FreeState(mst);
 }
 
 /**
@@ -1338,8 +1343,12 @@ void CSAgent::PrintProcess(unsigned long current, unsigned long total,
 
 void CSAgent::AddStateToMemory(struct cs_State *nstate)
 {
+    // add nstate to the front
+    nstate->prev = NULL;
     nstate->next = head;
+    if (head != NULL) head->prev = nstate;
     head = nstate;
+
     state_num++;
     states_map.insert(StatesMap::value_type(nstate->st, nstate));    // don't forget to update hash map
 

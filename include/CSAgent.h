@@ -13,7 +13,7 @@ class CSAgent: public Agent
 {
     public:
         typedef std::unordered_map<Agent::State, void *> StatesMap; /**< hash map from state value to state struct */
-        enum StFlag
+        enum SgFlag
         {
             SAVED, NEW, MODIFIED
         }; /**< storage status of a state */
@@ -124,11 +124,12 @@ struct cs_State
         float payoff; /**< state payoff */
         float original_payoff; /**< original payoff of state */
         unsigned long count; /**< state count */
-        enum CSAgent::StFlag mark; /**< mark used for storage */
+        enum CSAgent::SgFlag mark; /**< mark used for storage */
         struct cs_EnvAction *ealist; /**< exacts of this state */
         struct cs_Action *atlist; /**< actions of this state */
         struct cs_ForwardArcState *flist; /**< forward links */
         struct cs_BackArcState *blist; /**< backward links */
+        struct cs_State *prev;
         struct cs_State *next;
 };
 
