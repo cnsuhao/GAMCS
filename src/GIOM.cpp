@@ -7,14 +7,13 @@
  *	@Modify date:
  ***********************************************************************/
 #include <stdlib.h>
-#include <time.h>
+#include <random>
 #include "Debug.h"
 #include "GIOM.h"
 
 GIOM::GIOM() :
         cur_in(INVALID_INPUT), cur_out(INVALID_OUTPUT), process_count(0)
 {
-    srand(time(NULL));    // random seed, here is the source of all possibilities!
 }
 
 GIOM::~GIOM()
@@ -43,15 +42,15 @@ std::vector<GIOM::Output> GIOM::Restrict(Input in,
  */
 GIOM::Output GIOM::Process(Input in, const std::vector<GIOM::Output> &outlist)
 {
-    std::vector<GIOM::Output> restricited_outputs = Restrict(in, outlist);    // get restricted GIOM::Output values first
-    if (restricited_outputs.empty())    // no GIOM::Output generated, return an invalid GIOM::Output
+    std::vector<GIOM::Output> restricited_outputs = Restrict(in, outlist);    // get restricted output values first
+    if (restricited_outputs.empty())    // no output generated, return an invalid GIOM::Output
         return INVALID_OUTPUT;
 
-    int sz = restricited_outputs.size();    // number of GIOM::Output values
-    int index = rand() % (sz);    // choose an GIOM::Output value randomly
+    int sz = restricited_outputs.size();    // number of outputs
+    int index = Random() % (sz);    // choose an output value randomly
     GIOM::Output out = restricited_outputs[index];
 
-    // store input and GIOM::Output
+    // record input and output
     cur_in = in;
     cur_out = out;
     process_count++;    // inc count
@@ -76,4 +75,12 @@ void GIOM::Update()
     cur_in = INVALID_INPUT;
     cur_out = INVALID_OUTPUT;
     return;
+}
+
+long GIOM::Random()
+{
+    std::uniform_int_distribution<int> dist(0, LONG_MAX);
+    std::random_device rand();    // to get true random on linux, use rand("/dev/random");
+
+    return dist(rand);
 }

@@ -1,7 +1,7 @@
 #ifndef GIOM_H
 #define GIOM_H
 #include <vector>
-#include <limits.h>    // LONG_MAX
+#include <climits>    // LONG_MAX
 
 const unsigned long INVALID_INPUT = 0; /**< never use 0 for a valid state! */
 const long INVALID_OUTPUT = LONG_MAX; /**< the maximun value is used to indicate invalidation, be careful! */
@@ -29,6 +29,7 @@ class GIOM
         Output cur_out; /**< output value corresponding to cur_in */
         unsigned long process_count;    /**< process count */
     private:
+        long Random();  /**< generate a random number in range 0 to LONG_MAX. It's where all possibilities and miracles come from! */
 };
 
 #endif // GIOM_H
