@@ -464,7 +464,10 @@ void CSThreadCommNet::LoadTopoFromFile(char *tf)
     // traversal each node in graph
     for (node = agfstnode(graph); node; node = agnxtnode(graph, node))
     {
-        int mid = atoi(agget(node, "id"));    // get agent id
+        const char *str_nid = agget(node, "id");     // get agent id
+        if (str_nid == NULL)
+            ERROR("LoadTopoFromFile(): can't get node id from file!\n");
+        int mid = atoi(str_nid);
         // check if member has joined in network
         if (!HasMember(mid))    // not join
         {
@@ -477,7 +480,11 @@ void CSThreadCommNet::LoadTopoFromFile(char *tf)
         // get its neighbours
         for (edge = agfstout(graph, node); edge; edge = agnxtout(graph, edge))
         {
-            int interval = atoi(agget(edge, "interval"));    // get interval from edge
+            const char *str_edint = agget(edge, "interval");    // get interval from edge
+            if (str_edint == NULL)
+                ERROR("LoadTopoFromFile(): can't get edge interval from file!\n");
+            int interval = atoi(str_edint);
+
             neigh_node = edge->node;
             int neb = atoi(agget(neigh_node, "id"));    // get neighbour's id
 

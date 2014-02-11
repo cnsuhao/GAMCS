@@ -80,7 +80,7 @@ void GIOM::Update()
 long GIOM::Random()
 {
     std::uniform_int_distribution<int> dist(0, LONG_MAX);
-    std::random_device rand();    // to get true random on linux, use rand("/dev/random");
+    std::random_device rand;    // to get true random on linux, use rand("/dev/random");
 
     return dist(rand);
 }
