@@ -6,7 +6,7 @@
  *
  *	@Modify date:
  ***********************************************************************/
-#include "monomer_test.h"
+#include "monomer.h"
 
 Monomer::Monomer(int i) :
         Avatar(i)

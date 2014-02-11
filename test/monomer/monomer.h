@@ -1,5 +1,5 @@
-#ifndef ROBOT1_H
-#define ROBOT1_H
+#ifndef MONOMER_H
+#define MONOMER_H
 #include <vector>
 #include "Avatar.h"
 
@@ -28,4 +28,4 @@ class Monomer: public Avatar
         }
 };
 
-#endif // ROBOT1_H
+#endif

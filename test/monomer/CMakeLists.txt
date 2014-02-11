@@ -1,3 +1,3 @@
 AUX_SOURCE_DIRECTORY(. MONOMER_SRCS)
-ADD_EXECUTABLE(monomer ${MONOMER_SRCS})
-TARGET_LINK_LIBRARIES(monomer avatar)   # 指定链接库
+ADD_EXECUTABLE(mono_test ${MONOMER_SRCS})
+TARGET_LINK_LIBRARIES(mono_test avatar)   # 指定链接库
