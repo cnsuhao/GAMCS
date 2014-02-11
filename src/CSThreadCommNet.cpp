@@ -77,7 +77,7 @@ int CSThreadCommNet::Send(int fromid, int toid, void *buffer, size_t buf_size)
         return 0;
     }
 
-#ifdef _DEBUG_MORE_
+#ifdef _DEBUG_MORE
     printf(
             "*************************** %d send msg to %d ********************************\n",
             fromid, toid);
@@ -89,11 +89,6 @@ int CSThreadCommNet::Send(int fromid, int toid, void *buffer, size_t buf_size)
     struct Channel *chan = GetChannel(toid);    // get its channel
     pthread_mutex_lock(&chan->mutex);    // lock before write message to it
 
-    if (chan->ptr == 0)
-        chan->ptr = CHANNEL_SIZE - 1;    // move point, make room for the new msg, the oldest message will be lost
-    else
-        chan->ptr -= 1;
-
     // check if msg buffer is not NULL, this may happen when a member has a neighbour that has been removed from net.
     if (chan->msg == NULL)    // neighbour has been removed from network
     {
@@ -102,10 +97,14 @@ int CSThreadCommNet::Send(int fromid, int toid, void *buffer, size_t buf_size)
         return 0;    // no msg is sent
     }
 
+    chan->ptr = WrapInc(chan->ptr);    // move to the next empty place
+
+    // copy msg
     memcpy(chan->msg[chan->ptr].data, buffer, buf_size);    // copy message to the channel
     chan->msg[chan->ptr].sender_id = fromid;
 
-    if (chan->msg_num < CHANNEL_SIZE) chan->msg_num++;    // maximum num is CHANNEL_SIZE
+    // increase count
+    if (chan->msg_num < MSG_POOL_SIZE) chan->msg_num++;    // maximum num is MSG_POOL_SIZE
 
     pthread_mutex_unlock(&chan->mutex);    // unlock
 
@@ -136,38 +135,85 @@ int CSThreadCommNet::Recv(int toid, int fromid, void *buffer, size_t buf_size)
     }
     else
     {
-        if (fromid == -1)    // recieve msg from any agent
+        if (fromid == -1)    // recieve msg from any agent when not specified
         {
-            memcpy(buffer, chan->msg[chan->ptr].data, buf_size);    // copy a message to buffer
-            int sid = chan->msg[chan->ptr].sender_id;    // get sender's id
-            UNUSED(sid);    // FIXME: we didn't use it.
-            chan->msg_num--;    // dec the message number
-            if (chan->ptr == CHANNEL_SIZE - 1)
-                chan->ptr = 0;    // move the message point
-            else
-                chan->ptr += 1;
+            // copy msg
+            memcpy(buffer, chan->msg[chan->ptr].data, buf_size);
 
+            // decrease counts
+            chan->msg_num--;    // dec the message number
+            chan->ptr = WrapDec(chan->ptr);    // dec the point
+
+            // check msg size before return
             struct State_Info_Header *stif = (struct State_Info_Header *) buffer;
             if (stif->size > buf_size)    // check size
             {
                 WARNNING(
-                        "Recv()- requested state information exceeds buffer size!.\n");
+                        "Recv()- requested state information exceeds buffer size, it's been abandoned!\n");
                 re = 0;    // don't return incompelte information
             }
             else
                 re = buf_size;    // ok, msg is recieved
 #ifdef _DEBUG_MORE_
             printf(
-                    "++++++++++++++++++++++++ %d recv msg from %d ++++++++++++++++++++++++\n",
-                    toid, sid);
+                    "++++++++++++++++++++++++ %d recv msg from any one ++++++++++++++++++++++++\n",
+                    toid);
             Agent::PrintStateInfo(stif);
             printf(
                     "++++++++++++++++++++++++++++++ Recv End ++++++++++++++++++++++++++++++\n\n");
 #endif // _DEBUG_
         }
-        else
-            ERROR(
-                    "Recv(): This function doesn't support recieve message from a specified agent currently!\n");    // TODO
+        else    // recieve the msg from a specifed sender
+        {
+            int tmp_ptr = chan->ptr;
+            int count;
+            // traversal every msg in pool and check sender id
+            for (count = chan->msg_num; count > 0; count--)
+            {
+                int sid = chan->msg[tmp_ptr].sender_id;
+                if (sid == fromid)    // found, recieve this msg and fill up the gap left by moving following msgs one step forward
+                {
+                    memcpy(buffer, chan->msg[tmp_ptr].data, buf_size);    // fetch the msg
+
+                    // move msgs
+                    tmp_ptr = WrapInc(tmp_ptr);    // start from the next msg
+                    while (tmp_ptr != WrapInc(chan->ptr))    // stop when exceeds the latest
+                    {
+                        memcpy(chan->msg[WrapDec(tmp_ptr)].data,
+                                chan->msg[tmp_ptr].data, DATA_SIZE);
+
+                        tmp_ptr = WrapInc(tmp_ptr);    // next msg
+                    }
+                    // move done
+
+                    // decrease counts
+                    chan->ptr = WrapDec(chan->ptr);
+                    chan->msg_num--;
+
+                    // check msg size before return
+                    struct State_Info_Header *stif =
+                            (struct State_Info_Header *) buffer;
+                    if (stif->size > buf_size)    // check size
+                    {
+                        WARNNING(
+                                "Recv()- requested state information exceeds buffer size, it's been abandoned!\n");
+                        re = 0;    // don't return incompelte information
+                    }
+                    else
+                        re = buf_size;    // ok, msg is complete
+
+                    break;    // get one msg from fromid only
+                }
+            }
+
+            if (count == 0)    // can not find any msg sended by fromid
+            {
+                WARNNING("Recv()- %d hasn't recieved any msg from %d.\n", toid,
+                        fromid);
+            }
+
+        }
+
     }
 
     pthread_mutex_unlock(&chan->mutex);    // unlock
@@ -203,11 +249,11 @@ void CSThreadCommNet::AddMember(int mem)
     members.insert(mem);
     /* initialize member's channel */
     channels[mem].msg = (struct Msg *) malloc(    // allocate buffer for msgs
-            sizeof(struct Msg) * CHANNEL_SIZE);
+            sizeof(struct Msg) * MSG_POOL_SIZE);
     assert(channels[mem].msg != NULL);
     pthread_mutex_init(&(channels[mem].mutex), NULL);
     channels[mem].msg_num = 0;
-    channels[mem].ptr = CHANNEL_SIZE - 1;
+    channels[mem].ptr = 0;
 }
 
 void CSThreadCommNet::AddNeighbour(int mem, int neb, int interval)
@@ -275,8 +321,9 @@ int CSThreadCommNet::GetNeighCommInterval(int mem, int neb)
 
     if (nb == NULL)    // neighbour not exists
     {
-        WARNNING("GetNeighCommInterval(): member %d doesn't have neighbour %d\n", mem,
-                neb);
+        WARNNING(
+                "GetNeighCommInterval(): member %d doesn't have neighbour %d\n",
+                mem, neb);
     }
     return INT_MAX;    // return a maximum possible interval
 }
@@ -297,7 +344,8 @@ void CSThreadCommNet::ChangeNeighCommInterval(int mem, int neb, int newinterval)
 
     if (nb == NULL)    // neighbour not exists
     {
-        WARNNING("ChangeNeighCommInterval(): member %d doesn't have neighbour %d\n",
+        WARNNING(
+                "ChangeNeighCommInterval(): member %d doesn't have neighbour %d\n",
                 mem, neb);
     }
     return;    // return a maximum possible interval
@@ -469,7 +517,7 @@ void CSThreadCommNet::DumpTopoToFile(char *tf)
     fprintf(topofs, "digraph CommNet_%d \n{\n", id);
     fprintf(topofs,
             "label=\"Topo Structure of CommNet %d\\n#members: %d, ...\"\n", id,
-            NumberOfMembers());     // statistics about the network can be put here
+            NumberOfMembers());    // statistics about the network can be put here
     fprintf(topofs, "node [color=\"black\", shape=\"circle\"]\n");
     fprintf(topofs, "rank=\"same\"\n");
 
@@ -491,4 +539,26 @@ void CSThreadCommNet::DumpTopoToFile(char *tf)
 
     fprintf(topofs, "}\n");    // diagraph
     fclose(topofs);
+}
+
+int CSThreadCommNet::WrapInc(int ptr)
+{
+    int nptr;
+    if (ptr == MSG_POOL_SIZE - 1)
+        nptr = 0;    // wrap to beginning at end
+    else
+        nptr = ptr + 1;    //just increase by 1
+
+    return nptr;
+}
+
+int CSThreadCommNet::WrapDec(int ptr)
+{
+    int nptr;
+    if (ptr == 0)
+        nptr = MSG_POOL_SIZE - 1;    // wrap to end at beginning
+    else
+        nptr = ptr - 1;    // just decrease by 1
+
+    return nptr;
 }

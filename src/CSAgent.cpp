@@ -281,7 +281,7 @@ struct cs_State *CSAgent::NewState(Agent::State st)
     // fill in default values
     mst->st = st;
     mst->original_payoff = 0.0;    // any value, doesn't master, it'll be set when used. Note: this value is also used for unseen previous state recieved in links from others.
-    mst->payoff = 0.0;    // set payoff to original payoff, it's important! //??? FIXME
+    mst->payoff = unseen_state_payoff;
     mst->count = 1;    // it's created when we first encounter it
     mst->flist = NULL;    // we just create a struct here, no links considered
     mst->blist = NULL;
