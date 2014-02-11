@@ -269,8 +269,8 @@ void CSThreadCommNet::AddNeighbour(int mem, int neb, int interval)
     if (members.find(neb) == members.end())    // not found
     {
         WARNNING(
-                "AddNeighbour(): Neighbour %d not exists, can not make neighbour with it!\n",
-                mem);
+                "AddNeighbour(): Neighbour %d not exists, %d can not make neighbour with it!\n",
+                neb, mem);
         return;
     }
 

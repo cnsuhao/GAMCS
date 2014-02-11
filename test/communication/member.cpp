@@ -8,7 +8,7 @@
 #include "member.h"
 
 Member::Member(std::string n) :
-        CSThreadAvatar(n)
+        CSThreadAvatar(n), count(0)
 {
     position = 5;
 }
@@ -34,8 +34,7 @@ void Member::PerformAction(Agent::Action act)
 
 std::vector<Agent::Action> Member::ActionCandidates(Agent::State st)
 {
-    static int count;
-    if (count < 1000)
+    if (count < 500)
     {
         std::vector<Agent::Action> acts;
         acts.clear();

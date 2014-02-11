@@ -9,7 +9,7 @@
 #include "Mouse.h"
 
 Mouse::Mouse(std::string n) :
-        CSThreadAvatar(n)
+        CSThreadAvatar(n), count(0)
 {
     position = 5;
 }
@@ -35,7 +35,6 @@ void Mouse::PerformAction(Agent::Action act)
 
 std::vector<Agent::Action> Mouse::ActionCandidates(Agent::State st)
 {
-    static int count;
     if (count < 1000)
     {
         std::vector<Agent::Action> acts;

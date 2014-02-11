@@ -19,6 +19,7 @@ class Member: public CSThreadAvatar
 
     private:
         Agent::State position;
+        int count;
 
         Agent::State GetCurrentState();
         void PerformAction(Agent::Action);

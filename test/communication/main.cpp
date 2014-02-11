@@ -12,10 +12,16 @@
 #include "member.h"
 #include "Mysql.h"
 
-int main(void)
+int main(int argc, char *argv[])
 {
-    int member_num = 100;    // number of member
-    char name[16];  // member name
+    if (argc != 3)
+    {
+        printf("#commnet_test member_num dotfile\n");
+        return -1;
+    }
+
+    int member_num = atoi(argv[1]);    // number of member
+    char name[16];    // member name
 
     CSThreadCommNet commnet(1);    // communication network
 
@@ -36,13 +42,13 @@ int main(void)
 //        ml->SetDBArgs("localhost", "root", "huangk", db_name);
 
         // agent
-        CSAgent *agent = new CSAgent(i, 0.8, 0.01);
+        CSAgent *agent = new CSAgent(i + 1, 0.8, 0.01);    // agent id start from 1
 //        agent->LoadMemoryFromStorage(ml);
 
         // avatar
-        sprintf(name, "Member_%d", i);
+        sprintf(name, "Member_%d", i + 1);
         Member *member = new Member(name);
-        member->SetSps(30);
+        member->SetSps(-1);
         member->ConnectAgent(agent);
         member->JoinCommNet(&commnet);
 
@@ -52,7 +58,7 @@ int main(void)
     }
 
     // load topo
-    commnet.LoadTopoFromFile("randcommnet.dot");
+    commnet.LoadTopoFromFile(argv[2]);
 
     /* launch members */
     for (int i = 0; i < member_num; i++)
@@ -73,10 +79,9 @@ int main(void)
 //        delete mysql[i];
     }
     // save topo structure
-    commnet.DumpTopoToFile("commnet.dot");
+//    commnet.DumpTopoToFile("commnet.dot");
     printf("------- quit!\n");
 
     return 0;
 }
-
 
