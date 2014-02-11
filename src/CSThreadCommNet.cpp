@@ -77,7 +77,7 @@ int CSThreadCommNet::Send(int fromid, int toid, void *buffer, size_t buf_size)
         return 0;
     }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_MORE_
     printf(
             "*************************** %d send msg to %d ********************************\n",
             fromid, toid);
@@ -156,7 +156,7 @@ int CSThreadCommNet::Recv(int toid, int fromid, void *buffer, size_t buf_size)
             }
             else
                 re = buf_size;    // ok, msg is recieved
-#ifdef _DEBUG_
+#ifdef _DEBUG_MORE_
             printf(
                     "++++++++++++++++++++++++ %d recv msg from %d ++++++++++++++++++++++++\n",
                     toid, sid);

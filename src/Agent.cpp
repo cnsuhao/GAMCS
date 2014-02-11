@@ -82,7 +82,7 @@ void Agent::Communicate()
         {
             State st_send = NextStateToSend(*nit);    // get the next state to be sent to this neighbour
 
-            dbgprt("***", "%d sent state %ld to %d\n", id, st_send, *nit);
+            dbgmoreprt("***", "%d sent state %ld to %d\n", id, st_send, *nit);
             SendStateInfo(*nit, st_send);    // send out
         }
     }
