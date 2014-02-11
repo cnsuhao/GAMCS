@@ -677,6 +677,7 @@ float CSAgent::CalStatePayoff(const struct cs_State *mst) const
 
 /**
  * \brief Update states backwards recursively beginning from a specified state
+ * Note that: every time a state makes any changes, all its previous states must be updated!
  * \param mst a specified state where the update begins
  */
 void CSAgent::UpdateState(struct cs_State *mst)
@@ -1180,7 +1181,7 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
         mst->count = round((mst->count + stif->count) / 2.0);    // set count as the average sum
 
         dbgmoreprt("state count round to ", "%ld\n", mst->count);
-        mst->payoff = stif->payoff;    // meanless to set payoff, since it's calculated on fly
+        mst->payoff = stif->payoff;
         /* It's very important to set original payoff here, some un-experiencing states my be created as recieved previous states,
          in this situation, the original payoff will remain empty, if we don't set it here, it will have no chance to be set.
          it doesn't matter if the original payoff set here is wrong, because when it experiences the state by itself, it'll get
@@ -1278,7 +1279,18 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
         }
     }
 
-    // UpdateState(mst);    // no need to update state here, it will be updated when personal experienced
+    /* UpdateState starting from mst's previous states. This update is IMPORTANT!
+     * The information of mst need to be merged to memory by update, otherwise others parts of the memory will know
+     * nothing about mst, then the information we got is useless.
+     * */
+    struct cs_BackArcState *bas, *nbas;
+    for (bas = mst->blist; bas != NULL; bas = nbas)
+    {
+        UpdateState(bas->pstate);    // update previous state one by one
+
+        nbas = bas->next;
+    }
+
     return;
 }
 

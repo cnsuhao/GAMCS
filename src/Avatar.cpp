@@ -41,7 +41,7 @@ void Avatar::Launch()
 
         /* Perceive the outside world */
         Agent::State cs = GetCurrentState();    // get current state
-        dbgprt("", "%s, Current state: %ld\n", name.c_str(), cs);
+        dbgprt("Launch():", "%s, State: %ld\n", name.c_str(), cs);
 
         /* Process stage */
         std::vector<Agent::Action> acts = ActionCandidates(cs);    // get all action candidates of a state

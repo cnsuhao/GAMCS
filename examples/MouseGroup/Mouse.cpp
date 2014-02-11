@@ -36,7 +36,7 @@ void Mouse::PerformAction(Agent::Action act)
 std::vector<Agent::Action> Mouse::ActionCandidates(Agent::State st)
 {
     static int count;
-    if (count < 1000)
+    if (count < 500)
     {
         std::vector<Agent::Action> acts;
         acts.clear();
