@@ -14,7 +14,7 @@
 
 int main(void)
 {
-    int member_num = 4;    // number of member
+    int member_num = 100;    // number of member
     char name[16];  // member name
 
     CSThreadCommNet commnet(1);    // communication network
@@ -42,6 +42,7 @@ int main(void)
         // avatar
         sprintf(name, "Member_%d", i);
         Member *member = new Member(name);
+        member->SetSps(30);
         member->ConnectAgent(agent);
         member->JoinCommNet(&commnet);
 
@@ -51,7 +52,7 @@ int main(void)
     }
 
     // load topo
-    commnet.LoadTopoFromFile("commnet.dot");
+    commnet.LoadTopoFromFile("randcommnet.dot");
 
     /* launch members */
     for (int i = 0; i < member_num; i++)
@@ -73,6 +74,7 @@ int main(void)
     }
     // save topo structure
     commnet.DumpTopoToFile("commnet.dot");
+    printf("------- quit!\n");
 
     return 0;
 }
