@@ -4,7 +4,7 @@
 #include "CommNet.h"
 
 #define MAX_MEMBER 1000     // maximun number of members in group
-#define CHANNEL_SIZE 100     // maximun number of messages a channel can store
+#define MSG_POOL_SIZE 100     // maximun number of messages a channel can store
 #define DATA_SIZE 4096      // maximun size of message passed
 
 /**
@@ -48,6 +48,9 @@ class CSThreadCommNet: public CommNet
 
         struct Channel *GetChannel(int); /**< get channel of a specified member */
         void Notify(int); /**< notify a member of new messages recieved */
+
+        int WrapInc(int);   /**< increase message point, when reach MSG_POOL_SIZE wrap from 0 */
+        int WrapDec(int);   /**< decrease message point, when reach 0 wrap from MSG_POOL_SIZE */
 
         std::set<int> members; /**< save all members */
         struct Channel channels[MAX_MEMBER]; /**< channels for all members */

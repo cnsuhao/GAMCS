@@ -313,7 +313,7 @@ void Mysql::AddStateInfo(const struct State_Info_Header *stif)
     if (mysql_real_query(db_con, query, len))    // perform the query, and insert st to database
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
-        return;    // FIXME: indicator of error?
+        return;
     }
 
     return;
