@@ -12,8 +12,7 @@ class TSGIOM: public GIOM
         virtual ~TSGIOM();
         virtual void Update();    // reimplement Update, add time sequence
     protected:
-        virtual std::vector<Output> Restrict(Input,
-                const std::vector<Output> &);    // reimplement Restrict
+        virtual OutList Restrict(Input, OutList &);    // reimplement Restrict
         /* bring in the time sequence feature */
         Input pre_in; /**< previous input value */
         Output pre_out; /**< previous output value */

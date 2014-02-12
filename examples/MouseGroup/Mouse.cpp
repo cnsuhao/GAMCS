@@ -33,7 +33,7 @@ void Mouse::PerformAction(Agent::Action act)
     return;
 }
 
-std::vector<Agent::Action> Mouse::ActionCandidates(Agent::State st)
+OutList Mouse::ActionCandidates(Agent::State st)
 {
     if (count < 1000)
     {

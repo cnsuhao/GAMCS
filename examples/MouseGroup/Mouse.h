@@ -1,6 +1,5 @@
 #ifndef MOUSE_H
 #define MOUSE_H
-#include <vector>
 #include <string>
 #include "CSThreadAvatar.h"
 
@@ -16,7 +15,7 @@ class Mouse: public CSThreadAvatar
 
         Agent::State GetCurrentState();
         void PerformAction(Agent::Action);
-        std::vector<Agent::Action> ActionCandidates(Agent::State);
+        OutList ActionCandidates(Agent::State);
         float OriginalPayoff(Agent::State);
 };
 

@@ -32,26 +32,26 @@ void Member::PerformAction(Agent::Action act)
     return;
 }
 
-std::vector<Agent::Action> Member::ActionCandidates(Agent::State st)
+OutList Member::ActionCandidates(Agent::State st)
 {
     if (count < 500)
     {
-        std::vector<Agent::Action> acts;
+        OutList acts;
         acts.clear();
         if (st == 1)    // position 1
         {
-            acts.push_back(1);
+            acts.add(1);
             count++;
             return acts;
         }
 
-        acts.push_back(1);
-        acts.push_back(-1);
+        acts.add(1);
+        acts.add(-1);
         count++;
         return acts;
     }
     else
-        return std::vector<Agent::Action>();    // return an empty list
+        return OutList();    // return an empty list
 }
 
 float Member::OriginalPayoff(Agent::State st)

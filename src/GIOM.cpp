@@ -27,8 +27,7 @@ GIOM::~GIOM()
  * \return outputs distribution after restrict
  *
  */
-std::vector<GIOM::Output> GIOM::Restrict(Input in,
-        const std::vector<GIOM::Output> &outlist)
+OutList GIOM::Restrict(Input in, OutList &outlist)
 {
     UNUSED(in);
     return outlist;    // return outlist as it is
@@ -40,9 +39,9 @@ std::vector<GIOM::Output> GIOM::Restrict(Input in,
  * \return GIOM::Output
  *
  */
-GIOM::Output GIOM::Process(Input in, const std::vector<GIOM::Output> &outlist)
+GIOM::Output GIOM::Process(Input in, OutList &outlist)
 {
-    std::vector<GIOM::Output> restricited_outputs = Restrict(in, outlist);    // get restricted output values first
+    OutList restricited_outputs = Restrict(in, outlist);    // get restricted output values first
     if (restricited_outputs.empty())    // no output generated, return an invalid GIOM::Output
         return INVALID_OUTPUT;
 

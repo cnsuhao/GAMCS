@@ -1,6 +1,5 @@
 #ifndef MONOMER_H
 #define MONOMER_H
-#include <vector>
 #include <string>
 #include "Avatar.h"
 
@@ -17,7 +16,7 @@ class Monomer: public Avatar
 
         Agent::State GetCurrentState();
         void PerformAction(Agent::Action);
-        std::vector<Agent::Action> ActionCandidates(Agent::State);
+        OutList ActionCandidates(Agent::State);
         float OriginalPayoff(Agent::State);
         void SendStateInfo(Agent::State)
         {

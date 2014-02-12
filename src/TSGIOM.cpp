@@ -39,8 +39,8 @@ void TSGIOM::Update()
  * \return outputs distribution after restricting
  *
  */
-std::vector<GIOM::Output> TSGIOM::Restrict(Input in,
-        const std::vector<GIOM::Output> &outlist)
+OutList TSGIOM::Restrict(Input in,
+        OutList &outlist)
 {
     UNUSED(in);
     return outlist;

@@ -773,33 +773,33 @@ float CSAgent::CalActPayoff(Agent::Action act, const struct cs_State *mst) const
  * \param candidate action list
  * \return best actions
  */
-std::vector<Agent::Action> CSAgent::BestActions(const struct cs_State *mst,
-        const std::vector<Agent::Action> &acts)
+OutList CSAgent::BestActions(const struct cs_State *mst, OutList &acts)
 {
     float max_payoff = -FLT_MAX;
     float payoff;
-    std::vector<Agent::Action> max_acts;
+    OutList max_acts;
 
     max_acts.clear();
     // walk through every actions
-    for (std::vector<Agent::Action>::const_iterator act = acts.begin();
-            act != acts.end(); ++act)
+    for (OutList::iterator act = acts.begin(); act != acts.end();
+            act = acts.next())
     {
-        struct cs_Action *mac = Act2Struct(*act, mst);    // get action struct from values
+        struct cs_Action *mac = Act2Struct(act, mst);    // get action struct from values
 
         if (mac != NULL)
             payoff = mac->payoff;
-        else        // this is an unseen action
+        else
+            // this is an unseen action
             payoff = degree_of_curiosity;
 
         if (payoff > max_payoff)    // find a bigger one, refill the max payoff action list
         {
             max_acts.clear();
-            max_acts.push_back(*act);
+            max_acts.add(act);
             max_payoff = payoff;
         }
         else if (payoff == max_payoff)    // find an equal one, add it to the list
-            max_acts.push_back(*act);
+            max_acts.add(act);
     }
     return max_acts;
 }
@@ -949,12 +949,11 @@ void CSAgent::RemoveState(struct cs_State *mst)
  * \param acts the candidate action list
  * \return actions choosen by MPR
  */
-std::vector<Agent::Action> CSAgent::MaxPayoffRule(Agent::State st,
-        const std::vector<Agent::Action> &acts)
+OutList CSAgent::MaxPayoffRule(Agent::State st, OutList &acts)
 {
     dbgmoreprt("Enter MaxPayoffRule() ", "-------------------------------------------------- State: %ld\n", st);
     cur_mst = SearchState(st);    // get the state struct from state value
-    std::vector<Agent::Action> re;
+    OutList re;
 
     if (cur_mst == NULL)    // first time to encounter this state, we know nothing about it, so no restriction applied, return the whole list
     {

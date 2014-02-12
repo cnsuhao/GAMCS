@@ -5,6 +5,7 @@
  *      Author: andy
  */
 #include <vector>
+#include <string>
 #include <unistd.h>
 #include <stdio.h>
 #include "CSThreadAvatar.h"
@@ -41,8 +42,8 @@ bool quit_notification = false; // notify opponent to quit
 class PrisonerA: public CSThreadAvatar
 {
     public:
-        PrisonerA(int i) :
-                CSThreadAvatar(i)
+        PrisonerA(std::string n) :
+                CSThreadAvatar(n)
         {
         }
         ~PrisonerA()
@@ -64,30 +65,30 @@ class PrisonerA: public CSThreadAvatar
             actA = true;
         }
 
-        std::vector<Agent::Action> ActionCandidates(Agent::State st)
+        OutList ActionCandidates(Agent::State st)
         {
             static int count = 0;
-            std::vector<Agent::Action> re;
+            OutList re;
             re.clear();
             if (count < runtimes)    // run times
             {
                 switch (st)
                 {
                     case 1:
-                        re.push_back(0);
-                        re.push_back(1);
+                        re.add(0);
+                        re.add(1);
                         break;
                     case 2:
-                        re.push_back(0);
-                        re.push_back(-1);
+                        re.add(0);
+                        re.add(-1);
                         break;
                     case 3:
-                        re.push_back(0);
-                        re.push_back(1);
+                        re.add(0);
+                        re.add(1);
                         break;
                     case 4:
-                        re.push_back(0);
-                        re.push_back(-1);
+                        re.add(0);
+                        re.add(-1);
                         break;
                     default:
                         printf(
@@ -130,8 +131,8 @@ class PrisonerA: public CSThreadAvatar
 class PrisonerB: public CSThreadAvatar
 {
     public:
-        PrisonerB(int i) :
-                CSThreadAvatar(i)
+        PrisonerB(std::string n) :
+                CSThreadAvatar(n)
         {
         }
         ~PrisonerB()
@@ -153,9 +154,9 @@ class PrisonerB: public CSThreadAvatar
             actB = true;
         }
 
-        std::vector<Agent::Action> ActionCandidates(Agent::State st)
+        OutList ActionCandidates(Agent::State st)
         {
-            std::vector<Agent::Action> re;
+            OutList re;
             re.clear();
 
             if (!quit_notification)    // check quit
@@ -163,20 +164,20 @@ class PrisonerB: public CSThreadAvatar
                 switch (st)
                 {
                     case 1:
-                        re.push_back(0);
-                        re.push_back(2);
+                        re.add(0);
+                        re.add(2);
                         break;
                     case 2:
-                        re.push_back(0);
-                        re.push_back(2);
+                        re.add(0);
+                        re.add(2);
                         break;
                     case 3:
-                        re.push_back(0);
-                        re.push_back(-2);
+                        re.add(0);
+                        re.add(-2);
                         break;
                     case 4:
-                        re.push_back(0);
-                        re.push_back(-2);
+                        re.add(0);
+                        re.add(-2);
                         break;
                     default:
                         printf(

@@ -30,14 +30,13 @@ class CSAgent: public Agent
         unsigned long state_num; /**< total number of states in memory */
         unsigned long lk_num; /**< total number of links between states in memory */
 
-        std::vector<Agent::Action> MaxPayoffRule(Agent::State,
-                const std::vector<Agent::Action> &); /**< implementing maximun payoff rule */
+        OutList MaxPayoffRule(Agent::State, OutList &); /**< implementing maximun payoff rule */
         void UpdateMemory(float); /**< implementing UpdateMemory of Agent */
         struct State_Info_Header *GetStateInfo(Agent::State) const; /**< implementing GetStateInfo function */
         void MergeStateInfo(const struct State_Info_Header *); /**< implementing MergeStateInfo function */
 
         Agent::State NextStateToSend(int); /**< implementing Agent's NextStateToSend() */
-        std::map<int, struct cs_State *> last_sent_states;  /**< record last state sent to each neighbour */
+        std::map<int, struct cs_State *> last_sent_states; /**< record last state sent to each neighbour */
 
         void PrintProcess(unsigned long, unsigned long, char *) const;
 
@@ -55,8 +54,7 @@ class CSAgent: public Agent
                 struct cs_State *); /**< link two states in memory with specfic exact and action */
         void MergeLink(struct cs_State *, Agent::EnvAction, Agent::Action,
                 struct cs_State *); /**< check and build link between states when the link info was fetched in state infomation recieved from other agents */
-        std::vector<Agent::Action> BestActions(const struct cs_State *,
-                const std::vector<Agent::Action>&); /**< find the best action of a state */
+        OutList BestActions(const struct cs_State *, OutList&); /**< find the best action of a state */
         struct cs_State *SearchState(Agent::State) const; /**< search state in memory by its identity */
         void UpdateState(struct cs_State *); /**< update state payoff backward recursively */
 
