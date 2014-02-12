@@ -1,13 +1,14 @@
 #ifndef MONOMER_H
 #define MONOMER_H
 #include <vector>
+#include <string>
 #include "Avatar.h"
 
 class Monomer: public Avatar
 {
     public:
         /** Default constructor */
-        Monomer(int);
+        Monomer(std::string);
         /** Default destructor */
         ~Monomer();
 

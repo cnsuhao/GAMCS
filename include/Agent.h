@@ -34,9 +34,7 @@ class Agent: public TSGIOM
         float GetDiscountRate();
         void SetThreshold(float);
         float GetThreshold();
-        void SetUnseenStatePayoff(float);
-        void SetUnseenActionPayoff(float);
-        void SetUnseenEActionMaxpayoff(float);
+        void SetDegreeOfCuriosity(float);
 
         /* network related stuff */
         void JoinCommNet(CommNet *); /**< set join a communication network */
@@ -50,9 +48,7 @@ class Agent: public TSGIOM
         float discount_rate; /**< discount rate (0<,<1)when calculate state payoff */
         float threshold; /**< threshold used in payoff updating */
 
-        float unseen_state_payoff; /**< payoff of unseen states */
-        float unseen_action_payoff; /**< payoff of unseen actions, this controls the agent's curiosity */
-        float unseen_eaction_maxpayoff; /**< maxmun payoff of states belonging to an unseen environment action, this controls the agent's world view */
+        float degree_of_curiosity; /**< degree of curiosity to try unknown actions */
 
         CommNet *commnet; /**< which network this agent is belonged to */
 
@@ -102,19 +98,9 @@ inline float Agent::GetThreshold()
     return threshold;
 }
 
-inline void Agent::SetUnseenStatePayoff(float pf)
+inline void Agent::SetDegreeOfCuriosity(float pf)
 {
-    unseen_state_payoff = pf;
-}
-
-inline void Agent::SetUnseenActionPayoff(float pf)
-{
-    unseen_action_payoff = pf;
-}
-
-inline void Agent::SetUnseenEActionMaxpayoff(float pf)
-{
-    unseen_eaction_maxpayoff = pf;
+    degree_of_curiosity = pf;
 }
 
 /** forward link struct for a state
