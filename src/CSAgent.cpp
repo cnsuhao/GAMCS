@@ -780,9 +780,9 @@ OutList CSAgent::BestActions(const struct cs_State *mst, OutList &acts)
     OutList max_acts;
 
     max_acts.clear();
-    // walk through every actions
-    for (OutList::iterator act = acts.begin(); act != acts.end();
-            act = acts.next())
+    // walk through every action in list
+    Agent::Action act = acts.first();
+    while (act != INVALID_OUTPUT)       // until out of bound
     {
         struct cs_Action *mac = Act2Struct(act, mst);    // get action struct from values
 
@@ -800,6 +800,8 @@ OutList CSAgent::BestActions(const struct cs_State *mst, OutList &acts)
         }
         else if (payoff == max_payoff)    // find an equal one, add it to the list
             max_acts.add(act);
+
+        act = acts.next();
     }
     return max_acts;
 }

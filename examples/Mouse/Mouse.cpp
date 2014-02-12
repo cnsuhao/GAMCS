@@ -46,15 +46,15 @@ OutList Mouse::ActionCandidates(Agent::State st)
 //    UNUSED(st);
     if (count < 50)
     {
-        std::vector<Agent::Action> acts;
+        OutList acts;
         acts.clear();
-        acts.push_back(1);
-        acts.push_back(-1);
+        acts.add(1);
+        acts.add(-1);
         count++;
         return acts;
     }
     else
-        return std::vector<Agent::Action>();    // return an empty list
+        return OutList();    // return an empty list
 }
 
 float Mouse::OriginalPayoff(Agent::State st)

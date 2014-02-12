@@ -2,6 +2,7 @@
 #define GIOM_H
 #include <climits>    // LONG_MAX
 #include <stddef.h>
+#include "Debug.h"
 
 const unsigned long INVALID_INPUT = 0; /**< never use 0 for a valid state! */
 const long INVALID_OUTPUT = LONG_MAX; /**< the maximun value is used to indicate invalidation, be careful! */
@@ -45,7 +46,7 @@ struct OutFragment
 };
 
 /**
- *
+ *  List for storing outputs.
  */
 class OutList
 {
@@ -55,7 +56,7 @@ class OutList
             SPARE_CAPACITY = 16
         };
 
-        typedef long olsize_t;
+        typedef unsigned long olsize_t;
 
         explicit OutList(olsize_t initfn = 0) :
                 frag_num(initfn), the_capacity(initfn + SPARE_CAPACITY), current_index(
@@ -112,7 +113,8 @@ class OutList
         }
 
         /**
-         * Override operator []
+         * Override operator [].
+         * For index out of bound returns INVALID_OUTPUT
          * @param index output index
          * @return output value
          */
@@ -133,7 +135,7 @@ class OutList
                 OutFragment *ptr = outputs + i;
                 olsize_t out_num_in_this_frag = (ptr->end - ptr->start)
                         / ptr->interval + 1;
-                if (total_num + out_num_in_this_frag >= index)    // index is in this fragment
+                if (total_num + out_num_in_this_frag > index)    // index is in this fragment
                 {
                     olsize_t index_in_frag = index - total_num;
                     out_wanted = ptr->start + ptr->interval * index_in_frag;
@@ -177,23 +179,13 @@ class OutList
         }
 
         /**
-         * Override operator ++
-         * @return next output in list
-         */
-        GIOM::Output operator++()
-        {
-            current_index++;
-            return operator[](current_index);
-        }
-
-        /**
          * Add a single output to list
          * @param output output
          */
         void add(GIOM::Output output)
         {
             // check if exceeds the capacity
-            if (frag_num == the_capacity) reserve(2 * the_capacity + 1);
+            if (frag_num == the_capacity) expand(2 * the_capacity + 1);
 
             OutFragment new_frag;
             new_frag.start = output;
@@ -210,7 +202,11 @@ class OutList
          */
         void add(GIOM::Output start, GIOM::Output end, GIOM::Output interval)
         {
-            if (frag_num == the_capacity) reserve(2 * the_capacity + 1);
+            // check range
+            if ((end - start) / interval < 0)
+                ERROR("Invalid range! %ld --> %ld (interval: %ld) \n", start, end, interval);
+
+            if (frag_num == the_capacity) expand(2 * the_capacity);
 
             OutFragment new_frag;
             new_frag.start = start;
@@ -219,52 +215,62 @@ class OutList
             outputs[frag_num++] = new_frag;
         }
 
-        void reserve(olsize_t ncap)
+        /**
+         * Expend capacity for future adding
+         * @param ncap new capacity
+         */
+        void expand(olsize_t ncap)
         {
+            if (ncap < frag_num) return;    // the new capacity should at least include all current fragments
+
             OutFragment *old_list = outputs;
-            // number of fragments needed to copy from old list to the new allocated list
-            olsize_t copy_num = ncap < frag_num ? ncap : frag_num;
             // add up the spare
             ncap += SPARE_CAPACITY;
             outputs = new OutFragment[ncap];
-            // copy
-            for (olsize_t i = 0; i < copy_num; i++)
+            // copy all fragments to new place
+            for (olsize_t i = 0; i < frag_num; i++)
             {
                 outputs[i] = old_list[i];
             }
 
-            frag_num = copy_num;
             the_capacity = ncap;
             delete[] old_list;
         }
 
+        /**
+         * Clear the list.
+         */
         void clear()
         {
             frag_num = 0;
         }
 
-        /* implementing iterator */
-        typedef GIOM::Output iterator;
-
-        iterator begin()
+        /**
+         * Get the first output in list.
+         * @return the first output
+         */
+        GIOM::Output first()
         {
             current_index = 0;
             return operator[](current_index);
         }
 
-        iterator end()
+        /**
+         * Get the last output in list.
+         * @return the last output
+         */
+        GIOM::Output last()
         {
             return operator[](size());
         }
 
-        iterator next()
+        /**
+         * Iterator list and get the next output.
+         * @return the next output
+         */
+        GIOM::Output next()
         {
             current_index++;
-            if (current_index < 0 || current_index > size())
-            {
-                // out of bound
-            }
-
             return operator[](current_index);
         }
 
