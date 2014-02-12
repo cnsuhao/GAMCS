@@ -281,7 +281,7 @@ struct cs_State *CSAgent::NewState(Agent::State st)
     // fill in default values
     mst->st = st;
     mst->original_payoff = 0.0;    // any value, doesn't master, it'll be set when used. Note: this value is also used for unseen previous state recieved in links from others.
-    mst->payoff = unseen_state_payoff;
+    mst->payoff = 0;
     mst->count = 1;    // it's created when we first encounter it
     mst->flist = NULL;    // we just create a struct here, no links considered
     mst->blist = NULL;
@@ -469,7 +469,7 @@ struct cs_Action *CSAgent::NewAc(Agent::Action act)
             sizeof(struct cs_Action));
 
     ac->act = act;
-    ac->payoff = unseen_action_payoff;
+    ac->payoff = 0;
     ac->next = NULL;
     return ac;
 }
@@ -560,7 +560,7 @@ void CSAgent::LinkStates(struct cs_State *pmst, EnvAction eat,
 
     /* check action */
     struct cs_Action *ac = Act2Struct(act, pmst);
-    if (ac == NULL)    // action not exist, add a new one to atlist of pmst and calculate it's payoff
+    if (ac == NULL)    // action not exist, add a new one to atlist of pmst
     {
         struct cs_Action *nac = NewAc(act);
         // add nac to pmst's action list
@@ -749,8 +749,7 @@ struct cs_State *CSAgent::StateByEatAct(EnvAction eat, Agent::Action act,
  */
 float CSAgent::CalActPayoff(Agent::Action act, const struct cs_State *mst) const
 {
-    float ori_payoff = unseen_action_payoff;    // original payoff of actions
-    float payoff = ori_payoff;
+    float payoff = 0;
 
     struct cs_EnvAction *ea, *nea;
     struct cs_State *nmst;
@@ -778,7 +777,6 @@ std::vector<Agent::Action> CSAgent::BestActions(const struct cs_State *mst,
         const std::vector<Agent::Action> &acts)
 {
     float max_payoff = -FLT_MAX;
-    float ori_payoff = unseen_action_payoff;    // original payoff of actions
     float payoff;
     std::vector<Agent::Action> max_acts;
 
@@ -791,8 +789,8 @@ std::vector<Agent::Action> CSAgent::BestActions(const struct cs_State *mst,
 
         if (mac != NULL)
             payoff = mac->payoff;
-        else
-            payoff = ori_payoff;    // an unseen action has default payoff
+        else        // this is an unseen action
+            payoff = degree_of_curiosity;
 
         if (payoff > max_payoff)    // find a bigger one, refill the max payoff action list
         {
@@ -1171,7 +1169,6 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
                 // create a new previous state
                 dbgmoreprt("next state", "%ld not exists, create it and build the link\n", nst);
                 struct cs_State *nmst = NewState(nst);
-                nmst->original_payoff = unseen_state_payoff;    // we don't know anything except the state value of this state, set its original payoff to default unseen_state_payoff
                 // add to memory
                 AddStateToMemory(nmst);
                 // build the link
@@ -1275,7 +1272,6 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
                 dbgmoreprt("next state", "%ld not exists, create it and build the link\n", nst);
                 // create next state
                 struct cs_State *nmst = NewState(nst);
-                nmst->original_payoff = unseen_state_payoff;
                 // add to memory
                 AddStateToMemory(nmst);
                 // build the link

@@ -13,20 +13,20 @@
 #include "Debug.h"
 
 Agent::Agent() :
-        id(0), discount_rate(0.8), threshold(0.01), unseen_state_payoff(0.0), unseen_action_payoff(
-                0.0), unseen_eaction_maxpayoff(0.0), commnet(NULL)
+        id(0), discount_rate(0.8), threshold(0.01), degree_of_curiosity(0.0), commnet(
+        NULL)
 {
 }
 
 Agent::Agent(int i) :
-        id(i), discount_rate(0.8), threshold(0.01), unseen_state_payoff(0.0), unseen_action_payoff(
-                0.0), unseen_eaction_maxpayoff(0.0), commnet(NULL)
+        id(i), discount_rate(0.8), threshold(0.01), degree_of_curiosity(0.0), commnet(
+        NULL)
 {
 }
 
 Agent::Agent(int i, float dr, float th) :
-        id(i), discount_rate(dr), threshold(th), unseen_state_payoff(0.0), unseen_action_payoff(
-                0.0), unseen_eaction_maxpayoff(0.0), commnet(NULL)
+        id(i), discount_rate(dr), threshold(th), degree_of_curiosity(0.0), commnet(
+                NULL)
 {
     // check validity
     if (discount_rate >= 1.0 || discount_rate < 0)    // discount rate range [0, 1)

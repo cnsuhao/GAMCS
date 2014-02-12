@@ -19,8 +19,8 @@ int main(void)
     float discount_rate = 0.9;  // discount rate determines the final equilibrium!
     CSAgent agentA(1, discount_rate, 0.01);
     CSAgent agentB(2, discount_rate, 0.01);
-    agentA.SetUnseenActionPayoff(0.0);
-    agentB.SetUnseenActionPayoff(0.0);
+    agentA.SetDegreeOfCuriosity(0.0);
+    agentB.SetDegreeOfCuriosity(0.0);
     agentA.LoadMemoryFromStorage(&mysqlA);
     agentB.LoadMemoryFromStorage(&mysqlB);
 
