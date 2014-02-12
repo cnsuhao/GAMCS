@@ -12,7 +12,7 @@
 Monomer::Monomer(std::string n) :
         Avatar(n)
 {
-    position = 5;
+    position = 12;
 }
 
 Monomer::~Monomer()
@@ -41,38 +41,38 @@ void Monomer::PerformAction(Agent::Action act)
  * \return all possible outputs for the input
  *
  */
-
-std::vector<Agent::Action> Monomer::ActionCandidates(Agent::State st)
+OutList Monomer::ActionCandidates(Agent::State st)
 {
 //    UNUSED(st);
     static int count;
 //    UNUSED(st);
     if (count < 300)
     {
-        std::vector<Agent::Action> acts;
+        OutList acts;
         acts.clear();
         if (st == 1)
-            acts.push_back(1);
+            acts.add(1);
         else if (st == 15)
-            acts.push_back(-1);
+            acts.add(-1);
         else
         {
-            acts.push_back(1);
-            acts.push_back(-1);
+            acts.add(1);
+            acts.add(-1);
         }
         count++;
         return acts;
     }
     else
-        return std::vector<Agent::Action>();    // return an empty list
+        return OutList();    // return an empty list
 }
 
 float Monomer::OriginalPayoff(Agent::State st)
 {
-    if (st == 9)
-        return 1;
-    else if (st == 13)
-        return 2;
-    else
-        return 0;
+    return -( st * 0.1);
+//    if (st == 9)
+//        return 1;
+//    else if (st == 13)
+//        return 2;
+//    else
+//        return 0;
 }

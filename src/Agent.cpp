@@ -48,8 +48,8 @@ Agent::~Agent()
  * \return action distribution after appling maximun payoff restrict
  *
  */
-std::vector<Agent::Action> Agent::Restrict(Agent::State st,
-        const std::vector<Agent::Action> &acts)
+OutList Agent::Restrict(Agent::State st,
+        OutList &acts)
 {
     return MaxPayoffRule(st, acts);
 }

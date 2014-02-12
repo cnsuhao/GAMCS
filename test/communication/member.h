@@ -6,8 +6,6 @@
  */
 #ifndef MEMBER_H
 #define MEMBER_H
-
-#include <vector>
 #include <string>
 #include "CSThreadAvatar.h"
 
@@ -23,7 +21,7 @@ class Member: public CSThreadAvatar
 
         Agent::State GetCurrentState();
         void PerformAction(Agent::Action);
-        std::vector<Agent::Action> ActionCandidates(Agent::State);
+        OutList ActionCandidates(Agent::State);
         float OriginalPayoff(Agent::State);
 };
 

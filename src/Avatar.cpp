@@ -43,7 +43,7 @@ void Avatar::Launch()
         dbgprt("Launch():", "%s, State: %ld\n", name.c_str(), cs);
 
         /* Process stage */
-        std::vector<Agent::Action> acts = ActionCandidates(cs);    // get all action candidates of a state
+        OutList acts = ActionCandidates(cs);    // get all action candidates of a state
 
         Agent::Action act = myagent->Process(cs, acts);    // choose an action from candidates
         // check validation

@@ -1,0 +1,4 @@
+AUX_SOURCE_DIRECTORY(. TSP_SRCS)
+ADD_EXECUTABLE(tsp ${TSP_SRCS})
+TARGET_LINK_LIBRARIES(tsp avatar)   # 指定链接库
+SET(CMAKE_CXX_FLAGS "-std=c++0x -Wall -Wextra")

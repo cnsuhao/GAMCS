@@ -52,11 +52,11 @@ class Agent: public TSGIOM
 
         CommNet *commnet; /**< which network this agent is belonged to */
 
-        std::vector<Action> Restrict(State, const std::vector<Action> &); /**< reimplement restrict using maximun payoff rule  */
+         OutList Restrict(State, OutList &); /**< reimplement restrict using maximun payoff rule  */
 
         /** These two functions are implementation dependant, declared as pure virtual functions */
-        virtual std::vector<Action> MaxPayoffRule(State,
-                const std::vector<Action> &) = 0; /**< implementation of maximun payoff rule */
+        virtual OutList MaxPayoffRule(State,
+                OutList &) = 0; /**< implementation of maximun payoff rule */
         virtual void UpdateMemory(float) = 0; /**<  update states in memory given current state's original payoff*/
         virtual struct State_Info_Header *GetStateInfo(State) const = 0; /**<  collect information of specified state from memory */
         virtual void MergeStateInfo(const struct State_Info_Header *) = 0; /**<  merge recieved state information into memory */

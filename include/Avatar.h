@@ -1,6 +1,5 @@
 #ifndef AVATAR_H
 #define AVATAR_H
-#include <vector>
 #include <string>
 #include "Agent.h"
 
@@ -34,7 +33,7 @@ class Avatar
 
         virtual Agent::State GetCurrentState() = 0; /**< get current state */
         virtual void PerformAction(Agent::Action) = 0; /**< perform an real action */
-        virtual std::vector<Agent::Action> ActionCandidates(Agent::State) = 0; /**< return a list of all action candidates of a Agent::State */
+        virtual OutList ActionCandidates(Agent::State) = 0; /**< return a list of all action candidates of a Agent::State */
         virtual float OriginalPayoff(Agent::State); /**< original payoff of a state */
 
         virtual void ActualJoinCommNet(CommNet *);
