@@ -5,32 +5,38 @@
  *      Author: andy
  */
 #include <assert.h>
-#include "saleman.h"
+#include "Saleman.h"
+#include "GIOM.h"
 
 void print_path(int path[CITY_NUM])
 {
-    for (int i=0; i<CITY_NUM; i++)
+    for (int i = 0; i < CITY_NUM; i++)
     {
         printf("%d, ", path[i]);
     }
     printf("\n");
 }
 
-int main(void)
+void decode_state(unsigned long st, int decode_path[CITY_NUM])
 {
-    int path[CITY_NUM] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
-    int tmp_path[CITY_NUM];
-    int acts[CITY_NUM] = {-1,2, 7, 1, -8, 1, -3, -6, -5, 4};
-    int tmp_acts[CITY_NUM];
-    unsigned long state1, state2 = 10987654321, state3 = 517349;
-    long action1, action2 = -119;
+    for (int i = CITY_NUM - 1; i >= 0; i--)
+    {
+        unsigned long quotient = st / (CITY_NUM);
+        int remainder = st % (CITY_NUM);
 
-    Saleman saleman("Saleman");
-    saleman.EncodeState(path, state1);
-    printf("%ld\n", state1);
-    saleman.DecodeState(state2, tmp_path);
-    print_path(tmp_path);
+        // the ist city
+        decode_path[i] = remainder;
+
+        st = quotient;
+    }
 }
 
+int main(void)
+{
+    int path[CITY_NUM];
+    decode_state(16426592, path);
+    print_path(path);
 
+    return 0;
+}
 
