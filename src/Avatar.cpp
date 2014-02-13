@@ -53,8 +53,8 @@ void Avatar::Launch()
         float oripayoff = OriginalPayoff(cs);    // get original payoff of a state
         myagent->Update(oripayoff);    // agent update inner states
 
-        /* Commmunication */
-        myagent->Communicate();
+        /* share memory */
+        myagent->ShareMemory();
 
         /* Perform action to the outside world */
         PerformAction(act);    // otherwise, perform the action
@@ -106,22 +106,22 @@ unsigned long Avatar::GetCurrentTime()
 }
 
 /**
- * \brief Join a communication network
- * \param grp communication network to join
+ * \brief Join a sharing network
+ * \param grp sharing network to join
  */
-void Avatar::JoinCommNet(CommNet *cn)
+void Avatar::JoinParallelNet(ParallelNet *cn)
 {
-    myagent->JoinCommNet(cn);
-    ActualJoinCommNet(cn);
+    myagent->JoinParallelNet(cn);
+    ActualJoinParallelNet(cn);
 }
 
 /**
- * \brief Leave a communication network
+ * \brief Leave a sharing network
  */
-void Avatar::LeaveCommNet()
+void Avatar::LeaveParallelNet()
 {
-    myagent->LeaveCommNet();
-    ActualLeaveCommmNet();
+    myagent->LeaveParallelNet();
+    ActualLeaveParallelNet();
 }
 
 void Avatar::AddNeighbour(int nid, int interval)
@@ -136,13 +136,13 @@ void Avatar::RemoveNeighbour(int nid)
     ActualRemoveNeighbour(nid);
 }
 
-void Avatar::ActualJoinCommNet(CommNet *cn)
+void Avatar::ActualJoinParallelNet(ParallelNet *cn)
 {
     UNUSED(cn);
     return;
 }
 
-void Avatar::ActualLeaveCommmNet()
+void Avatar::ActualLeaveParallelNet()
 {
     return;
 }

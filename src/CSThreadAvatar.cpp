@@ -31,13 +31,13 @@ pthread_t CSThreadAvatar::ThreadLaunch()
     return tid;
 }
 
-void CSThreadAvatar::ActualJoinCommNet(CommNet *cn)
+void CSThreadAvatar::ActualJoinParallelNet(ParallelNet *cn)
 {
     UNUSED(cn);
     return;
 }
 
-void CSThreadAvatar::ActualLeaveCommmNet()
+void CSThreadAvatar::ActualLeaveParallelNet()
 {
     return;
 }

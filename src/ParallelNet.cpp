@@ -7,24 +7,24 @@
  *	@Modify date:
  ***********************************************************************/
 #include <set>
-#include "CommNet.h"
+#include "ParallelNet.h"
 #include "Debug.h"
 
-CommNet::CommNet() :
+ParallelNet::ParallelNet() :
         id(0)
 {
 }
 
-CommNet::CommNet(int i) :
+ParallelNet::ParallelNet(int i) :
         id(i)
 {
 }
 
-CommNet::~CommNet()
+ParallelNet::~ParallelNet()
 {
 }
 
-bool CommNet::HasMember(int mid)
+bool ParallelNet::HasMember(int mid)
 {
     bool re = false;
     std::set<int> allmembers = GetAllMembers();

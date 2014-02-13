@@ -62,16 +62,18 @@ class Saleman: public CSThreadAvatar
 {
     public:
         Saleman(std::string n) :
-                CSThreadAvatar(n), count(0)
+                CSThreadAvatar(n), count(0), current_state(INVALID_STATE)
         {
+            for (int i=0; i<CITY_NUM; i++)
+            {
+                path[i] = i;
+            }
         }
         virtual ~Saleman()
         {
         }
 
     private:
-        int count;
-
         Agent::State GetCurrentState()
         {
             // encode state
@@ -195,8 +197,9 @@ class Saleman: public CSThreadAvatar
             printf("%d\n", path[0]);    // loop
         }
     private:
-        int path[CITY_NUM] = { 4, 2, 3, 1, 0 };    // represent a path through all cities
-        Agent::State current_state = INVALID_STATE;    // current state
+        int path[CITY_NUM];    // represent a path through all cities
+        int count;
+        Agent::State current_state;    // current state
 };
 
 #endif /* SALEMAN_H_ */

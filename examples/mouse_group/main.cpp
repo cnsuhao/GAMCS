@@ -1,6 +1,6 @@
 #include <pthread.h>
 #include <stdio.h>
-#include "CSThreadCommNet.h"
+#include "CSThreadParallelNet.h"
 #include "CSAgent.h"
 #include "Mouse.h"
 #include "Mysql.h"
@@ -10,7 +10,7 @@ int main(void)
     int mouse_num = 4;    // number of mouse
     char name[16];  // mouse name
 
-    CSThreadCommNet commnet(1);    // communication network
+    CSThreadParallelNet parallelnet(1);    // communication network
 
     // storage of each mouse
     Mysql *mysql[mouse_num];
@@ -36,7 +36,7 @@ int main(void)
         sprintf(name, "Mouse_%d", i);
         Mouse *mouse = new Mouse(name);
         mouse->ConnectAgent(agent);
-        mouse->JoinCommNet(&commnet);
+        mouse->JoinParallelNet(&parallelnet);
 
         mysql[i] = ml;
         mice[i] = mouse;
@@ -44,7 +44,7 @@ int main(void)
     }
 
     // load topo
-    commnet.LoadTopoFromFile("commnet.dot");
+    parallelnet.LoadTopoFromFile("paralnet.dot");
 
     /* launch mice */
     for (int i = 0; i < mouse_num; i++)
@@ -65,7 +65,7 @@ int main(void)
         delete mysql[i];
     }
     // save topo structure
-    commnet.DumpTopoToFile("commnet.dot");
+    parallelnet.DumpTopoToFile("paralnet.dot");
 
     return 0;
 }

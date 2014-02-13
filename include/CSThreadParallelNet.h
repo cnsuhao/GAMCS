@@ -1,7 +1,7 @@
 #ifndef CSTHREADCOMMNET_H
 #define CSTHREADCOMMNET_H
 #include <set>
-#include "CommNet.h"
+#include "ParallelNet.h"
 
 #define MAX_MEMBER 1000     // maximun number of members in group
 #define MSG_POOL_SIZE 100     // maximun number of messages a channel can store
@@ -19,14 +19,14 @@ struct Channel
 };
 
 /**
- * Computer Simulation of CommNet used for avatars simulated as threads, in which they can communicate and share knowledge with each other.
+ * Computer Simulation of ParallelNet used for avatars simulated as threads, in which they can communicate and share knowledge with each other.
  */
-class CSThreadCommNet: public CommNet
+class CSThreadParallelNet: public ParallelNet
 {
     public:
-        CSThreadCommNet();
-        CSThreadCommNet(int);
-        ~CSThreadCommNet();
+        CSThreadParallelNet();
+        CSThreadParallelNet(int);
+        ~CSThreadParallelNet();
 
         void LoadTopoFromFile(char *); /**< load topological structure of network from a file */
         void DumpTopoToFile(char *); /**< dump topological structure of network to file */
@@ -34,8 +34,8 @@ class CSThreadCommNet: public CommNet
     private:
         void AddMember(int);
         void AddNeighbour(int, int, int);
-        int GetNeighCommInterval(int, int);
-        void ChangeNeighCommInterval(int, int, int);
+        int GetNeighSharingInterval(int, int);
+        void ChangeNeighSharingInterval(int, int, int);
         void RemoveMember(int);
         void RemoveNeighbour(int, int);
 
@@ -62,12 +62,12 @@ class CSThreadCommNet: public CommNet
  * \param id member id
  * \return channel address
  */
-inline struct Channel *CSThreadCommNet::GetChannel(int id)
+inline struct Channel *CSThreadParallelNet::GetChannel(int id)
 {
     return &channels[id];
 }
 
-inline std::set<int> CSThreadCommNet::GetAllMembers()
+inline std::set<int> CSThreadParallelNet::GetAllMembers()
 {
     return members;
 }

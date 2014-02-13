@@ -7,7 +7,7 @@
 
 #include <pthread.h>
 #include <stdio.h>
-#include "CSThreadCommNet.h"
+#include "CSThreadParallelNet.h"
 #include "CSAgent.h"
 #include "member.h"
 #include "Mysql.h"
@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     int member_num = atoi(argv[1]);    // number of member
     char name[16];    // member name
 
-    CSThreadCommNet commnet(1);    // communication network
+    CSThreadParallelNet parallelnet(1);    // communication network
 
     // storage of each member
 //    Mysql *mysql[member_num];
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
         Member *member = new Member(name);
         member->SetSps(-1);
         member->ConnectAgent(agent);
-        member->JoinCommNet(&commnet);
+        member->JoinParallelNet(&parallelnet);
 
 //        mysql[i] = ml;
         members[i] = member;
@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     }
 
     // load topo
-    commnet.LoadTopoFromFile(argv[2]);
+    parallelnet.LoadTopoFromFile(argv[2]);
 
     /* launch members */
     for (int i = 0; i < member_num; i++)
