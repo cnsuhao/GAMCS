@@ -9,23 +9,23 @@
  ***********************************************************************/
 #include <stdio.h>
 #include "Agent.h"
-#include "CommNet.h"
+#include "ParallelNet.h"
 #include "Debug.h"
 
 Agent::Agent() :
-        id(0), discount_rate(0.8), threshold(0.01), degree_of_curiosity(0.0), commnet(
+        id(0), discount_rate(0.8), threshold(0.01), degree_of_curiosity(0.0), parallelnet(
         NULL)
 {
 }
 
 Agent::Agent(int i) :
-        id(i), discount_rate(0.8), threshold(0.01), degree_of_curiosity(0.0), commnet(
+        id(i), discount_rate(0.8), threshold(0.01), degree_of_curiosity(0.0), parallelnet(
         NULL)
 {
 }
 
 Agent::Agent(int i, float dr, float th) :
-        id(i), discount_rate(dr), threshold(th), degree_of_curiosity(0.0), commnet(
+        id(i), discount_rate(dr), threshold(th), degree_of_curiosity(0.0), parallelnet(
                 NULL)
 {
     // check validity
@@ -65,20 +65,20 @@ void Agent::Update(float oripayoff)
     return;
 }
 
-void Agent::Communicate()
+void Agent::ShareMemory()
 {
-    if (commnet == NULL)    // no commnet joined, nothing to do
+    if (parallelnet == NULL)    // no parallelnet joined, nothing to do
         return;
 
     RecvStateInfo();    // check if new message has recieved
 
-    int each_comm_interval;
+    int each_sharing_interval;
     std::set<int> my_neighbours = GetMyNeighbours();    // walk through all neighbours to check interval
     for (std::set<int>::iterator nit = my_neighbours.begin();
             nit != my_neighbours.end(); ++nit)
     {
-        each_comm_interval = GetNeighCommInterval(*nit);    // get communication interval to this neighbour
-        if (process_count % each_comm_interval == 0)    // time to send msg
+        each_sharing_interval = GetNeighSharingInterval(*nit);    // get sharing interval to this neighbour
+        if (process_count % each_sharing_interval == 0)    // time to send msg
         {
             State st_send = NextStateToSend(*nit);    // get the next state to be sent to this neighbour
 
@@ -89,35 +89,35 @@ void Agent::Communicate()
 }
 
 /**
- * \brief Join a communication network
- * \param cn communication network to join
+ * \brief Join a sharing network
+ * \param cn sharing network to join
  */
-void Agent::JoinCommNet(CommNet *cn)
+void Agent::JoinParallelNet(ParallelNet *cn)
 {
-    commnet = cn;
-    commnet->AddMember(id);    // add me as a member
+    parallelnet = cn;
+    parallelnet->AddMember(id);    // add me as a member
 }
 
 /**
- * \brief Leave a communication network
+ * \brief Leave a sharing network
  */
-void Agent::LeaveCommNet()
+void Agent::LeaveParallelNet()
 {
 // check first
-    if (commnet == NULL)    // not join in any net
+    if (parallelnet == NULL)    // not join in any net
     {
         return;
     }
 
-    commnet->RemoveMember(id);    // remove me from network
-    commnet = NULL;    // set net as null
+    parallelnet->RemoveMember(id);    // remove me from network
+    parallelnet = NULL;    // set net as null
     return;
 }
 
 void Agent::AddNeighbour(int nid, int interval)
 {
 // chech if joined in any network
-    if (commnet == NULL)
+    if (parallelnet == NULL)
     {
         WARNNING(
                 "AddNeighbour(): agent %d hasn't joint any network yet, can not add a neighbour!\n",
@@ -125,26 +125,26 @@ void Agent::AddNeighbour(int nid, int interval)
         return;
     }
 
-    commnet->AddNeighbour(id, nid, interval);
+    parallelnet->AddNeighbour(id, nid, interval);
 }
 
-void Agent::ChangeNeighCommInterval(int nid, int newinterval)
+void Agent::ChangeNeighSharingInterval(int nid, int newinterval)
 {
     // chech if joined in any network
-    if (commnet == NULL)
+    if (parallelnet == NULL)
     {
         WARNNING("AddNeighbour(): agent %d hasn't joint any network yet!\n",
                 id);
         return;
     }
 
-    commnet->ChangeNeighCommInterval(id, nid, newinterval);
+    parallelnet->ChangeNeighSharingInterval(id, nid, newinterval);
 }
 
 void Agent::RemoveNeighbour(int nid)
 {
 // chech if joined in any network
-    if (commnet == NULL)
+    if (parallelnet == NULL)
     {
         WARNNING(
                 "RemoveNeighbour(): agent %d hasn't joint any network yet, it has no neighbour to remove!\n",
@@ -152,13 +152,13 @@ void Agent::RemoveNeighbour(int nid)
         return;
     }
 
-    commnet->RemoveNeighbour(id, nid);
+    parallelnet->RemoveNeighbour(id, nid);
 }
 
-int Agent::GetNeighCommInterval(int neb)
+int Agent::GetNeighSharingInterval(int neb)
 {
 // chech if joined in any network
-    if (commnet == NULL)
+    if (parallelnet == NULL)
     {
         WARNNING(
                 "AddNeighbour(): agent %d hasn't joint any network yet, can not add a neighbour!\n",
@@ -166,13 +166,13 @@ int Agent::GetNeighCommInterval(int neb)
         return INT_MAX;
     }
 
-    return commnet->GetNeighCommInterval(id, neb);
+    return parallelnet->GetNeighSharingInterval(id, neb);
 }
 
 std::set<int> Agent::GetMyNeighbours()
 {
 // chech if joined in any network
-    if (commnet == NULL)
+    if (parallelnet == NULL)
     {
         WARNNING(
                 "GetMyNeighbours(): menber %d hasn't joint any network yet, no neighbours at all!\n",
@@ -180,13 +180,13 @@ std::set<int> Agent::GetMyNeighbours()
         return std::set<int>();
     }
 
-    return commnet->GetNeighbours(id);
+    return parallelnet->GetNeighbours(id);
 }
 
 bool Agent::CheckNeighbourShip(int nid)
 {
 // chech if joined in any network
-    if (commnet == NULL)
+    if (parallelnet == NULL)
     {
         WARNNING(
                 "CheckNeighbour(): menber %d hasn't joint any network yet, no neighbours at all!\n",
@@ -194,7 +194,7 @@ bool Agent::CheckNeighbourShip(int nid)
         return false;
     }
 
-    return commnet->CheckNeighbourShip(id, nid);
+    return parallelnet->CheckNeighbourShip(id, nid);
 }
 
 /**
@@ -203,7 +203,7 @@ bool Agent::CheckNeighbourShip(int nid)
  */
 void Agent::SendStateInfo(int toneb, Agent::State st)
 {
-    if (commnet == NULL)    // no neighbours, nothing to do
+    if (parallelnet == NULL)    // no neighbours, nothing to do
         return;
 
     struct State_Info_Header *stif = NULL;
@@ -213,7 +213,7 @@ void Agent::SendStateInfo(int toneb, Agent::State st)
         return;
     }
 
-    commnet->Send(id, toneb, stif, stif->size);    // call the send facility in commnet
+    parallelnet->Send(id, toneb, stif, stif->size);    // call the send facility in parallelnet
     free(stif);    // free
 
     return;
@@ -224,12 +224,12 @@ void Agent::SendStateInfo(int toneb, Agent::State st)
  */
 void Agent::RecvStateInfo()
 {
-    if (commnet == NULL)    // no neighbours, nothing to do
+    if (parallelnet == NULL)    // no neighbours, nothing to do
         return;
 
     char re_buf[2048];    // buffer for recieved message
 
-    if (commnet->Recv(id, -1, re_buf, 2048) != 0)    // fetch one message from any agent
+    if (parallelnet->Recv(id, -1, re_buf, 2048) != 0)    // fetch one message from any agent
     {
         MergeStateInfo((struct State_Info_Header *) re_buf);    // merge the recieved state information to memory
     }

@@ -8,7 +8,7 @@
 const unsigned long INVALID_STATE = INVALID_INPUT;
 const long INVALID_ACTION = INVALID_OUTPUT;
 
-class CommNet;
+class ParallelNet;
 
 /**
  * Interface of an autonomous agent.
@@ -26,7 +26,7 @@ class Agent: public TSGIOM
         virtual ~Agent();
 
         void Update(float); /**< update memory, this function will call UpdateMemory() to do the real update */
-        void Communicate(); /**< share memory with others */
+        void ShareMemory(); /**< share memory with others */
 
         static void PrintStateInfo(const struct State_Info_Header *); /**< print state information gracefully */
         /* vector and get functions */
@@ -37,10 +37,10 @@ class Agent: public TSGIOM
         void SetDegreeOfCuriosity(float);
 
         /* network related stuff */
-        void JoinCommNet(CommNet *); /**< set join a communication network */
-        void LeaveCommNet(); /**< leave network */
+        void JoinParallelNet(ParallelNet *); /**< set join a communication network */
+        void LeaveParallelNet(); /**< leave network */
         void AddNeighbour(int, int); /**< add a neighbour */
-        void ChangeNeighCommInterval(int, int); /**< change the interval to communicate with a neighbour */
+        void ChangeNeighSharingInterval(int, int); /**< change the interval to share state info with a neighbour */
         void RemoveNeighbour(int); /**< remove a neighbour */
 
     protected:
@@ -50,7 +50,7 @@ class Agent: public TSGIOM
 
         float degree_of_curiosity; /**< degree of curiosity to try unknown actions */
 
-        CommNet *commnet; /**< which network this agent is belonged to */
+        ParallelNet *parallelnet; /**< which network this agent is belonged to */
 
          OutList Restrict(State, OutList &); /**< reimplement restrict using maximun payoff rule  */
 
@@ -64,7 +64,7 @@ class Agent: public TSGIOM
 
         std::set<int> GetMyNeighbours();
         bool CheckNeighbourShip(int);
-        int GetNeighCommInterval(int); /**< get interval to comminucate with this neighbour */
+        int GetNeighSharingInterval(int); /**< get interval to comminucate with this neighbour */
 
         void SendStateInfo(int, State); /**< send information of a state to a neighbour */
         void RecvStateInfo(); /**< recieve state information from neighbours */
@@ -127,7 +127,7 @@ struct EnvAction_Info
         unsigned long count; /**< count of experiencing times */
 };
 
-/** Header of state information, this struct can be used to communicate with other agents */
+/** Header of state information, this struct can be used to share with other agents */
 struct State_Info_Header
 {
         Agent::State st; /**< state value */

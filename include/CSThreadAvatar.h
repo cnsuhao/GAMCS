@@ -22,8 +22,8 @@ class CSThreadAvatar: public Avatar
 
         pthread_t ThreadLaunch(); /**< if it's a group, launch each of its  members in a thread */
     private:
-        void ActualJoinCommNet(CommNet *);
-        void ActualLeaveCommmNet();
+        void ActualJoinParallelNet(ParallelNet *);
+        void ActualLeaveParallelNet();
 
         static void* hook(void* args)
         { /**< hook to run a class function(Launch() here) in a thread */

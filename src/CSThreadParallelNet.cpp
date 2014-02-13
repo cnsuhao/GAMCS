@@ -14,11 +14,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
-#include "CSThreadCommNet.h"
+#include "CSThreadParallelNet.h"
 #include "Agent.h"
 #include "Debug.h"
 
-CSThreadCommNet::CSThreadCommNet()
+CSThreadParallelNet::CSThreadParallelNet()
 {
     members.clear();
     for (int i = 0; i < MAX_MEMBER; i++)    // set unused neightlist and channels to NULL
@@ -28,8 +28,8 @@ CSThreadCommNet::CSThreadCommNet()
     }
 }
 
-CSThreadCommNet::CSThreadCommNet(int i) :
-        CommNet(i)
+CSThreadParallelNet::CSThreadParallelNet(int i) :
+        ParallelNet(i)
 {
     members.clear();
     for (int i = 0; i < MAX_MEMBER; i++)
@@ -39,7 +39,7 @@ CSThreadCommNet::CSThreadCommNet(int i) :
     }
 }
 
-CSThreadCommNet::~CSThreadCommNet()
+CSThreadParallelNet::~CSThreadParallelNet()
 {
     for (std::set<int>::iterator it = members.begin(); it != members.end();
             ++it)
@@ -69,7 +69,7 @@ CSThreadCommNet::~CSThreadCommNet()
  * \param length length of the message
  * \return length of message that has been sent to the neighbour
  */
-int CSThreadCommNet::Send(int fromid, int toid, void *buffer, size_t buf_size)
+int CSThreadParallelNet::Send(int fromid, int toid, void *buffer, size_t buf_size)
 {
     if (buf_size > DATA_SIZE)    // check size
     {
@@ -118,7 +118,7 @@ int CSThreadCommNet::Send(int fromid, int toid, void *buffer, size_t buf_size)
  * \param length of the message to be recieved
  * \return length of message recieved
  */
-int CSThreadCommNet::Recv(int toid, int fromid, void *buffer, size_t buf_size)
+int CSThreadParallelNet::Recv(int toid, int fromid, void *buffer, size_t buf_size)
 {
     if (buf_size > DATA_SIZE)    // check length
     {
@@ -225,7 +225,7 @@ int CSThreadCommNet::Recv(int toid, int fromid, void *buffer, size_t buf_size)
  * \param id member id
  * \return neighbour list
  */
-std::set<int> CSThreadCommNet::GetNeighbours(int id)
+std::set<int> CSThreadParallelNet::GetNeighbours(int id)
 {
     std::set<int> neighs;
     neighs.clear();
@@ -240,7 +240,7 @@ std::set<int> CSThreadCommNet::GetNeighbours(int id)
     return neighs;
 }
 
-void CSThreadCommNet::AddMember(int mem)
+void CSThreadParallelNet::AddMember(int mem)
 {
     // chech if alread exists
     if (members.find(mem) != members.end())    // found
@@ -256,7 +256,7 @@ void CSThreadCommNet::AddMember(int mem)
     channels[mem].ptr = 0;
 }
 
-void CSThreadCommNet::AddNeighbour(int mem, int neb, int interval)
+void CSThreadParallelNet::AddNeighbour(int mem, int neb, int interval)
 {
     // check if member exists
     if (members.find(mem) == members.end())    // not found
@@ -306,7 +306,7 @@ void CSThreadCommNet::AddNeighbour(int mem, int neb, int interval)
     neighlist[mem] = nneigh;
 }
 
-int CSThreadCommNet::GetNeighCommInterval(int mem, int neb)
+int CSThreadParallelNet::GetNeighSharingInterval(int mem, int neb)
 {
     struct Neigh *nb, *nnb;
     for (nb = neighlist[mem]; nb != NULL; nb = nnb)
@@ -328,7 +328,7 @@ int CSThreadCommNet::GetNeighCommInterval(int mem, int neb)
     return INT_MAX;    // return a maximum possible interval
 }
 
-void CSThreadCommNet::ChangeNeighCommInterval(int mem, int neb, int newinterval)
+void CSThreadParallelNet::ChangeNeighSharingInterval(int mem, int neb, int newinterval)
 {
     struct Neigh *nb, *nnb;
     for (nb = neighlist[mem]; nb != NULL; nb = nnb)
@@ -351,7 +351,7 @@ void CSThreadCommNet::ChangeNeighCommInterval(int mem, int neb, int newinterval)
     return;    // return a maximum possible interval
 }
 
-void CSThreadCommNet::RemoveMember(int mem)
+void CSThreadParallelNet::RemoveMember(int mem)
 {
     // check if exists
     if (members.find(mem) == members.end())    // not found
@@ -380,7 +380,7 @@ void CSThreadCommNet::RemoveMember(int mem)
     members.erase(mem);
 }
 
-void CSThreadCommNet::RemoveNeighbour(int mem, int neighbour)
+void CSThreadParallelNet::RemoveNeighbour(int mem, int neighbour)
 {
     // check if member exists
     if (members.find(mem) == members.end())    // not found
@@ -425,7 +425,7 @@ void CSThreadCommNet::RemoveNeighbour(int mem, int neighbour)
 
 }
 
-bool CSThreadCommNet::CheckNeighbourShip(int from, int to)
+bool CSThreadParallelNet::CheckNeighbourShip(int from, int to)
 {
     bool connected = false;
     struct Neigh *nb, *nnb;
@@ -447,7 +447,7 @@ bool CSThreadCommNet::CheckNeighbourShip(int from, int to)
  * This function will not add new members but just make neighbours.
  * \param tf file name
  */
-void CSThreadCommNet::LoadTopoFromFile(char *tf)
+void CSThreadParallelNet::LoadTopoFromFile(char *tf)
 {
     Agraph_t *graph;
     Agnode_t *node, *neigh_node;
@@ -499,7 +499,7 @@ void CSThreadCommNet::LoadTopoFromFile(char *tf)
 /**
  * \brief Dump structure of communication network to file
  */
-void CSThreadCommNet::DumpTopoToFile(char *tf)
+void CSThreadParallelNet::DumpTopoToFile(char *tf)
 {
     FILE *topofs = fopen(tf, "w+");
     if (topofs == NULL)
@@ -538,7 +538,7 @@ void CSThreadCommNet::DumpTopoToFile(char *tf)
         for (std::set<int>::iterator nit = neighbours.begin();
                 nit != neighbours.end(); ++nit)
         {
-            int interval = GetNeighCommInterval(*mit, *nit);    // get interval
+            int interval = GetNeighSharingInterval(*mit, *nit);    // get interval
             fprintf(topofs, "mem%d -> mem%d [label=\"%d\", interval=\"%d\"]\n",
                     *mit, *nit, interval, interval);
         }
@@ -548,7 +548,7 @@ void CSThreadCommNet::DumpTopoToFile(char *tf)
     fclose(topofs);
 }
 
-int CSThreadCommNet::WrapInc(int ptr)
+int CSThreadParallelNet::WrapInc(int ptr)
 {
     int nptr;
     if (ptr == MSG_POOL_SIZE - 1)
@@ -559,7 +559,7 @@ int CSThreadCommNet::WrapInc(int ptr)
     return nptr;
 }
 
-int CSThreadCommNet::WrapDec(int ptr)
+int CSThreadParallelNet::WrapDec(int ptr)
 {
     int nptr;
     if (ptr == 0)

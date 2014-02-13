@@ -3,7 +3,7 @@
 #include <string>
 #include "Agent.h"
 
-class CommNet;
+class ParallelNet;
 
 /**
  * Avatar Interface.
@@ -21,8 +21,8 @@ class Avatar
         void ConnectAgent(Agent *); /**< connect to an agent */
         void SetSps(int);
         /* network related functions */
-        void JoinCommNet(CommNet *); /**< join a communication network */
-        void LeaveCommNet(); /**< leave a network */
+        void JoinParallelNet(ParallelNet *); /**< join a communication network */
+        void LeaveParallelNet(); /**< leave a network */
         void AddNeighbour(int, int); /**< add a neighbour */
         void RemoveNeighbour(int); /**< remove a neighbour */
     protected:
@@ -36,8 +36,8 @@ class Avatar
         virtual OutList ActionCandidates(Agent::State) = 0; /**< return a list of all action candidates of a Agent::State */
         virtual float OriginalPayoff(Agent::State); /**< original payoff of a state */
 
-        virtual void ActualJoinCommNet(CommNet *);
-        virtual void ActualLeaveCommmNet();
+        virtual void ActualJoinParallelNet(ParallelNet *);
+        virtual void ActualLeaveParallelNet();
         virtual void ActualAddNeighbour(int, int);
         virtual void ActualRemoveNeighbour(int);
 

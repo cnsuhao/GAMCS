@@ -7,7 +7,7 @@
 
 #include <pthread.h>
 #include <stdio.h>
-#include "CSThreadCommNet.h"
+#include "CSThreadParallelNet.h"
 #include "Saleman.h"
 #include "CSAgent.h"
 #include "Mysql.h"
@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     char *topofile = argv[2];
     char name[16];
 
-    CSThreadCommNet commnet(1);
+    CSThreadParallelNet parallelnet(1);
 
     Saleman *salemen[num_saleman];
     CSAgent *agents[num_saleman];
@@ -39,13 +39,13 @@ int main(int argc, char *argv[])
         Saleman *saleman = new Saleman(name);
         saleman->SetSps(-1);
         saleman->ConnectAgent(agent);
-        saleman->JoinCommNet(&commnet);
+        saleman->JoinParallelNet(&parallelnet);
 
         salemen[i] = saleman;
         agents[i] = agent;
     }
 
-    commnet.LoadTopoFromFile(topofile);
+    parallelnet.LoadTopoFromFile(topofile);
 
     for (int i = 0; i < num_saleman; i++)
         tids[i] = salemen[i]->ThreadLaunch();
