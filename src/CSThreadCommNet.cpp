@@ -77,7 +77,7 @@ int CSThreadCommNet::Send(int fromid, int toid, void *buffer, size_t buf_size)
         return 0;
     }
 
-#ifdef _DEBUG_MORE
+#ifdef _DEBUG_MORE_
     printf(
             "*************************** %d send msg to %d ********************************\n",
             fromid, toid);

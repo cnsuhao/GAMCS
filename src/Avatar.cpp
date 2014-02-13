@@ -13,13 +13,12 @@
 #include "Debug.h"
 
 Avatar::Avatar() :
-        name("unnamed avatar"), sps(60), myagent(NULL), control_step_time(
-                (1000 / sps))
+        name("unnamed avatar"), sps(-1), myagent(NULL), control_step_time(0)
 {
 }
 
 Avatar::Avatar(std::string n) :
-        name(n), sps(60), myagent(NULL), control_step_time((1000 / sps))
+        name(n), sps(-1), myagent(NULL), control_step_time(0)
 {
 }
 
@@ -40,7 +39,7 @@ void Avatar::Launch()
 
         /* Perceive the outside world */
         Agent::State cs = GetCurrentState();    // get current state
-        dbgprt("Launch():", "%s, State: %ld\n", name.c_str(), cs);
+        dbgmoreprt("Launch():", "%s, State: %ld\n", name.c_str(), cs);
 
         /* Process stage */
         OutList acts = ActionCandidates(cs);    // get all action candidates of a state
