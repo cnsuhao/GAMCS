@@ -1,22 +1,22 @@
 #ifndef MOUSE_H
 #define MOUSE_H
 #include <string>
-#include "CSThreadAvatar.h"
+#include "CSThreadIncarnation.h"
 
-class Mouse: public CSThreadAvatar
+class Mouse: public CSThreadIncarnation
 {
     public:
         Mouse(std::string);
         ~Mouse();
 
     private:
-        Agent::State position;
+        IAgent::State position;
         int count;
 
-        Agent::State GetCurrentState();
-        void PerformAction(Agent::Action);
-        OutList ActionCandidates(Agent::State);
-        float OriginalPayoff(Agent::State);
+        IAgent::State GetCurrentState();
+        void PerformAction(IAgent::Action);
+        OSpace ActionCandidates(IAgent::State);
+        float OriginalPayoff(IAgent::State);
 };
 
 #endif // MOUSE_H

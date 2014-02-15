@@ -11,31 +11,31 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "CSAgent.h"
+#include "CSIAgent.h"
 #include "Storage.h"
 #include "Debug.h"
 
-CSAgent::CSAgent() :
+CSIAgent::CSIAgent() :
         state_num(0), lk_num(0), head(NULL), cur_mst(NULL)
 {
     states_map.clear();
 }
 
-CSAgent::CSAgent(int i) :
-        Agent(i), state_num(0), lk_num(0), head(NULL), cur_mst(
+CSIAgent::CSIAgent(int i) :
+        IAgent(i), state_num(0), lk_num(0), head(NULL), cur_mst(
         NULL)
 {
     states_map.clear();
 }
 
-CSAgent::CSAgent(int i, float dr, float th) :
-        Agent(i, dr, th), state_num(0), lk_num(0), head(NULL), cur_mst(
+CSIAgent::CSIAgent(int i, float dr, float th) :
+        IAgent(i, dr, th), state_num(0), lk_num(0), head(NULL), cur_mst(
         NULL)
 {
     states_map.clear();
 }
 
-CSAgent::~CSAgent()
+CSIAgent::~CSIAgent()
 {
     FreeMemory();    // free computer memory
 }
@@ -46,7 +46,7 @@ CSAgent::~CSAgent()
  * \return state struct of st in computer memory
  *
  */
-void CSAgent::LoadState(Storage *storage, Agent::State st)
+void CSIAgent::LoadState(Storage *storage, IAgent::State st)
 {
     struct cs_State *mst = SearchState(st);    // search memory for the state first
     if (mst == NULL)    // not found, create a new empty state struct, this struct will be filled up below
@@ -141,7 +141,7 @@ void CSAgent::LoadState(Storage *storage, Agent::State st)
  *
  */
 
-void CSAgent::LoadMemoryFromStorage(Storage *storage)
+void CSIAgent::LoadMemoryFromStorage(Storage *storage)
 {
     if (storage == NULL)    // no database specified, do nothing
         return;
@@ -168,7 +168,7 @@ void CSAgent::LoadMemoryFromStorage(Storage *storage)
         }
 
         /* load states information */
-        Agent::State st;
+        IAgent::State st;
         unsigned long index = 0;    // load states from database one by one
         while ((st = storage->StateByIndex(index)) != INVALID_STATE)
         {
@@ -197,7 +197,7 @@ void CSAgent::LoadMemoryFromStorage(Storage *storage)
 /** \brief Save current memroy to database, including states information and memory-level statistics.
  *
  */
-void CSAgent::DumpMemoryToStorage(Storage *storage)
+void CSIAgent::DumpMemoryToStorage(Storage *storage)
 {
     if (storage == NULL)    // no database specified, no need to save
         return;
@@ -261,7 +261,7 @@ void CSAgent::DumpMemoryToStorage(Storage *storage)
  *
  */
 
-struct cs_State *CSAgent::SearchState(Agent::State st) const
+struct cs_State *CSIAgent::SearchState(IAgent::State st) const
 {
     StatesMap::const_iterator it = states_map.find(st);    // find the state value in hash map
     if (it != states_map.end())    // found
@@ -274,7 +274,7 @@ struct cs_State *CSAgent::SearchState(Agent::State st) const
  * \param st state value to be created
  * \return newly created state struct
  */
-struct cs_State *CSAgent::NewState(Agent::State st)
+struct cs_State *CSIAgent::NewState(IAgent::State st)
 {
     struct cs_State *mst = (struct cs_State *) malloc(sizeof(struct cs_State));
     assert(mst!=NULL);
@@ -296,7 +296,7 @@ struct cs_State *CSAgent::NewState(Agent::State st)
  * \param mst state struct
  *
  */
-void CSAgent::FreeState(struct cs_State *mst)
+void CSIAgent::FreeState(struct cs_State *mst)
 {
     // before free the struct itself, free its subparts first
     /* free atlist */
@@ -346,7 +346,7 @@ void CSAgent::FreeState(struct cs_State *mst)
  *
  */
 
-struct cs_ForwardArcState *CSAgent::NewFas(EnvAction eat, Agent::Action act)
+struct cs_ForwardArcState *CSIAgent::NewFas(EnvAction eat, IAgent::Action act)
 {
     struct cs_ForwardArcState *fas = (struct cs_ForwardArcState *) malloc(
             sizeof(struct cs_ForwardArcState));
@@ -363,7 +363,7 @@ struct cs_ForwardArcState *CSAgent::NewFas(EnvAction eat, Agent::Action act)
  * \param fas the struct to be freed
  *
  */
-void CSAgent::FreeFas(struct cs_ForwardArcState *fas)
+void CSIAgent::FreeFas(struct cs_ForwardArcState *fas)
 {
     return free(fas);
 }
@@ -373,7 +373,7 @@ void CSAgent::FreeFas(struct cs_ForwardArcState *fas)
  * \return a new back arc struct
  *
  */
-struct cs_BackArcState *CSAgent::NewBas()
+struct cs_BackArcState *CSIAgent::NewBas()
 {
     struct cs_BackArcState *bas = (struct cs_BackArcState *) malloc(
             sizeof(struct cs_BackArcState));
@@ -385,7 +385,7 @@ struct cs_BackArcState *CSAgent::NewBas()
 /** \brief Free a back arc struct
  *
  */
-void CSAgent::FreeBas(struct cs_BackArcState *bas)
+void CSIAgent::FreeBas(struct cs_BackArcState *bas)
 {
     return free(bas);
 }
@@ -397,7 +397,7 @@ void CSAgent::FreeBas(struct cs_BackArcState *bas)
  * \return the action struct found, NULL if not found
  *
  */
-struct cs_Action* CSAgent::Act2Struct(Agent::Action act,
+struct cs_Action* CSIAgent::Act2Struct(IAgent::Action act,
         const struct cs_State *mst) const
 {
     struct cs_Action *ac, *nac;
@@ -420,7 +420,7 @@ struct cs_Action* CSAgent::Act2Struct(Agent::Action act,
  * \return the environment action struct found, NULL if not found
  *
  */
-struct cs_EnvAction* CSAgent::Eat2Struct(EnvAction eat,
+struct cs_EnvAction* CSIAgent::Eat2Struct(EnvAction eat,
         const struct cs_State *mst) const
 {
     struct cs_EnvAction *ea, *nea;
@@ -441,7 +441,7 @@ struct cs_EnvAction* CSAgent::Eat2Struct(EnvAction eat,
  * \return a new environment action struct
  *
  */
-struct cs_EnvAction *CSAgent::NewEa(EnvAction eat)
+struct cs_EnvAction *CSIAgent::NewEa(EnvAction eat)
 {
     struct cs_EnvAction *ea = (struct cs_EnvAction *) malloc(
             sizeof(struct cs_EnvAction));
@@ -452,7 +452,7 @@ struct cs_EnvAction *CSAgent::NewEa(EnvAction eat)
     return ea;
 }
 
-void CSAgent::FreeEa(struct cs_EnvAction *ea)
+void CSIAgent::FreeEa(struct cs_EnvAction *ea)
 {
     return free(ea);
 }
@@ -463,7 +463,7 @@ void CSAgent::FreeEa(struct cs_EnvAction *ea)
  * \return a new action struct
  *
  */
-struct cs_Action *CSAgent::NewAc(Agent::Action act)
+struct cs_Action *CSIAgent::NewAc(IAgent::Action act)
 {
     struct cs_Action *ac = (struct cs_Action *) malloc(
             sizeof(struct cs_Action));
@@ -474,7 +474,7 @@ struct cs_Action *CSAgent::NewAc(Agent::Action act)
     return ac;
 }
 
-void CSAgent::FreeAc(struct cs_Action *ac)
+void CSIAgent::FreeAc(struct cs_Action *ac)
 {
     return free(ac);
 }
@@ -487,8 +487,8 @@ void CSAgent::FreeAc(struct cs_Action *ac)
  * \param mst state struct
  *
  */
-void CSAgent::LinkStates(struct cs_State *pmst, EnvAction eat,
-        Agent::Action act, struct cs_State *mst)
+void CSIAgent::LinkStates(struct cs_State *pmst, EnvAction eat,
+        IAgent::Action act, struct cs_State *mst)
 {
     /* check if the link already exists, if so simply update the count of environment action */
     dbgmoreprt("Enter LinkStates()", "------------------------------------- Make Link: %ld == %ld + %ld => %ld\n", pmst->st, eat, act, mst->st);
@@ -577,7 +577,7 @@ void CSAgent::LinkStates(struct cs_State *pmst, EnvAction eat,
  * \param mst to which state the link is
  * \return the maximum payoff
  */
-float CSAgent::MaxPayoffInEat(EnvAction eat, const struct cs_State *mst) const
+float CSIAgent::MaxPayoffInEat(EnvAction eat, const struct cs_State *mst) const
 {
     dbgmoreprt("Enter MaxPayoffEat()", "-------------- eat: %ld, state: %ld\n", eat, mst->st);
     float max_pf = -FLT_MAX;    // set to a possibly minimun value
@@ -620,7 +620,7 @@ float CSAgent::MaxPayoffInEat(EnvAction eat, const struct cs_State *mst) const
  * \param mst the state struct
  * \return the possibility
  */
-float CSAgent::Prob(const struct cs_EnvAction *ea,
+float CSIAgent::Prob(const struct cs_EnvAction *ea,
         const struct cs_State *mst) const
 {
     unsigned long eacount = ea->count;
@@ -656,7 +656,7 @@ float CSAgent::Prob(const struct cs_EnvAction *ea,
  * \param mst specified state
  * \return payoff of the state
  */
-float CSAgent::CalStatePayoff(const struct cs_State *mst) const
+float CSIAgent::CalStatePayoff(const struct cs_State *mst) const
 {
     dbgmoreprt("\nCalStatePayoff()", "-------------------------------- state: %ld, count: %ld\n", mst->st, mst->count);
 
@@ -684,7 +684,7 @@ float CSAgent::CalStatePayoff(const struct cs_State *mst) const
  * Note that: every time a state makes any changes, all its previous states must be updated!
  * \param mst a specified state where the update begins
  */
-void CSAgent::UpdateState(struct cs_State *mst)
+void CSIAgent::UpdateState(struct cs_State *mst)
 {
 
     /* update actions' payoff */
@@ -728,7 +728,7 @@ void CSAgent::UpdateState(struct cs_State *mst)
  * \param mst the state which links the needed state
  * \return state struct needed, NULL if not found
  */
-struct cs_State *CSAgent::StateByEatAct(EnvAction eat, Agent::Action act,
+struct cs_State *CSIAgent::StateByEatAct(EnvAction eat, IAgent::Action act,
         const struct cs_State *mst) const
 {
     struct cs_ForwardArcState *fas, *nfas;
@@ -747,7 +747,7 @@ struct cs_State *CSAgent::StateByEatAct(EnvAction eat, Agent::Action act,
  * \param mst state struct which contains the action
  * \return payoff of the action
  */
-float CSAgent::CalActPayoff(Agent::Action act, const struct cs_State *mst) const
+float CSIAgent::CalActPayoff(IAgent::Action act, const struct cs_State *mst) const
 {
     float payoff = 0;
 
@@ -773,15 +773,15 @@ float CSAgent::CalActPayoff(Agent::Action act, const struct cs_State *mst) const
  * \param candidate action list
  * \return best actions
  */
-OutList CSAgent::BestActions(const struct cs_State *mst, OutList &acts)
+OSpace CSIAgent::BestActions(const struct cs_State *mst, OSpace &acts)
 {
     float max_payoff = -FLT_MAX;
     float payoff;
-    OutList max_acts;
+    OSpace max_acts;
 
     max_acts.clear();
     // walk through every action in list
-    Agent::Action act = acts.first();
+    IAgent::Action act = acts.first();
     while (act != INVALID_OUTPUT)       // until out of bound
     {
         struct cs_Action *mac = Act2Struct(act, mst);    // get action struct from values
@@ -810,7 +810,7 @@ OutList CSAgent::BestActions(const struct cs_State *mst, OutList &acts)
  * \brief Update states in memory. Note: This function should be called AFTER MaxPayoffRule() in every step!
  * \param oripayoff original payoff of current state
  */
-void CSAgent::UpdateMemory(float oripayoff)
+void CSIAgent::UpdateMemory(float oripayoff)
 {
     dbgmoreprt("\nEnter UpdateMemory()", "-------------------------------------------------\n");
     if (pre_in == INVALID_STATE)    // previous state not exist, it's running for the first time
@@ -878,7 +878,7 @@ void CSAgent::UpdateMemory(float oripayoff)
 /**
  * \brief Free computer memory used by the agent's memory.
  */
-void CSAgent::FreeMemory()
+void CSIAgent::FreeMemory()
 {
     // free all states in turn
     struct cs_State *mst, *nmst;
@@ -895,7 +895,7 @@ void CSAgent::FreeMemory()
  *
  * \param mst the state to be removed
  */
-void CSAgent::RemoveState(struct cs_State *mst)
+void CSIAgent::RemoveState(struct cs_State *mst)
 {
     if (mst == NULL)
     {
@@ -951,11 +951,11 @@ void CSAgent::RemoveState(struct cs_State *mst)
  * \param acts the candidate action list
  * \return actions choosen by MPR
  */
-OutList CSAgent::MaxPayoffRule(Agent::State st, OutList &acts)
+OSpace CSIAgent::MaxPayoffRule(IAgent::State st, OSpace &acts)
 {
     dbgmoreprt("Enter MaxPayoffRule() ", "-------------------------------------------------- State: %ld\n", st);
     cur_mst = SearchState(st);    // get the state struct from state value
-    OutList re;
+    OSpace re;
 
     if (cur_mst == NULL)    // first time to encounter this state, we know nothing about it, so no restriction applied, return the whole list
     {
@@ -975,7 +975,7 @@ OutList CSAgent::MaxPayoffRule(Agent::State st, OutList &acts)
  * \param st the state whose information is requested
  * \return header pointed to the state information, NULL for error
  */
-struct State_Info_Header *CSAgent::GetStateInfo(Agent::State st) const
+struct State_Info_Header *CSIAgent::GetStateInfo(IAgent::State st) const
 {
     if (st == INVALID_STATE)    // check if valid
     {
@@ -1090,7 +1090,7 @@ struct State_Info_Header *CSAgent::GetStateInfo(Agent::State st) const
  * \param stif the state information to be merged
  * \return if the state information is finally accepted and merged, 1 for yes, 0 for no.
  */
-void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
+void CSIAgent::MergeStateInfo(const struct State_Info_Header *stif)
 {
     dbgmoreprt("\nEnter MergeStateInfo()", "--------------------------------- state information to be merged: \n");
 #ifdef _DEBUG_MORE_
@@ -1157,7 +1157,7 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
         {
             //mst->count++;       // mantain consistence between state count and ea cout
 
-            Agent::State nst = flk[i].nst;    // next state value
+            IAgent::State nst = flk[i].nst;    // next state value
             struct cs_State *nmst = SearchState(nst);    // find if the next state exists
             if (nmst != NULL)    // if so, inc count and make the link
             {
@@ -1261,7 +1261,7 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
         {
             //mst->count++;       // mantain consistence between state count and ea cout
 
-            Agent::State nst = flk[i].nst;
+            IAgent::State nst = flk[i].nst;
             struct cs_State *nmst = SearchState(nst);    // find if the next state exists
             if (nmst != NULL)    // if so, make the link,
             {
@@ -1302,7 +1302,7 @@ void CSAgent::MergeStateInfo(const struct State_Info_Header *stif)
  * \param total total amount
  * \param label indicator label
  */
-void CSAgent::PrintProcess(unsigned long current, unsigned long total,
+void CSIAgent::PrintProcess(unsigned long current, unsigned long total,
         char *label) const
 {
     double prcnt;
@@ -1338,7 +1338,7 @@ void CSAgent::PrintProcess(unsigned long current, unsigned long total,
     return;
 }
 
-void CSAgent::AddStateToMemory(struct cs_State *nstate)
+void CSIAgent::AddStateToMemory(struct cs_State *nstate)
 {
     // add nstate to the front
     nstate->prev = NULL;
@@ -1358,10 +1358,10 @@ void CSAgent::AddStateToMemory(struct cs_State *nstate)
     }
 }
 
-Agent::State CSAgent::NextStateToSend(int neb)
+IAgent::State CSIAgent::NextStateToSend(int neb)
 {
 
-    Agent::State st_send = INVALID_STATE;
+    IAgent::State st_send = INVALID_STATE;
     // prepare the state to be sent to neb
     if (last_sent_states.find(neb) == last_sent_states.end())    // encounter a new neighbour
     {

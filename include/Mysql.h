@@ -30,12 +30,12 @@ class Mysql: public Storage
         int Connect();
         void Close();
         void SetDBArgs(std::string, std::string, std::string, std::string);
-        Agent::State StateByIndex(unsigned long) const;
-        struct State_Info_Header *FetchStateInfo(Agent::State) const;
-        int SearchState(Agent::State) const;
+        IAgent::State StateByIndex(unsigned long) const;
+        struct State_Info_Header *FetchStateInfo(IAgent::State) const;
+        int SearchState(IAgent::State) const;
         void AddStateInfo(const struct State_Info_Header *);
         void UpdateStateInfo(const struct State_Info_Header *);
-        void DeleteState(Agent::State);
+        void DeleteState(IAgent::State);
         void AddMemoryInfo(const struct Memory_Info *);
         struct Memory_Info *FetchMemoryInfo();
         std::string GetMemoryName();

@@ -10,7 +10,7 @@
 #include "monomer.h"
 
 Monomer::Monomer(std::string n) :
-        Avatar(n)
+        Incarnation(n)
 {
     position = 12;
 }
@@ -20,12 +20,12 @@ Monomer::~Monomer()
     //dtor
 }
 
-Agent::State Monomer::GetCurrentState()
+IAgent::State Monomer::GetCurrentState()
 {
     return position;
 }
 
-void Monomer::PerformAction(Agent::Action act)
+void Monomer::PerformAction(IAgent::Action act)
 {
     position += act;
 
@@ -41,14 +41,14 @@ void Monomer::PerformAction(Agent::Action act)
  * \return all possible outputs for the input
  *
  */
-OutList Monomer::ActionCandidates(Agent::State st)
+OSpace Monomer::ActionCandidates(IAgent::State st)
 {
 //    UNUSED(st);
     static int count;
 //    UNUSED(st);
     if (count < 300)
     {
-        OutList acts;
+        OSpace acts;
         acts.clear();
         if (st == 1)
             acts.add(1);
@@ -63,10 +63,10 @@ OutList Monomer::ActionCandidates(Agent::State st)
         return acts;
     }
     else
-        return OutList();    // return an empty list
+        return OSpace();    // return an empty list
 }
 
-float Monomer::OriginalPayoff(Agent::State st)
+float Monomer::OriginalPayoff(IAgent::State st)
 {
     return -( st * 0.1);
 //    if (st == 9)

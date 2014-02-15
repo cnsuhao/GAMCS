@@ -8,7 +8,7 @@
 #include "member.h"
 
 Member::Member(std::string n) :
-        CSThreadAvatar(n), count(0)
+        CSThreadIncarnation(n), count(0)
 {
     position = 5;
 }
@@ -18,12 +18,12 @@ Member::~Member()
 
 }
 
-Agent::State Member::GetCurrentState()
+IAgent::State Member::GetCurrentState()
 {
     return position;
 }
 
-void Member::PerformAction(Agent::Action act)
+void Member::PerformAction(IAgent::Action act)
 {
     position += act;
 
@@ -32,11 +32,11 @@ void Member::PerformAction(Agent::Action act)
     return;
 }
 
-OutList Member::ActionCandidates(Agent::State st)
+OSpace Member::ActionCandidates(IAgent::State st)
 {
     if (count < 500)
     {
-        OutList acts;
+        OSpace acts;
         acts.clear();
         if (st == 1)    // position 1
         {
@@ -51,10 +51,10 @@ OutList Member::ActionCandidates(Agent::State st)
         return acts;
     }
     else
-        return OutList();    // return an empty list
+        return OSpace();    // return an empty list
 }
 
-float Member::OriginalPayoff(Agent::State st)
+float Member::OriginalPayoff(IAgent::State st)
 {
     if (st == 9)
         return 1;

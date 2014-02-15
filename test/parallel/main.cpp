@@ -7,8 +7,8 @@
 
 #include <pthread.h>
 #include <stdio.h>
-#include "CSThreadParallelNet.h"
-#include "CSAgent.h"
+#include "CSThreadDENet.h"
+#include "CSIAgent.h"
 #include "member.h"
 #include "Mysql.h"
 
@@ -23,14 +23,14 @@ int main(int argc, char *argv[])
     int member_num = atoi(argv[1]);    // number of member
     char name[16];    // member name
 
-    CSThreadParallelNet parallelnet(1);    // communication network
+    CSThreadDENet parallelnet(1);    // communication network
 
     // storage of each member
 //    Mysql *mysql[member_num];
 //    char db_name[16];
 
     Member *members[member_num];
-    CSAgent *agents[member_num];
+    CSIAgent *agents[member_num];
     pthread_t tids[member_num];
 
     // create and set up each member
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 //        ml->SetDBArgs("localhost", "root", "huangk", db_name);
 
         // agent
-        CSAgent *agent = new CSAgent(i + 1, 0.8, 0.01);    // agent id start from 1
+        CSIAgent *agent = new CSIAgent(i + 1, 0.8, 0.01);    // agent id start from 1
 //        agent->LoadMemoryFromStorage(ml);
 
         // avatar
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
         Member *member = new Member(name);
         member->SetSps(-1);
         member->ConnectAgent(agent);
-        member->JoinParallelNet(&parallelnet);
+        member->JoinDENet(&parallelnet);
 
 //        mysql[i] = ml;
         members[i] = member;

@@ -8,24 +8,24 @@
  *	@Modify date:
  ***********************************************************************/
 #include <stdio.h>
-#include "Agent.h"
-#include "ParallelNet.h"
+#include "IAgent.h"
+#include "DENet.h"
 #include "Debug.h"
 
-Agent::Agent() :
-        id(0), discount_rate(0.8), threshold(0.01), degree_of_curiosity(0.0), parallelnet(
+IAgent::IAgent() :
+        id(0), discount_rate(0.8), threshold(0.01), degree_of_curiosity(0.0), denet(
         NULL)
 {
 }
 
-Agent::Agent(int i) :
-        id(i), discount_rate(0.8), threshold(0.01), degree_of_curiosity(0.0), parallelnet(
+IAgent::IAgent(int i) :
+        id(i), discount_rate(0.8), threshold(0.01), degree_of_curiosity(0.0), denet(
         NULL)
 {
 }
 
-Agent::Agent(int i, float dr, float th) :
-        id(i), discount_rate(dr), threshold(th), degree_of_curiosity(0.0), parallelnet(
+IAgent::IAgent(int i, float dr, float th) :
+        id(i), discount_rate(dr), threshold(th), degree_of_curiosity(0.0), denet(
                 NULL)
 {
     // check validity
@@ -37,7 +37,7 @@ Agent::Agent(int i, float dr, float th) :
     ERROR("Agent - threshold must be bigger than 0!\n");
 }
 
-Agent::~Agent()
+IAgent::~IAgent()
 {
 }
 
@@ -48,8 +48,8 @@ Agent::~Agent()
  * \return action distribution after appling maximun payoff restrict
  *
  */
-OutList Agent::Restrict(Agent::State st,
-        OutList &acts)
+OSpace IAgent::Restrict(IAgent::State st,
+        OSpace &acts)
 {
     return MaxPayoffRule(st, acts);
 }
@@ -58,16 +58,16 @@ OutList Agent::Restrict(Agent::State st,
  *
  */
 
-void Agent::Update(float oripayoff)
+void IAgent::Update(float oripayoff)
 {
     UpdateMemory(oripayoff);    // update memory
     TSGIOM::Update();
     return;
 }
 
-void Agent::ShareMemory()
+void IAgent::Exchange()
 {
-    if (parallelnet == NULL)    // no parallelnet joined, nothing to do
+    if (denet == NULL)    // no ienet joined, nothing to do
         return;
 
     RecvStateInfo();    // check if new message has recieved
@@ -77,7 +77,7 @@ void Agent::ShareMemory()
     for (std::set<int>::iterator nit = my_neighbours.begin();
             nit != my_neighbours.end(); ++nit)
     {
-        each_sharing_interval = GetNeighSharingInterval(*nit);    // get sharing interval to this neighbour
+        each_sharing_interval = GetExchangeInterval(*nit);    // get sharing interval to this neighbour
         if (process_count % each_sharing_interval == 0)    // time to send msg
         {
             State st_send = NextStateToSend(*nit);    // get the next state to be sent to this neighbour
@@ -92,32 +92,32 @@ void Agent::ShareMemory()
  * \brief Join a sharing network
  * \param cn sharing network to join
  */
-void Agent::JoinParallelNet(ParallelNet *cn)
+void IAgent::JoinDENet(DENet *cn)
 {
-    parallelnet = cn;
-    parallelnet->AddMember(id);    // add me as a member
+    denet = cn;
+    denet->AddMember(id);    // add me as a member
 }
 
 /**
  * \brief Leave a sharing network
  */
-void Agent::LeaveParallelNet()
+void IAgent::LeaveDENet()
 {
 // check first
-    if (parallelnet == NULL)    // not join in any net
+    if (denet == NULL)    // not join in any net
     {
         return;
     }
 
-    parallelnet->RemoveMember(id);    // remove me from network
-    parallelnet = NULL;    // set net as null
+    denet->RemoveMember(id);    // remove me from network
+    denet = NULL;    // set net as null
     return;
 }
 
-void Agent::AddNeighbour(int nid, int interval)
+void IAgent::AddNeighbour(int nid, int interval)
 {
 // chech if joined in any network
-    if (parallelnet == NULL)
+    if (denet == NULL)
     {
         WARNNING(
                 "AddNeighbour(): agent %d hasn't joint any network yet, can not add a neighbour!\n",
@@ -125,26 +125,26 @@ void Agent::AddNeighbour(int nid, int interval)
         return;
     }
 
-    parallelnet->AddNeighbour(id, nid, interval);
+    denet->AddNeighbour(id, nid, interval);
 }
 
-void Agent::ChangeNeighSharingInterval(int nid, int newinterval)
+void IAgent::ChangeExchangeInterval(int nid, int newinterval)
 {
     // chech if joined in any network
-    if (parallelnet == NULL)
+    if (denet == NULL)
     {
         WARNNING("AddNeighbour(): agent %d hasn't joint any network yet!\n",
                 id);
         return;
     }
 
-    parallelnet->ChangeNeighSharingInterval(id, nid, newinterval);
+    denet->ChangeExchangeInterval(id, nid, newinterval);
 }
 
-void Agent::RemoveNeighbour(int nid)
+void IAgent::RemoveNeighbour(int nid)
 {
 // chech if joined in any network
-    if (parallelnet == NULL)
+    if (denet == NULL)
     {
         WARNNING(
                 "RemoveNeighbour(): agent %d hasn't joint any network yet, it has no neighbour to remove!\n",
@@ -152,13 +152,13 @@ void Agent::RemoveNeighbour(int nid)
         return;
     }
 
-    parallelnet->RemoveNeighbour(id, nid);
+    denet->RemoveNeighbour(id, nid);
 }
 
-int Agent::GetNeighSharingInterval(int neb)
+int IAgent::GetExchangeInterval(int neb)
 {
 // chech if joined in any network
-    if (parallelnet == NULL)
+    if (denet == NULL)
     {
         WARNNING(
                 "AddNeighbour(): agent %d hasn't joint any network yet, can not add a neighbour!\n",
@@ -166,13 +166,13 @@ int Agent::GetNeighSharingInterval(int neb)
         return INT_MAX;
     }
 
-    return parallelnet->GetNeighSharingInterval(id, neb);
+    return denet->GetExchangeInterval(id, neb);
 }
 
-std::set<int> Agent::GetMyNeighbours()
+std::set<int> IAgent::GetMyNeighbours()
 {
 // chech if joined in any network
-    if (parallelnet == NULL)
+    if (denet == NULL)
     {
         WARNNING(
                 "GetMyNeighbours(): menber %d hasn't joint any network yet, no neighbours at all!\n",
@@ -180,13 +180,13 @@ std::set<int> Agent::GetMyNeighbours()
         return std::set<int>();
     }
 
-    return parallelnet->GetNeighbours(id);
+    return denet->GetNeighbours(id);
 }
 
-bool Agent::CheckNeighbourShip(int nid)
+bool IAgent::CheckNeighbourShip(int nid)
 {
 // chech if joined in any network
-    if (parallelnet == NULL)
+    if (denet == NULL)
     {
         WARNNING(
                 "CheckNeighbour(): menber %d hasn't joint any network yet, no neighbours at all!\n",
@@ -194,16 +194,16 @@ bool Agent::CheckNeighbourShip(int nid)
         return false;
     }
 
-    return parallelnet->CheckNeighbourShip(id, nid);
+    return denet->CheckNeighbourShip(id, nid);
 }
 
 /**
  * \brief Send information of a specified state to a neighbour.
  * \param st state value to be sent
  */
-void Agent::SendStateInfo(int toneb, Agent::State st)
+void IAgent::SendStateInfo(int toneb, IAgent::State st)
 {
-    if (parallelnet == NULL)    // no neighbours, nothing to do
+    if (denet == NULL)    // no neighbours, nothing to do
         return;
 
     struct State_Info_Header *stif = NULL;
@@ -213,7 +213,7 @@ void Agent::SendStateInfo(int toneb, Agent::State st)
         return;
     }
 
-    parallelnet->Send(id, toneb, stif, stif->size);    // call the send facility in parallelnet
+    denet->Send(id, toneb, stif, stif->size);    // call the send facility in ienet
     free(stif);    // free
 
     return;
@@ -222,14 +222,14 @@ void Agent::SendStateInfo(int toneb, Agent::State st)
 /**
  * \brief Recieve state information from neighbours.
  */
-void Agent::RecvStateInfo()
+void IAgent::RecvStateInfo()
 {
-    if (parallelnet == NULL)    // no neighbours, nothing to do
+    if (denet == NULL)    // no neighbours, nothing to do
         return;
 
     char re_buf[2048];    // buffer for recieved message
 
-    if (parallelnet->Recv(id, -1, re_buf, 2048) != 0)    // fetch one message from any agent
+    if (denet->Recv(id, -1, re_buf, 2048) != 0)    // fetch one message from any agent
     {
         MergeStateInfo((struct State_Info_Header *) re_buf);    // merge the recieved state information to memory
     }
@@ -240,7 +240,7 @@ void Agent::RecvStateInfo()
  * \brief Pretty print State information
  * \param specified State information header
  */
-void Agent::PrintStateInfo(const struct State_Info_Header *stif)
+void IAgent::PrintStateInfo(const struct State_Info_Header *stif)
 {
     if (stif == NULL) return;
 

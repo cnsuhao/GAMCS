@@ -9,7 +9,7 @@
 #include "Mouse.h"
 
 Mouse::Mouse(std::string n) :
-        CSThreadAvatar(n), count(0)
+        CSThreadIncarnation(n), count(0)
 {
     position = 5;
 }
@@ -19,12 +19,12 @@ Mouse::~Mouse()
 
 }
 
-Agent::State Mouse::GetCurrentState()
+IAgent::State Mouse::GetCurrentState()
 {
     return position;
 }
 
-void Mouse::PerformAction(Agent::Action act)
+void Mouse::PerformAction(IAgent::Action act)
 {
     position += act;
 
@@ -33,11 +33,11 @@ void Mouse::PerformAction(Agent::Action act)
     return;
 }
 
-OutList Mouse::ActionCandidates(Agent::State st)
+OSpace Mouse::ActionCandidates(IAgent::State st)
 {
     if (count < 1000)
     {
-        OutList acts;
+        OSpace acts;
         acts.clear();
         if (st == 1)    // position 1
         {
@@ -52,10 +52,10 @@ OutList Mouse::ActionCandidates(Agent::State st)
         return acts;
     }
     else
-        return OutList();    // return an empty list
+        return OSpace();    // return an empty list
 }
 
-float Mouse::OriginalPayoff(Agent::State st)
+float Mouse::OriginalPayoff(IAgent::State st)
 {
     if (st == 9)
         return 1;

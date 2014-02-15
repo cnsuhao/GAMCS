@@ -1,9 +1,9 @@
 #ifndef ROBOT1_H
 #define ROBOT1_H
 #include <string>
-#include "Avatar.h"
+#include "Incarnation.h"
 
-class Mouse: public Avatar
+class Mouse: public Incarnation
 {
     public:
         /** Default constructor */
@@ -12,13 +12,13 @@ class Mouse: public Avatar
         ~Mouse();
 
     private:
-        Agent::State position;
+        IAgent::State position;
         int count;
 
-        Agent::State GetCurrentState();
-        void PerformAction(Agent::Action);
-        OutList ActionCandidates(Agent::State);
-        float OriginalPayoff(Agent::State);
+        IAgent::State GetCurrentState();
+        void PerformAction(IAgent::Action);
+        OSpace ActionCandidates(IAgent::State);
+        float OriginalPayoff(IAgent::State);
 };
 
 #endif // ROBOT1_H

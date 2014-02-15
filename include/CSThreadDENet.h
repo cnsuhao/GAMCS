@@ -1,7 +1,7 @@
-#ifndef CSTHREADCOMMNET_H
-#define CSTHREADCOMMNET_H
+#ifndef CSTHREADDENET_H
+#define CSTHREADDENET_H
 #include <set>
-#include "ParallelNet.h"
+#include "DENet.h"
 
 #define MAX_MEMBER 1000     // maximun number of members in group
 #define MSG_POOL_SIZE 100     // maximun number of messages a channel can store
@@ -19,14 +19,14 @@ struct Channel
 };
 
 /**
- * Computer Simulation of ParallelNet used for avatars simulated as threads, in which they can communicate and share knowledge with each other.
+ * Computer Simulation DENet used for avatars simulated as threads, in which they can communicate and share knowledge with each other.
  */
-class CSThreadParallelNet: public ParallelNet
+class CSThreadDENet: public DENet
 {
     public:
-        CSThreadParallelNet();
-        CSThreadParallelNet(int);
-        ~CSThreadParallelNet();
+        CSThreadDENet();
+        CSThreadDENet(int);
+        ~CSThreadDENet();
 
         void LoadTopoFromFile(char *); /**< load topological structure of network from a file */
         void DumpTopoToFile(char *); /**< dump topological structure of network to file */
@@ -34,8 +34,8 @@ class CSThreadParallelNet: public ParallelNet
     private:
         void AddMember(int);
         void AddNeighbour(int, int, int);
-        int GetNeighSharingInterval(int, int);
-        void ChangeNeighSharingInterval(int, int, int);
+        int GetExchangeInterval(int, int);
+        void ChangeExchangeInterval(int, int, int);
         void RemoveMember(int);
         void RemoveNeighbour(int, int);
 
@@ -62,12 +62,12 @@ class CSThreadParallelNet: public ParallelNet
  * \param id member id
  * \return channel address
  */
-inline struct Channel *CSThreadParallelNet::GetChannel(int id)
+inline struct Channel *CSThreadDENet::GetChannel(int id)
 {
     return &channels[id];
 }
 
-inline std::set<int> CSThreadParallelNet::GetAllMembers()
+inline std::set<int> CSThreadDENet::GetAllMembers()
 {
     return members;
 }
@@ -91,4 +91,4 @@ struct Neigh
         struct Neigh *next; /**< next neigh */
 };
 
-#endif // CSTHREADCOMMNET_H
+#endif // CSTHREADDENET_H

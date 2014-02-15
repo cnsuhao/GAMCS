@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 #include "DotViewer.h"
-#include "Agent.h"
+#include "IAgent.h"
 #include "Storage.h"
 
 DotViewer::DotViewer() :
@@ -65,7 +65,7 @@ void DotViewer::Show()
     printf("node [color=black,shape=circle]\n");
     printf("rank=\"same\"\n");
     // print states info
-    Agent::State st;
+    IAgent::State st;
     unsigned long index = 0;    // load states from database one by one
     while ((st = storage->StateByIndex(index)) != INVALID_STATE)    // get state value
     {
@@ -123,7 +123,7 @@ void DotViewer::CleanShow()
     printf("node [color=black,shape=circle]\n");
     printf("rank=\"same\"\n");
     // print states info
-    Agent::State st;
+    IAgent::State st;
     unsigned long index = 0;    // load states from database one by one
     while ((st = storage->StateByIndex(index)) != INVALID_STATE)    // get state value
     {
@@ -175,7 +175,7 @@ void DotViewer::DotStateInfo(const struct State_Info_Header *stif)
         st_color = "black";
 
     // store env action and action information
-    std::map<Agent::Action, float> actmap;
+    std::map<IAgent::Action, float> actmap;
 
     unsigned char *p = (unsigned char *) stif;
     printf("\nsubgraph state%ld\n{\n", stif->st);
@@ -267,7 +267,7 @@ void DotViewer::CleanDotStateInfo(const struct State_Info_Header *stif)
     }
 }
 
-const std::string DotViewer::Eat2String(Agent::EnvAction eat)
+const std::string DotViewer::Eat2String(IAgent::EnvAction eat)
 {
     char tmp[28];
     if (eat >= 0)
@@ -284,7 +284,7 @@ const std::string DotViewer::Eat2String(Agent::EnvAction eat)
     }
 }
 
-void DotViewer::ShowState(Agent::State st)
+void DotViewer::ShowState(IAgent::State st)
 {
     int re = storage->Connect();
     if (re != 0)    // connect failed
@@ -330,7 +330,7 @@ void DotViewer::ShowState(Agent::State st)
     {
         // show state info
         // store env action and action information
-        std::map<Agent::Action, float> actmap;
+        std::map<IAgent::Action, float> actmap;
 
         unsigned char *p = (unsigned char *) stif;
         printf("st%ld [label=\"%ld\\n(%.2f)\"]\n", stif->st, stif->st,

@@ -9,27 +9,27 @@
 #include <stdlib.h>
 #include <sys/timeb.h>
 #include <unistd.h>
-#include "Avatar.h"
+#include "Incarnation.h"
 #include "Debug.h"
 
-Avatar::Avatar() :
+Incarnation::Incarnation() :
         name("unnamed avatar"), sps(-1), myagent(NULL), control_step_time(0)
 {
 }
 
-Avatar::Avatar(std::string n) :
+Incarnation::Incarnation(std::string n) :
         name(n), sps(-1), myagent(NULL), control_step_time(0)
 {
 }
 
-Avatar::~Avatar()
+Incarnation::~Incarnation()
 {
 }
 
 /**
  * \brief Launch a avatar continuously.
  */
-void Avatar::Launch()
+void Incarnation::Launch()
 {
     while (true)
     {
@@ -38,13 +38,13 @@ void Avatar::Launch()
         unsigned long start_time = GetCurrentTime();
 
         /* Perceive the outside world */
-        Agent::State cs = GetCurrentState();    // get current state
+        IAgent::State cs = GetCurrentState();    // get current state
         dbgmoreprt("Launch():", "%s, State: %ld\n", name.c_str(), cs);
 
         /* Process stage */
-        OutList acts = ActionCandidates(cs);    // get all action candidates of a state
+        OSpace acts = ActionCandidates(cs);    // get all action candidates of a state
 
-        Agent::Action act = myagent->Process(cs, acts);    // choose an action from candidates
+        IAgent::Action act = myagent->Process(cs, acts);    // choose an action from candidates
         // check validation
         if (act == INVALID_ACTION)    // no valid actions available, reach a dead end, quit. !!!: be sure to check this before update stage
             break;// exit point here
@@ -54,7 +54,7 @@ void Avatar::Launch()
         myagent->Update(oripayoff);    // agent update inner states
 
         /* share memory */
-        myagent->ShareMemory();
+        myagent->Exchange();
 
         /* Perform action to the outside world */
         PerformAction(act);    // otherwise, perform the action
@@ -92,13 +92,13 @@ void Avatar::Launch()
  * \return original payoff of st
  *
  */
-float Avatar::OriginalPayoff(Agent::State st)
+float Incarnation::OriginalPayoff(IAgent::State st)
 {
     UNUSED(st);
     return 1.0;    // original payoff of states is 1.0 by default
 }
 
-unsigned long Avatar::GetCurrentTime()
+unsigned long Incarnation::GetCurrentTime()
 {
     struct timeb tb;
     ftime(&tb);
@@ -109,52 +109,52 @@ unsigned long Avatar::GetCurrentTime()
  * \brief Join a sharing network
  * \param grp sharing network to join
  */
-void Avatar::JoinParallelNet(ParallelNet *cn)
+void Incarnation::JoinDENet(DENet *cn)
 {
-    myagent->JoinParallelNet(cn);
-    ActualJoinParallelNet(cn);
+    myagent->JoinDENet(cn);
+    ActualJoinDENet(cn);
 }
 
 /**
  * \brief Leave a sharing network
  */
-void Avatar::LeaveParallelNet()
+void Incarnation::LeaveDENet()
 {
-    myagent->LeaveParallelNet();
-    ActualLeaveParallelNet();
+    myagent->LeaveDENet();
+    ActualLeaveDENet();
 }
 
-void Avatar::AddNeighbour(int nid, int interval)
+void Incarnation::AddNeighbour(int nid, int interval)
 {
     myagent->AddNeighbour(nid, interval);
     ActualAddNeighbour(nid, interval);
 }
 
-void Avatar::RemoveNeighbour(int nid)
+void Incarnation::RemoveNeighbour(int nid)
 {
     myagent->RemoveNeighbour(nid);
     ActualRemoveNeighbour(nid);
 }
 
-void Avatar::ActualJoinParallelNet(ParallelNet *cn)
+void Incarnation::ActualJoinDENet(DENet *cn)
 {
     UNUSED(cn);
     return;
 }
 
-void Avatar::ActualLeaveParallelNet()
+void Incarnation::ActualLeaveDENet()
 {
     return;
 }
 
-void Avatar::ActualAddNeighbour(int neb, int interval)
+void Incarnation::ActualAddNeighbour(int neb, int interval)
 {
     UNUSED(neb);
     UNUSED(interval);
     return;
 }
 
-void Avatar::ActualRemoveNeighbour(int neb)
+void Incarnation::ActualRemoveNeighbour(int neb)
 {
     UNUSED(neb);
     return;

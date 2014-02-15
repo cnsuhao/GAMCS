@@ -10,7 +10,7 @@
 
 int main(void)
 {
-    OutList ol;
+    OSpace ol;
     ol.add(1);
     ol.add(2);
     ol.add(3);

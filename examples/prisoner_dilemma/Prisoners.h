@@ -7,7 +7,7 @@
 #include <string>
 #include <unistd.h>
 #include <stdio.h>
-#include "CSThreadAvatar.h"
+#include "CSThreadIncarnation.h"
 
 /**
  * state representation:
@@ -29,7 +29,7 @@
  *  | betrayal| -10, 0  |  -8, -8  |
  */
 
-Agent::State current_state = 1; // start from state 1
+IAgent::State current_state = 1; // start from state 1
 
 /* take turns to act */
 bool actA = false;
@@ -38,11 +38,11 @@ bool actB = true;    // let A act first
 int runtimes = 100;    // number of rounds
 bool quit_notification = false; // notify opponent to quit
 
-class PrisonerA: public CSThreadAvatar
+class PrisonerA: public CSThreadIncarnation
 {
     public:
         PrisonerA(std::string n) :
-                CSThreadAvatar(n)
+                CSThreadIncarnation(n)
         {
         }
         ~PrisonerA()
@@ -50,7 +50,7 @@ class PrisonerA: public CSThreadAvatar
         }
 
     private:
-        Agent::State GetCurrentState()
+        IAgent::State GetCurrentState()
         {
             while (actB == false)
                 usleep(10000);    // sleep, wait for B to act
@@ -58,16 +58,16 @@ class PrisonerA: public CSThreadAvatar
             return current_state;
         }
 
-        void PerformAction(Agent::Action act)
+        void PerformAction(IAgent::Action act)
         {
             current_state += act;
             actA = true;
         }
 
-        OutList ActionCandidates(Agent::State st)
+        OSpace ActionCandidates(IAgent::State st)
         {
             static int count = 0;
-            OutList re;
+            OSpace re;
             re.clear();
             if (count < runtimes)    // run times
             {
@@ -103,7 +103,7 @@ class PrisonerA: public CSThreadAvatar
             return re;
         }
 
-        float OriginalPayoff(Agent::State st)
+        float OriginalPayoff(IAgent::State st)
         {
             float payoff = 0.0;
             switch (st)
@@ -127,11 +127,11 @@ class PrisonerA: public CSThreadAvatar
         }
 };
 
-class PrisonerB: public CSThreadAvatar
+class PrisonerB: public CSThreadIncarnation
 {
     public:
         PrisonerB(std::string n) :
-                CSThreadAvatar(n)
+                CSThreadIncarnation(n)
         {
         }
         ~PrisonerB()
@@ -139,7 +139,7 @@ class PrisonerB: public CSThreadAvatar
         }
 
     private:
-        Agent::State GetCurrentState()
+        IAgent::State GetCurrentState()
         {
             while (actA == false)
                 usleep(10000);    // sleep, wait for A to act
@@ -147,15 +147,15 @@ class PrisonerB: public CSThreadAvatar
             return current_state;
         }
 
-        void PerformAction(Agent::Action act)
+        void PerformAction(IAgent::Action act)
         {
             current_state += act;
             actB = true;
         }
 
-        OutList ActionCandidates(Agent::State st)
+        OSpace ActionCandidates(IAgent::State st)
         {
-            OutList re;
+            OSpace re;
             re.clear();
 
             if (!quit_notification)    // check quit
@@ -186,7 +186,7 @@ class PrisonerB: public CSThreadAvatar
             return re;
         }
 
-        float OriginalPayoff(Agent::State st)
+        float OriginalPayoff(IAgent::State st)
         {
             float payoff = 0.0;
             switch (st)
