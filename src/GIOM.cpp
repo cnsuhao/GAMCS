@@ -1,5 +1,5 @@
 /**********************************************************************
- *	@File:
+ *	@File: GIOM.cpp
  *	@Created: 2013-8-19
  *	@Author: AndyHuang - andyspider@126.coom
  *	@Description:
@@ -36,7 +36,7 @@ OSpace GIOM::Restrict(Input in, OSpace &outputs)
 /** \brief Process function of GIOM.
  * Return a random item from the restricted outputs by defaut.
  * \param in input identity
- * \return GIOM::Output
+ * \return output
  *
  */
 GIOM::Output GIOM::Process(Input in, OSpace &outputs)

@@ -18,7 +18,7 @@ class IAgent: public TSGIOM
     public:
         typedef GIOM::Input State; /**< for agent we call an input as a state */
         typedef GIOM::Output Action; /**< action as output */
-        typedef long EnvAction; /**< environment action, "exact" for short */
+        typedef long EnvAction; /**< environment action */
 
         IAgent();
         IAgent(int);
@@ -26,7 +26,7 @@ class IAgent: public TSGIOM
         virtual ~IAgent();
 
         void Update(float); /**< update memory, this function will call UpdateMemory() to do the real update */
-        void Exchange(); /**< share memory with others */
+        void Exchange(); /**< direct exchange of memory with others */
 
         static void PrintStateInfo(const struct State_Info_Header *); /**< print state information gracefully */
         /* vector and get functions */
@@ -36,7 +36,7 @@ class IAgent: public TSGIOM
         float GetThreshold();
         void SetDegreeOfCuriosity(float);
 
-        /* information exchange network related stuff */
+        /* direct exchange network related stuff */
         void JoinDENet(DENet *); /**< set join a communication network */
         void LeaveDENet(); /**< leave network */
         void AddNeighbour(int, int); /**< add a neighbour */
@@ -50,13 +50,12 @@ class IAgent: public TSGIOM
 
         float degree_of_curiosity; /**< degree of curiosity to try unknown actions */
 
-        DENet *denet; /**< which network this agent is belonged to */
+        DENet *denet; /**< direct exchange network this agent belongs to */
 
-         OSpace Restrict(State, OSpace &); /**< reimplement restrict using maximun payoff rule  */
+        OSpace Restrict(State, OSpace &); /**< reimplement restrict using maximun payoff rule  */
 
         /** These two functions are implementation dependant, declared as pure virtual functions */
-        virtual OSpace MaxPayoffRule(State,
-                OSpace &) = 0; /**< implementation of maximun payoff rule */
+        virtual OSpace MaxPayoffRule(State, OSpace &) = 0; /**< implementation of maximun payoff rule */
         virtual void UpdateMemory(float) = 0; /**<  update states in memory given current state's original payoff*/
         virtual struct State_Info_Header *GetStateInfo(State) const = 0; /**<  collect information of specified state from memory */
         virtual void MergeStateInfo(const struct State_Info_Header *) = 0; /**<  merge recieved state information into memory */

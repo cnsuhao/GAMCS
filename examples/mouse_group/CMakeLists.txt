@@ -3,5 +3,5 @@ AUX_SOURCE_DIRECTORY(. MOUSEGROUP_SRCS)
 ADD_EXECUTABLE(mg ${MOUSEGROUP_SRCS})
 ADD_CUSTOM_COMMAND(TARGET mg PRE_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy
-    ${CMAKE_SOURCE_DIR}/examples/mouse_group/paralnet.dot $<TARGET_FILE_DIR:mg>)     # copy topo file to bin directory
+    ${CMAKE_SOURCE_DIR}/examples/mouse_group/denet.dot $<TARGET_FILE_DIR:mg>)     # copy topo file to bin directory
 TARGET_LINK_LIBRARIES(mg incarnation) 

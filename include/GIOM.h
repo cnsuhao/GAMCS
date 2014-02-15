@@ -35,7 +35,7 @@ class GIOM
 };
 
 /**
- * Fragment to store a range of outputs.
+ * Fragment to store a single output or a range of outputs.
  * For a singe output, the end is equal to start.
  */
 struct OFragment
