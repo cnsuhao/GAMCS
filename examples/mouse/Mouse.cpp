@@ -9,7 +9,7 @@
 #include "Mouse.h"
 
 Mouse::Mouse(std::string n) :
-        Avatar(n), count(0)
+        Incarnation(n), count(0)
 {
     position = 3;
 }
@@ -19,12 +19,12 @@ Mouse::~Mouse()
     //dtor
 }
 
-Agent::State Mouse::GetCurrentState()
+IAgent::State Mouse::GetCurrentState()
 {
     return position;
 }
 
-void Mouse::PerformAction(Agent::Action act)
+void Mouse::PerformAction(IAgent::Action act)
 {
     position += act;
 
@@ -41,12 +41,12 @@ void Mouse::PerformAction(Agent::Action act)
  *
  */
 
-OutList Mouse::ActionCandidates(Agent::State st)
+OSpace Mouse::ActionCandidates(IAgent::State st)
 {
 //    UNUSED(st);
     if (count < 50)
     {
-        OutList acts;
+        OSpace acts;
         acts.clear();
         acts.add(1);
         acts.add(-1);
@@ -54,10 +54,10 @@ OutList Mouse::ActionCandidates(Agent::State st)
         return acts;
     }
     else
-        return OutList();    // return an empty list
+        return OSpace();    // return an empty list
 }
 
-float Mouse::OriginalPayoff(Agent::State st)
+float Mouse::OriginalPayoff(IAgent::State st)
 {
     if (st == 6)
         return 1;

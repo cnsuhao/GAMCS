@@ -1,16 +1,16 @@
 #ifndef GIOM_H
 #define GIOM_H
 #include <climits>    // LONG_MAX
-#include <stddef.h>
+#include <stddef.h>     // NULL
 #include "Debug.h"
 
-const unsigned long INVALID_INPUT = 0; /**< never use 0 for a valid state! */
-const long INVALID_OUTPUT = LONG_MAX; /**< the maximun value is used to indicate invalidation, be careful! */
+const unsigned long INVALID_INPUT = 0; /**< valid states start from 1 */
+const long INVALID_OUTPUT = LONG_MAX; /**< the maximun value is used to indicate an invalid output, be careful! */
 
-class OutList;
+class OSpace;
 
 /**
- * General Input Output Model
+ * Generalized Input Output Model
  */
 class GIOM
 {
@@ -22,33 +22,33 @@ class GIOM
         GIOM();
         /** Default destructor */
         virtual ~GIOM();
-        Output Process(Input, OutList &); /**< generate an output value from a output list given an input value */
+        Output Process(Input, OSpace &); /**< choose an output value in an output space under a specified input value */
         float Entropy(); /**< calculate entropy of this GIOM */
-        virtual void Update(); /**< derived classes may update their own inner states */
+        virtual void Update(); /**< update inner states of GIOM, derived classes may have their own inner states to update */
     protected:
-        virtual OutList Restrict(Input, OutList &); /**< restrict the outputs */
+        virtual OSpace Restrict(Input, OSpace &); /**< restrict the output space to a subspace */
         Input cur_in; /**< input value */
         Output cur_out; /**< output value corresponding to cur_in */
-        unsigned long process_count; /**< process count */
+        unsigned long process_count; /**< count of processing */
     private:
         long Random(); /**< generate a random number in range 0 to LONG_MAX. It's where all possibilities and miracles come from! */
 };
 
 /**
- * Fragment to store a single output or a range of outputs.
+ * Fragment to store a range of outputs.
  * For a singe output, the end is equal to start.
  */
-struct OutFragment
+struct OFragment
 {
-        GIOM::Output start;
-        GIOM::Output end;
-        GIOM::Output interval;
+        GIOM::Output start; /**< the starting output value */
+        GIOM::Output end; /**< the final output value */
+        GIOM::Output step; /**< the increasing or decreasing step */
 };
 
 /**
- *  List for storing outputs.
+ *  Output space.
  */
-class OutList
+class OSpace
 {
     public:
         enum
@@ -58,27 +58,27 @@ class OutList
 
         typedef unsigned long olsize_t;
 
-        explicit OutList(olsize_t initfn = 0) :
+        explicit OSpace(olsize_t initfn = 0) :
                 frag_num(initfn), the_capacity(initfn + SPARE_CAPACITY), current_index(
                         0), outputs(NULL)
         {
-            outputs = new OutFragment[the_capacity];
+            outputs = new OFragment[the_capacity];
         }
 
-        OutList(const OutList &other) :
+        OSpace(const OSpace &other) :
                 frag_num(0), the_capacity(SPARE_CAPACITY), current_index(0), outputs(
                 NULL)
         {
             operator=(other);
         }
 
-        virtual ~OutList()
+        virtual ~OSpace()
         {
             delete[] outputs;
         }
 
         /**
-         * Check if the outlist is empty
+         * Check if the space is empty
          * @return true or false
          */
         bool empty() const
@@ -87,7 +87,7 @@ class OutList
         }
 
         /**
-         * Get the total number of outputs in the list
+         * Get the total number of outputs in space
          * @return  the number
          */
         olsize_t size() const
@@ -96,15 +96,15 @@ class OutList
             // traverse each frament and collect the total size
             for (olsize_t i = 0; i < frag_num; i++)
             {
-                OutFragment *frag = outputs + i;
-                total_size += (frag->end - frag->start) / frag->interval + 1;
+                OFragment *frag = outputs + i;
+                total_size += (frag->end - frag->start) / frag->step + 1;
             }
 
             return total_size;
         }
 
         /**
-         * Current capacity of the list
+         * Current capacity of the space
          * @return  capacity
          */
         olsize_t capacity() const
@@ -132,13 +132,13 @@ class OutList
             // traverse each fragment to find which fragment the index locates in
             for (i = 0; i < frag_num; i++)
             {
-                OutFragment *ptr = outputs + i;
+                OFragment *ptr = outputs + i;
                 olsize_t out_num_in_this_frag = (ptr->end - ptr->start)
-                        / ptr->interval + 1;
+                        / ptr->step + 1;
                 if (total_num + out_num_in_this_frag > index)    // index is in this fragment
                 {
                     olsize_t index_in_frag = index - total_num;
-                    out_wanted = ptr->start + ptr->interval * index_in_frag;
+                    out_wanted = ptr->start + ptr->step * index_in_frag;
                     break;
                 }
 
@@ -158,7 +158,7 @@ class OutList
          * @param other another OutList object
          * @return  reassigned object
          */
-        const OutList &operator=(const OutList &other)
+        const OSpace &operator=(const OSpace &other)
         {
             if (this != &other)
             {
@@ -167,7 +167,7 @@ class OutList
                 frag_num = other.frag_num;
                 the_capacity = other.the_capacity;
 
-                outputs = new OutFragment[the_capacity];
+                outputs = new OFragment[the_capacity];
                 // copy each fragment
                 for (olsize_t i = 0; i < frag_num; i++)
                 {
@@ -179,7 +179,7 @@ class OutList
         }
 
         /**
-         * Add a single output to list
+         * Add a single output to space
          * @param output output
          */
         void add(GIOM::Output output)
@@ -187,46 +187,47 @@ class OutList
             // check if exceeds the capacity
             if (frag_num == the_capacity) expand(2 * the_capacity + 1);
 
-            OutFragment new_frag;
+            OFragment new_frag;
             new_frag.start = output;
             new_frag.end = output;
-            new_frag.interval = 1;
+            new_frag.step = 1;
             outputs[frag_num++] = new_frag;    // copy fragment and increase num
         }
 
         /**
-         * Add a output range to list
+         * Add a output range to space
          * @param start start output
          * @param end   end output
-         * @param interval increasing or decreasing interval
+         * @param step increasing or decreasing step
          */
-        void add(GIOM::Output start, GIOM::Output end, GIOM::Output interval)
+        void add(GIOM::Output start, GIOM::Output end, GIOM::Output step)
         {
             // check range
-            if ((end - start) / interval < 0)
-                ERROR("Invalid range! %ld --> %ld (interval: %ld) \n", start, end, interval);
+            if ((end - start) / step < 0)
+                ERROR("Invalid range! %ld --> %ld (step: %ld) \n", start,
+                        end, step);
 
             if (frag_num == the_capacity) expand(2 * the_capacity);
 
-            OutFragment new_frag;
+            OFragment new_frag;
             new_frag.start = start;
             new_frag.end = end;
-            new_frag.interval = interval;
+            new_frag.step = step;
             outputs[frag_num++] = new_frag;
         }
 
         /**
-         * Expend capacity for future adding
+         * Expend space capacity.
          * @param ncap new capacity
          */
         void expand(olsize_t ncap)
         {
             if (ncap < frag_num) return;    // the new capacity should at least include all current fragments
 
-            OutFragment *old_list = outputs;
+            OFragment *old_list = outputs;
             // add up the spare
             ncap += SPARE_CAPACITY;
-            outputs = new OutFragment[ncap];
+            outputs = new OFragment[ncap];
             // copy all fragments to new place
             for (olsize_t i = 0; i < frag_num; i++)
             {
@@ -238,7 +239,7 @@ class OutList
         }
 
         /**
-         * Clear the list.
+         * Clear the space.
          */
         void clear()
         {
@@ -246,7 +247,7 @@ class OutList
         }
 
         /**
-         * Get the first output in list.
+         * Get the first output in space.
          * @return the first output
          */
         GIOM::Output first()
@@ -256,7 +257,7 @@ class OutList
         }
 
         /**
-         * Get the last output in list.
+         * Get the last output in space.
          * @return the last output
          */
         GIOM::Output last()
@@ -265,7 +266,7 @@ class OutList
         }
 
         /**
-         * Iterator list and get the next output.
+         * Iterator the space and get the next output.
          * @return the next output
          */
         GIOM::Output next()
@@ -276,8 +277,8 @@ class OutList
 
     private:
         olsize_t frag_num;    // number of fragments
-        olsize_t the_capacity;    // list capacity
+        olsize_t the_capacity;    // space capacity
         olsize_t current_index;    // used by iterator
-        OutFragment *outputs;
+        OFragment *outputs;
 };
 #endif // GIOM_H

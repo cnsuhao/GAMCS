@@ -5,25 +5,25 @@
  *      Author: andy
  */
 #include <pthread.h>
-#include "CSThreadAvatar.h"
+#include "CSThreadIncarnation.h"
 
-CSThreadAvatar::CSThreadAvatar()
+CSThreadIncarnation::CSThreadIncarnation()
 {
 }
 
-CSThreadAvatar::CSThreadAvatar(std::string n) :
-        Avatar(n)
+CSThreadIncarnation::CSThreadIncarnation(std::string n) :
+        Incarnation(n)
 {
 }
 
-CSThreadAvatar::~CSThreadAvatar()
+CSThreadIncarnation::~CSThreadIncarnation()
 {
 }
 
 /**
  * \brief Launch Launch() function in a thread.
  */
-pthread_t CSThreadAvatar::ThreadLaunch()
+pthread_t CSThreadIncarnation::ThreadLaunch()
 {
     pthread_t tid;
     pthread_create(&tid, NULL, hook, this);    // create a thread, and call the hook
@@ -31,13 +31,13 @@ pthread_t CSThreadAvatar::ThreadLaunch()
     return tid;
 }
 
-void CSThreadAvatar::ActualJoinParallelNet(ParallelNet *cn)
+void CSThreadIncarnation::ActualJoinDENet(DENet *cn)
 {
     UNUSED(cn);
     return;
 }
 
-void CSThreadAvatar::ActualLeaveParallelNet()
+void CSThreadIncarnation::ActualLeaveDENet()
 {
     return;
 }

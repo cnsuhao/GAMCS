@@ -1,19 +1,19 @@
-#ifndef PARALLELNET_H
-#define PARALLELNET_H
+#ifndef DENET_H
+#define DENET_H
 #include <stddef.h>     // size_t
 #include <set>
 
 /**
- * Parallel Network Interface
+ * Direct Exchange Network
  */
-class ParallelNet
+class DENet
 {
     public:
-        ParallelNet();
-        ParallelNet(int);
-        virtual ~ParallelNet();
+        DENet();
+        DENet(int);
+        virtual ~DENet();
 
-        friend class Agent;    // Avatar need to access functions in ParallelNet
+        friend class IAgent;    // Avatar need to access functions in ParallelNet
 
         /* pub can only do network-scale queries */
         int NumberOfMembers(); /**< number of members in this network */
@@ -25,8 +25,8 @@ class ParallelNet
         /* build the network */
         virtual void AddMember(int) = 0; /**< add a new member to network */
         virtual void AddNeighbour(int, int, int) = 0; /**< add a neighbour to a member */
-        virtual int GetNeighSharingInterval(int, int) = 0; /**< get the interval to share with a neighbour of a specified member */
-        virtual void ChangeNeighSharingInterval(int, int, int) = 0; /**< change the interval to share with a neighbour */
+        virtual int GetExchangeInterval(int, int) = 0; /**< get the interval to share with a neighbour of a specified member */
+        virtual void ChangeExchangeInterval(int, int, int) = 0; /**< change the interval to share with a neighbour */
 
         virtual void RemoveMember(int) = 0; /**< remove a member from network */
         virtual void RemoveNeighbour(int, int) = 0; /**< remove a specified neighbour from a member */
@@ -43,9 +43,9 @@ class ParallelNet
  * \brief Get member number in group.
  * \return number of members
  */
-inline int ParallelNet::NumberOfMembers()
+inline int DENet::NumberOfMembers()
 {
     return GetAllMembers().size();
 }
 
-#endif // PARALLELNET_H
+#endif // DENET_H

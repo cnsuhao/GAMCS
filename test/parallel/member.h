@@ -7,22 +7,22 @@
 #ifndef MEMBER_H
 #define MEMBER_H
 #include <string>
-#include "CSThreadAvatar.h"
+#include "CSThreadIncarnation.h"
 
-class Member: public CSThreadAvatar
+class Member: public CSThreadIncarnation
 {
     public:
         Member(std::string);
         ~Member();
 
     private:
-        Agent::State position;
+        IAgent::State position;
         int count;
 
-        Agent::State GetCurrentState();
-        void PerformAction(Agent::Action);
-        OutList ActionCandidates(Agent::State);
-        float OriginalPayoff(Agent::State);
+        IAgent::State GetCurrentState();
+        void PerformAction(IAgent::Action);
+        OSpace ActionCandidates(IAgent::State);
+        float OriginalPayoff(IAgent::State);
 };
 
 #endif

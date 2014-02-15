@@ -1,5 +1,5 @@
-#ifndef AGENT_H
-#define AGENT_H
+#ifndef IAGENT_H
+#define IAGENT_H
 #include <stddef.h>
 #include <set>
 #include "TSGIOM.h"
@@ -8,25 +8,25 @@
 const unsigned long INVALID_STATE = INVALID_INPUT;
 const long INVALID_ACTION = INVALID_OUTPUT;
 
-class ParallelNet;
+class DENet;
 
 /**
- * Interface of an autonomous agent.
+ * Intelligent Agent
  */
-class Agent: public TSGIOM
+class IAgent: public TSGIOM
 {
     public:
         typedef GIOM::Input State; /**< for agent we call an input as a state */
         typedef GIOM::Output Action; /**< action as output */
         typedef long EnvAction; /**< environment action, "exact" for short */
 
-        Agent();
-        Agent(int);
-        Agent(int, float, float);
-        virtual ~Agent();
+        IAgent();
+        IAgent(int);
+        IAgent(int, float, float);
+        virtual ~IAgent();
 
         void Update(float); /**< update memory, this function will call UpdateMemory() to do the real update */
-        void ShareMemory(); /**< share memory with others */
+        void Exchange(); /**< share memory with others */
 
         static void PrintStateInfo(const struct State_Info_Header *); /**< print state information gracefully */
         /* vector and get functions */
@@ -36,11 +36,11 @@ class Agent: public TSGIOM
         float GetThreshold();
         void SetDegreeOfCuriosity(float);
 
-        /* network related stuff */
-        void JoinParallelNet(ParallelNet *); /**< set join a communication network */
-        void LeaveParallelNet(); /**< leave network */
+        /* information exchange network related stuff */
+        void JoinDENet(DENet *); /**< set join a communication network */
+        void LeaveDENet(); /**< leave network */
         void AddNeighbour(int, int); /**< add a neighbour */
-        void ChangeNeighSharingInterval(int, int); /**< change the interval to share state info with a neighbour */
+        void ChangeExchangeInterval(int, int); /**< change the interval to share state info with a neighbour */
         void RemoveNeighbour(int); /**< remove a neighbour */
 
     protected:
@@ -50,13 +50,13 @@ class Agent: public TSGIOM
 
         float degree_of_curiosity; /**< degree of curiosity to try unknown actions */
 
-        ParallelNet *parallelnet; /**< which network this agent is belonged to */
+        DENet *denet; /**< which network this agent is belonged to */
 
-         OutList Restrict(State, OutList &); /**< reimplement restrict using maximun payoff rule  */
+         OSpace Restrict(State, OSpace &); /**< reimplement restrict using maximun payoff rule  */
 
         /** These two functions are implementation dependant, declared as pure virtual functions */
-        virtual OutList MaxPayoffRule(State,
-                OutList &) = 0; /**< implementation of maximun payoff rule */
+        virtual OSpace MaxPayoffRule(State,
+                OSpace &) = 0; /**< implementation of maximun payoff rule */
         virtual void UpdateMemory(float) = 0; /**<  update states in memory given current state's original payoff*/
         virtual struct State_Info_Header *GetStateInfo(State) const = 0; /**<  collect information of specified state from memory */
         virtual void MergeStateInfo(const struct State_Info_Header *) = 0; /**<  merge recieved state information into memory */
@@ -64,13 +64,13 @@ class Agent: public TSGIOM
 
         std::set<int> GetMyNeighbours();
         bool CheckNeighbourShip(int);
-        int GetNeighSharingInterval(int); /**< get interval to comminucate with this neighbour */
+        int GetExchangeInterval(int); /**< get interval to comminucate with this neighbour */
 
         void SendStateInfo(int, State); /**< send information of a state to a neighbour */
         void RecvStateInfo(); /**< recieve state information from neighbours */
 };
 
-inline void Agent::SetDiscountRate(float dr)
+inline void IAgent::SetDiscountRate(float dr)
 {
     // check validity
     if (dr >= 1.0 || dr < 0)    // discount rate range [0, 1)
@@ -80,12 +80,12 @@ inline void Agent::SetDiscountRate(float dr)
     discount_rate = dr;
 }
 
-inline float Agent::GetDiscountRate()
+inline float IAgent::GetDiscountRate()
 {
     return discount_rate;
 }
 
-inline void Agent::SetThreshold(float th)
+inline void IAgent::SetThreshold(float th)
 {
     if (th < 0)
     ERROR("Agent - threshold must be bigger than 0!\n");
@@ -93,12 +93,12 @@ inline void Agent::SetThreshold(float th)
     threshold = th;
 }
 
-inline float Agent::GetThreshold()
+inline float IAgent::GetThreshold()
 {
     return threshold;
 }
 
-inline void Agent::SetDegreeOfCuriosity(float pf)
+inline void IAgent::SetDegreeOfCuriosity(float pf)
 {
     degree_of_curiosity = pf;
 }
@@ -108,29 +108,29 @@ inline void Agent::SetDegreeOfCuriosity(float pf)
  */
 struct Forward_Link
 {
-        Agent::Action act; /**< action */
-        Agent::EnvAction eat; /**< env act */
-        Agent::State nst; /**< next state */
+        IAgent::Action act; /**< action */
+        IAgent::EnvAction eat; /**< env act */
+        IAgent::State nst; /**< next state */
 };
 
 /** action information */
 struct Action_Info
 {
-        Agent::Action act; /**< action value */
+        IAgent::Action act; /**< action value */
         float payoff; /**< action payoff  */
 };
 
 /** environment act information */
 struct EnvAction_Info
 {
-        Agent::EnvAction eat; /**< environment action value */
+        IAgent::EnvAction eat; /**< environment action value */
         unsigned long count; /**< count of experiencing times */
 };
 
 /** Header of state information, this struct can be used to share with other agents */
 struct State_Info_Header
 {
-        Agent::State st; /**< state value */
+        IAgent::State st; /**< state value */
         float original_payoff; /**< original payoff */
         float payoff; /**< payoff */
         unsigned long count; /**< times of travelling through this state */
@@ -147,8 +147,8 @@ struct Memory_Info
         float threshold; /**< threshold */
         unsigned long state_num; /**< total number of states in memroy */
         unsigned long lk_num; /**< total number of links between states in memory */
-        Agent::State last_st; /**< last experienced state when saving memory */
-        Agent::Action last_act; /**< last performed Agent::Action when saving memory */
+        IAgent::State last_st; /**< last experienced state when saving memory */
+        IAgent::Action last_act; /**< last performed Agent::Action when saving memory */
 };
 
-#endif // AGENT_H
+#endif // IAGENT_H

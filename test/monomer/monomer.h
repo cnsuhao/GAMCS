@@ -1,9 +1,9 @@
 #ifndef MONOMER_H
 #define MONOMER_H
 #include <string>
-#include "Avatar.h"
+#include "Incarnation.h"
 
-class Monomer: public Avatar
+class Monomer: public Incarnation
 {
     public:
         /** Default constructor */
@@ -12,13 +12,13 @@ class Monomer: public Avatar
         ~Monomer();
 
     private:
-        Agent::State position;
+        IAgent::State position;
 
-        Agent::State GetCurrentState();
-        void PerformAction(Agent::Action);
-        OutList ActionCandidates(Agent::State);
-        float OriginalPayoff(Agent::State);
-        void SendStateInfo(Agent::State)
+        IAgent::State GetCurrentState();
+        void PerformAction(IAgent::Action);
+        OSpace ActionCandidates(IAgent::State);
+        float OriginalPayoff(IAgent::State);
+        void SendStateInfo(IAgent::State)
         {
             // no social communication supported
         }

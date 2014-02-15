@@ -7,24 +7,24 @@
  *	@Modify date:
  ***********************************************************************/
 #include <set>
-#include "ParallelNet.h"
+#include "DENet.h"
 #include "Debug.h"
 
-ParallelNet::ParallelNet() :
+DENet::DENet() :
         id(0)
 {
 }
 
-ParallelNet::ParallelNet(int i) :
+DENet::DENet(int i) :
         id(i)
 {
 }
 
-ParallelNet::~ParallelNet()
+DENet::~DENet()
 {
 }
 
-bool ParallelNet::HasMember(int mid)
+bool DENet::HasMember(int mid)
 {
     bool re = false;
     std::set<int> allmembers = GetAllMembers();

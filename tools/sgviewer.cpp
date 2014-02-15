@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <string>
 #include <iostream>
-#include "Agent.h"
+#include "IAgent.h"
 #include "Storage.h"
 #include "Mysql.h"
 #include "MemoryViewer.h"
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 
     Storage *storage;
     MemoryViewer *viewer;
-    Agent::State st = INVALID_STATE;
+    IAgent::State st = INVALID_STATE;
 
     static const char *optString = "S:V:W:?";
 

@@ -22,15 +22,15 @@ GIOM::~GIOM()
 
 /** \brief Restrict capacity for the GIOM.
  * Minimun restrict by default, which means NO restriction at all here.
- * \param in input identity
- * \param outlist all possible outputs for in
- * \return outputs distribution after restrict
+ * \param in input value
+ * \param outputs all possible outputs for current input
+ * \return output space after restrict
  *
  */
-OutList GIOM::Restrict(Input in, OutList &outlist)
+OSpace GIOM::Restrict(Input in, OSpace &outputs)
 {
     UNUSED(in);
-    return outlist;    // return outlist as it is
+    return outputs;    // return all outputs
 }
 
 /** \brief Process function of GIOM.
@@ -39,9 +39,9 @@ OutList GIOM::Restrict(Input in, OutList &outlist)
  * \return GIOM::Output
  *
  */
-GIOM::Output GIOM::Process(Input in, OutList &outlist)
+GIOM::Output GIOM::Process(Input in, OSpace &outputs)
 {
-    OutList restricited_outputs = Restrict(in, outlist);    // get restricted output values first
+    OSpace restricited_outputs = Restrict(in, outputs);    // get restricted output values first
     if (restricited_outputs.empty())    // no output generated, return an invalid GIOM::Output
         return INVALID_OUTPUT;
 
