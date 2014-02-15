@@ -44,7 +44,7 @@ int main(void)
     }
 
     // load topo
-    ienet.LoadTopoFromFile("paralnet.dot");
+    ienet.LoadTopoFromFile("denet.dot");
 
     /* launch mice */
     for (int i = 0; i < mouse_num; i++)
