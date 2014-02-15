@@ -4,4 +4,4 @@ ADD_EXECUTABLE(mg ${MOUSEGROUP_SRCS})
 ADD_CUSTOM_COMMAND(TARGET mg PRE_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy
     ${CMAKE_SOURCE_DIR}/examples/mouse_group/paralnet.dot $<TARGET_FILE_DIR:mg>)     # copy topo file to bin directory
-TARGET_LINK_LIBRARIES(mg avatar)   # 指定链接库
+TARGET_LINK_LIBRARIES(mg incarnation) 

@@ -1,3 +1,3 @@
-AUX_SOURCE_DIRECTORY(. LIBAVATAR_SRCS)
-ADD_LIBRARY(avatar SHARED ${LIBAVATAR_SRCS})
-TARGET_LINK_LIBRARIES(avatar mysqlclient pthread cgraph)   # depended libraries
+AUX_SOURCE_DIRECTORY(. LIBINCARNATION_SRCS)
+ADD_LIBRARY(incarnation SHARED ${LIBINCARNATION_SRCS})
+TARGET_LINK_LIBRARIES(incarnation mysqlclient pthread cgraph)   # depended libraries
