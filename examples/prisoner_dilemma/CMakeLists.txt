@@ -1,5 +1,5 @@
-#LINK_DIRECTORIES(${PROJECT_BINARY_DIR}/src) # 库目录搜索路径: -L
+#LINK_DIRECTORIES(${PROJECT_BINARY_DIR}/src) # library search path: -L
 AUX_SOURCE_DIRECTORY(. PRISONERDILEMMA_SRCS)
 ADD_EXECUTABLE(pd ${PRISONERDILEMMA_SRCS})
-TARGET_LINK_LIBRARIES(pd avatar)   # 指定链接库
+TARGET_LINK_LIBRARIES(pd incarnation)   # specify library
 SET(CMAKE_CXX_FLAGS "-std=c++0x -Wall -Wextra")
