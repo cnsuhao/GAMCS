@@ -1,7 +1,6 @@
 #ifndef CSIAGENT_H
 #define CSIAGENT_H
 #include <unordered_map>
-#include <map>
 #include "IAgent.h"
 
 class Storage;
@@ -33,10 +32,6 @@ class CSIAgent: public IAgent
         OSpace MaxPayoffRule(IAgent::State, OSpace &); /**< implementing maximun payoff rule */
         void UpdateMemory(float); /**< implementing UpdateMemory of Agent */
         struct State_Info_Header *GetStateInfo(IAgent::State) const; /**< implementing GetStateInfo function */
-        void MergeStateInfo(const struct State_Info_Header *); /**< implementing MergeStateInfo function */
-
-        IAgent::State NextStateToSend(int); /**< implementing Agent's NextStateToSend() */
-        std::map<int, struct cs_State *> last_sent_states; /**< record last state sent to each neighbour */
 
         void PrintProcess(unsigned long, unsigned long, char *) const;
 

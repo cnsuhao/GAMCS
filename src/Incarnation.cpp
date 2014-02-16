@@ -53,9 +53,6 @@ void Incarnation::Launch()
         float oripayoff = OriginalPayoff(cs);    // get original payoff of a state
         myagent->Update(oripayoff);    // agent update inner states
 
-        /* share memory */
-        myagent->Exchange();
-
         /* Perform action to the outside world */
         PerformAction(act);    // otherwise, perform the action
 
@@ -104,59 +101,3 @@ unsigned long Incarnation::GetCurrentTime()
     ftime(&tb);
     return 1000 * tb.time + tb.millitm;
 }
-
-/**
- * \brief Join a sharing network
- * \param grp sharing network to join
- */
-void Incarnation::JoinDENet(DENet *cn)
-{
-    myagent->JoinDENet(cn);
-    ActualJoinDENet(cn);
-}
-
-/**
- * \brief Leave a sharing network
- */
-void Incarnation::LeaveDENet()
-{
-    myagent->LeaveDENet();
-    ActualLeaveDENet();
-}
-
-void Incarnation::AddNeighbour(int nid, int interval)
-{
-    myagent->AddNeighbour(nid, interval);
-    ActualAddNeighbour(nid, interval);
-}
-
-void Incarnation::RemoveNeighbour(int nid)
-{
-    myagent->RemoveNeighbour(nid);
-    ActualRemoveNeighbour(nid);
-}
-
-void Incarnation::ActualJoinDENet(DENet *cn)
-{
-    UNUSED(cn);
-    return;
-}
-
-void Incarnation::ActualLeaveDENet()
-{
-    return;
-}
-
-void Incarnation::ActualAddNeighbour(int neb, int interval)
-{
-    UNUSED(neb);
-    UNUSED(interval);
-    return;
-}
-
-void Incarnation::ActualRemoveNeighbour(int neb)
-{
-    UNUSED(neb);
-    return;
-}
-

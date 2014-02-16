@@ -21,10 +21,8 @@ class CSThreadIncarnation: public Incarnation
         virtual ~CSThreadIncarnation();
 
         pthread_t ThreadLaunch(); /**< if it's a group, launch each of its  members in a thread */
-    private:
-        void ActualJoinDENet(DENet *);
-        void ActualLeaveDENet();
 
+    private:
         static void* hook(void* args)
         { /**< hook to run a class function(Launch() here) in a thread */
             reinterpret_cast<Incarnation *>(args)->Launch();
