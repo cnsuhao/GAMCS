@@ -11,10 +11,10 @@
 #include "CSIAgent.h"
 #include "Mysql.h"
 
-int main(int argc, char *argv[])
+int main(void)
 {
     CSIAgent *agent = new CSIAgent(1, 0.8, 0.01);
-    agent->SetDegreeOfCuriosity(-10000);
+    agent->SetDegreeOfCuriosity(-5000);
 
     Saleman *saleman = new Saleman("Saleman");
     saleman->SetSps(-1);

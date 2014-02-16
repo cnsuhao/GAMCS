@@ -1,4 +1,4 @@
 #LINK_DIRECTORIES(${PROJECT_BINARY_DIR}/src) # 库目录搜索路径: -L
 AUX_SOURCE_DIRECTORY(. MOUSE_SRCS)
 ADD_EXECUTABLE(mouse ${MOUSE_SRCS})
-TARGET_LINK_LIBRARIES(mouse incarnation)   # 指定链接库
+TARGET_LINK_LIBRARIES(mouse isbl)   # 指定链接库

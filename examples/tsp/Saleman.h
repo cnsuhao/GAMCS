@@ -11,7 +11,7 @@
 #include <CSThreadIncarnation.h>
 #include <math.h>
 
-const int CITY_NUM = 5;    // number of cities, start from 0
+const int CITY_NUM = 8;    // number of cities, start from 0
 
 /***************************************************************************/
 
@@ -44,7 +44,7 @@ const int CITY_NUM = 5;    // number of cities, start from 0
 /****************************************************************************/
 
 int distance_table[10][10] = {
-        { 0, 1, 1272, 2567, 1, 2097, 1425, 1177, 3947, 1 },
+        { 0, 1, 1272, 2567, 1653, 2097, 1425, 1, 3947, 1 },
         { 1, 0, 1, 2511, 1633, 2077, 1369, 1157, 3961, 1518 },
         { 1272, 1, 0, 1, 380, 1490, 821, 856, 3660, 385 },
         { 2567, 2511, 1, 0, 1, 2335, 1562, 2165, 3995, 933 },
@@ -88,7 +88,7 @@ class Saleman: public CSThreadIncarnation
         {
             OSpace re;
 
-            if (count < 5000)
+            if (count < 50000)
             {
                 int tmp_path[CITY_NUM];
                 DecodeState(st, tmp_path);

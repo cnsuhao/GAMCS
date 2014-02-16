@@ -1,5 +1,5 @@
 #LINK_DIRECTORIES(${PROJECT_BINARY_DIR}/src) # library search path: -L
 AUX_SOURCE_DIRECTORY(. PRISONERDILEMMA_SRCS)
 ADD_EXECUTABLE(pd ${PRISONERDILEMMA_SRCS})
-TARGET_LINK_LIBRARIES(pd incarnation)   # specify library
+TARGET_LINK_LIBRARIES(pd isbl)   # specify library
 SET(CMAKE_CXX_FLAGS "-std=c++0x -Wall -Wextra")
