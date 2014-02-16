@@ -20,11 +20,7 @@ class Incarnation
 
         void ConnectAgent(IAgent *); /**< connect to an agent */
         void SetSps(int);
-        /* network related functions */
-        void JoinDENet(DENet *); /**< join a communication network */
-        void LeaveDENet(); /**< leave a network */
-        void AddNeighbour(int, int); /**< add a neighbour */
-        void RemoveNeighbour(int); /**< remove a neighbour */
+
     protected:
         std::string name; /**< avatar's name */
         int sps; /**< number of steps per second */
@@ -35,11 +31,6 @@ class Incarnation
         virtual void PerformAction(IAgent::Action) = 0; /**< perform an real action */
         virtual OSpace ActionCandidates(IAgent::State) = 0; /**< return a list of all action candidates of a Agent::State */
         virtual float OriginalPayoff(IAgent::State); /**< original payoff of a state */
-
-        virtual void ActualJoinDENet(DENet *);
-        virtual void ActualLeaveDENet();
-        virtual void ActualAddNeighbour(int, int);
-        virtual void ActualRemoveNeighbour(int);
 
     private:
         unsigned long GetCurrentTime(); /**< current time in millisecond */

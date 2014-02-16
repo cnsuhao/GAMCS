@@ -30,14 +30,3 @@ pthread_t CSThreadIncarnation::ThreadLaunch()
 
     return tid;
 }
-
-void CSThreadIncarnation::ActualJoinDENet(DENet *cn)
-{
-    UNUSED(cn);
-    return;
-}
-
-void CSThreadIncarnation::ActualLeaveDENet()
-{
-    return;
-}
