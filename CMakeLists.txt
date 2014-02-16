@@ -1,4 +1,4 @@
-PROJECT(INCARNATION CXX)
+PROJECT(ISBL CXX)   # ISBL stands for "Intellegence/Incarnation Specification and Building Library"
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
 ADD_DEFINITIONS("-D_DEBUG_")
