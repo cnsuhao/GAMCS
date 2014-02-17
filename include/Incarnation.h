@@ -24,6 +24,7 @@ class Incarnation
     protected:
         std::string name; /**< avatar's name */
         int sps; /**< number of steps per second */
+        unsigned long count;    /**< loop count */
 
         IAgent *myagent; /**< connected agent */
 

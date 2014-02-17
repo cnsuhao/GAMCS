@@ -1,14 +1,14 @@
 #ifndef CSIAGENT_H
 #define CSIAGENT_H
 #include <unordered_map>
-#include "IAgent.h"
+#include "MMIAgent.h"
 
 class Storage;
 
 /**
- * Computer Simulation of Agent, which uses computers to implement an agent.
+ * Computer Simulation MMIAgent, where computer was used to implement an agent.
  */
-class CSIAgent: public IAgent
+class CSMMIAgent: public MMIAgent
 {
     public:
         typedef std::unordered_map<IAgent::State, void *> StatesMap; /**< hash map from state value to state struct */
@@ -17,10 +17,17 @@ class CSIAgent: public IAgent
             SAVED, NEW, MODIFIED
         }; /**< storage status of a state */
 
-        CSIAgent();
-        CSIAgent(int);
-        CSIAgent(int, float, float);
-        ~CSIAgent();
+        CSMMIAgent();
+        CSMMIAgent(int);
+        CSMMIAgent(int, float, float);
+        ~CSMMIAgent();
+
+        struct State_Info_Header *GetStateInfo(State) const; /**< implementing GetStateInfo function */
+        void SetStateInfo(const struct State_Info_Header *);
+        void UpdateState(State);
+
+        State FirstState();
+        State NextState();
 
         void LoadMemoryFromStorage(Storage *); /**< load memory from database */
         void DumpMemoryToStorage(Storage *); /**< save memory to database */
@@ -31,13 +38,13 @@ class CSIAgent: public IAgent
 
         OSpace MaxPayoffRule(IAgent::State, OSpace &); /**< implementing maximun payoff rule */
         void UpdateMemory(float); /**< implementing UpdateMemory of Agent */
-        struct State_Info_Header *GetStateInfo(IAgent::State) const; /**< implementing GetStateInfo function */
 
         void PrintProcess(unsigned long, unsigned long, char *) const;
 
         struct cs_State *head; /**< memory head*/
         StatesMap states_map; /**< hash map from state values to state struct */
         struct cs_State *cur_mst; /**< state struct for current state value */
+        struct cs_State *it_cur_st; /**< current state point used by iterator */
 
         void LoadState(Storage *, IAgent::State); /**< load a state from storage to memory */
 
@@ -115,7 +122,7 @@ struct cs_State
         float payoff; /**< state payoff */
         float original_payoff; /**< original payoff of state */
         unsigned long count; /**< state count */
-        enum CSIAgent::SgFlag mark; /**< mark used for storage */
+        enum CSMMIAgent::SgFlag mark; /**< mark used for storage */
         struct cs_EnvAction *ealist; /**< exacts of this state */
         struct cs_Action *atlist; /**< actions of this state */
         struct cs_ForwardArcState *flist; /**< forward links */
