@@ -43,8 +43,6 @@ class IAgent: public TSGIOM
         /** These two functions are implementation dependant, declared as pure virtual functions */
         virtual OSpace MaxPayoffRule(State, OSpace &) = 0; /**< implementation of maximun payoff rule */
         virtual void UpdateMemory(float) = 0; /**<  update states in memory given current state's original payoff*/
-        virtual struct State_Info_Header *GetStateInfo(State) const = 0; /**<  collect information of specified state from memory */
-
 };
 
 inline void IAgent::SetDiscountRate(float dr)

@@ -1,0 +1,16 @@
+digraph CommNet_1
+{
+    label = "#members: 3"
+    node [color=black, shape=circle]
+    rank="same"
+
+    mem1 [label="1", id="1"]
+    mem2 [label="2", id="2"]
+    mem3 [label="3", id="3"]
+    mem4 [label="4", id="4"]
+
+    mem1 ->mem2 [label="10", interval="10"]
+    mem2 ->mem3 [label="10", interval="10"]
+    mem3 ->mem4 [label="10", interval="10"]
+    mem4 ->mem1 [label="10", interval="10"]
+}
