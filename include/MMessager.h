@@ -50,6 +50,7 @@ class MMessager: private Incarnation
         MMIAgent *mmiagent;
         MENet *menet;
         int cps;    /**< count per sending */
+        bool quit;
 
         struct State_Info_Header *MergeStateInfo(
                 const struct State_Info_Header *,

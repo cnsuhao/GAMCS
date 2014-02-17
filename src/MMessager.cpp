@@ -13,12 +13,12 @@
 #include "MMessager.h"
 
 MMessager::MMessager() :
-        id(0), mmiagent(NULL), menet(NULL), cps(10)
+        id(0), mmiagent(NULL), menet(NULL), cps(10), quit(false)
 {
 }
 
 MMessager::MMessager(int i) :
-        id(i), mmiagent(NULL), menet(NULL), cps(10)
+        id(i), mmiagent(NULL), menet(NULL), cps(10), quit(false)
 {
 }
 
@@ -34,7 +34,7 @@ void MMessager::ConnectMMIAgent(MMIAgent *magent)
 
 void MMessager::Run()
 {
-    while (true)
+    while (!quit)
     {
         // launch or relaunch
         Launch();
@@ -145,12 +145,14 @@ inline void MMessager::PerformAction(IAgent::Action act)
 inline OSpace MMessager::ActionCandidates(IAgent::State st)
 {
     // check exps
-    if (count % cps == 0)    // time to stop incarnation and exchange memory
+    if (incar_loop_count % cps == 0)    // time to stop incarnation and exchange memory
     {
         return OSpace();
     }
 
-    return Incar_ActionCandidates(st);
+    OSpace outputs = Incar_ActionCandidates(st);
+    if (outputs.empty()) quit = true;   // quit when incarnation quits
+    return outputs;
 }
 
 inline float MMessager::OriginalPayoff(IAgent::State st)
@@ -170,7 +172,7 @@ void MMessager::RecvStateInfo()
 
     if (menet->Recv(id, -1, re_buf, 2048) != 0)    // fetch one message from any agent
     {
-        dbgprt("***", "%d recv from anyone\n", id);
+        dbgmoreprt("***", "%d recv from anyone\n", id);
 
         struct State_Info_Header *re_state = (struct State_Info_Header *) re_buf;
         struct State_Info_Header *my_state = mmiagent->GetStateInfo(
@@ -193,23 +195,23 @@ void MMessager::RecvStateInfo()
 }
 
 struct State_Info_Header *MMessager::MergeStateInfo(
-        const struct State_Info_Header *tostif,
+        const struct State_Info_Header *origstif,
         const struct State_Info_Header *recvstif)
 {
-    if (tostif->st != recvstif->st)
+    if (origstif->st != recvstif->st)
     {
         WARNNING(
                 "MergeStateInfo(): state value dones't match, one is %ld, the other is %ld, this shouldn't happen!\n",
-                tostif->st, recvstif->st);
+                origstif->st, recvstif->st);
         return NULL;
     }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_MORE_
     printf(
             "*************************** merge %ld to %ld ********************************\n",
-            recvstif->st, tostif->st);
+            recvstif->st, origstif->st);
     PrintStateInfo(recvstif);
-    PrintStateInfo(tostif);
+    PrintStateInfo(origstif);
 #endif
     /* numbers */
     int eat_num = 0;    // number of envir actions
@@ -218,14 +220,14 @@ struct State_Info_Header *MMessager::MergeStateInfo(
 
     // allocate big enough buffers to store temporal env actions, actions and links
     unsigned char *eat_buf = (unsigned char *) malloc(
-            (tostif->eat_num + recvstif->eat_num) * sizeof(EnvAction_Info));
+            (origstif->eat_num + recvstif->eat_num) * sizeof(EnvAction_Info));
     unsigned char *act_buf = (unsigned char *) malloc(
-            (tostif->act_num + recvstif->act_num) * sizeof(Action_Info));
+            (origstif->act_num + recvstif->act_num) * sizeof(Action_Info));
     unsigned char *lk_buf = (unsigned char *) malloc(
-            (tostif->lk_num + recvstif->lk_num) * sizeof(Forward_Link));
+            (origstif->lk_num + recvstif->lk_num) * sizeof(Forward_Link));
 
     // point to traverse state info and buffers
-    unsigned char *ptr1 = (unsigned char *) tostif;
+    unsigned char *ptr1 = (unsigned char *) origstif;
     unsigned char *ptr2 = (unsigned char *) recvstif;
     unsigned char *buf_ptr;
 
@@ -236,26 +238,26 @@ struct State_Info_Header *MMessager::MergeStateInfo(
 
     struct EnvAction_Info *eaif1, *eaif2;
     // halve each eat count firstly
-    for (int i = 0; i < tostif->eat_num; i++)
+    for (int i = 0; i < origstif->eat_num; i++)
     {
-        eaif1 = (struct EnvAction_Info *) (ptr1 + i);
+        eaif1 = ((struct EnvAction_Info *) ptr1) + i;
         eaif1->count = round(eaif1->count / 2.0);
     }
 
     for (int i = 0; i < recvstif->eat_num; i++)
     {
-        eaif2 = (struct EnvAction_Info *) (ptr2 + i);
+        eaif2 = ((struct EnvAction_Info *) ptr2) + i;
         eaif2->count = round(eaif2->count / 2.0);
     }
 
     // then add up two halves
-    for (int i = 0; i < tostif->eat_num; i++)
+    for (int i = 0; i < origstif->eat_num; i++)
     {
-        eaif1 = (struct EnvAction_Info *) (ptr1 + i);
+        eaif1 = ((struct EnvAction_Info *) ptr1) + i;
         int j;
         for (j = 0; j < recvstif->eat_num; j++)
         {
-            eaif2 = (struct EnvAction_Info *) (ptr2 + j);
+            eaif2 = ((struct EnvAction_Info *) ptr2) + j;
 
             // compare
             if (eaif2->eat == eaif1->eat)
@@ -268,7 +270,7 @@ struct State_Info_Header *MMessager::MergeStateInfo(
         if (j == recvstif->eat_num)    // not found, it's a tostif only eat, copy it to eat_buf
         {
             eat_num++;
-            memcpy(buf_ptr, eaif1 + i, sizeof(EnvAction_Info));
+            memcpy(buf_ptr, eaif1, sizeof(EnvAction_Info));
             buf_ptr += sizeof(EnvAction_Info);
         }
     }
@@ -278,18 +280,18 @@ struct State_Info_Header *MMessager::MergeStateInfo(
     eat_num += recvstif->eat_num;    // inc number
 
     /* fill action information */
-    ptr1 += tostif->eat_num * sizeof(EnvAction_Info);
+    ptr1 += origstif->eat_num * sizeof(EnvAction_Info);
     ptr2 += recvstif->eat_num * sizeof(EnvAction_Info);
     buf_ptr = act_buf;
 
     struct Action_Info *acif1, *acif2;
-    for (int i = 0; i < tostif->act_num; i++)
+    for (int i = 0; i < origstif->act_num; i++)
     {
-        acif1 = (struct Action_Info *) (ptr1 + i);
+        acif1 = ((struct Action_Info *) ptr1) + i;
         int j;
         for (j = 0; j < recvstif->act_num; j++)
         {
-            acif2 = (struct Action_Info *) (ptr2 + j);
+            acif2 = ((struct Action_Info *) ptr2) + j;
 
             // compare
             if (acif1->act == acif2->act)    // use recvstif's action payoff, nothing to do
@@ -301,7 +303,7 @@ struct State_Info_Header *MMessager::MergeStateInfo(
         if (j == recvstif->act_num)    // not found, it's a tostif only act, copy it to act_buf
         {
             act_num++;
-            memcpy(buf_ptr, acif1 + i, sizeof(Action_Info));
+            memcpy(buf_ptr, acif1, sizeof(Action_Info));
             buf_ptr += sizeof(Action_Info);
         }
     }
@@ -311,18 +313,18 @@ struct State_Info_Header *MMessager::MergeStateInfo(
     act_num += recvstif->act_num;
 
     /* forward link information */
-    ptr1 += tostif->act_num * sizeof(Action_Info);
+    ptr1 += origstif->act_num * sizeof(Action_Info);
     ptr2 += recvstif->act_num * sizeof(Action_Info);
     buf_ptr = lk_buf;
 
     struct Forward_Link *lk1, *lk2;
-    for (int i = 0; i < tostif->lk_num; i++)
+    for (int i = 0; i < origstif->lk_num; i++)
     {
-        lk1 = (struct Forward_Link *) (ptr1 + i);
+        lk1 = ((struct Forward_Link *) ptr1) + i;
         int j;
         for (j = 0; j < recvstif->lk_num; j++)
         {
-            lk2 = (struct Forward_Link *) (ptr2 + j);
+            lk2 = ((struct Forward_Link *) ptr2) + j;
 
             // compare
             if (lk1->act == lk2->act && lk1->eat == lk2->eat)    // use recvstif's next state, nothging to do
@@ -334,7 +336,7 @@ struct State_Info_Header *MMessager::MergeStateInfo(
         if (j == recvstif->lk_num)    // not found, it's a tostif only link, copy it to lk_buf
         {
             lk_num++;
-            memcpy(buf_ptr, lk1 + i, sizeof(Forward_Link));
+            memcpy(buf_ptr, lk1, sizeof(Forward_Link));
             buf_ptr += sizeof(Forward_Link);
         }
     }
@@ -356,7 +358,7 @@ struct State_Info_Header *MMessager::MergeStateInfo(
     stif->st = recvstif->st;
     stif->original_payoff = recvstif->original_payoff;
     stif->payoff = recvstif->payoff;
-    stif->count = round((tostif->count + recvstif->count) / 2.0);
+    stif->count = round((origstif->count + recvstif->count) / 2.0);
     stif->eat_num = eat_num;
     stif->act_num = act_num;
     stif->lk_num = lk_num;
@@ -374,7 +376,7 @@ struct State_Info_Header *MMessager::MergeStateInfo(
     memcpy(ptr, lk_buf, lk_num * sizeof(Forward_Link));
     free(lk_buf);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_MORE_
     printf(
             "----------------------------------------------------------------------------\n");
     PrintStateInfo(stif);
@@ -393,7 +395,7 @@ void MMessager::SendStateInfo(int toneb, IAgent::State st)
         return;
     }
 
-    dbgprt("***", "%d send %ld to %d\n", id, st, toneb);
+    dbgmoreprt("***", "%d send %ld to %d\n", id, st, toneb);
     menet->Send(id, toneb, stif, stif->size);    // call the send facility in ienet
     free(stif);    // free
 
