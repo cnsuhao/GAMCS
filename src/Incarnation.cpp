@@ -13,13 +13,13 @@
 #include "Debug.h"
 
 Incarnation::Incarnation() :
-        name("unnamed avatar"), sps(-1), count(0), myagent(NULL), control_step_time(
+        name("unnamed avatar"), sps(-1), incar_loop_count(0), myagent(NULL), control_step_time(
                 0)
 {
 }
 
 Incarnation::Incarnation(std::string n) :
-        name(n), sps(-1), count(0), myagent(NULL), control_step_time(0)
+        name(n), sps(-1), incar_loop_count(0), myagent(NULL), control_step_time(0)
 {
 }
 
@@ -34,8 +34,8 @@ void Incarnation::Launch()
 {
     while (true)
     {
-        count++;    // inc count
-        dbgmoreprt("Enter Launch Loop ", "----------------------------------------------------------- count == %d\n", count);
+        incar_loop_count++;    // inc count
+        dbgmoreprt("Enter Launch Loop ", "----------------------------------------------------------- count == %d\n", incar_loop_count);
 
         unsigned long start_time = GetCurrentTime();
 

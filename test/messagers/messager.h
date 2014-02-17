@@ -45,7 +45,7 @@ class Messager: public CSThreadMMessager
 
         OSpace Incar_ActionCandidates(IAgent::State st)
         {
-            if (count < 500)
+            if (count < 1000)
             {
                 OSpace acts;
                 acts.clear();

@@ -1090,6 +1090,10 @@ void CSMMIAgent::SetStateInfo(const State_Info_Header *stif)
 {
     if (stif == NULL) return;
 
+#ifdef _DEBUG_MORE_
+    printf("---------------------- SetStateInfo: ---------------------");
+    PrintStateInfo(stif);
+#endif
     unsigned char *p = (unsigned char *) stif;    // use point p to travel through each subpart
     // environment action information
     p += sizeof(struct State_Info_Header);
@@ -1192,6 +1196,7 @@ void CSMMIAgent::SetStateInfo(const State_Info_Header *stif)
             nac = ac->next;
             FreeAc(ac);
         }
+        mst->atlist = NULL;     // set as NULL! It's very important!
 
         /* free ealist */
         struct cs_EnvAction *ea, *nea;
@@ -1200,6 +1205,7 @@ void CSMMIAgent::SetStateInfo(const State_Info_Header *stif)
             nea = ea->next;
             FreeEa(ea);
         }
+        mst->ealist = NULL;     // set as NULL!
 
         /* free flist */
         struct cs_ForwardArcState *fas, *nfas;
@@ -1208,6 +1214,7 @@ void CSMMIAgent::SetStateInfo(const State_Info_Header *stif)
             nfas = fas->next;
             FreeFas(fas);
         }
+        mst->flist = NULL;      // set as NULL!
 
         // create and copy
         /* create and copy ExActions information */
