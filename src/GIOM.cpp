@@ -42,10 +42,10 @@ OSpace GIOM::Restrict(Input in, OSpace &outputs)
 GIOM::Output GIOM::Process(Input in, OSpace &outputs)
 {
     OSpace restricited_outputs = Restrict(in, outputs);    // get restricted output values first
-    if (restricited_outputs.empty())    // no output generated, return an invalid GIOM::Output
+    if (restricited_outputs.Empty())    // no output generated, return an invalid GIOM::Output
         return INVALID_OUTPUT;
 
-    int sz = restricited_outputs.size();    // number of outputs
+    int sz = restricited_outputs.Size();    // number of outputs
     int index = Random() % (sz);    // choose an output value randomly
     GIOM::Output out = restricited_outputs[index];
 
@@ -63,6 +63,7 @@ GIOM::Output GIOM::Process(Input in, OSpace &outputs)
  */
 float GIOM::Entropy()
 {
+    printf("This function is not implemented yet!\n");
     return 0.0;
 }
 

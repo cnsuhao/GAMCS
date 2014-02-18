@@ -1,4 +1,11 @@
 #!/usr/bin/env python
+
+# graphml2dot,py - tool for converting graphs in GraphML format to GraphViz dot format
+#
+# Last changed in libgimcs 0.1.0 [February 18, 2014]
+# Copyright (c) 2013-2014 Andy-Huang
+#
+
 import lxml.etree as et
 import sys
 
@@ -38,9 +45,11 @@ if __name__ == '__main__':
     print
 
     # convert nodes
+    # required attr for node: label, id
+    # required attr for edge: label
     for n in nodes:
         node_attribs = {}
-        print n.attrib['id'], 
+        print n.attrib['id'],  
         for data in n.findall(graphml.get('data')):
             node_attribs[data.get('key')] = data.text 
         str_node = '[label=' + node_attribs['label'] + ', id=' + n.attrib['id'] + ']'
@@ -52,7 +61,7 @@ if __name__ == '__main__':
         print e.attrib['source'], '->', e.attrib['target'],
         for data in e.findall(graphml.get('data')):
             edge_attribs[data.get('key')] = data.text 
-        str_edge = '[label=' + edge_attribs['interval'] + ', interval=' + edge_attribs['interval'] + ']'
+        str_edge = '[label=' + edge_attribs['label'] +  ']'
         print str_edge
 
     print "}"

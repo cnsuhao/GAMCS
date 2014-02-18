@@ -1,5 +1,5 @@
 /*
- * CSThreadMENet.cpp
+ * CSThreadExNet.cpp
  *
  *  Created on: Feb 17, 2014
  *      Author: andy
@@ -12,11 +12,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
-#include "CSThreadMENet.h"
-#include "IAgent.h"
+#include "CSThreadExNet.h"
+#include "Agent.h"
 #include "Debug.h"
 
-CSThreadMENet::CSThreadMENet()
+CSThreadExNet::CSThreadExNet()
 {
     members.clear();
     for (int i = 0; i < MAX_MEMBER; i++)    // set unused neightlist and channels to NULL
@@ -26,8 +26,8 @@ CSThreadMENet::CSThreadMENet()
     }
 }
 
-CSThreadMENet::CSThreadMENet(int i) :
-        MENet(i)
+CSThreadExNet::CSThreadExNet(int i) :
+        ExNet(i)
 {
     members.clear();
     for (int i = 0; i < MAX_MEMBER; i++)
@@ -37,7 +37,7 @@ CSThreadMENet::CSThreadMENet(int i) :
     }
 }
 
-CSThreadMENet::~CSThreadMENet()
+CSThreadExNet::~CSThreadExNet()
 {
     for (std::set<int>::iterator it = members.begin(); it != members.end();
             ++it)
@@ -67,7 +67,7 @@ CSThreadMENet::~CSThreadMENet()
  * \param length length of the message
  * \return length of message that has been sent to the neighbour
  */
-int CSThreadMENet::Send(int fromid, int toid, void *buffer, size_t buf_size)
+int CSThreadExNet::Send(int fromid, int toid, void *buffer, size_t buf_size)
 {
     if (buf_size > DATA_SIZE)    // check size
     {
@@ -116,7 +116,7 @@ int CSThreadMENet::Send(int fromid, int toid, void *buffer, size_t buf_size)
  * \param length of the message to be recieved
  * \return length of message recieved
  */
-int CSThreadMENet::Recv(int toid, int fromid, void *buffer, size_t buf_size)
+int CSThreadExNet::Recv(int toid, int fromid, void *buffer, size_t buf_size)
 {
     if (buf_size > DATA_SIZE)    // check length
     {
@@ -223,7 +223,7 @@ int CSThreadMENet::Recv(int toid, int fromid, void *buffer, size_t buf_size)
  * \param id member id
  * \return neighbour list
  */
-std::set<int> CSThreadMENet::GetNeighbours(int id)
+std::set<int> CSThreadExNet::GetNeighbours(int id)
 {
     std::set<int> neighs;
     neighs.clear();
@@ -238,7 +238,7 @@ std::set<int> CSThreadMENet::GetNeighbours(int id)
     return neighs;
 }
 
-void CSThreadMENet::AddMember(int mem)
+void CSThreadExNet::AddMember(int mem)
 {
     // check if exceeds max member size
     if (NumberOfMembers() >= MAX_MEMBER)
@@ -258,7 +258,7 @@ void CSThreadMENet::AddMember(int mem)
     channels[mem].ptr = 0;
 }
 
-void CSThreadMENet::AddNeighbour(int mem, int neb)
+void CSThreadExNet::AddNeighbour(int mem, int neb)
 {
     // check if member exists
     if (members.find(mem) == members.end())    // not found
@@ -307,7 +307,7 @@ void CSThreadMENet::AddNeighbour(int mem, int neb)
     neighlist[mem] = nneigh;
 }
 
-void CSThreadMENet::RemoveMember(int mem)
+void CSThreadExNet::RemoveMember(int mem)
 {
     // check if exists
     if (members.find(mem) == members.end())    // not found
@@ -336,7 +336,7 @@ void CSThreadMENet::RemoveMember(int mem)
     members.erase(mem);
 }
 
-void CSThreadMENet::RemoveNeighbour(int mem, int neighbour)
+void CSThreadExNet::RemoveNeighbour(int mem, int neighbour)
 {
     // check if member exists
     if (members.find(mem) == members.end())    // not found
@@ -381,7 +381,7 @@ void CSThreadMENet::RemoveNeighbour(int mem, int neighbour)
 
 }
 
-bool CSThreadMENet::CheckNeighbourShip(int from, int to)
+bool CSThreadExNet::CheckNeighbourShip(int from, int to)
 {
     bool connected = false;
     struct Neigh *nb, *nnb;
@@ -403,7 +403,7 @@ bool CSThreadMENet::CheckNeighbourShip(int from, int to)
  * This function will not add new members but just make neighbours.
  * \param tf file name
  */
-void CSThreadMENet::LoadTopoFromFile(char *tf)
+void CSThreadExNet::LoadTopoFromFile(char *tf)
 {
     Agraph_t *graph;
     Agnode_t *node, *neigh_node;
@@ -455,7 +455,7 @@ void CSThreadMENet::LoadTopoFromFile(char *tf)
 /**
  * \brief Dump structure of communication network to file
  */
-void CSThreadMENet::DumpTopoToFile(char *tf)
+void CSThreadExNet::DumpTopoToFile(char *tf)
 {
     FILE *topofs = fopen(tf, "w+");
     if (topofs == NULL)
@@ -502,7 +502,7 @@ void CSThreadMENet::DumpTopoToFile(char *tf)
     fclose(topofs);
 }
 
-int CSThreadMENet::WrapInc(int ptr)
+int CSThreadExNet::WrapInc(int ptr)
 {
     int nptr;
     if (ptr == MSG_POOL_SIZE - 1)
@@ -513,7 +513,7 @@ int CSThreadMENet::WrapInc(int ptr)
     return nptr;
 }
 
-int CSThreadMENet::WrapDec(int ptr)
+int CSThreadExNet::WrapDec(int ptr)
 {
     int nptr;
     if (ptr == 0)

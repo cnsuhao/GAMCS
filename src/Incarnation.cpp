@@ -40,13 +40,13 @@ void Incarnation::Launch()
         unsigned long start_time = GetCurrentTime();
 
         /* Perceive the outside world */
-        IAgent::State cs = GetCurrentState();    // get current state
+        Agent::State cs = GetCurrentState();    // get current state
         dbgmoreprt("Launch():", "%s, State: %ld\n", name.c_str(), cs);
 
         /* Process stage */
         OSpace acts = ActionCandidates(cs);    // get all action candidates of a state
 
-        IAgent::Action act = myagent->Process(cs, acts);    // choose an action from candidates
+        Agent::Action act = myagent->Process(cs, acts);    // choose an action from candidates
         // check validation
         if (act == INVALID_ACTION)    // no valid actions available, reach a dead end, quit. !!!: be sure to check this before update stage
             break;// exit point here
@@ -91,7 +91,7 @@ void Incarnation::Launch()
  * \return original payoff of st
  *
  */
-float Incarnation::OriginalPayoff(IAgent::State st)
+float Incarnation::OriginalPayoff(Agent::State st)
 {
     UNUSED(st);
     return 1.0;    // original payoff of states is 1.0 by default

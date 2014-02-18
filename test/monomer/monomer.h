@@ -12,13 +12,13 @@ class Monomer: public Incarnation
         ~Monomer();
 
     private:
-        IAgent::State position;
+        Agent::State position;
 
-        IAgent::State GetCurrentState();
-        void PerformAction(IAgent::Action);
-        OSpace ActionCandidates(IAgent::State);
-        float OriginalPayoff(IAgent::State);
-        void SendStateInfo(IAgent::State)
+        Agent::State GetCurrentState();
+        void PerformAction(Agent::Action);
+        OSpace ActionCandidates(Agent::State);
+        float OriginalPayoff(Agent::State);
+        void SendStateInfo(Agent::State)
         {
             // no social communication supported
         }

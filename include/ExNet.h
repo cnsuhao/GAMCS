@@ -1,5 +1,5 @@
 /*
- * MENet.h
+ * ExNet.h
  *
  *  Created on: Feb 17, 2014
  *      Author: andy
@@ -10,14 +10,14 @@
 #include <stddef.h>
 
 /**
- * Memory Exchange Network
+ * Exchange Network
  */
-class MENet
+class ExNet
 {
     public:
-        MENet();
-        MENet(int);
-        virtual ~MENet();
+        ExNet();
+        ExNet(int);
+        virtual ~ExNet();
 
         int NumberOfMembers(); /**< number of members in this network */
         bool HasMember(int); /**< check if a member exists in network */
@@ -43,7 +43,7 @@ class MENet
  * \brief Get member number in group.
  * \return number of members
  */
-inline int MENet::NumberOfMembers()
+inline int ExNet::NumberOfMembers()
 {
     return GetAllMembers().size();
 }

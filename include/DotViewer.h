@@ -10,7 +10,7 @@
 
 #include <MemoryViewer.h>
 #include <string>
-#include "IAgent.h"
+#include "Agent.h"
 
 class Storage;
 
@@ -26,14 +26,14 @@ class DotViewer: public MemoryViewer
 
         void Show();
         void CleanShow();   /**< show agent memory cleanly */
-        void ShowState(IAgent::State);
+        void ShowState(Agent::State);
     private:
         void DotStateInfo(const struct State_Info_Header *);
         void CleanDotStateInfo(const struct State_Info_Header *);   /**< show state info cleanly */
-        const std::string Eat2String(IAgent::EnvAction);
+        const std::string Eat2String(Agent::EnvAction);
 
-        IAgent::State last_state;
-        IAgent::Action last_action;
+        Agent::State last_state;
+        Agent::Action last_action;
 };
 
 #endif /* DOTVIEWER_H_ */

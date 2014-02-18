@@ -7,9 +7,9 @@
 
 #ifndef MESSAGER_H_
 #define MESSAGER_H_
-#include "CSThreadMMessager.h"
+#include "CSThreadExManager.h"
 
-class Messager: public CSThreadMMessager
+class Messager: public CSThreadExManager
 {
     public:
         Messager() :
@@ -17,7 +17,7 @@ class Messager: public CSThreadMMessager
         {
         }
         Messager(int i) :
-                CSThreadMMessager(i), position(5), count(0)
+                CSThreadExManager(i), position(5), count(0)
         {
         }
         ~Messager()
@@ -25,16 +25,16 @@ class Messager: public CSThreadMMessager
         }
 
     private:
-        IAgent::State position;
+        Agent::State position;
         int count;
 
-        IAgent::State Incar_GetCurrentState()
+        Agent::State Incar_GetCurrentState()
         {
             printf("Messager %d, State: %ld\n", id, position);
             return position;
         }
 
-        void Incar_PerformAction(IAgent::Action act)
+        void Incar_PerformAction(Agent::Action act)
         {
             position += act;
 
@@ -43,21 +43,21 @@ class Messager: public CSThreadMMessager
             return;
         }
 
-        OSpace Incar_ActionCandidates(IAgent::State st)
+        OSpace Incar_ActionCandidates(Agent::State st)
         {
             if (count < 1000)
             {
                 OSpace acts;
-                acts.clear();
+                acts.Clear();
                 if (st == 1)    // position 1
                 {
-                    acts.add(1);
+                    acts.Add(1);
                     count++;
                     return acts;
                 }
 
-                acts.add(1);
-                acts.add(-1);
+                acts.Add(1);
+                acts.Add(-1);
                 count++;
                 return acts;
             }
@@ -65,7 +65,7 @@ class Messager: public CSThreadMMessager
                 return OSpace();    // return an empty list
         }
 
-        float Incar_OriginalPayoff(IAgent::State st)
+        float Incar_OriginalPayoff(Agent::State st)
         {
             if (st == 9)
                 return 1;

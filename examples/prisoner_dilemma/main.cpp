@@ -5,7 +5,7 @@
  *      Author: andy
  */
 #include <pthread.h>
-#include "CSMMIAgent.h"
+#include "CSMAgent.h"
 #include "Prisoners.h"
 #include "Mysql.h"
 
@@ -17,8 +17,8 @@ int main(void)
     mysqlB.SetDBArgs("localhost", "root", "huangk",  "PrisonerB");
 
     float discount_rate = 0.9;  // discount rate determines the final equilibrium!
-    CSMMIAgent agentA(1, discount_rate, 0.01);
-    CSMMIAgent agentB(2, discount_rate, 0.01);
+    CSMAgent agentA(1, discount_rate, 0.01);
+    CSMAgent agentB(2, discount_rate, 0.01);
     agentA.SetDegreeOfCuriosity(0.0);
     agentB.SetDegreeOfCuriosity(0.0);
     agentA.LoadMemoryFromStorage(&mysqlA);

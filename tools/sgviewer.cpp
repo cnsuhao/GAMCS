@@ -1,3 +1,10 @@
+/* sgviewer.cpp - view memory of agent stored in varies storage
+ *
+ * Last changed in libgimcs 0.1.0 [February 18, 2014]
+ * Copyright (c) 2013-2014 Andy-Huang
+ *
+ */
+
 /*
  * sgviewer.cpp
  *
@@ -8,7 +15,7 @@
 #include <unistd.h>
 #include <string>
 #include <iostream>
-#include "IAgent.h"
+#include "Agent.h"
 #include "Storage.h"
 #include "Mysql.h"
 #include "MemoryViewer.h"
@@ -41,7 +48,7 @@ int main(int argc, char *argv[])
 
     Storage *storage;
     MemoryViewer *viewer;
-    IAgent::State st = INVALID_STATE;
+    Agent::State st = INVALID_STATE;
 
     static const char *optString = "S:V:W:?";
 

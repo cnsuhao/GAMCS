@@ -1,5 +1,5 @@
 /*
- * MMessager.cpp
+ * ExManager.cpp
  *
  *  Created on: Feb 17, 2014
  *      Author: andy
@@ -8,31 +8,31 @@
 #include <set>
 #include <math.h>
 #include <string.h>
-#include "MENet.h"
-#include "MMIAgent.h"
-#include "MMessager.h"
+#include "ExNet.h"
+#include "MAgent.h"
+#include "ExManager.h"
 
-MMessager::MMessager() :
-        id(0), mmiagent(NULL), menet(NULL), cps(10), quit(false)
+ExManager::ExManager() :
+        id(0), magent(NULL), exnet(NULL), cps(10), quit(false)
 {
 }
 
-MMessager::MMessager(int i) :
-        id(i), mmiagent(NULL), menet(NULL), cps(10), quit(false)
+ExManager::ExManager(int i) :
+        id(i), magent(NULL), exnet(NULL), cps(10), quit(false)
 {
 }
 
-MMessager::~MMessager()
+ExManager::~ExManager()
 {
 }
 
-void MMessager::ConnectMMIAgent(MMIAgent *magent)
+void ExManager::ConnectMAgent(MAgent *magent)
 {
-    ConnectAgent(dynamic_cast<IAgent *>(magent));
-    mmiagent = magent;
+    ConnectAgent(dynamic_cast<Agent *>(magent));
+    magent = magent;
 }
 
-void MMessager::Run()
+void ExManager::Run()
 {
     while (!quit)
     {
@@ -44,9 +44,9 @@ void MMessager::Run()
     }
 }
 
-void MMessager::Exchange()
+void ExManager::Exchange()
 {
-    if (menet == NULL) return;
+    if (exnet == NULL) return;
 
     RecvStateInfo();
 
@@ -54,32 +54,32 @@ void MMessager::Exchange()
     for (std::set<int>::iterator nit = my_neighbours.begin();
             nit != my_neighbours.end(); ++nit)
     {
-        IAgent::State st_send = mmiagent->NextState();
-        if (st_send == INVALID_STATE) st_send = mmiagent->FirstState();
+        Agent::State st_send = magent->NextState();
+        if (st_send == INVALID_STATE) st_send = magent->FirstState();
 
         if (st_send != INVALID_STATE) SendStateInfo(*nit, st_send);
     }
 }
 
-void MMessager::JoinMENet(MENet *net)
+void ExManager::JoinExNet(ExNet *net)
 {
-    menet = net;
-    menet->AddMember(id);
+    exnet = net;
+    exnet->AddMember(id);
 }
 
-void MMessager::LeaveMENet()
+void ExManager::LeaveExNet()
 {
-    if (menet == NULL) return;
+    if (exnet == NULL) return;
 
-    menet->RemoveMember(id);
-    menet = NULL;
+    exnet->RemoveMember(id);
+    exnet = NULL;
     return;
 }
 
-void MMessager::AddNeighbour(int nid)
+void ExManager::AddNeighbour(int nid)
 {
 // chech if joined in any network
-    if (menet == NULL)
+    if (exnet == NULL)
     {
         WARNNING(
                 "AddNeighbour(): agent %d hasn't joint any network yet, can not add a neighbour!\n",
@@ -87,13 +87,13 @@ void MMessager::AddNeighbour(int nid)
         return;
     }
 
-    menet->AddNeighbour(id, nid);
+    exnet->AddNeighbour(id, nid);
 }
 
-void MMessager::RemoveNeighbour(int nid)
+void ExManager::RemoveNeighbour(int nid)
 {
 // chech if joined in any network
-    if (menet == NULL)
+    if (exnet == NULL)
     {
         WARNNING(
                 "RemoveNeighbour(): agent %d hasn't joint any network yet, it has no neighbour to remove!\n",
@@ -101,13 +101,13 @@ void MMessager::RemoveNeighbour(int nid)
         return;
     }
 
-    menet->RemoveNeighbour(id, nid);
+    exnet->RemoveNeighbour(id, nid);
 }
 
-std::set<int> MMessager::GetMyNeighbours()
+std::set<int> ExManager::GetMyNeighbours()
 {
 // chech if joined in any network
-    if (menet == NULL)
+    if (exnet == NULL)
     {
         WARNNING(
                 "GetMyNeighbours(): menber %d hasn't joint any network yet, no neighbours at all!\n",
@@ -115,13 +115,13 @@ std::set<int> MMessager::GetMyNeighbours()
         return std::set<int>();
     }
 
-    return menet->GetNeighbours(id);
+    return exnet->GetNeighbours(id);
 }
 
-bool MMessager::CheckNeighbourShip(int nid)
+bool ExManager::CheckNeighbourShip(int nid)
 {
 // chech if joined in any network
-    if (menet == NULL)
+    if (exnet == NULL)
     {
         WARNNING(
                 "CheckNeighbour(): menber %d hasn't joint any network yet, no neighbours at all!\n",
@@ -129,20 +129,20 @@ bool MMessager::CheckNeighbourShip(int nid)
         return false;
     }
 
-    return menet->CheckNeighbourShip(id, nid);
+    return exnet->CheckNeighbourShip(id, nid);
 }
 
-inline IAgent::State MMessager::GetCurrentState()
+inline Agent::State ExManager::GetCurrentState()
 {
     return Incar_GetCurrentState();
 }
 
-inline void MMessager::PerformAction(IAgent::Action act)
+inline void ExManager::PerformAction(Agent::Action act)
 {
     return Incar_PerformAction(act);
 }
 
-inline OSpace MMessager::ActionCandidates(IAgent::State st)
+inline OSpace ExManager::ActionCandidates(Agent::State st)
 {
     // check exps
     if (incar_loop_count % cps == 0)    // time to stop incarnation and exchange memory
@@ -151,50 +151,50 @@ inline OSpace MMessager::ActionCandidates(IAgent::State st)
     }
 
     OSpace outputs = Incar_ActionCandidates(st);
-    if (outputs.empty()) quit = true;   // quit when incarnation quits
+    if (outputs.Empty()) quit = true;   // quit when incarnation quits
     return outputs;
 }
 
-inline float MMessager::OriginalPayoff(IAgent::State st)
+inline float ExManager::OriginalPayoff(Agent::State st)
 {
     return Incar_OriginalPayoff(st);
 }
 
-float MMessager::Incar_OriginalPayoff(IAgent::State st)
+float ExManager::Incar_OriginalPayoff(Agent::State st)
 {
     UNUSED(st);
     return 1.0;
 }
 
-void MMessager::RecvStateInfo()
+void ExManager::RecvStateInfo()
 {
     char re_buf[2048];    // buffer for recieved message
 
-    if (menet->Recv(id, -1, re_buf, 2048) != 0)    // fetch one message from any agent
+    if (exnet->Recv(id, -1, re_buf, 2048) != 0)    // fetch one message from any agent
     {
         dbgmoreprt("***", "%d recv from anyone\n", id);
 
         struct State_Info_Header *re_state = (struct State_Info_Header *) re_buf;
-        struct State_Info_Header *my_state = mmiagent->GetStateInfo(
+        struct State_Info_Header *my_state = magent->GetStateInfo(
                 re_state->st);
         if (my_state != NULL)
         {
             struct State_Info_Header *merged_state = MergeStateInfo(my_state,
                     re_state);
-            mmiagent->SetStateInfo(merged_state);    // merge the recieved state information to memory
+            magent->SetStateInfo(merged_state);    // merge the recieved state information to memory
             free(my_state);
             free(merged_state);
         }
         else
         {
-            mmiagent->SetStateInfo(re_state);
+            magent->SetStateInfo(re_state);
         }
 
     }
     return;
 }
 
-struct State_Info_Header *MMessager::MergeStateInfo(
+struct State_Info_Header *ExManager::MergeStateInfo(
         const struct State_Info_Header *origstif,
         const struct State_Info_Header *recvstif)
 {
@@ -386,17 +386,17 @@ struct State_Info_Header *MMessager::MergeStateInfo(
     return stif;
 }
 
-void MMessager::SendStateInfo(int toneb, IAgent::State st)
+void ExManager::SendStateInfo(int toneb, Agent::State st)
 {
     struct State_Info_Header *stif = NULL;
-    stif = mmiagent->GetStateInfo(st);    // the st may not exist
+    stif = magent->GetStateInfo(st);    // the st may not exist
     if (stif == NULL)
     {
         return;
     }
 
     dbgmoreprt("***", "%d send %ld to %d\n", id, st, toneb);
-    menet->Send(id, toneb, stif, stif->size);    // call the send facility in ienet
+    exnet->Send(id, toneb, stif, stif->size);    // call the send facility in ienet
     free(stif);    // free
 
     return;

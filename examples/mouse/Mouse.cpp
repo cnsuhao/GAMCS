@@ -19,12 +19,12 @@ Mouse::~Mouse()
     //dtor
 }
 
-IAgent::State Mouse::GetCurrentState()
+Agent::State Mouse::GetCurrentState()
 {
     return position;
 }
 
-void Mouse::PerformAction(IAgent::Action act)
+void Mouse::PerformAction(Agent::Action act)
 {
     position += act;
 
@@ -41,15 +41,15 @@ void Mouse::PerformAction(IAgent::Action act)
  *
  */
 
-OSpace Mouse::ActionCandidates(IAgent::State st)
+OSpace Mouse::ActionCandidates(Agent::State st)
 {
 //    UNUSED(st);
     if (count < 50)
     {
         OSpace acts;
-        acts.clear();
-        acts.add(1);
-        acts.add(-1);
+        acts.Clear();
+        acts.Add(1);
+        acts.Add(-1);
         count++;
         return acts;
     }
@@ -57,7 +57,7 @@ OSpace Mouse::ActionCandidates(IAgent::State st)
         return OSpace();    // return an empty list
 }
 
-float Mouse::OriginalPayoff(IAgent::State st)
+float Mouse::OriginalPayoff(Agent::State st)
 {
     if (st == 6)
         return 1;

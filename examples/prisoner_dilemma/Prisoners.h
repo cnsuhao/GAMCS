@@ -29,7 +29,7 @@
  *  | betrayal| -10, 0  |  -8, -8  |
  */
 
-IAgent::State current_state = 1; // start from state 1
+Agent::State current_state = 1; // start from state 1
 
 /* take turns to act */
 bool actA = false;
@@ -50,7 +50,7 @@ class PrisonerA: public CSThreadIncarnation
         }
 
     private:
-        IAgent::State GetCurrentState()
+        Agent::State GetCurrentState()
         {
             while (actB == false)
                 usleep(10000);    // sleep, wait for B to act
@@ -58,36 +58,36 @@ class PrisonerA: public CSThreadIncarnation
             return current_state;
         }
 
-        void PerformAction(IAgent::Action act)
+        void PerformAction(Agent::Action act)
         {
             current_state += act;
             actA = true;
         }
 
-        OSpace ActionCandidates(IAgent::State st)
+        OSpace ActionCandidates(Agent::State st)
         {
             static int count = 0;
             OSpace re;
-            re.clear();
+            re.Clear();
             if (count < runtimes)    // run times
             {
                 switch (st)
                 {
                     case 1:
-                        re.add(0);
-                        re.add(1);
+                        re.Add(0);
+                        re.Add(1);
                         break;
                     case 2:
-                        re.add(0);
-                        re.add(-1);
+                        re.Add(0);
+                        re.Add(-1);
                         break;
                     case 3:
-                        re.add(0);
-                        re.add(1);
+                        re.Add(0);
+                        re.Add(1);
                         break;
                     case 4:
-                        re.add(0);
-                        re.add(-1);
+                        re.Add(0);
+                        re.Add(-1);
                         break;
                     default:
                         printf(
@@ -103,7 +103,7 @@ class PrisonerA: public CSThreadIncarnation
             return re;
         }
 
-        float OriginalPayoff(IAgent::State st)
+        float OriginalPayoff(Agent::State st)
         {
             float payoff = 0.0;
             switch (st)
@@ -139,7 +139,7 @@ class PrisonerB: public CSThreadIncarnation
         }
 
     private:
-        IAgent::State GetCurrentState()
+        Agent::State GetCurrentState()
         {
             while (actA == false)
                 usleep(10000);    // sleep, wait for A to act
@@ -147,36 +147,36 @@ class PrisonerB: public CSThreadIncarnation
             return current_state;
         }
 
-        void PerformAction(IAgent::Action act)
+        void PerformAction(Agent::Action act)
         {
             current_state += act;
             actB = true;
         }
 
-        OSpace ActionCandidates(IAgent::State st)
+        OSpace ActionCandidates(Agent::State st)
         {
             OSpace re;
-            re.clear();
+            re.Clear();
 
             if (!quit_notification)    // check quit
             {
                 switch (st)
                 {
                     case 1:
-                        re.add(0);
-                        re.add(2);
+                        re.Add(0);
+                        re.Add(2);
                         break;
                     case 2:
-                        re.add(0);
-                        re.add(2);
+                        re.Add(0);
+                        re.Add(2);
                         break;
                     case 3:
-                        re.add(0);
-                        re.add(-2);
+                        re.Add(0);
+                        re.Add(-2);
                         break;
                     case 4:
-                        re.add(0);
-                        re.add(-2);
+                        re.Add(0);
+                        re.Add(-2);
                         break;
                     default:
                         printf(
@@ -186,7 +186,7 @@ class PrisonerB: public CSThreadIncarnation
             return re;
         }
 
-        float OriginalPayoff(IAgent::State st)
+        float OriginalPayoff(Agent::State st)
         {
             float payoff = 0.0;
             switch (st)

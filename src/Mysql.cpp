@@ -109,7 +109,7 @@ void Mysql::SetDBArgs(std::string srv, std::string usr, std::string passwd,
  * \param index index
  * \return state value of that index, INVALID_STATE for error or not found
  */
-IAgent::State Mysql::StateByIndex(unsigned long index) const
+Agent::State Mysql::StateByIndex(unsigned long index) const
 {
     char query_str[256];
     sprintf(query_str, "SELECT * FROM %s LIMIT %ld, 1", db_t_stateinfo.c_str(),
@@ -138,7 +138,7 @@ IAgent::State Mysql::StateByIndex(unsigned long index) const
         mysql_free_result(result);
         return INVALID_STATE;
     }
-    IAgent::State rs = atol(row[0]);
+    Agent::State rs = atol(row[0]);
 
     mysql_free_result(result);    // free result
     return rs;
@@ -149,7 +149,7 @@ IAgent::State Mysql::StateByIndex(unsigned long index) const
  * \param st state value
  * \return fetched state information, NULL if error
  */
-struct State_Info_Header *Mysql::FetchStateInfo(IAgent::State st) const
+struct State_Info_Header *Mysql::FetchStateInfo(Agent::State st) const
 {
     if (st == INVALID_STATE)
     {
@@ -243,7 +243,7 @@ struct State_Info_Header *Mysql::FetchStateInfo(IAgent::State st) const
  * \param state value
  * \return 1 if found, 0 if not
  */
-int Mysql::SearchState(IAgent::State st) const
+int Mysql::SearchState(Agent::State st) const
 {
     char query_string[256];
     sprintf(query_string, "SELECT * FROM %s WHERE State=%ld",
@@ -370,7 +370,7 @@ void Mysql::UpdateStateInfo(const struct State_Info_Header *stif)
  * \brief Delete a state from database by its value
  * \param st state value to be delete
  */
-void Mysql::DeleteState(IAgent::State st)
+void Mysql::DeleteState(Agent::State st)
 {
     char query_string[256];
     sprintf(query_string, "DELETE  FROM %s WHERE State=%ld",

@@ -8,20 +8,20 @@
  *	@Modify date:
  ***********************************************************************/
 #include <stdio.h>
-#include "IAgent.h"
+#include "Agent.h"
 #include "Debug.h"
 
-IAgent::IAgent() :
+Agent::Agent() :
         id(0), discount_rate(0.8), threshold(0.01), degree_of_curiosity(0.0)
 {
 }
 
-IAgent::IAgent(int i) :
+Agent::Agent(int i) :
         id(i), discount_rate(0.8), threshold(0.01), degree_of_curiosity(0.0)
 {
 }
 
-IAgent::IAgent(int i, float dr, float th) :
+Agent::Agent(int i, float dr, float th) :
         id(i), discount_rate(dr), threshold(th), degree_of_curiosity(0.0)
 {
     // check validity
@@ -33,7 +33,7 @@ IAgent::IAgent(int i, float dr, float th) :
     ERROR("Agent - threshold must be bigger than 0!\n");
 }
 
-IAgent::~IAgent()
+Agent::~Agent()
 {
 }
 
@@ -44,7 +44,7 @@ IAgent::~IAgent()
  * \return action distribution after appling maximun payoff restrict
  *
  */
-OSpace IAgent::Restrict(IAgent::State st,
+OSpace Agent::Restrict(Agent::State st,
         OSpace &acts)
 {
     return MaxPayoffRule(st, acts);
@@ -54,7 +54,7 @@ OSpace IAgent::Restrict(IAgent::State st,
  *
  */
 
-void IAgent::Update(float oripayoff)
+void Agent::Update(float oripayoff)
 {
     UpdateMemory(oripayoff);    // update memory
     TSGIOM::Update();

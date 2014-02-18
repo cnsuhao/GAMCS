@@ -1,5 +1,5 @@
 /*
- * CSThreadMENet.h
+ * CSThreadExNet.h
  *
  *  Created on: Feb 17, 2014
  *      Author: andy
@@ -8,7 +8,7 @@
 #ifndef CSTHREADMENET_H_
 #define CSTHREADMENET_H_
 #include <set>
-#include <MENet.h>
+#include <ExNet.h>
 
 #define MAX_MEMBER 1000     // maximun number of members in group
 #define MSG_POOL_SIZE 100     // maximun number of messages a channel can store
@@ -29,12 +29,12 @@ struct Channel
 /**
  *
  */
-class CSThreadMENet: public MENet
+class CSThreadExNet: public ExNet
 {
     public:
-        CSThreadMENet();
-        CSThreadMENet(int);
-        virtual ~CSThreadMENet();
+        CSThreadExNet();
+        CSThreadExNet(int);
+        virtual ~CSThreadExNet();
 
 
         void LoadTopoFromFile(char *); /**< load topological structure of network from a file */
@@ -69,12 +69,12 @@ class CSThreadMENet: public MENet
  * \param id member id
  * \return channel address
  */
-inline struct Channel *CSThreadMENet::GetChannel(int id)
+inline struct Channel *CSThreadExNet::GetChannel(int id)
 {
     return &channels[id];
 }
 
-inline std::set<int> CSThreadMENet::GetAllMembers()
+inline std::set<int> CSThreadExNet::GetAllMembers()
 {
     return members;
 }

@@ -7,9 +7,9 @@
 
 #ifndef MESSAGER_H_
 #define MESSAGER_H_
-#include "MMessager.h"
+#include "ExManager.h"
 
-class Msger: public MMessager
+class Msger: public ExManager
 {
     public:
         Msger() :
@@ -17,7 +17,7 @@ class Msger: public MMessager
         {
         }
         Msger(int i) :
-        MMessager(i), position(5), count(0)
+        ExManager(i), position(5), count(0)
         {
         }
         ~Msger()
@@ -25,16 +25,16 @@ class Msger: public MMessager
         }
 
     private:
-        IAgent::State position;
+        Agent::State position;
         int count;
 
-        IAgent::State Incar_GetCurrentState()
+        Agent::State Incar_GetCurrentState()
         {
             printf("Messager %d, State: %ld\n", id, position);
             return position;
         }
 
-        void Incar_PerformAction(IAgent::Action act)
+        void Incar_PerformAction(Agent::Action act)
         {
             position += act;
 
@@ -43,21 +43,21 @@ class Msger: public MMessager
             return;
         }
 
-        OSpace Incar_ActionCandidates(IAgent::State st)
+        OSpace Incar_ActionCandidates(Agent::State st)
         {
             if (count < 500)
             {
                 OSpace acts;
-                acts.clear();
+                acts.Clear();
                 if (st == 1)    // position 1
                 {
-                    acts.add(1);
+                    acts.Add(1);
                     count++;
                     return acts;
                 }
 
-                acts.add(1);
-                acts.add(-1);
+                acts.Add(1);
+                acts.Add(-1);
                 count++;
                 return acts;
             }
@@ -65,7 +65,7 @@ class Msger: public MMessager
                 return OSpace();    // return an empty list
         }
 
-        float Incar_OriginalPayoff(IAgent::State st)
+        float Incar_OriginalPayoff(Agent::State st)
         {
             if (st == 9)
                 return 1;
