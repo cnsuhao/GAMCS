@@ -11,6 +11,7 @@ class TSGIOM: public GIOM
         TSGIOM();
         virtual ~TSGIOM();
         virtual void Update();    // reimplement Update, add time sequence
+
     protected:
         virtual OSpace Restrict(Input, OSpace &);    // reimplement Restrict
         /* bring in the time sequence feature */

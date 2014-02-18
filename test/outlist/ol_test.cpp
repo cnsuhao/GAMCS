@@ -11,23 +11,23 @@
 int main(void)
 {
     OSpace ol;
-    ol.add(1);
-    ol.add(2);
-    ol.add(3);
-    ol.add(10, 14, 2);
-    ol.add(20, 10, 1);
+    ol.Add(1);
+    ol.Add(2);
+    ol.Add(3);
+    ol.Add(10, 14, 2);
+    ol.Add(20, 10, 1);
 
     printf("Outputs: ");
-    GIOM::Output out = ol.first();
+    GIOM::Output out = ol.First();
     while (out != INVALID_OUTPUT)
     {
         printf("%ld, ", out);
-        out = ol.next();
+        out = ol.Next();
     }
     printf("\n");
 
-    printf("size: %ld\n", ol.size());
+    printf("size: %ld\n", ol.Size());
     int i = 7;
     printf("index %d is %ld\n", i, ol[i]);
-    printf("capacity is %ld\n", ol.capacity());
+    printf("capacity is %ld\n", ol.Capacity());
 }

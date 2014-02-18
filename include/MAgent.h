@@ -1,5 +1,5 @@
 /*
- * MMIAgent.h
+ * MAgent.h
  *
  *  Created on: Feb 17, 2014
  *      Author: andy
@@ -8,18 +8,18 @@
 #ifndef MEIAGENT_H_
 #define MEIAGENT_H_
 
-#include <IAgent.h>
+#include <Agent.h>
 
 /**
- * Memory-Modifiable Intelligent Agent
+ *  Manipulatable Agent
  */
-class MMIAgent: public IAgent
+class MAgent: public Agent
 {
     public:
-        MMIAgent();
-        MMIAgent(int);
-        MMIAgent(int, float, float);
-        virtual ~MMIAgent();
+        MAgent();
+        MAgent(int);
+        MAgent(int, float, float);
+        virtual ~MAgent();
 
         virtual struct State_Info_Header *GetStateInfo(State) const = 0;
         virtual void SetStateInfo(const struct State_Info_Header *) = 0;

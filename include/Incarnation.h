@@ -1,7 +1,7 @@
 #ifndef INCARNATION_H
 #define INCARNATION_H
 #include <string>
-#include "IAgent.h"
+#include "Agent.h"
 
 class DENet;
 
@@ -18,7 +18,7 @@ class Incarnation
 
         void Launch(); /**< launch this avatar */
 
-        void ConnectAgent(IAgent *); /**< connect to an agent */
+        void ConnectAgent(Agent *); /**< connect to an agent */
         void SetSps(int);
 
     protected:
@@ -26,12 +26,12 @@ class Incarnation
         int sps; /**< number of steps per second */
         unsigned long incar_loop_count;    /**< loop count */
 
-        IAgent *myagent; /**< connected agent */
+        Agent *myagent; /**< connected agent */
 
-        virtual IAgent::State GetCurrentState() = 0; /**< get current state */
-        virtual void PerformAction(IAgent::Action) = 0; /**< perform an real action */
-        virtual OSpace ActionCandidates(IAgent::State) = 0; /**< return a list of all action candidates of a Agent::State */
-        virtual float OriginalPayoff(IAgent::State); /**< original payoff of a state */
+        virtual Agent::State GetCurrentState() = 0; /**< get current state */
+        virtual void PerformAction(Agent::Action) = 0; /**< perform an real action */
+        virtual OSpace ActionCandidates(Agent::State) = 0; /**< return a list of all action candidates of a Agent::State */
+        virtual float OriginalPayoff(Agent::State); /**< original payoff of a state */
 
     private:
         unsigned long GetCurrentTime(); /**< current time in millisecond */
@@ -51,7 +51,7 @@ inline void Incarnation::SetSps(int s)
  * \brief Connect to an agent.
  * \param agt agent to be connected
  */
-inline void Incarnation::ConnectAgent(IAgent *agt)
+inline void Incarnation::ConnectAgent(Agent *agt)
 {
     myagent = agt;
 }

@@ -74,7 +74,7 @@ class Saleman: public CSThreadIncarnation
         }
 
     private:
-        IAgent::State GetCurrentState()
+        Agent::State GetCurrentState()
         {
             // encode state
             EncodeState(path, current_state);
@@ -84,7 +84,7 @@ class Saleman: public CSThreadIncarnation
             return current_state;
         }
 
-        OSpace ActionCandidates(IAgent::State st)
+        OSpace ActionCandidates(Agent::State st)
         {
             OSpace re;
 
@@ -94,7 +94,7 @@ class Saleman: public CSThreadIncarnation
                 DecodeState(st, tmp_path);
 
                 int acts[CITY_NUM];
-                IAgent::Action act;
+                Agent::Action act;
 
                 // actions that swap any two cities
                 for (int delta = 1; delta < CITY_NUM; delta++)
@@ -111,7 +111,7 @@ class Saleman: public CSThreadIncarnation
                                 acts[i] = delta;
                                 acts[j] = -delta;
                                 EncodeAction(acts, act);
-                                re.add(act);
+                                re.Add(act);
                                 break;
                             }
                         }
@@ -122,7 +122,7 @@ class Saleman: public CSThreadIncarnation
             return re;
         }
 
-        void PerformAction(IAgent::Action act)
+        void PerformAction(Agent::Action act)
         {
             // apply act
             current_state += act;
@@ -130,7 +130,7 @@ class Saleman: public CSThreadIncarnation
             DecodeState(current_state, path);
         }
 
-        float OriginalPayoff(IAgent::State st)
+        float OriginalPayoff(Agent::State st)
         {
             // decode state
             int tmp_path[CITY_NUM];
@@ -155,7 +155,7 @@ class Saleman: public CSThreadIncarnation
 
         }
 
-        void EncodeState(const int path[CITY_NUM], IAgent::State &encoded_st)
+        void EncodeState(const int path[CITY_NUM], Agent::State &encoded_st)
         {
             encoded_st = 0;
             for (int i = 0; i < CITY_NUM; i++)
@@ -164,7 +164,7 @@ class Saleman: public CSThreadIncarnation
             }
         }
 
-        void DecodeState(IAgent::State st, int decode_path[CITY_NUM])
+        void DecodeState(Agent::State st, int decode_path[CITY_NUM])
         {
             for (int i = CITY_NUM - 1; i >= 0; i--)
             {
@@ -178,7 +178,7 @@ class Saleman: public CSThreadIncarnation
             }
         }
 
-        void EncodeAction(const int act[CITY_NUM], IAgent::Action &encoded_act)
+        void EncodeAction(const int act[CITY_NUM], Agent::Action &encoded_act)
         {
             encoded_act = 0;
             for (int i = 0; i < CITY_NUM; i++)
@@ -199,7 +199,7 @@ class Saleman: public CSThreadIncarnation
     private:
         int path[CITY_NUM];    // represent a path through all cities
         int count;
-        IAgent::State current_state;    // current state
+        Agent::State current_state;    // current state
 };
 
 #endif /* SALEMAN_H_ */

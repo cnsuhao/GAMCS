@@ -20,12 +20,12 @@ Monomer::~Monomer()
     //dtor
 }
 
-IAgent::State Monomer::GetCurrentState()
+Agent::State Monomer::GetCurrentState()
 {
     return position;
 }
 
-void Monomer::PerformAction(IAgent::Action act)
+void Monomer::PerformAction(Agent::Action act)
 {
     position += act;
 
@@ -41,7 +41,7 @@ void Monomer::PerformAction(IAgent::Action act)
  * \return all possible outputs for the input
  *
  */
-OSpace Monomer::ActionCandidates(IAgent::State st)
+OSpace Monomer::ActionCandidates(Agent::State st)
 {
 //    UNUSED(st);
     static int count;
@@ -49,15 +49,15 @@ OSpace Monomer::ActionCandidates(IAgent::State st)
     if (count < 300)
     {
         OSpace acts;
-        acts.clear();
+        acts.Clear();
         if (st == 1)
-            acts.add(1);
+            acts.Add(1);
         else if (st == 15)
-            acts.add(-1);
+            acts.Add(-1);
         else
         {
-            acts.add(1);
-            acts.add(-1);
+            acts.Add(1);
+            acts.Add(-1);
         }
         count++;
         return acts;
@@ -66,7 +66,7 @@ OSpace Monomer::ActionCandidates(IAgent::State st)
         return OSpace();    // return an empty list
 }
 
-float Monomer::OriginalPayoff(IAgent::State st)
+float Monomer::OriginalPayoff(Agent::State st)
 {
     return -( st * 0.1);
 //    if (st == 9)

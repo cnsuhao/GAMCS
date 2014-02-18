@@ -5,7 +5,7 @@
  *      Author: andy
  */
 #include "Debug.h"
-#include "IAgent.h"
+#include "Agent.h"
 
 /**
  * \brief Pretty print State information

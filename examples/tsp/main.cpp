@@ -8,12 +8,12 @@
 #include <pthread.h>
 #include <stdio.h>
 #include "Saleman.h"
-#include "CSMMIAgent.h"
+#include "CSMAgent.h"
 #include "Mysql.h"
 
 int main(void)
 {
-    CSMMIAgent *agent = new CSMMIAgent(1, 0.8, 0.01);
+    CSMAgent *agent = new CSMAgent(1, 0.8, 0.01);
     agent->SetDegreeOfCuriosity(-5000);
 
     Saleman *saleman = new Saleman("Saleman");

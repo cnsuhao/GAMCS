@@ -6,13 +6,13 @@
  */
 
 #include "messager.h"
-#include "CSMMIAgent.h"
+#include "CSMAgent.h"
 
 int main(void)
 {
-    CSMMIAgent ma(1, 0.9, 0.01);
+    CSMAgent ma(1, 0.9, 0.01);
     Msger msger(1);
-    msger.ConnectMMIAgent(&ma);
+    msger.ConnectMAgent(&ma);
     msger.Run();
 }
 

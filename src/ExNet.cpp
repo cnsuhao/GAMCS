@@ -1,27 +1,27 @@
 /*
- * MENet.cpp
+ * ExNet.cpp
  *
  *  Created on: Feb 17, 2014
  *      Author: andy
  */
 #include <set>
-#include "MENet.h"
+#include "ExNet.h"
 
-MENet::MENet() :
+ExNet::ExNet() :
         id(0)
 {
 }
 
-MENet::MENet(int i) :
+ExNet::ExNet(int i) :
         id(i)
 {
 }
 
-MENet::~MENet()
+ExNet::~ExNet()
 {
 }
 
-bool MENet::HasMember(int mid)
+bool ExNet::HasMember(int mid)
 {
     bool re = false;
     std::set<int> allmembers = GetAllMembers();

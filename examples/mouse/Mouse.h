@@ -12,13 +12,13 @@ class Mouse: public Incarnation
         ~Mouse();
 
     private:
-        IAgent::State position;
+        Agent::State position;
         int count;
 
-        IAgent::State GetCurrentState();
-        void PerformAction(IAgent::Action);
-        OSpace ActionCandidates(IAgent::State);
-        float OriginalPayoff(IAgent::State);
+        Agent::State GetCurrentState();
+        void PerformAction(Agent::Action);
+        OSpace ActionCandidates(Agent::State);
+        float OriginalPayoff(Agent::State);
 };
 
 #endif // ROBOT1_H

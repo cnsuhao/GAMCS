@@ -7,8 +7,8 @@
 
 #include <pthread.h>
 #include <stdio.h>
-#include "CSThreadMENet.h"
-#include "CSMMIAgent.h"
+#include "CSThreadExNet.h"
+#include "CSMAgent.h"
 #include "messager.h"
 
 int main(int argc, char *argv[])
@@ -20,10 +20,10 @@ int main(int argc, char *argv[])
     }
 
     int member_num = atoi(argv[1]);    // number of messager
-    CSThreadMENet network(1);
+    CSThreadExNet network(1);
 
     Messager *messagers[member_num];
-    CSMMIAgent *agents[member_num];
+    CSMAgent *agents[member_num];
     pthread_t tids[member_num];
 
     // create and set up each messager
@@ -35,14 +35,14 @@ int main(int argc, char *argv[])
 //        ml->SetDBArgs("localhost", "root", "huangk", db_name);
 
         // agent
-        CSMMIAgent *agent = new CSMMIAgent(i + 1, 0.8, 0.01);    // agent id start from 1
+        CSMAgent *agent = new CSMAgent(i + 1, 0.8, 0.01);    // agent id start from 1
 //        agent->LoadMemoryFromStorage(ml);
 
         // avatar
         Messager *messager = new Messager(i + 1);
         messager->Incar_SetSps(-1);
-        messager->ConnectMMIAgent(agent);
-        messager->JoinMENet(&network);
+        messager->ConnectMAgent(agent);
+        messager->JoinExNet(&network);
 
 //        mysql[i] = ml;
         messagers[i] = messager;

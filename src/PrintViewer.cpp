@@ -54,7 +54,7 @@ void PrintViewer::Show()
     }
 
     // print states info
-    IAgent::State st;
+    Agent::State st;
     unsigned long index = 0;    // load states from database one by one
     while ((st = storage->StateByIndex(index)) != INVALID_STATE)    // get state value
     {
@@ -120,7 +120,7 @@ void PrintViewer::PrintStateInfo(const struct State_Info_Header *stif)
     return;
 }
 
-void PrintViewer::ShowState(IAgent::State st)
+void PrintViewer::ShowState(Agent::State st)
 {
     int re = storage->Connect();
     if (re != 0)    // connect failed

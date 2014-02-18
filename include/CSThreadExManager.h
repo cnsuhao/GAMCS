@@ -1,5 +1,5 @@
 /*
- * CSThreadMMessager.h
+ * CSThreadExManager.h
  *
  *  Created on: Feb 17, 2014
  *      Author: andy
@@ -8,24 +8,24 @@
 #ifndef CSTHREADMMESSAGER_H_
 #define CSTHREADMMESSAGER_H_
 #include <pthread.h>
-#include <MMessager.h>
+#include <ExManager.h>
 
 /**
  *
  */
-class CSThreadMMessager: public MMessager
+class CSThreadExManager: public ExManager
 {
     public:
-        CSThreadMMessager();
-        CSThreadMMessager(int);
-        virtual ~CSThreadMMessager();
+        CSThreadExManager();
+        CSThreadExManager(int);
+        virtual ~CSThreadExManager();
 
         pthread_t ThreadRun();
 
     private:
         static void* hook(void* args)
         { /**< hook to run a class function(Launch() here) in a thread */
-            reinterpret_cast<MMessager *>(args)->Run();
+            reinterpret_cast<ExManager *>(args)->Run();
             return NULL;
         }
 };
