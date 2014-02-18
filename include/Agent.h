@@ -26,9 +26,9 @@ class Agent: public TSGIOM
 
         /* set and get functions */
         void SetDiscountRate(float);
-        float GetDiscountRate();
+        float GetDiscountRate() const;
         void SetThreshold(float);
-        float GetThreshold();
+        float GetThreshold() const;
         void SetDegreeOfCuriosity(float);
 
     protected:
@@ -38,10 +38,10 @@ class Agent: public TSGIOM
 
         float degree_of_curiosity; /**< degree of curiosity to try unknown actions */
 
-        OSpace Restrict(State, OSpace &); /**< reimplement restrict using maximun payoff rule  */
+        OSpace Restrict(State, OSpace &) const; /**< reimplement restrict using maximun payoff rule  */
 
         /** These two functions are implementation dependant, declared as pure virtual functions */
-        virtual OSpace MaxPayoffRule(State, OSpace &) = 0; /**< implementation of maximun payoff rule */
+        virtual OSpace MaxPayoffRule(State, OSpace &) const = 0; /**< implementation of maximun payoff rule */
         virtual void UpdateMemory(float) = 0; /**<  update states in memory given current state's original payoff*/
 };
 
@@ -55,7 +55,7 @@ inline void Agent::SetDiscountRate(float dr)
     discount_rate = dr;
 }
 
-inline float Agent::GetDiscountRate()
+inline float Agent::GetDiscountRate() const
 {
     return discount_rate;
 }
@@ -68,7 +68,7 @@ inline void Agent::SetThreshold(float th)
     threshold = th;
 }
 
-inline float Agent::GetThreshold()
+inline float Agent::GetThreshold() const
 {
     return threshold;
 }

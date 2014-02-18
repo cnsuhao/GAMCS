@@ -36,8 +36,8 @@ class ExManager: private Incarnation
         void LeaveExNet();
         void AddNeighbour(int);
         void RemoveNeighbour(int);
-        std::set<int> GetMyNeighbours();
-        bool CheckNeighbourShip(int);
+        std::set<int> GetMyNeighbours() const;
+        bool CheckNeighbourShip(int) const;
 
     protected:
         int id;
@@ -54,9 +54,9 @@ class ExManager: private Incarnation
 
         struct State_Info_Header *MergeStateInfo(
                 const struct State_Info_Header *,
-                const struct State_Info_Header *);
+                const struct State_Info_Header *) const;
         void RecvStateInfo();
-        void SendStateInfo(int, Agent::State);
+        void SendStateInfo(int, Agent::State) const;
 
         Agent::State GetCurrentState();
         void PerformAction(Agent::Action);

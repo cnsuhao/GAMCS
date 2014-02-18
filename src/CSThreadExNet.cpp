@@ -223,7 +223,7 @@ int CSThreadExNet::Recv(int toid, int fromid, void *buffer, size_t buf_size)
  * \param id member id
  * \return neighbour list
  */
-std::set<int> CSThreadExNet::GetNeighbours(int id)
+std::set<int> CSThreadExNet::GetNeighbours(int id) const
 {
     std::set<int> neighs;
     neighs.clear();
@@ -381,7 +381,7 @@ void CSThreadExNet::RemoveNeighbour(int mem, int neighbour)
 
 }
 
-bool CSThreadExNet::CheckNeighbourShip(int from, int to)
+bool CSThreadExNet::CheckNeighbourShip(int from, int to) const
 {
     bool connected = false;
     struct Neigh *nb, *nnb;

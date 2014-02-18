@@ -23,38 +23,41 @@ class CSMAgent: public MAgent
         ~CSMAgent();
 
         struct State_Info_Header *GetStateInfo(State) const; /**< implementing GetStateInfo function */
-        void SetStateInfo(const struct State_Info_Header *);
+        void AddStateInfo(const struct State_Info_Header *);
+        void UpdateStateInfo(const struct State_Info_Header *);
+        void DeleteState(State);
         void UpdateState(State);
 
-        State FirstState();
-        State NextState();
+        State FirstState() const;
+        State NextState() const;
+        bool HasState(State) const;
 
         void LoadMemoryFromStorage(Storage *); /**< load memory from database */
-        void DumpMemoryToStorage(Storage *); /**< save memory to database */
+        void DumpMemoryToStorage(Storage *) const; /**< save memory to database */
 
     private:
         unsigned long state_num; /**< total number of states in memory */
         unsigned long lk_num; /**< total number of links between states in memory */
 
-        OSpace MaxPayoffRule(Agent::State, OSpace &); /**< implementing maximun payoff rule */
+        OSpace MaxPayoffRule(Agent::State, OSpace &) const; /**< implementing maximun payoff rule */
         void UpdateMemory(float); /**< implementing UpdateMemory of Agent */
 
         void PrintProcess(unsigned long, unsigned long, char *) const;
 
         struct cs_State *head; /**< memory head*/
         StatesMap states_map; /**< hash map from state values to state struct */
-        struct cs_State *cur_mst; /**< state struct for current state value */
-        struct cs_State *it_cur_st; /**< current state point used by iterator */
+        mutable struct cs_State *cur_mst; /**< state struct for current state */
+        mutable struct cs_State *current_st_index; /**< current state point used by iterator */
 
         void LoadState(Storage *, Agent::State); /**< load a state from storage to memory */
 
         void FreeMemory(); /**< free all space of memory in computer memory*/
 
-        void RemoveState(struct cs_State *); /**< remove "root" state */
+        void DeleteState(struct cs_State *); /**< remove "root" state */
 
         void LinkStates(struct cs_State *, Agent::EnvAction, Agent::Action,
                 struct cs_State *); /**< link two states in memory with specfic exact and action */
-        OSpace BestActions(const struct cs_State *, OSpace&); /**< find the best action of a state */
+        OSpace BestActions(const struct cs_State *, OSpace&) const; /**< find the best action of a state */
         struct cs_State *SearchState(Agent::State) const; /**< search state in memory by its identity */
         void UpdateState(struct cs_State *); /**< update state payoff backward recursively */
 

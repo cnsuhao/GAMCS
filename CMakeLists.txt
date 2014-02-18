@@ -61,7 +61,7 @@ SET(CMAKE_CXX_FLAGS "-std=c++0x -Wall -Wextra -Wno-write-strings")
 SET(PREFIX  ${CMAKE_INSTALL_PREFIX})
 
 # install header files
-SET(INCLUDEDIR  ${CMAKE_INSTALL_PREFIX}/gimcs/include)
+SET(INCLUDEDIR  ${CMAKE_INSTALL_PREFIX}include/gimcs)
 INSTALL(FILES ${LIBGIMCS_PUBLIC_HDRS} DESTINATION ${INCLUDEDIR})
 
 # sub directories

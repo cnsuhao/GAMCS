@@ -26,10 +26,10 @@ ExManager::~ExManager()
 {
 }
 
-void ExManager::ConnectMAgent(MAgent *magent)
+void ExManager::ConnectMAgent(MAgent *agent)
 {
-    ConnectAgent(dynamic_cast<Agent *>(magent));
-    magent = magent;
+    ConnectAgent(dynamic_cast<Agent *>(agent));
+    magent = agent;
 }
 
 void ExManager::Run()
@@ -104,7 +104,7 @@ void ExManager::RemoveNeighbour(int nid)
     exnet->RemoveNeighbour(id, nid);
 }
 
-std::set<int> ExManager::GetMyNeighbours()
+std::set<int> ExManager::GetMyNeighbours() const
 {
 // chech if joined in any network
     if (exnet == NULL)
@@ -118,7 +118,7 @@ std::set<int> ExManager::GetMyNeighbours()
     return exnet->GetNeighbours(id);
 }
 
-bool ExManager::CheckNeighbourShip(int nid)
+bool ExManager::CheckNeighbourShip(int nid) const
 {
 // chech if joined in any network
     if (exnet == NULL)
@@ -181,13 +181,13 @@ void ExManager::RecvStateInfo()
         {
             struct State_Info_Header *merged_state = MergeStateInfo(my_state,
                     re_state);
-            magent->SetStateInfo(merged_state);    // merge the recieved state information to memory
+            magent->UpdateStateInfo(merged_state);    // merge the recieved state information to memory
             free(my_state);
             free(merged_state);
         }
         else
         {
-            magent->SetStateInfo(re_state);
+            magent->AddStateInfo(re_state);
         }
 
     }
@@ -196,7 +196,7 @@ void ExManager::RecvStateInfo()
 
 struct State_Info_Header *ExManager::MergeStateInfo(
         const struct State_Info_Header *origstif,
-        const struct State_Info_Header *recvstif)
+        const struct State_Info_Header *recvstif) const
 {
     if (origstif->st != recvstif->st)
     {
@@ -386,7 +386,7 @@ struct State_Info_Header *ExManager::MergeStateInfo(
     return stif;
 }
 
-void ExManager::SendStateInfo(int toneb, Agent::State st)
+void ExManager::SendStateInfo(int toneb, Agent::State st) const
 {
     struct State_Info_Header *stif = NULL;
     stif = magent->GetStateInfo(st);    // the st may not exist

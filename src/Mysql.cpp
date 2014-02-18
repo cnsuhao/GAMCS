@@ -104,6 +104,18 @@ void Mysql::SetDBArgs(std::string srv, std::string usr, std::string passwd,
     return;
 }
 
+Agent::State Mysql::FirstState() const
+{
+    current_index = 0;
+    return StateByIndex(current_index);
+}
+
+Agent::State Mysql::NextState() const
+{
+    current_index++;
+    return StateByIndex(current_index);
+}
+
 /**
  * \brief Get state value from database by specified index.
  * \param index index
@@ -149,7 +161,7 @@ Agent::State Mysql::StateByIndex(unsigned long index) const
  * \param st state value
  * \return fetched state information, NULL if error
  */
-struct State_Info_Header *Mysql::FetchStateInfo(Agent::State st) const
+struct State_Info_Header *Mysql::GetStateInfo(Agent::State st) const
 {
     if (st == INVALID_STATE)
     {
@@ -243,7 +255,7 @@ struct State_Info_Header *Mysql::FetchStateInfo(Agent::State st) const
  * \param state value
  * \return 1 if found, 0 if not
  */
-int Mysql::SearchState(Agent::State st) const
+bool Mysql::HasState(Agent::State st) const
 {
     char query_string[256];
     sprintf(query_string, "SELECT * FROM %s WHERE State=%ld",
@@ -252,16 +264,16 @@ int Mysql::SearchState(Agent::State st) const
     if (mysql_query(db_con, query_string))
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
-        return 0;
+        return false;
     }
 
     MYSQL_RES *result = mysql_store_result(db_con);
 
     int re;
     if (result == NULL)
-        re = 0;
+        re = false;
     else
-        re = 1;
+        re = true;
 
     mysql_free_result(result);    // free result
     return re;
@@ -369,9 +381,13 @@ void Mysql::UpdateStateInfo(const struct State_Info_Header *stif)
 /**
  * \brief Delete a state from database by its value
  * \param st state value to be delete
+ * FIXME: need to handle the links with other states!
  */
 void Mysql::DeleteState(Agent::State st)
 {
+    WARNNING(
+            "DeleteState() is not completely implemented yet, it's buggy and will not work as expected, DON'T use it!\n");
+
     char query_string[256];
     sprintf(query_string, "DELETE  FROM %s WHERE State=%ld",
             db_t_stateinfo.c_str(), st);    // build delete query
@@ -409,7 +425,7 @@ void Mysql::AddMemoryInfo(const struct Memory_Info *memif)
  * \brief Fetch memory statistics from database.
  * \return memory info struct, NULL if error
  */
-struct Memory_Info *Mysql::FetchMemoryInfo()
+struct Memory_Info *Mysql::GetMemoryInfo() const
 {
     char query_str[256];
     sprintf(query_str, "SELECT * FROM %s ORDER BY TimeStamp DESC LIMIT 1",

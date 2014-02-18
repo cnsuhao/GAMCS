@@ -36,10 +36,10 @@ FIND_LIBRARY(MYSQL_LIBRARY
 SET(MYSQL_INCLUDE_DIRS ${MYSQL_INCLUDE_DIR})
 SET(MYSQL_LIBRARIES ${MYSQL_LIBRARY} )
 
-#include(FindPackageHandleStandardArgs)
+include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set EINA_FOUND to TRUE
 # if all listed variables are TRUE
 find_package_handle_standard_args(mysql DEFAULT_MSG
-    MYSQL_LIBRARY)
+    MYSQL_INCLUDE_DIR MYSQL_LIBRARY)
 
 MARK_AS_ADVANCED(MYSQL_INCLUDE_DIR MYSQL_LIBRARY)

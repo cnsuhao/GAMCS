@@ -32,7 +32,7 @@ void PrintViewer::Show()
     }
 
     // print memory info
-    struct Memory_Info *memif = storage->FetchMemoryInfo();
+    struct Memory_Info *memif = storage->GetMemoryInfo();
     if (memif != NULL)
     {
         printf("\n");
@@ -54,16 +54,15 @@ void PrintViewer::Show()
     }
 
     // print states info
-    Agent::State st;
-    unsigned long index = 0;    // load states from database one by one
-    while ((st = storage->StateByIndex(index)) != INVALID_STATE)    // get state value
+    Agent::State st = storage->FirstState();
+    while (st != INVALID_STATE)    // get state value
     {
-        struct State_Info_Header *stif = storage->FetchStateInfo(st);
+        struct State_Info_Header *stif = storage->GetStateInfo(st);
         if (stif != NULL)
         {
             PrintStateInfo(stif);
             free(stif);
-            index++;
+            st = storage->NextState();
         }
         else
             ERROR("Show(): state: %ld information is NULL!\n", st);
@@ -75,7 +74,7 @@ void PrintViewer::Show()
  * \brief Pretty print State information
  * \param specified State information header
  */
-void PrintViewer::PrintStateInfo(const struct State_Info_Header *stif)
+void PrintViewer::PrintStateInfo(const struct State_Info_Header *stif) const
 {
     if (stif == NULL) return;
 
@@ -129,7 +128,7 @@ void PrintViewer::ShowState(Agent::State st)
         return;
     }
 
-    struct State_Info_Header *stif = storage->FetchStateInfo(st);
+    struct State_Info_Header *stif = storage->GetStateInfo(st);
     if (stif != NULL)
     {
         PrintStateInfo(stif);

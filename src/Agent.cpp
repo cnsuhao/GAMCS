@@ -44,8 +44,7 @@ Agent::~Agent()
  * \return action distribution after appling maximun payoff restrict
  *
  */
-OSpace Agent::Restrict(Agent::State st,
-        OSpace &acts)
+OSpace Agent::Restrict(Agent::State st, OSpace &acts) const
 {
     return MaxPayoffRule(st, acts);
 }

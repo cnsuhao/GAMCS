@@ -26,7 +26,7 @@ class PrintViewer: public MemoryViewer
         void Show();
         void ShowState(Agent::State);
     private:
-        void PrintStateInfo(const struct State_Info_Header *);
+        void PrintStateInfo(const struct State_Info_Header *) const;
 };
 
 #endif /* PRINTVEWER_H_ */
