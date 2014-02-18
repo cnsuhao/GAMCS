@@ -46,9 +46,9 @@ class CSThreadExNet: public ExNet
         void RemoveMember(int);
         void RemoveNeighbour(int, int);
 
-        std::set<int> GetNeighbours(int);
-        std::set<int> GetAllMembers();
-        bool CheckNeighbourShip(int, int);
+        std::set<int> GetNeighbours(int) const;
+        std::set<int> GetAllMembers() const;
+        bool CheckNeighbourShip(int, int) const;
 
         int Send(int, int, void *, size_t); /**< the interface members can use to send messages to a neighbour */
         int Recv(int, int, void *, size_t); /**< the interface members can use to recv message from a neighbour */
@@ -74,7 +74,7 @@ inline struct Channel *CSThreadExNet::GetChannel(int id)
     return &channels[id];
 }
 
-inline std::set<int> CSThreadExNet::GetAllMembers()
+inline std::set<int> CSThreadExNet::GetAllMembers() const
 {
     return members;
 }

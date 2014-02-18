@@ -23,15 +23,15 @@ class GIOM
         /** Default destructor */
         virtual ~GIOM();
         Output Process(Input, OSpace &); /**< choose an output value in an output space under a specified input value */
-        float Entropy(); /**< calculate entropy of this GIOM */
+        float Entropy() const; /**< calculate entropy of this GIOM */
         virtual void Update(); /**< update inner states of GIOM, derived classes may have their own inner states to update */
     protected:
-        virtual OSpace Restrict(Input, OSpace &); /**< restrict the output space to a subspace */
+        virtual OSpace Restrict(Input, OSpace &) const; /**< restrict the output space to a subspace */
         Input cur_in; /**< input value */
         Output cur_out; /**< output value corresponding to cur_in */
         unsigned long process_count; /**< count of processing */
     private:
-        long Random(); /**< generate a random number in range 0 to LONG_MAX. It's where all possibilities and miracles come from! */
+        long Random() const; /**< generate a random number in range 0 to LONG_MAX. It's where all possibilities and miracles come from! */
 };
 
 /**

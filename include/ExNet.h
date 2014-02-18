@@ -19,8 +19,8 @@ class ExNet
         ExNet(int);
         virtual ~ExNet();
 
-        int NumberOfMembers(); /**< number of members in this network */
-        bool HasMember(int); /**< check if a member exists in network */
+        int NumberOfMembers() const; /**< number of members in this network */
+        bool HasMember(int) const; /**< check if a member exists in network */
         /* build the network */
         virtual void AddMember(int) = 0; /**< add a new member to network */
         virtual void AddNeighbour(int, int) = 0; /**< add a neighbour to a member */
@@ -28,9 +28,9 @@ class ExNet
         virtual void RemoveMember(int) = 0; /**< remove a member from network */
         virtual void RemoveNeighbour(int, int) = 0; /**< remove a specified neighbour from a member */
         /* queries */
-        virtual std::set<int> GetNeighbours(int) = 0; /**< get a neighbours list of a specified member */
-        virtual std::set<int> GetAllMembers() = 0; /**< get all members in this network */
-        virtual bool CheckNeighbourShip(int, int) = 0; /**< detect if a member has a specified neighbour */
+        virtual std::set<int> GetNeighbours(int) const = 0; /**< get a neighbours list of a specified member */
+        virtual std::set<int> GetAllMembers() const = 0; /**< get all members in this network */
+        virtual bool CheckNeighbourShip(int, int) const = 0; /**< detect if a member has a specified neighbour */
         /* Sharing facilities which can be used by members in this net */
         virtual int Send(int, int, void *, size_t) = 0; /**< some agent send message to a neighbour */
         virtual int Recv(int, int, void *, size_t) = 0; /**< some agent recieve message from a neighbour */
@@ -43,7 +43,7 @@ class ExNet
  * \brief Get member number in group.
  * \return number of members
  */
-inline int ExNet::NumberOfMembers()
+inline int ExNet::NumberOfMembers() const
 {
     return GetAllMembers().size();
 }

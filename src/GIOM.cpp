@@ -27,7 +27,7 @@ GIOM::~GIOM()
  * \return output space after restrict
  *
  */
-OSpace GIOM::Restrict(Input in, OSpace &outputs)
+OSpace GIOM::Restrict(Input in, OSpace &outputs) const
 {
     UNUSED(in);
     return outputs;    // return all outputs
@@ -61,23 +61,24 @@ GIOM::Output GIOM::Process(Input in, OSpace &outputs)
  * \return entropy value
  *
  */
-float GIOM::Entropy()
+float GIOM::Entropy() const
 {
     printf("This function is not implemented yet!\n");
     return 0.0;
 }
 
-/** \brief Update inner states.
+/** \brief Update inner states and prepare for the next process.
  * Nothing to do for GIOM.
  */
 void GIOM::Update()
 {
+    // clear state and prepare for the next process
     cur_in = INVALID_INPUT;
     cur_out = INVALID_OUTPUT;
     return;
 }
 
-long GIOM::Random()
+long GIOM::Random() const
 {
     std::uniform_int_distribution<long> dist(0, LONG_MAX);
     std::random_device rd;    // to get true random on linux, use rand("/dev/random");

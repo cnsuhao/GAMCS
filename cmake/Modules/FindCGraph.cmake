@@ -13,7 +13,7 @@ if ("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSI
 endif ()
 pkg_check_modules(PC_LIBCGRAPH ${_QUIET} libcgraph)
 
-set (CGRAPH_MIN_VERSION "2.28.0")
+set (CGRAPH_MIN_VERSION "2.0.0")
 if ("${PC_LIBCGRAPH_VERSION}" VERSION_LESS ${CGRAPH_MIN_VERSION})
    MESSAGE(STATUS "libcgraph version required: ${CGRAPH_MIN_VERSION}. Current version: ${PC_LIBCGRAPH_VERSION}.")
 else()
@@ -31,11 +31,11 @@ if (LIBCGRAPH_REQUIRED_VERSION)
    set(CGRAPH_INCLUDE_DIRS ${CGRAPH_INCLUDE_DIR})
    set(CGRAPH_LIBRARIES ${CGRAPH_LIBRARY} )
 
-   #include(FindPackageHandleStandardArgs)
+   include(FindPackageHandleStandardArgs)
    # handle the QUIETLY and REQUIRED arguments and set EINA_FOUND to TRUE
    # if all listed variables are TRUE
    find_package_handle_standard_args(cgraph DEFAULT_MSG
-       CGRAPH_LIBRARY)
+       CGRAPH_INCLUDE_DIR CGRAPH_LIBRARY)
 endif (LIBCGRAPH_REQUIRED_VERSION)
 
 mark_as_advanced(CGRAPH_INCLUDE_DIR CGRAPH_LIBRARY)

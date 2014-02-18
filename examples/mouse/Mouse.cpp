@@ -21,6 +21,7 @@ Mouse::~Mouse()
 
 Agent::State Mouse::GetCurrentState()
 {
+    printf("%s, State %ld\n", name.c_str(), position);
     return position;
 }
 
@@ -44,7 +45,7 @@ void Mouse::PerformAction(Agent::Action act)
 OSpace Mouse::ActionCandidates(Agent::State st)
 {
 //    UNUSED(st);
-    if (count < 50)
+    if (count < 500)
     {
         OSpace acts;
         acts.Clear();

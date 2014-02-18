@@ -28,9 +28,9 @@ class DotViewer: public MemoryViewer
         void CleanShow();   /**< show agent memory cleanly */
         void ShowState(Agent::State);
     private:
-        void DotStateInfo(const struct State_Info_Header *);
-        void CleanDotStateInfo(const struct State_Info_Header *);   /**< show state info cleanly */
-        const std::string Eat2String(Agent::EnvAction);
+        void DotStateInfo(const struct State_Info_Header *) const;
+        void CleanDotStateInfo(const struct State_Info_Header *) const;   /**< show state info cleanly */
+        const std::string Eat2String(Agent::EnvAction) const;
 
         Agent::State last_state;
         Agent::Action last_action;

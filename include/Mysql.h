@@ -19,7 +19,7 @@ class Mysql: public Storage
         Mysql() :
                 db_con(NULL), db_server(""), db_user(""), db_password(""), db_name(
                         ""), db_t_stateinfo("StateInfo"), db_t_meminfo(
-                        "MemoryInfo")
+                        "MemoryInfo"), current_index(0)
         {
         }
 
@@ -30,15 +30,20 @@ class Mysql: public Storage
         int Connect();
         void Close();
         void SetDBArgs(std::string, std::string, std::string, std::string);
-        Agent::State StateByIndex(unsigned long) const;
-        struct State_Info_Header *FetchStateInfo(Agent::State) const;
-        int SearchState(Agent::State) const;
+
+        Agent::State FirstState() const;
+        Agent::State NextState() const;
+        bool HasState(Agent::State) const;
+
+        struct State_Info_Header *GetStateInfo(Agent::State) const;
         void AddStateInfo(const struct State_Info_Header *);
         void UpdateStateInfo(const struct State_Info_Header *);
         void DeleteState(Agent::State);
+
         void AddMemoryInfo(const struct Memory_Info *);
-        struct Memory_Info *FetchMemoryInfo();
-        std::string GetMemoryName();
+        struct Memory_Info *GetMemoryInfo() const;
+        std::string GetMemoryName() const;
+
     private:
         MYSQL *db_con; /**< database connection handler */
         std::string db_server; /**< database server address */
@@ -47,10 +52,13 @@ class Mysql: public Storage
         std::string db_name; /**< database name */
         std::string db_t_stateinfo; /**< table name for storing state information */
         std::string db_t_meminfo; /**< table name for storing memory information */
+        mutable unsigned long current_index;
+
+        Agent::State StateByIndex(unsigned long) const;
 };
 
 
-inline std::string Mysql::GetMemoryName()
+inline std::string Mysql::GetMemoryName() const
 {
     return db_name;
 }

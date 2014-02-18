@@ -41,7 +41,7 @@ void DotViewer::Show()
     printf("digraph %s \n{\n", storage->GetMemoryName().c_str());
 
     // memory info
-    struct Memory_Info *memif = storage->FetchMemoryInfo();
+    struct Memory_Info *memif = storage->GetMemoryInfo();
     if (memif != NULL)
     {
         printf(
@@ -65,16 +65,15 @@ void DotViewer::Show()
     printf("node [color=black,shape=circle]\n");
     printf("rank=\"same\"\n");
     // print states info
-    Agent::State st;
-    unsigned long index = 0;    // load states from database one by one
-    while ((st = storage->StateByIndex(index)) != INVALID_STATE)    // get state value
+    Agent::State st = storage->FirstState();
+    while (st != INVALID_STATE)    // get state value
     {
-        struct State_Info_Header *stif = storage->FetchStateInfo(st);
+        struct State_Info_Header *stif = storage->GetStateInfo(st);
         if (stif != NULL)
         {
             DotStateInfo(stif);
             free(stif);
-            index++;
+            st = storage->NextState();
         }
         else
             ERROR("Show(): state: %ld information is NULL!\n", st);
@@ -99,7 +98,7 @@ void DotViewer::CleanShow()
     printf("digraph %s \n{\n", storage->GetMemoryName().c_str());
 
     // memory info
-    struct Memory_Info *memif = storage->FetchMemoryInfo();
+    struct Memory_Info *memif = storage->GetMemoryInfo();
     if (memif != NULL)
     {
         printf(
@@ -123,16 +122,15 @@ void DotViewer::CleanShow()
     printf("node [color=black,shape=circle]\n");
     printf("rank=\"same\"\n");
     // print states info
-    Agent::State st;
-    unsigned long index = 0;    // load states from database one by one
-    while ((st = storage->StateByIndex(index)) != INVALID_STATE)    // get state value
+    Agent::State st = storage->FirstState();
+    while (st != INVALID_STATE)    // get state value
     {
-        struct State_Info_Header *stif = storage->FetchStateInfo(st);
+        struct State_Info_Header *stif = storage->GetStateInfo(st);
         if (stif != NULL)
         {
             CleanDotStateInfo(stif);
             free(stif);
-            index++;
+            st = storage->NextState();
         }
         else
             ERROR("Show(): state: %ld information is NULL!\n", st);
@@ -141,7 +139,7 @@ void DotViewer::CleanShow()
     storage->Close();
 }
 
-void DotViewer::DotStateInfo(const struct State_Info_Header *stif)
+void DotViewer::DotStateInfo(const struct State_Info_Header *stif) const
 {
     /* generated state example:
      *
@@ -241,7 +239,7 @@ void DotViewer::DotStateInfo(const struct State_Info_Header *stif)
     }
 }
 
-void DotViewer::CleanDotStateInfo(const struct State_Info_Header *stif)
+void DotViewer::CleanDotStateInfo(const struct State_Info_Header *stif) const
 {
     /* generated state example:
      *
@@ -267,7 +265,7 @@ void DotViewer::CleanDotStateInfo(const struct State_Info_Header *stif)
     }
 }
 
-const std::string DotViewer::Eat2String(Agent::EnvAction eat)
+const std::string DotViewer::Eat2String(Agent::EnvAction eat) const
 {
     char tmp[28];
     if (eat >= 0)
@@ -325,7 +323,7 @@ void DotViewer::ShowState(Agent::State st)
     printf("label=\"infoset of state %ld in memory %s\"\n", st,
             storage->GetMemoryName().c_str());
 
-    struct State_Info_Header *stif = storage->FetchStateInfo(st);
+    struct State_Info_Header *stif = storage->GetStateInfo(st);
     if (stif != NULL)
     {
         // show state info
@@ -386,7 +384,7 @@ void DotViewer::ShowState(Agent::State st)
 
             if (lk[i].nst != stif->st)    // get the payoff of next state, exclude self
             {
-                struct State_Info_Header *nstif = storage->FetchStateInfo(
+                struct State_Info_Header *nstif = storage->GetStateInfo(
                         lk[i].nst);
                 if (nstif == NULL)    // shouldn't happen
                     ERROR("next state: %ld returns NULL!\n", lk[i].nst);

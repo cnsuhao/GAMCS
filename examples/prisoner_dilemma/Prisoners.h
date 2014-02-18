@@ -55,6 +55,7 @@ class PrisonerA: public CSThreadIncarnation
             while (actB == false)
                 usleep(10000);    // sleep, wait for B to act
             actB = false;    // next turn, set actB as false
+            printf("%s, State: %ld\n", name.c_str(), current_state);
             return current_state;
         }
 
