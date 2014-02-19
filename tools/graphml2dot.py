@@ -1,10 +1,30 @@
 #!/usr/bin/env python
+## -----------------------------------------------------------------------------
+##
+## GIMCS -- Generalized Intelligence Model and Computer Simulation
+##
+## Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
+##
+## This program is free software; you can redistribute it and/or
+## modify it under the terms of the GNU General Public License
+## as published by the Free Software Foundation; either version 2
+## of the License, or (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program; if not, write to the Free Software
+## Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+##
+## -----------------------------------------------------------------------------
+##
+## graphml2dot,py - tool for converting graphs in GraphML format to GraphViz dot format
+##
+## -----------------------------------------------------------------------------
 
-# graphml2dot,py - tool for converting graphs in GraphML format to GraphViz dot format
-#
-# Last changed in libgimcs 0.1.0 [February 18, 2014]
-# Copyright (c) 2013-2014 Andy-Huang
-#
 
 import lxml.etree as et
 import sys
@@ -46,7 +66,7 @@ if __name__ == '__main__':
 
     # convert nodes
     # required attr for node: label, id
-    # required attr for edge: label
+    # required attr for edge:
     for n in nodes:
         node_attribs = {}
         print n.attrib['id'],  
@@ -59,9 +79,10 @@ if __name__ == '__main__':
     for e in edges:
         edge_attribs = {}
         print e.attrib['source'], '->', e.attrib['target'],
-        for data in e.findall(graphml.get('data')):
-            edge_attribs[data.get('key')] = data.text 
-        str_edge = '[label=' + edge_attribs['label'] +  ']'
-        print str_edge
+        #for data in e.findall(graphml.get('data')):
+        #    edge_attribs[data.get('key')] = data.text 
+        #str_edge = '[label=' + edge_attribs['label'] +  ']'
+        #print str_edge
+        print
 
     print "}"
