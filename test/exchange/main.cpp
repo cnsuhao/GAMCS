@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 //        delete mysql[i];
     }
     // save topo structure
-//    commnet.DumpTopoToFile("commnet.dot");
+
     printf("------- quit!\n");
 
     return 0;
