@@ -4,6 +4,9 @@
 #include <stddef.h>     // NULL
 #include "Debug.h"
 
+namespace gimcs
+{
+
 const unsigned long INVALID_INPUT = 0; /**< valid states start from 1 */
 const long INVALID_OUTPUT = LONG_MAX; /**< the maximun value is used to indicate an invalid output, be careful! */
 
@@ -25,11 +28,13 @@ class GIOM
         Output Process(Input, OSpace &); /**< choose an output value in an output space under a specified input value */
         float Entropy() const; /**< calculate entropy of this GIOM */
         virtual void Update(); /**< update inner states of GIOM, derived classes may have their own inner states to update */
+
     protected:
         virtual OSpace Restrict(Input, OSpace &) const; /**< restrict the output space to a subspace */
         Input cur_in; /**< input value */
         Output cur_out; /**< output value corresponding to cur_in */
         unsigned long process_count; /**< count of processing */
+
     private:
         long Random() const; /**< generate a random number in range 0 to LONG_MAX. It's where all possibilities and miracles come from! */
 };
@@ -204,8 +209,8 @@ class OSpace
         {
             // check range
             if ((end - start) / step < 0)
-                ERROR("Invalid range! %ld --> %ld (step: %ld) \n", start,
-                        end, step);
+                ERROR("Invalid range! %ld --> %ld (step: %ld) \n", start, end,
+                        step);
 
             if (frag_num == the_capacity) Expand(2 * the_capacity);
 
@@ -250,7 +255,7 @@ class OSpace
          * Get the First output in space.
          * @return the First output
          */
-        GIOM::Output First()
+        GIOM::Output First() const
         {
             current_index = 0;
             return operator[](current_index);
@@ -260,7 +265,7 @@ class OSpace
          * Get the Last output in space.
          * @return the Last output
          */
-        GIOM::Output Last()
+        GIOM::Output Last() const
         {
             return operator[](Size());
         }
@@ -269,7 +274,7 @@ class OSpace
          * Iterator the space and get the Next output.
          * @return the Next output
          */
-        GIOM::Output Next()
+        GIOM::Output Next() const
         {
             current_index++;
             return operator[](current_index);
@@ -278,7 +283,9 @@ class OSpace
     private:
         olsize_t frag_num;    // number of fragments
         olsize_t the_capacity;    // space Capacity
-        olsize_t current_index;    // used by iterator
+        mutable olsize_t current_index;    // used by iterator
         OFragment *outputs;
 };
+
+}    // namespace gimcs
 #endif // GIOM_H

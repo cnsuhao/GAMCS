@@ -9,7 +9,7 @@
 #include "Mouse.h"
 
 Mouse::Mouse(std::string n) :
-        Incarnation(n), count(0)
+        Avatar(n), count(0)
 {
     position = 3;
 }

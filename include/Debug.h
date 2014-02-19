@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+namespace gimcs
+{
+
 // debug on/off
 #ifdef _DEBUG_
 #define dbgprt(pref, fmt,...)  do{printf("%s ", pref);printf(fmt,##__VA_ARGS__);}while(0)
@@ -23,4 +26,5 @@
 
 void PrintStateInfo(const struct State_Info_Header *);
 
+}
 #endif // DEBUG_H

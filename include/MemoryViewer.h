@@ -10,6 +10,9 @@
 #include "Debug.h"
 #include "Agent.h"
 
+namespace gimcs
+{
+
 class Storage;
 
 /**
@@ -22,9 +25,9 @@ class MemoryViewer
         MemoryViewer(Storage *);
         virtual ~MemoryViewer();
 
-        void AttachStorage(Storage *);     /**< set storage in which memory is stored */
-        virtual void Show() = 0;    /**< show the whole memory */
-        virtual void ShowState(Agent::State) = 0;   /**< show a specified state */
+        void AttachStorage(Storage *); /**< set storage in which memory is stored */
+        virtual void Show() = 0; /**< show the whole memory */
+        virtual void ShowState(Agent::State) = 0; /**< show a specified state */
 
     protected:
         Storage *storage;
@@ -34,4 +37,6 @@ inline void MemoryViewer::AttachStorage(Storage *sg)
 {
     storage = sg;
 }
+
+}    // namespace gimcs
 #endif /* MEMORYVIEWER_H_ */

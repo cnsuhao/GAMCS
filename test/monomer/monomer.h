@@ -1,9 +1,11 @@
 #ifndef MONOMER_H
 #define MONOMER_H
 #include <string>
-#include "Incarnation.h"
+#include "Avatar.h"
 
-class Monomer: public Incarnation
+using namespace gimcs;
+
+class Monomer: public Avatar
 {
     public:
         /** Default constructor */

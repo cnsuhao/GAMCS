@@ -42,8 +42,8 @@ SET(LIBGIMCS_PUBLIC_HDRS
     ${PROJECT_SOURCE_DIR}/include/Agent.h
     ${PROJECT_SOURCE_DIR}/include/MAgent.h
     ${PROJECT_SOURCE_DIR}/include/CSMAgent.h
-    ${PROJECT_SOURCE_DIR}/include/Incarnation.h
-    ${PROJECT_SOURCE_DIR}/include/CSThreadIncarnation.h
+    ${PROJECT_SOURCE_DIR}/include/Avatar.h
+    ${PROJECT_SOURCE_DIR}/include/CSThreadAvatar.h
     ${PROJECT_SOURCE_DIR}/include/ExNet.h
     ${PROJECT_SOURCE_DIR}/include/CSThreadExNet.h
     ${PROJECT_SOURCE_DIR}/include/ExManager.h
@@ -61,7 +61,7 @@ SET(CMAKE_CXX_FLAGS "-std=c++0x -Wall -Wextra -Wno-write-strings")
 SET(PREFIX  ${CMAKE_INSTALL_PREFIX})
 
 # install header files
-SET(INCLUDEDIR  ${CMAKE_INSTALL_PREFIX}include/gimcs)
+SET(INCLUDEDIR  ${CMAKE_INSTALL_PREFIX}/include/gimcs)
 INSTALL(FILES ${LIBGIMCS_PUBLIC_HDRS} DESTINATION ${INCLUDEDIR})
 
 # sub directories

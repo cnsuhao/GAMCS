@@ -7,6 +7,9 @@
 #include "Debug.h"
 #include "Agent.h"
 
+namespace gimcs
+{
+
 /**
  * \brief Pretty print State information
  * \param specified State information header
@@ -40,12 +43,11 @@ void PrintStateInfo(const struct State_Info_Header *stif)
         printf("\t Action: %ld,\t\t Payoff: %.2f\n", atif[i].act,
                 atif[i].payoff);
     }
-    printf(
-            "------------------- ForwardLinks, Num: %d --------------------\n",
+    printf("------------------- ForwardLinks, Num: %d --------------------\n",
             stif->lk_num);
     len = stif->act_num * sizeof(struct Action_Info);
     p += len;
-    struct Forward_Link *lk = (struct Forward_Link *) p;
+    struct Forward_Link_Info *lk = (struct Forward_Link_Info *) p;
     for (i = 0; i < stif->lk_num; i++)
     {
         printf("\t ForwardLink:\t\t  .|+++ %ld +++ %ld ++> %ld\n", lk[i].eat,
@@ -56,6 +58,5 @@ void PrintStateInfo(const struct State_Info_Header *stif)
     return;
 }
 
-
-
+}    // namespace gimcs
 

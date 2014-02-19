@@ -7,7 +7,7 @@
 #include <climits>
 #include <graphviz/cgraph.h>
 #include <assert.h>
-#include <string.h>
+#include <cassert>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,6 +15,9 @@
 #include "CSThreadExNet.h"
 #include "Agent.h"
 #include "Debug.h"
+
+namespace gimcs
+{
 
 CSThreadExNet::CSThreadExNet()
 {
@@ -153,12 +156,12 @@ int CSThreadExNet::Recv(int toid, int fromid, void *buffer, size_t buf_size)
             else
                 re = buf_size;    // ok, msg is recieved
 #ifdef _DEBUG_MORE_
-            printf(
-                    "++++++++++++++++++++++++ %d recv msg from any one ++++++++++++++++++++++++\n",
-                    toid);
-            PrintStateInfo(stif);
-            printf(
-                    "++++++++++++++++++++++++++++++ Recv End ++++++++++++++++++++++++++++++\n\n");
+                        printf(
+                                "++++++++++++++++++++++++ %d recv msg from any one ++++++++++++++++++++++++\n",
+                                toid);
+                        PrintStateInfo(stif);
+                        printf(
+                                "++++++++++++++++++++++++++++++ Recv End ++++++++++++++++++++++++++++++\n\n");
 #endif // _DEBUG_
         }
         else    // recieve the msg from a specifed sender
@@ -523,3 +526,5 @@ int CSThreadExNet::WrapDec(int ptr)
 
     return nptr;
 }
+
+}    // namespace gimcs

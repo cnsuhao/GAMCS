@@ -5,10 +5,13 @@
  *      Author: andy
  */
 
-#ifndef MEIAGENT_H_
-#define MEIAGENT_H_
+#ifndef MAGENT_H_
+#define MAGENT_H_
 
 #include <Agent.h>
+
+namespace gimcs
+{
 
 /**
  *  Manipulatable Agent
@@ -34,4 +37,6 @@ class MAgent: public Agent
         virtual bool HasState(State) const = 0;
 };
 
-#endif /* MEIAGENT_H_ */
+}    // namespace gimcs
+
+#endif /* MAGENT_H_ */

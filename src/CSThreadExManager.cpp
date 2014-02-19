@@ -7,14 +7,21 @@
 #include <pthread.h>
 #include "CSThreadExManager.h"
 
-CSThreadExManager::CSThreadExManager()
-{}
+namespace gimcs
+{
 
-CSThreadExManager::CSThreadExManager(int i) : ExManager(i)
-{}
+CSThreadExManager::CSThreadExManager()
+{
+}
+
+CSThreadExManager::CSThreadExManager(int i) :
+        ExManager(i)
+{
+}
 
 CSThreadExManager::~CSThreadExManager()
-{}
+{
+}
 
 pthread_t CSThreadExManager::ThreadRun()
 {
@@ -23,3 +30,5 @@ pthread_t CSThreadExManager::ThreadRun()
 
     return tid;
 }
+
+}    // namespace gimcs

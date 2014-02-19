@@ -5,12 +5,14 @@
  *      Author: andy
  */
 
-#ifndef MEINCARNATION_H_
-#define MEINCARNATION_H_
-
+#ifndef EXMANAGER_H
+#define EXMANAGER_H
 #include <set>
-#include "Incarnation.h"
+#include "Avatar.h"
 #include "Agent.h"
+
+namespace gimcs
+{
 
 class MAgent;
 class ExNet;
@@ -18,7 +20,7 @@ class ExNet;
 /**
  * Exchange Manager
  */
-class ExManager: private Incarnation
+class ExManager: private Avatar
 {
     public:
         ExManager();
@@ -30,7 +32,7 @@ class ExManager: private Incarnation
 
         void ConnectMAgent(MAgent *);
         void SetCps(int);
-        void Incar_SetSps(int);
+        void Ava_SetSps(int);
 
         void JoinExNet(ExNet *);
         void LeaveExNet();
@@ -41,15 +43,15 @@ class ExManager: private Incarnation
 
     protected:
         int id;
-        virtual Agent::State Incar_GetCurrentState() = 0;
-        virtual void Incar_PerformAction(Agent::Action) = 0;
-        virtual OSpace Incar_ActionCandidates(Agent::State) = 0;
-        virtual float Incar_OriginalPayoff(Agent::State);
+        virtual Agent::State Ava_GetCurrentState() = 0;
+        virtual void Ava_PerformAction(Agent::Action) = 0;
+        virtual OSpace Ava_ActionCandidates(Agent::State) = 0;
+        virtual float Ava_OriginalPayoff(Agent::State);
 
     private:
         MAgent *magent;
         ExNet *exnet;
-        int cps;    /**< count per sending */
+        int cps; /**< count per sending */
         bool quit;
 
         struct State_Info_Header *MergeStateInfo(
@@ -69,9 +71,10 @@ inline void ExManager::SetCps(int c)
     cps = c;
 }
 
-inline void ExManager::Incar_SetSps(int s)
+inline void ExManager::Ava_SetSps(int s)
 {
     SetSps(s);
 }
 
-#endif /* MEINCARNATION_H_ */
+}    // namespace gimcs
+#endif /* EXMANAGER_H */

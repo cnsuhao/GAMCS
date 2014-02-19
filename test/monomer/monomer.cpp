@@ -10,7 +10,7 @@
 #include "monomer.h"
 
 Monomer::Monomer(std::string n) :
-        Incarnation(n)
+        Avatar(n)
 {
     position = 12;
 }
@@ -68,7 +68,7 @@ OSpace Monomer::ActionCandidates(Agent::State st)
 
 float Monomer::OriginalPayoff(Agent::State st)
 {
-    return -( st * 0.1);
+    return -(st * 0.1);
 //    if (st == 9)
 //        return 1;
 //    else if (st == 13)

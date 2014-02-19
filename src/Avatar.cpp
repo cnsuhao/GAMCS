@@ -9,33 +9,37 @@
 #include <stdlib.h>
 #include <sys/timeb.h>
 #include <unistd.h>
-#include "Incarnation.h"
+#include "Avatar.h"
 #include "Debug.h"
 
-Incarnation::Incarnation() :
-        name("unnamed avatar"), sps(-1), incar_loop_count(0), myagent(NULL), control_step_time(
+namespace gimcs
+{
+
+Avatar::Avatar() :
+        name("unnamed avatar"), sps(-1), ava_loop_count(0), myagent(NULL), control_step_time(
                 0)
 {
 }
 
-Incarnation::Incarnation(std::string n) :
-        name(n), sps(-1), incar_loop_count(0), myagent(NULL), control_step_time(0)
+Avatar::Avatar(std::string n) :
+        name(n), sps(-1), ava_loop_count(0), myagent(NULL), control_step_time(
+                0)
 {
 }
 
-Incarnation::~Incarnation()
+Avatar::~Avatar()
 {
 }
 
 /**
  * \brief Launch a avatar continuously.
  */
-void Incarnation::Launch()
+void Avatar::Launch()
 {
     while (true)
     {
-        incar_loop_count++;    // inc count
-        dbgmoreprt("Enter Launch Loop ", "----------------------------------------------------------- count == %d\n", incar_loop_count);
+        ava_loop_count++;    // inc count
+        dbgmoreprt("Enter Launch Loop ", "----------------------------------------------------------- count == %d\n", ava_loop_count);
 
         unsigned long start_time = GetCurrentTime();
 
@@ -91,15 +95,17 @@ void Incarnation::Launch()
  * \return original payoff of st
  *
  */
-float Incarnation::OriginalPayoff(Agent::State st)
+float Avatar::OriginalPayoff(Agent::State st)
 {
     UNUSED(st);
     return 1.0;    // original payoff of states is 1.0 by default
 }
 
-unsigned long Incarnation::GetCurrentTime()
+unsigned long Avatar::GetCurrentTime()
 {
     struct timeb tb;
     ftime(&tb);
     return 1000 * tb.time + tb.millitm;
 }
+
+}    // namespace gimcs

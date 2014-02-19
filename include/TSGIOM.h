@@ -2,6 +2,9 @@
 #define TSGIOM_H
 #include "GIOM.h"
 
+namespace gimcs
+{
+
 /**
  * Time-Sequential Generalized Input Output Model
  */
@@ -20,4 +23,5 @@ class TSGIOM: public GIOM
     private:
 };
 
+}    // namespace gimcs
 #endif // TSGIOM_H

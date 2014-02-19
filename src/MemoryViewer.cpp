@@ -10,12 +10,16 @@
 #include "Storage.h"
 #include "Debug.h"
 
+namespace gimcs
+{
+
 MemoryViewer::MemoryViewer() :
         storage(NULL)
 {
 }
 
-MemoryViewer::MemoryViewer(Storage *sg) : storage(sg)
+MemoryViewer::MemoryViewer(Storage *sg) :
+        storage(sg)
 {
 }
 
@@ -23,3 +27,4 @@ MemoryViewer::~MemoryViewer()
 {
 }
 
+}    // namespace gimcs

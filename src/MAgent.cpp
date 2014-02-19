@@ -7,6 +7,9 @@
 
 #include "MAgent.h"
 
+namespace gimcs
+{
+
 MAgent::MAgent()
 {
 }
@@ -24,3 +27,5 @@ MAgent::MAgent(int i, float dr, float th) :
 MAgent::~MAgent()
 {
 }
+
+}    // namespace gimcs

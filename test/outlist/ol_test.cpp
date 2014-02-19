@@ -8,6 +8,8 @@
 #include "stdio.h"
 #include "GIOM.h"
 
+using namespace gimcs;
+
 int main(void)
 {
     OSpace ol;

@@ -10,6 +10,9 @@
 #include <string>
 #include "Storage.h"
 
+namespace gimcs
+{
+
 /**
  * Use Mysql databases as storage.
  */
@@ -57,10 +60,10 @@ class Mysql: public Storage
         Agent::State StateByIndex(unsigned long) const;
 };
 
-
 inline std::string Mysql::GetMemoryName() const
 {
     return db_name;
 }
 
+}    // namespace gimcs
 #endif /* MYSQL_H_ */

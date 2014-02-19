@@ -5,9 +5,12 @@
  *      Author: andy
  */
 
-#ifndef MENET_H_
-#define MENET_H_
+#ifndef EXNET_H_
+#define EXNET_H_
 #include <stddef.h>
+
+namespace gimcs
+{
 
 /**
  * Exchange Network
@@ -47,4 +50,6 @@ inline int ExNet::NumberOfMembers() const
 {
     return GetAllMembers().size();
 }
-#endif /* MENET_H_ */
+
+}    // namespace gimcs
+#endif /* EXNET_H_ */

@@ -9,15 +9,17 @@
 #define MESSAGER_H_
 #include "ExManager.h"
 
+using namespace gimcs;
+
 class Msger: public ExManager
 {
     public:
         Msger() :
-        position(5), count(0)
+                position(5), count(0)
         {
         }
         Msger(int i) :
-        ExManager(i), position(5), count(0)
+                ExManager(i), position(5), count(0)
         {
         }
         ~Msger()
@@ -28,13 +30,13 @@ class Msger: public ExManager
         Agent::State position;
         int count;
 
-        Agent::State Incar_GetCurrentState()
+        Agent::State Ava_GetCurrentState()
         {
             printf("Messager %d, State: %ld\n", id, position);
             return position;
         }
 
-        void Incar_PerformAction(Agent::Action act)
+        void Ava_PerformAction(Agent::Action act)
         {
             position += act;
 
@@ -43,7 +45,7 @@ class Msger: public ExManager
             return;
         }
 
-        OSpace Incar_ActionCandidates(Agent::State st)
+        OSpace Ava_ActionCandidates(Agent::State st)
         {
             if (count < 500)
             {
@@ -65,7 +67,7 @@ class Msger: public ExManager
                 return OSpace();    // return an empty list
         }
 
-        float Incar_OriginalPayoff(Agent::State st)
+        float Ava_OriginalPayoff(Agent::State st)
         {
             if (st == 9)
                 return 1;

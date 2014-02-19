@@ -8,6 +8,9 @@
 #include "PrintViewer.h"
 #include "Storage.h"
 
+namespace gimcs
+{
+
 PrintViewer::PrintViewer() :
         MemoryViewer()
 {
@@ -44,7 +47,8 @@ void PrintViewer::Show()
         printf("last state: \t%ld\n", memif->last_st);
         printf("last action: \t%ld\n", memif->last_act);
         free(memif);    // free it, the memory struct are not a substaintial struct for running, it's just used to store meta-memory information
-        printf("===========================================================\n\n");
+        printf(
+                "===========================================================\n\n");
     }
     else
     {
@@ -103,12 +107,11 @@ void PrintViewer::PrintStateInfo(const struct State_Info_Header *stif) const
         printf("\t Action: %ld,\t\t Payoff: %.2f\n", atif[i].act,
                 atif[i].payoff);
     }
-    printf(
-            "------------------- ForwardLinks, Num: %d --------------------\n",
+    printf("------------------- ForwardLinks, Num: %d --------------------\n",
             stif->lk_num);
     len = stif->act_num * sizeof(struct Action_Info);
     p += len;
-    struct Forward_Link *lk = (struct Forward_Link *) p;
+    struct Forward_Link_Info *lk = (struct Forward_Link_Info *) p;
     for (i = 0; i < stif->lk_num; i++)
     {
         printf("\t ForwardLink:\t\t  .|+++ %ld +++ %ld ++> %ld\n", lk[i].eat,
@@ -140,3 +143,5 @@ void PrintViewer::ShowState(Agent::State st)
     }
     storage->Close();
 }
+
+}    // namespace gimcs

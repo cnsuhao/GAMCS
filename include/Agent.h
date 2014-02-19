@@ -1,8 +1,11 @@
-#ifndef IAGENT_H
-#define IAGENT_H
+#ifndef AGENT_H
+#define AGENT_H
 #include <stddef.h>
 #include "TSGIOM.h"
 #include "Debug.h"
+
+namespace gimcs
+{
 
 const unsigned long INVALID_STATE = INVALID_INPUT;
 const long INVALID_ACTION = INVALID_OUTPUT;
@@ -81,7 +84,7 @@ inline void Agent::SetDegreeOfCuriosity(float pf)
 /** forward link struct for a state
  *  current state + act + eat = nst
  */
-struct Forward_Link
+struct Forward_Link_Info
 {
         Agent::Action act; /**< action */
         Agent::EnvAction eat; /**< env act */
@@ -126,4 +129,5 @@ struct Memory_Info
         Agent::Action last_act; /**< last performed Agent::Action when saving memory */
 };
 
-#endif // IAGENT_H
+}    // namespace gimcs
+#endif // AGENT_H
