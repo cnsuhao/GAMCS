@@ -10,6 +10,9 @@
 #include "Mysql.h"
 #include "Debug.h"
 
+namespace gimcs
+{
+
 /**
  * \brief Connect to database.
  * \return -1 for error, 0 for success
@@ -220,7 +223,7 @@ struct State_Info_Header *Mysql::GetStateInfo(Agent::State st) const
     stif->count = atol(row[3]);
     stif->eat_num = ea_len / sizeof(struct EnvAction_Info);
     stif->act_num = ai_len / sizeof(struct Action_Info);
-    stif->lk_num = lk_len / sizeof(struct Forward_Link);
+    stif->lk_num = lk_len / sizeof(struct Forward_Link_Info);
     stif->size = stif_size;
 
     unsigned char *ptr = (unsigned char *) stif;    // use point ptr to travel through each subpart
@@ -295,7 +298,7 @@ void Mysql::AddStateInfo(const struct State_Info_Header *stif)
     // get lenght of several subparts
     unsigned long ea_len = stif->eat_num * sizeof(struct EnvAction_Info);
     unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
-    unsigned long lk_len = stif->lk_num * sizeof(struct Forward_Link);
+    unsigned long lk_len = stif->lk_num * sizeof(struct Forward_Link_Info);
 
     unsigned char *p = (unsigned char *) stif;    // use p to travel
 
@@ -309,7 +312,7 @@ void Mysql::AddStateInfo(const struct State_Info_Header *stif)
 
     // point to forward link part
     p += ai_len;
-    struct Forward_Link *lk = (struct Forward_Link *) p;
+    struct Forward_Link_Info *lk = (struct Forward_Link_Info *) p;
 
     char ea_chunk[2 * ea_len + 1];    // temporary buffer to put envir action info
     mysql_real_escape_string(db_con, ea_chunk, (char *) eaif, ea_len);
@@ -346,7 +349,7 @@ void Mysql::UpdateStateInfo(const struct State_Info_Header *stif)
 
     unsigned long ea_len = stif->eat_num * sizeof(struct EnvAction_Info);
     unsigned long ai_len = stif->act_num * sizeof(struct Action_Info);
-    unsigned long lk_len = stif->lk_num * sizeof(struct Forward_Link);
+    unsigned long lk_len = stif->lk_num * sizeof(struct Forward_Link_Info);
 
     unsigned char *p = (unsigned char *) stif;
     p += sizeof(struct State_Info_Header);
@@ -356,7 +359,7 @@ void Mysql::UpdateStateInfo(const struct State_Info_Header *stif)
     struct Action_Info *atif = (struct Action_Info *) p;
 
     p += ai_len;
-    struct Forward_Link *lk = (struct Forward_Link *) p;
+    struct Forward_Link_Info *lk = (struct Forward_Link_Info *) p;
 
     char ea_chunk[2 * ea_len + 1];
     mysql_real_escape_string(db_con, ea_chunk, (char *) eaif, ea_len);
@@ -471,3 +474,5 @@ struct Memory_Info *Mysql::GetMemoryInfo() const
 
     return memif;
 }
+
+}    // namespace gimcs

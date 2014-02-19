@@ -7,7 +7,9 @@
 #include <string>
 #include <unistd.h>
 #include <stdio.h>
-#include "CSThreadIncarnation.h"
+#include "CSThreadAvatar.h"
+
+using namespace gimcs;
 
 /**
  * state representation:
@@ -29,20 +31,20 @@
  *  | betrayal| -10, 0  |  -8, -8  |
  */
 
-Agent::State current_state = 1; // start from state 1
+Agent::State current_state = 1;    // start from state 1
 
 /* take turns to act */
 bool actA = false;
 bool actB = true;    // let A act first
 
 int runtimes = 100;    // number of rounds
-bool quit_notification = false; // notify opponent to quit
+bool quit_notification = false;    // notify opponent to quit
 
-class PrisonerA: public CSThreadIncarnation
+class PrisonerA: public CSThreadAvatar
 {
     public:
         PrisonerA(std::string n) :
-                CSThreadIncarnation(n)
+                CSThreadAvatar(n)
         {
         }
         ~PrisonerA()
@@ -98,7 +100,7 @@ class PrisonerA: public CSThreadIncarnation
             }
             else
             {
-                actA = true;        //
+                actA = true;    //
                 quit_notification = true;    // tell B to quit
             }
             return re;
@@ -128,11 +130,11 @@ class PrisonerA: public CSThreadIncarnation
         }
 };
 
-class PrisonerB: public CSThreadIncarnation
+class PrisonerB: public CSThreadAvatar
 {
     public:
         PrisonerB(std::string n) :
-                CSThreadIncarnation(n)
+                CSThreadAvatar(n)
         {
         }
         ~PrisonerB()

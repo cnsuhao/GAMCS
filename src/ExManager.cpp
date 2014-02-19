@@ -12,6 +12,9 @@
 #include "MAgent.h"
 #include "ExManager.h"
 
+namespace gimcs
+{
+
 ExManager::ExManager() :
         id(0), magent(NULL), exnet(NULL), cps(10), quit(false)
 {
@@ -134,33 +137,33 @@ bool ExManager::CheckNeighbourShip(int nid) const
 
 inline Agent::State ExManager::GetCurrentState()
 {
-    return Incar_GetCurrentState();
+    return Ava_GetCurrentState();
 }
 
 inline void ExManager::PerformAction(Agent::Action act)
 {
-    return Incar_PerformAction(act);
+    return Ava_PerformAction(act);
 }
 
 inline OSpace ExManager::ActionCandidates(Agent::State st)
 {
     // check exps
-    if (incar_loop_count % cps == 0)    // time to stop incarnation and exchange memory
+    if (ava_loop_count % cps == 0)    // time to stop avatar and exchange memory
     {
         return OSpace();
     }
 
-    OSpace outputs = Incar_ActionCandidates(st);
-    if (outputs.Empty()) quit = true;   // quit when incarnation quits
+    OSpace outputs = Ava_ActionCandidates(st);
+    if (outputs.Empty()) quit = true;    // quit when avatar quits
     return outputs;
 }
 
 inline float ExManager::OriginalPayoff(Agent::State st)
 {
-    return Incar_OriginalPayoff(st);
+    return Ava_OriginalPayoff(st);
 }
 
-float ExManager::Incar_OriginalPayoff(Agent::State st)
+float ExManager::Ava_OriginalPayoff(Agent::State st)
 {
     UNUSED(st);
     return 1.0;
@@ -175,8 +178,7 @@ void ExManager::RecvStateInfo()
         dbgmoreprt("***", "%d recv from anyone\n", id);
 
         struct State_Info_Header *re_state = (struct State_Info_Header *) re_buf;
-        struct State_Info_Header *my_state = magent->GetStateInfo(
-                re_state->st);
+        struct State_Info_Header *my_state = magent->GetStateInfo(re_state->st);
         if (my_state != NULL)
         {
             struct State_Info_Header *merged_state = MergeStateInfo(my_state,
@@ -224,7 +226,7 @@ struct State_Info_Header *ExManager::MergeStateInfo(
     unsigned char *act_buf = (unsigned char *) malloc(
             (origstif->act_num + recvstif->act_num) * sizeof(Action_Info));
     unsigned char *lk_buf = (unsigned char *) malloc(
-            (origstif->lk_num + recvstif->lk_num) * sizeof(Forward_Link));
+            (origstif->lk_num + recvstif->lk_num) * sizeof(Forward_Link_Info));
 
     // point to traverse state info and buffers
     unsigned char *ptr1 = (unsigned char *) origstif;
@@ -317,14 +319,14 @@ struct State_Info_Header *ExManager::MergeStateInfo(
     ptr2 += recvstif->act_num * sizeof(Action_Info);
     buf_ptr = lk_buf;
 
-    struct Forward_Link *lk1, *lk2;
+    struct Forward_Link_Info *lk1, *lk2;
     for (int i = 0; i < origstif->lk_num; i++)
     {
-        lk1 = ((struct Forward_Link *) ptr1) + i;
+        lk1 = ((struct Forward_Link_Info *) ptr1) + i;
         int j;
         for (j = 0; j < recvstif->lk_num; j++)
         {
-            lk2 = ((struct Forward_Link *) ptr2) + j;
+            lk2 = ((struct Forward_Link_Info *) ptr2) + j;
 
             // compare
             if (lk1->act == lk2->act && lk1->eat == lk2->eat)    // use recvstif's next state, nothging to do
@@ -336,20 +338,20 @@ struct State_Info_Header *ExManager::MergeStateInfo(
         if (j == recvstif->lk_num)    // not found, it's a tostif only link, copy it to lk_buf
         {
             lk_num++;
-            memcpy(buf_ptr, lk1, sizeof(Forward_Link));
-            buf_ptr += sizeof(Forward_Link);
+            memcpy(buf_ptr, lk1, sizeof(Forward_Link_Info));
+            buf_ptr += sizeof(Forward_Link_Info);
         }
     }
 
     // copy all links in recvstif
-    memcpy(buf_ptr, ptr2, recvstif->lk_num * sizeof(Forward_Link));
+    memcpy(buf_ptr, ptr2, recvstif->lk_num * sizeof(Forward_Link_Info));
     lk_num += recvstif->lk_num;
 
     // allocate memory
     int stif_size = sizeof(struct State_Info_Header)
             + eat_num * sizeof(struct EnvAction_Info)
             + act_num * sizeof(struct Action_Info)
-            + lk_num * sizeof(struct Forward_Link);
+            + lk_num * sizeof(struct Forward_Link_Info);
 
     struct State_Info_Header *stif = (struct State_Info_Header *) malloc(
             stif_size);
@@ -373,7 +375,7 @@ struct State_Info_Header *ExManager::MergeStateInfo(
     memcpy(ptr, act_buf, act_num * sizeof(Action_Info));
     free(act_buf);
     ptr += act_num * sizeof(Action_Info);
-    memcpy(ptr, lk_buf, lk_num * sizeof(Forward_Link));
+    memcpy(ptr, lk_buf, lk_num * sizeof(Forward_Link_Info));
     free(lk_buf);
 
 #ifdef _DEBUG_MORE_
@@ -401,3 +403,5 @@ void ExManager::SendStateInfo(int toneb, Agent::State st) const
 
     return;
 }
+
+}    // namespace gimcs

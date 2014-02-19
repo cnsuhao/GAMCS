@@ -5,10 +5,13 @@
  *      Author: andy
  */
 
-#ifndef CSTHREADMMESSAGER_H_
-#define CSTHREADMMESSAGER_H_
+#ifndef CSTHREADEXMANAGER_H
+#define CSTHREADEXMANAGER_H
 #include <pthread.h>
 #include <ExManager.h>
+
+namespace gimcs
+{
 
 /**
  *
@@ -30,4 +33,6 @@ class CSThreadExManager: public ExManager
         }
 };
 
-#endif /* CSTHREADMMESSAGER_H_ */
+}
+
+#endif /* CSTHREADEXMANAGER_H */

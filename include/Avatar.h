@@ -1,20 +1,23 @@
-#ifndef INCARNATION_H
-#define INCARNATION_H
+#ifndef AVATAR_H_
+#define AVATAR_H_
 #include <string>
 #include "Agent.h"
+
+namespace gimcs
+{
 
 class DENet;
 
 /**
- * Incarnation of Agent.
- * An Incarnation is an agent embodied in flesh.
+ * Avatar of Agent.
+ * An Avatar is an agent embodied in flesh.
  */
-class Incarnation
+class Avatar
 {
     public:
-        Incarnation();
-        Incarnation(std::string);
-        virtual ~Incarnation();
+        Avatar();
+        Avatar(std::string);
+        virtual ~Avatar();
 
         void Launch(); /**< launch this avatar */
 
@@ -24,7 +27,7 @@ class Incarnation
     protected:
         std::string name; /**< avatar's name */
         int sps; /**< number of steps per second */
-        unsigned long incar_loop_count;    /**< loop count */
+        unsigned long ava_loop_count; /**< loop count */
 
         Agent *myagent; /**< connected agent */
 
@@ -38,7 +41,7 @@ class Incarnation
         unsigned long control_step_time; /**< delta time in millisecond requested bewteen two steps */
 };
 
-inline void Incarnation::SetSps(int s)
+inline void Avatar::SetSps(int s)
 {
     sps = s;
     if (sps <= 0)    // no control
@@ -51,9 +54,10 @@ inline void Incarnation::SetSps(int s)
  * \brief Connect to an agent.
  * \param agt agent to be connected
  */
-inline void Incarnation::ConnectAgent(Agent *agt)
+inline void Avatar::ConnectAgent(Agent *agt)
 {
     myagent = agt;
 }
 
-#endif // INCARNATION_H
+}    // namespace gimcs
+#endif // AVATAR_H_

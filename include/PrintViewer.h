@@ -7,9 +7,11 @@
 
 #ifndef PRINTVEWER_H_
 #define PRINTVEWER_H_
-
 #include <MemoryViewer.h>
 #include "Agent.h"
+
+namespace gimcs
+{
 
 class Storage;
 
@@ -29,4 +31,5 @@ class PrintViewer: public MemoryViewer
         void PrintStateInfo(const struct State_Info_Header *) const;
 };
 
+}    // namespace gimcs
 #endif /* PRINTVEWER_H_ */

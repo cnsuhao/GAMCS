@@ -11,6 +11,9 @@
 #include "Debug.h"
 #include "GIOM.h"
 
+namespace gimcs
+{
+
 GIOM::GIOM() :
         cur_in(INVALID_INPUT), cur_out(INVALID_OUTPUT), process_count(0)
 {
@@ -85,3 +88,5 @@ long GIOM::Random() const
 
     return dist(rd);
 }
+
+}    // namespace gimcs

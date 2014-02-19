@@ -5,28 +5,33 @@
  *      Author: andy
  */
 #include <pthread.h>
-#include "CSThreadIncarnation.h"
+#include "CSThreadAvatar.h"
 
-CSThreadIncarnation::CSThreadIncarnation()
+namespace gimcs
+{
+
+CSThreadAvatar::CSThreadAvatar()
 {
 }
 
-CSThreadIncarnation::CSThreadIncarnation(std::string n) :
-        Incarnation(n)
+CSThreadAvatar::CSThreadAvatar(std::string n) :
+        Avatar(n)
 {
 }
 
-CSThreadIncarnation::~CSThreadIncarnation()
+CSThreadAvatar::~CSThreadAvatar()
 {
 }
 
 /**
  * \brief Launch Launch() function in a thread.
  */
-pthread_t CSThreadIncarnation::ThreadLaunch()
+pthread_t CSThreadAvatar::ThreadLaunch()
 {
     pthread_t tid;
     pthread_create(&tid, NULL, hook, this);    // create a thread, and call the hook
 
     return tid;
 }
+
+}    // namespace gimcs

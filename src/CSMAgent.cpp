@@ -15,22 +15,26 @@
 #include "Storage.h"
 #include "Debug.h"
 
+namespace gimcs
+{
+
 CSMAgent::CSMAgent() :
-        state_num(0), lk_num(0), head(NULL), cur_mst(NULL), current_st_index(NULL)
+        state_num(0), lk_num(0), head(NULL), cur_mst(NULL), current_st_index(
+        NULL)
 {
     states_map.clear();
 }
 
 CSMAgent::CSMAgent(int i) :
         MAgent(i), state_num(0), lk_num(0), head(NULL), cur_mst(NULL), current_st_index(
-                NULL)
+        NULL)
 {
     states_map.clear();
 }
 
 CSMAgent::CSMAgent(int i, float dr, float th) :
         MAgent(i, dr, th), state_num(0), lk_num(0), head(NULL), cur_mst(NULL), current_st_index(
-                NULL)
+        NULL)
 {
     states_map.clear();
 }
@@ -63,7 +67,7 @@ void CSMAgent::LoadState(Storage *storage, Agent::State st)
                 "state: %ld should exist, but fetch from storage returns NULL, the database may be corrupted!\n",
                 st);
 
-    mst->mark = SAVED;    // it's SAVED when just loaded
+    mst->flag = SAVED;    // it's SAVED when just loaded
     mst->st = stif->st;
     mst->original_payoff = stif->original_payoff;
     mst->payoff = stif->payoff;
@@ -83,7 +87,7 @@ void CSMAgent::LoadState(Storage *storage, Agent::State st)
 
     // point to forward links
     p += ai_len;
-    struct Forward_Link *lk = (struct Forward_Link *) p;
+    struct Forward_Link_Info *lk = (struct Forward_Link_Info *) p;
 
     int i;
     /* build exactions list */
@@ -229,23 +233,23 @@ void CSMAgent::DumpMemoryToStorage(Storage *storage) const
         // walk through all state structs
         for (mst = head; mst != NULL; mst = nmst)
         {
-            if (mst->mark == NEW)
+            if (mst->flag == NEW)
             {
-                dbgmoreprt("SaveMemory()", "state: %ld, Mark: %d\n", mst->st, mst->mark);
+                dbgmoreprt("SaveMemory()", "state: %ld, Mark: %d\n", mst->st, mst->flag);
                 stif = GetStateInfo(mst->st);
                 assert(stif != NULL);
                 storage->AddStateInfo(stif);
                 free(stif);    // free
             }
-            else if (mst->mark == MODIFIED)
+            else if (mst->flag == MODIFIED)
             {
-                dbgmoreprt("SaveMemory()", "state: %ld, Mark: %d\n", mst->st, mst->mark);
+                dbgmoreprt("SaveMemory()", "state: %ld, Mark: %d\n", mst->st, mst->flag);
                 stif = GetStateInfo(mst->st);
                 assert(stif != NULL);
                 storage->UpdateStateInfo(stif);
                 free(stif);    // free
             }
-            mst->mark = SAVED;    // update flag
+            mst->flag = SAVED;    // update flag
 
             index++;
             PrintProcess(index, state_num, label);
@@ -287,7 +291,7 @@ struct cs_State *CSMAgent::NewState(Agent::State st)
     mst->count = 1;    // it's created when we First encounter it
     mst->flist = NULL;    // we just create a struct here, no links considered
     mst->blist = NULL;
-    mst->mark = NEW;    // it's new, and should be saved
+    mst->flag = NEW;    // it's new, and should be saved
     mst->atlist = NULL;    // no actions or environment actions
     mst->ealist = NULL;
     mst->next = NULL;
@@ -719,7 +723,7 @@ void CSMAgent::UpdateState(struct cs_State *mst)
         dbgmoreprt("UpdateState()", "Payoff no changes, it's smaller than %.1f\n", threshold);
     }
 
-    if (mst->mark == SAVED) mst->mark = MODIFIED;    // set mark to indicate the modification, no need to change if it's NEW
+    if (mst->flag == SAVED) mst->flag = MODIFIED;    // set flag to indicate the modification, no need to change if it's NEW
     return;
 }
 
@@ -1018,7 +1022,7 @@ struct State_Info_Header *CSMAgent::GetStateInfo(Agent::State st) const
     int stif_size = sizeof(struct State_Info_Header)
             + eat_num * sizeof(struct EnvAction_Info)
             + act_num * sizeof(struct Action_Info)
-            + lk_num * sizeof(struct Forward_Link);
+            + lk_num * sizeof(struct Forward_Link_Info);
 
     struct State_Info_Header *stif = (struct State_Info_Header *) malloc(
             stif_size);
@@ -1060,14 +1064,14 @@ struct State_Info_Header *CSMAgent::GetStateInfo(Agent::State st) const
     }
 
     /* forward link information */
-    struct Forward_Link flk;
+    struct Forward_Link_Info flk;
     for (fas = mst->flist; fas != NULL; fas = nfas)
     {
         flk.act = fas->act;
         flk.eat = fas->eat;
         flk.nst = fas->nstate->st;
-        memcpy(ptr, &flk, sizeof(struct Forward_Link));
-        ptr += sizeof(struct Forward_Link);
+        memcpy(ptr, &flk, sizeof(struct Forward_Link_Info));
+        ptr += sizeof(struct Forward_Link_Info);
 
         nfas = fas->next;
     }
@@ -1114,7 +1118,7 @@ void CSMAgent::AddStateInfo(const State_Info_Header *stif)
     // forward links information
     len = stif->act_num * sizeof(struct Action_Info);
     p += len;
-    struct Forward_Link *flk = (struct Forward_Link *) p;
+    struct Forward_Link_Info *flk = (struct Forward_Link_Info *) p;
 
     mst = NewState(stif->st);
     // copy state information
@@ -1222,7 +1226,7 @@ void CSMAgent::UpdateStateInfo(const State_Info_Header *stif)
     // forward links information
     len = stif->act_num * sizeof(struct Action_Info);
     p += len;
-    struct Forward_Link *flk = (struct Forward_Link *) p;
+    struct Forward_Link_Info *flk = (struct Forward_Link_Info *) p;
 
     mst->count = stif->count;    // set count as the average sum
     mst->payoff = stif->payoff;
@@ -1423,3 +1427,5 @@ void CSMAgent::AddStateToMemory(struct cs_State *nstate)
     state_num++;
     states_map.insert(StatesMap::value_type(nstate->st, nstate));    // don't forget to update hash map
 }
+
+}    // namespace gimcs

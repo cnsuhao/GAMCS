@@ -7,6 +7,9 @@
 #include <set>
 #include "ExNet.h"
 
+namespace gimcs
+{
+
 ExNet::ExNet() :
         id(0)
 {
@@ -30,3 +33,5 @@ bool ExNet::HasMember(int mid) const
 
     return re;
 }
+
+}    // namespace gimcs

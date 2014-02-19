@@ -1,9 +1,11 @@
-#ifndef ROBOT1_H
-#define ROBOT1_H
+#ifndef MOUSE_H_
+#define MOUSE_H_
 #include <string>
-#include "Incarnation.h"
+#include "Avatar.h"
 
-class Mouse: public Incarnation
+using namespace gimcs;
+
+class Mouse: public Avatar
 {
     public:
         /** Default constructor */
@@ -21,4 +23,4 @@ class Mouse: public Incarnation
         float OriginalPayoff(Agent::State);
 };
 
-#endif // ROBOT1_H
+#endif // MOUSE_H_

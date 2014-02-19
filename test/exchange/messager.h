@@ -9,6 +9,8 @@
 #define MESSAGER_H_
 #include "CSThreadExManager.h"
 
+using namespace gimcs;
+
 class Messager: public CSThreadExManager
 {
     public:
@@ -28,13 +30,13 @@ class Messager: public CSThreadExManager
         Agent::State position;
         int count;
 
-        Agent::State Incar_GetCurrentState()
+        Agent::State Ava_GetCurrentState()
         {
             printf("Messager %d, State: %ld\n", id, position);
             return position;
         }
 
-        void Incar_PerformAction(Agent::Action act)
+        void Ava_PerformAction(Agent::Action act)
         {
             position += act;
 
@@ -43,7 +45,7 @@ class Messager: public CSThreadExManager
             return;
         }
 
-        OSpace Incar_ActionCandidates(Agent::State st)
+        OSpace Ava_ActionCandidates(Agent::State st)
         {
             if (count < 1000)
             {
@@ -65,7 +67,7 @@ class Messager: public CSThreadExManager
                 return OSpace();    // return an empty list
         }
 
-        float Incar_OriginalPayoff(Agent::State st)
+        float Ava_OriginalPayoff(Agent::State st)
         {
             if (st == 9)
                 return 1;

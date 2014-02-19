@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 
         // avatar
         Messager *messager = new Messager(i + 1);
-        messager->Incar_SetSps(-1);
+        messager->Ava_SetSps(-1);
         messager->ConnectMAgent(agent);
         messager->JoinExNet(&network);
 
@@ -76,6 +76,4 @@ int main(int argc, char *argv[])
 
     return 0;
 }
-
-
 

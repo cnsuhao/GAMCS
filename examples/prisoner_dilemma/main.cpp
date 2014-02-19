@@ -12,11 +12,11 @@
 int main(void)
 {
     Mysql mysqlA;
-    mysqlA.SetDBArgs("localhost", "root", "huangk",  "PrisonerA");
+    mysqlA.SetDBArgs("localhost", "root", "huangk", "PrisonerA");
     Mysql mysqlB;
-    mysqlB.SetDBArgs("localhost", "root", "huangk",  "PrisonerB");
+    mysqlB.SetDBArgs("localhost", "root", "huangk", "PrisonerB");
 
-    float discount_rate = 0.9;  // discount rate determines the final equilibrium!
+    float discount_rate = 0.9;    // discount rate determines the final equilibrium!
     CSMAgent agentA(1, discount_rate, 0.01);
     CSMAgent agentB(2, discount_rate, 0.01);
     agentA.SetDegreeOfCuriosity(0.0);
@@ -44,6 +44,4 @@ int main(void)
     agentB.DumpMemoryToStorage(&mysqlB);
     return 0;
 }
-
-
 

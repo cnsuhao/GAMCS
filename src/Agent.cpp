@@ -11,6 +11,9 @@
 #include "Agent.h"
 #include "Debug.h"
 
+namespace gimcs
+{
+
 Agent::Agent() :
         id(0), discount_rate(0.8), threshold(0.01), degree_of_curiosity(0.0)
 {
@@ -60,3 +63,4 @@ void Agent::Update(float oripayoff)
     return;
 }
 
+}    // namespace gimcs

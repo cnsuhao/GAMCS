@@ -22,6 +22,8 @@
 #include "DotViewer.h"
 #include "PrintViewer.h"
 
+using namespace gimcs;
+
 void display_usage(void)
 {
     std::cout
@@ -30,7 +32,8 @@ void display_usage(void)
     std::cout
             << " -Sv        - Specify the storage type as v in which the memory was stored"
             << std::endl;
-    std::cout << " -Tv        - Choose the viewer type as v to show the memory" << std::endl;
+    std::cout << " -Tv        - Choose the viewer type as v to show the memory"
+            << std::endl;
     std::cout
             << " -Wv        - Only view a single state v in memory, if this option is omitted, the whole memory will be shown"
             << std::endl;

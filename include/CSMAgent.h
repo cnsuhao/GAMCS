@@ -1,7 +1,10 @@
-#ifndef CSIAGENT_H
-#define CSIAGENT_H
+#ifndef CSMAGENT_H
+#define CSMAGENT_H
 #include <unordered_map>
 #include "MAgent.h"
+
+namespace gimcs
+{
 
 class Storage;
 
@@ -125,7 +128,7 @@ struct cs_State
         float payoff; /**< state payoff */
         float original_payoff; /**< original payoff of state */
         unsigned long count; /**< state count */
-        enum CSMAgent::SgFlag mark; /**< mark used for storage */
+        enum CSMAgent::SgFlag flag; /**< flag used for storage */
         struct cs_EnvAction *ealist; /**< exacts of this state */
         struct cs_Action *atlist; /**< actions of this state */
         struct cs_ForwardArcState *flist; /**< forward links */
@@ -134,4 +137,5 @@ struct cs_State
         struct cs_State *next;
 };
 
-#endif // CSIAGENT_H
+}    // namespace gimcs
+#endif // CSMAGENT_H

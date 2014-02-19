@@ -9,6 +9,9 @@
 #include <string>
 #include "Agent.h"
 
+namespace gimcs
+{
+
 /**
  *  Storage Interface of memroy
  */
@@ -42,4 +45,5 @@ class Storage
 
 };
 
+}    // namespace gimcs
 #endif /* STORAGE_H_ */

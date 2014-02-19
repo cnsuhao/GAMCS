@@ -9,6 +9,9 @@
 #include "TSGIOM.h"
 #include "Debug.h"
 
+namespace gimcs
+{
+
 TSGIOM::TSGIOM() :
         pre_in(INVALID_INPUT), pre_out(INVALID_OUTPUT)
 {
@@ -44,3 +47,5 @@ OSpace TSGIOM::Restrict(Input in, OSpace &outlist) const
     UNUSED(in);
     return outlist;
 }
+
+}    // namespace gimcs

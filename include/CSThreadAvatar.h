@@ -4,30 +4,34 @@
  *  Created on: Jan 20, 2014
  *      Author: andy
  */
-#ifndef CSTHREADINCARNATION_H
-#define CSTHREADINCARNATION_H
+#ifndef CSTHREADAVATAR_H_
+#define CSTHREADAVATAR_H_
 #include <pthread.h>
 #include <string>
-#include "Incarnation.h"
+#include "Avatar.h"
+
+namespace gimcs
+{
 
 /**
- * Computer Simulation Incarnation of Agent.
+ * Computer Simulation Avatar of Agent.
  */
-class CSThreadIncarnation: public Incarnation
+class CSThreadAvatar: public Avatar
 {
     public:
-        CSThreadIncarnation();
-        CSThreadIncarnation(std::string);
-        virtual ~CSThreadIncarnation();
+        CSThreadAvatar();
+        CSThreadAvatar(std::string);
+        virtual ~CSThreadAvatar();
 
         pthread_t ThreadLaunch(); /**< if it's a group, launch each of its  members in a thread */
 
     private:
         static void* hook(void* args)
         { /**< hook to run a class function(Launch() here) in a thread */
-            reinterpret_cast<Incarnation *>(args)->Launch();
+            reinterpret_cast<Avatar *>(args)->Launch();
             return NULL;
         }
 };
 
-#endif /* CSTHREADINCARNATION_H */
+}    // namespace gimcs
+#endif /* CSTHREADAVATAR_H_ */

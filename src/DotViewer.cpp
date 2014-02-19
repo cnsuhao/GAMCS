@@ -11,6 +11,9 @@
 #include "Agent.h"
 #include "Storage.h"
 
+namespace gimcs
+{
+
 DotViewer::DotViewer() :
         MemoryViewer(), last_state(INVALID_STATE), last_action(INVALID_ACTION)
 {
@@ -223,7 +226,7 @@ void DotViewer::DotStateInfo(const struct State_Info_Header *stif) const
     // env actions ---> next states
     len = stif->act_num * sizeof(struct Action_Info);
     p += len;
-    struct Forward_Link *lk = (struct Forward_Link *) p;
+    struct Forward_Link_Info *lk = (struct Forward_Link_Info *) p;
     for (int i = 0; i < stif->lk_num; i++)
     {
         if (stif->st == last_state && lk[i].act == last_action)    // highlight last action edge
@@ -257,7 +260,7 @@ void DotViewer::CleanDotStateInfo(const struct State_Info_Header *stif) const
     p += len;    // skip env actions
     len = stif->act_num * sizeof(struct Action_Info);
     p += len;    // skip actions
-    struct Forward_Link *lk = (struct Forward_Link *) p;    // reach forward links
+    struct Forward_Link_Info *lk = (struct Forward_Link_Info *) p;    // reach forward links
     for (int i = 0; i < stif->lk_num; i++)
     {
         printf("st%ld -> st%ld [label=\"<%ld, %ld>\"]\n", stif->st, lk[i].nst,
@@ -374,7 +377,7 @@ void DotViewer::ShowState(Agent::State st)
         // env actions ---> next states
         len = stif->act_num * sizeof(struct Action_Info);
         p += len;
-        struct Forward_Link *lk = (struct Forward_Link *) p;
+        struct Forward_Link_Info *lk = (struct Forward_Link_Info *) p;
         for (int i = 0; i < stif->lk_num; i++)
         {
             printf(
@@ -404,3 +407,5 @@ void DotViewer::ShowState(Agent::State st)
     printf("}\n");    // digraph
     storage->Close();
 }
+
+}    // namespace gimcs
