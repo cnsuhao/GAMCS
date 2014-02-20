@@ -47,7 +47,7 @@ class Msger: public ExManager
 
         OSpace Ava_ActionCandidates(Agent::State st)
         {
-            if (count < 500)
+            if (count < 5000)
             {
                 OSpace acts;
                 acts.Clear();
