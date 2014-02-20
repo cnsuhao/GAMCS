@@ -1,42 +1,40 @@
-#GIMCS 
+# GIMCS 
 
-GIMCS stands for "_Generalized Intelligence Model and Computer Simulation_".
+GIMCS是"_Generalized Intelligence Model and Computer Simulation_"的缩写，意指“广义智能模型与计算机模拟”。
+这是一套我个人研究的理论模型，GIMCS是用面向对象语言C++对这个模型的描述和一种计算机实现。
 
-## Installation instructions for GIMCS
+关于这个模型的更多内容，参见项目网站。
 
-Currently GIMCS has only been compiled and tested on **Linux**. 
-Help are needed to port to other platforms.
+## 安装指南
 
-## Dependencies
+目前GIMCS的开发主要是在**Linux**平台完成，其他平台未经测试。
 
-### Required
+欢迎大家帮助在其他平台编译和测试。
+
+## 依赖关系
+
+### 必需的库
 
 * graphviz, graphviz-devel (http://www.graphviz.org/Download.php)
 * libmysqlclient, libmysqlclient-devel (http://dev.mysql.com/downloads/)
 
-### Recommended
+### 推荐工具
 
-* xdot (https://github.com/jrfonseca/xdot.py) [Its' an interactive viewer for graphs in dot format] 
+* xdot (https://github.com/jrfonseca/xdot.py) 这是一个简单方便，用来显示dot图格式的小软件
+* gephi (http://www.gephi.org) 这是一个绘制和生成大型网络的软件
 
-## Installing using CMake
+## 用CMake进行安装
 
-Let's call this directory 'source_dir' (where this README.md file is).
-Before starting, create another directory which we will call 'build_dir'.
+安装完依赖库之后，打开终端，进入源码所在目录（即此文件所在目录），运行以下命令：
 
-Do:
+    mkdir build
+    cd build
+    cmake ../
+    make
+    sudo make install
 
-``` bash    
-mkdir build
-cd build
-cmake ../
-make
-make install```
+你可以通过在运行`cmake ../`时提供选项`-DCMAKE_INSTALL_PREFIX=myprefix`来改变软件最终的安装路径。
 
-The "_make install_" step map require administrator privileges.
-
-You can adjust the installation destination (the "prefix") 
-by passing the `-DCMAKE_INSTALL_PREFIX=myprefix` option to cmake.
-
-## Website
+## 项目网站
 
 http://www.andy87.com/gimcs
