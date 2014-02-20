@@ -4,19 +4,9 @@
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either version 2
-// of the License, or (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 // -----------------------------------------------------------------------------
 //
@@ -40,12 +30,12 @@ using namespace gimcs;
 void display_usage(void)
 {
     std::cout
-            << "Usage: sgviewer [-S<storage>] [-T<viewer>] [-(W)<state>] <storage related arguments>"
+            << "Usage: sgviewer [-S<storage>] [-V<viewer>] [-(W)<state>] <storage related arguments>"
             << std::endl << std::endl;
     std::cout
             << " -Sv        - Specify the storage type as v in which the memory was stored"
             << std::endl;
-    std::cout << " -Tv        - Choose the viewer type as v to show the memory"
+    std::cout << " -Vv        - Choose the viewer type as v to show the memory"
             << std::endl;
     std::cout
             << " -Wv        - Only view a single state v in memory, if this option is omitted, the whole memory will be shown"

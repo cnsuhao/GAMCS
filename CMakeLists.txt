@@ -1,25 +1,3 @@
-## -----------------------------------------------------------------------------
-##
-## GIMCS -- Generalized Intelligence Model and Computer Simulation
-##
-## Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
-##
-## This program is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License
-## as published by the Free Software Foundation; either version 2
-## of the License, or (at your option) any later version.
-##
-## This program is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with this program; if not, write to the Free Software
-## Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-##
-## -----------------------------------------------------------------------------
-
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(GIMCS CXX)   # Generalized Intelligence Model and Computer Simulation
 
@@ -66,8 +44,16 @@ IF (MSVC)
 ENDIF()
 
 IF (CMAKE_COMPILER_IS_GNUCXX)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++0x -Wall -Wextra -Wno-write-strings")
+    # do sth for gcc
 ENDIF()
+
+# compile flags, Release by default
+IF (NOT CMAKE_BUILD_TYPE)
+    SET(CMAKE_BUILD_TYPE Release)
+ENDIF()
+
+SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Wno-write-strings -pg -g -std=c++0x")
+SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -Wall -Wextra -Wno-write-strings -std=c++0x")
 
 # include directory
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)

@@ -22,6 +22,7 @@ Monomer::~Monomer()
 
 Agent::State Monomer::GetCurrentState()
 {
+    printf("%s, State %ld\n", name.c_str(), position);
     return position;
 }
 
@@ -46,7 +47,7 @@ OSpace Monomer::ActionCandidates(Agent::State st)
 //    UNUSED(st);
     static int count;
 //    UNUSED(st);
-    if (count < 300)
+    if (count < 50000)
     {
         OSpace acts;
         acts.Clear();
