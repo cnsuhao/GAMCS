@@ -11,8 +11,8 @@
 // -----------------------------------------------------------------------------
 
 
-#include "TSGIOM.h"
-#include "Debug.h"
+#include "gimcs/TSGIOM.h"
+#include "gimcs/Debug.h"
 
 namespace gimcs
 {

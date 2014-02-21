@@ -11,7 +11,7 @@
 // -----------------------------------------------------------------------------
 
 
-#include "MAgent.h"
+#include "gimcs/MAgent.h"
 
 namespace gimcs
 {

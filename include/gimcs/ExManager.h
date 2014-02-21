@@ -18,8 +18,8 @@
 #ifndef EXMANAGER_H
 #define EXMANAGER_H
 #include <set>
-#include "Avatar.h"
-#include "Agent.h"
+#include "gimcs/Avatar.h"
+#include "gimcs/Agent.h"
 
 namespace gimcs
 {

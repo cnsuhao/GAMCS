@@ -16,9 +16,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "CSMAgent.h"
-#include "Storage.h"
-#include "Debug.h"
+#include "gimcs/CSMAgent.h"
+#include "gimcs/Storage.h"
+#include "gimcs/Debug.h"
 
 namespace gimcs
 {

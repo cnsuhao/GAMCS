@@ -14,8 +14,8 @@
 #include <stdlib.h>
 #include <sys/timeb.h>
 #include <unistd.h>
-#include "Avatar.h"
-#include "Debug.h"
+#include "gimcs/Avatar.h"
+#include "gimcs/Debug.h"
 
 namespace gimcs
 {

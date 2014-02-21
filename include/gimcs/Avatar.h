@@ -17,7 +17,7 @@
 #ifndef AVATAR_H_
 #define AVATAR_H_
 #include <string>
-#include "Agent.h"
+#include "gimcs/Agent.h"
 
 namespace gimcs
 {

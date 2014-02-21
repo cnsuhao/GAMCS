@@ -7,8 +7,8 @@
 
 #include <pthread.h>
 #include <stdio.h>
-#include "CSThreadExNet.h"
-#include "CSMAgent.h"
+#include "gimcs/CSThreadExNet.h"
+#include "gimcs/CSMAgent.h"
 #include "messager.h"
 
 int main(int argc, char *argv[])

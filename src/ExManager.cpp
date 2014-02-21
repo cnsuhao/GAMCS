@@ -14,9 +14,9 @@
 #include <set>
 #include <math.h>
 #include <string.h>
-#include "ExNet.h"
-#include "MAgent.h"
-#include "ExManager.h"
+#include "gimcs/ExNet.h"
+#include "gimcs/MAgent.h"
+#include "gimcs/ExManager.h"
 
 namespace gimcs
 {

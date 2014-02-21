@@ -12,7 +12,7 @@
 
 
 #include <set>
-#include "ExNet.h"
+#include "gimcs/ExNet.h"
 
 namespace gimcs
 {

@@ -10,39 +10,39 @@
 //
 // -----------------------------------------------------------------------------
 //
-// Created on: Jan 20, 2014
+// Created on: Feb 17, 2014
 //
 // -----------------------------------------------------------------------------
 
 
-#ifndef CSTHREADAVATAR_H_
-#define CSTHREADAVATAR_H_
+#ifndef CSTHREADEXMANAGER_H
+#define CSTHREADEXMANAGER_H
 #include <pthread.h>
-#include <string>
-#include "Avatar.h"
+#include "gimcs/ExManager.h"
 
 namespace gimcs
 {
 
 /**
- * Computer Simulation Avatar of Agent.
+ *
  */
-class CSThreadAvatar: public Avatar
+class CSThreadExManager: public ExManager
 {
     public:
-        CSThreadAvatar();
-        CSThreadAvatar(std::string);
-        virtual ~CSThreadAvatar();
+        CSThreadExManager();
+        CSThreadExManager(int);
+        virtual ~CSThreadExManager();
 
-        pthread_t ThreadLaunch(); /**< if it's a group, launch each of its  members in a thread */
+        pthread_t ThreadRun();
 
     private:
         static void* hook(void* args)
         { /**< hook to run a class function(Launch() here) in a thread */
-            reinterpret_cast<Avatar *>(args)->Launch();
+            reinterpret_cast<ExManager *>(args)->Run();
             return NULL;
         }
 };
 
-}    // namespace gimcs
-#endif /* CSTHREADAVATAR_H_ */
+}
+
+#endif /* CSTHREADEXMANAGER_H */

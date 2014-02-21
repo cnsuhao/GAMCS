@@ -14,7 +14,7 @@
 #include <string>
 #include <unistd.h>
 #include <stdio.h>
-#include "CSThreadAvatar.h"
+#include "gimcs/CSThreadAvatar.h"
 
 using namespace gimcs;
 

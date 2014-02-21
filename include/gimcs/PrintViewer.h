@@ -15,11 +15,10 @@
 // -----------------------------------------------------------------------------
 
 
-#ifndef DOTVIEWER_H_
-#define DOTVIEWER_H_
-#include <MemoryViewer.h>
-#include <string>
-#include "Agent.h"
+#ifndef PRINTVEWER_H_
+#define PRINTVEWER_H_
+#include "gimcs/MemoryViewer.h"
+#include "gimcs/Agent.h"
 
 namespace gimcs
 {
@@ -27,26 +26,20 @@ namespace gimcs
 class Storage;
 
 /**
- * Visualizing memory in graphviz dot format
+ * Visualizing memory in print format.
  */
-class DotViewer: public MemoryViewer
+class PrintViewer: public MemoryViewer
 {
     public:
-        DotViewer();
-        DotViewer(Storage *);
-        virtual ~DotViewer();
+        PrintViewer();
+        PrintViewer(Storage *);
+        virtual ~PrintViewer();
 
         void Show();
-        void CleanShow(); /**< show agent memory cleanly */
         void ShowState(Agent::State);
     private:
-        void DotStateInfo(const struct State_Info_Header *) const;
-        void CleanDotStateInfo(const struct State_Info_Header *) const; /**< show state info cleanly */
-        const std::string Eat2String(Agent::EnvAction) const;
-
-        Agent::State last_state;
-        Agent::Action last_action;
+        void PrintStateInfo(const struct State_Info_Header *) const;
 };
 
 }    // namespace gimcs
-#endif /* DOTVIEWER_H_ */
+#endif /* PRINTVEWER_H_ */

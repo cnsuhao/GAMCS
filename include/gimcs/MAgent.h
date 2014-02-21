@@ -18,7 +18,7 @@
 #ifndef MAGENT_H_
 #define MAGENT_H_
 
-#include <Agent.h>
+#include "gimcs/Agent.h"
 
 namespace gimcs
 {

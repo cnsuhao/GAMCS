@@ -60,22 +60,24 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
 
 # public headers
 SET(LIBGIMCS_PUBLIC_HDRS
-    ${PROJECT_SOURCE_DIR}/include/GIOM.h
-    ${PROJECT_SOURCE_DIR}/include/TSGIOM.h
-    ${PROJECT_SOURCE_DIR}/include/Agent.h
-    ${PROJECT_SOURCE_DIR}/include/MAgent.h
-    ${PROJECT_SOURCE_DIR}/include/CSMAgent.h
-    ${PROJECT_SOURCE_DIR}/include/Avatar.h
-    ${PROJECT_SOURCE_DIR}/include/CSThreadAvatar.h
-    ${PROJECT_SOURCE_DIR}/include/ExNet.h
-    ${PROJECT_SOURCE_DIR}/include/CSThreadExNet.h
-    ${PROJECT_SOURCE_DIR}/include/ExManager.h
-    ${PROJECT_SOURCE_DIR}/include/CSThreadExManager.h
-    ${PROJECT_SOURCE_DIR}/include/Storage.h
-    ${PROJECT_SOURCE_DIR}/include/Mysql.h
-    ${PROJECT_SOURCE_DIR}/include/MemoryViewer.h
-    ${PROJECT_SOURCE_DIR}/include/PrintViewer.h
-    ${PROJECT_SOURCE_DIR}/include/DotViewer.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/GIOM.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/TSGIOM.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/Agent.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/MAgent.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/CSMAgent.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/Avatar.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/CSThreadAvatar.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/ExNet.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/CSThreadExNet.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/ExManager.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/CSThreadExManager.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/Storage.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/Mysql.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/MemoryViewer.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/PrintViewer.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/DotViewer.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/CDotViewer.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/Debug.h
     )
 
 # install prefix

@@ -18,7 +18,7 @@
 #ifndef CSTHREADEXNET_H_
 #define CSTHREADEXNET_H_
 #include <set>
-#include <ExNet.h>
+#include "gimcs/ExNet.h"
 
 namespace gimcs
 {

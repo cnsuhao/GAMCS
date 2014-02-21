@@ -14,8 +14,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "Mysql.h"
-#include "Debug.h"
+#include "gimcs/Mysql.h"
+#include "gimcs/Debug.h"
 
 namespace gimcs
 {

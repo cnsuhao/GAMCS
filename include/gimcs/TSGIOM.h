@@ -10,36 +10,35 @@
 //
 // -----------------------------------------------------------------------------
 //
-// Created on: Feb 7, 2014
+// Created on: Oct 19, 2013
 //
 // -----------------------------------------------------------------------------
 
 
-#ifndef PRINTVEWER_H_
-#define PRINTVEWER_H_
-#include <MemoryViewer.h>
-#include "Agent.h"
+#ifndef TSGIOM_H
+#define TSGIOM_H
+#include "gimcs/GIOM.h"
 
 namespace gimcs
 {
 
-class Storage;
-
 /**
- * Visualizing memory in print format.
+ * Time-Sequential Generalized Input Output Model
  */
-class PrintViewer: public MemoryViewer
+class TSGIOM: public GIOM
 {
     public:
-        PrintViewer();
-        PrintViewer(Storage *);
-        virtual ~PrintViewer();
+        TSGIOM();
+        virtual ~TSGIOM();
+        virtual void Update();    // reimplement Update, add time sequence
 
-        void Show();
-        void ShowState(Agent::State);
+    protected:
+        virtual OSpace Restrict(Input, OSpace &) const;    // reimplement Restrict
+        /* bring in the time sequence feature */
+        Input pre_in; /**< previous input value */
+        Output pre_out; /**< previous output value */
     private:
-        void PrintStateInfo(const struct State_Info_Header *) const;
 };
 
 }    // namespace gimcs
-#endif /* PRINTVEWER_H_ */
+#endif // TSGIOM_H

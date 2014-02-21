@@ -7,7 +7,7 @@
 
 #ifndef MESSAGER_H_
 #define MESSAGER_H_
-#include "CSThreadExManager.h"
+#include "gimcs/CSThreadExManager.h"
 
 using namespace gimcs;
 
