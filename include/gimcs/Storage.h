@@ -18,7 +18,7 @@
 #ifndef STORAGE_H_
 #define STORAGE_H_
 #include <string>
-#include "Agent.h"
+#include "gimcs/Agent.h"
 
 namespace gimcs
 {

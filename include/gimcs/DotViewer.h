@@ -10,35 +10,41 @@
 //
 // -----------------------------------------------------------------------------
 //
-// Created on: Oct 19, 2013
+// Created on: Feb 7, 2014
 //
 // -----------------------------------------------------------------------------
 
 
-#ifndef TSGIOM_H
-#define TSGIOM_H
-#include "GIOM.h"
+#ifndef DOTVIEWER_H_
+#define DOTVIEWER_H_
+#include <string>
+#include "gimcs/MemoryViewer.h"
+#include "gimcs/Agent.h"
 
 namespace gimcs
 {
 
+class Storage;
+
 /**
- * Time-Sequential Generalized Input Output Model
+ * Visualizing memory in graphviz dot format
  */
-class TSGIOM: public GIOM
+class DotViewer: public MemoryViewer
 {
     public:
-        TSGIOM();
-        virtual ~TSGIOM();
-        virtual void Update();    // reimplement Update, add time sequence
+        DotViewer();
+        DotViewer(Storage *);
+        virtual ~DotViewer();
 
-    protected:
-        virtual OSpace Restrict(Input, OSpace &) const;    // reimplement Restrict
-        /* bring in the time sequence feature */
-        Input pre_in; /**< previous input value */
-        Output pre_out; /**< previous output value */
+        void Show();
+        void ShowState(Agent::State);
     private:
+        void DotStateInfo(const struct State_Info_Header *) const;
+        const std::string Eat2String(Agent::EnvAction) const;
+
+        Agent::State last_state;
+        Agent::Action last_action;
 };
 
 }    // namespace gimcs
-#endif // TSGIOM_H
+#endif /* DOTVIEWER_H_ */

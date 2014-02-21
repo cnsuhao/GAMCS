@@ -13,9 +13,9 @@
 
 #include <pthread.h>
 #include <stdio.h>
+#include "gimcs/CSMAgent.h"
+#include "gimcs/Mysql.h"
 #include "Saleman.h"
-#include "CSMAgent.h"
-#include "Mysql.h"
 
 int main(void)
 {

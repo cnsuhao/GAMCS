@@ -12,9 +12,9 @@
 
 
 #include <stddef.h>
-#include "MemoryViewer.h"
-#include "Storage.h"
-#include "Debug.h"
+#include "gimcs/MemoryViewer.h"
+#include "gimcs/Storage.h"
+#include "gimcs/Debug.h"
 
 namespace gimcs
 {

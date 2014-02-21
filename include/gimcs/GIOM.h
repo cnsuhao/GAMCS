@@ -19,7 +19,7 @@
 #define GIOM_H
 #include <climits>    // LONG_MAX
 #include <stddef.h>     // NULL
-#include "Debug.h"
+#include "gimcs/Debug.h"
 
 namespace gimcs
 {
@@ -43,7 +43,7 @@ class GIOM
         /** Default destructor */
         virtual ~GIOM();
         Output Process(Input, OSpace &); /**< choose an output value in an output space under a specified input value */
-        float Entropy() const; /**< calculate entropy of this GIOM */
+        float SingleOutputEntropy(Input, OSpace &) const; /**< calculate entropy of a specified input */
         virtual void Update(); /**< update inner states of GIOM, derived classes may have their own inner states to update */
 
     protected:

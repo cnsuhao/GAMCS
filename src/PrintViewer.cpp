@@ -11,8 +11,8 @@
 // -----------------------------------------------------------------------------
 
 
-#include "PrintViewer.h"
-#include "Storage.h"
+#include "gimcs/PrintViewer.h"
+#include "gimcs/Storage.h"
 
 namespace gimcs
 {

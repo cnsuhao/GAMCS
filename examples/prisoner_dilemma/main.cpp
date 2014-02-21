@@ -12,9 +12,9 @@
 
 
 #include <pthread.h>
-#include "CSMAgent.h"
+#include "gimcs/CSMAgent.h"
+#include "gimcs/Mysql.h"
 #include "Prisoners.h"
-#include "Mysql.h"
 
 int main(void)
 {

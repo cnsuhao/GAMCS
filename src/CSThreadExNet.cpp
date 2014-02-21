@@ -19,9 +19,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
-#include "CSThreadExNet.h"
-#include "Agent.h"
-#include "Debug.h"
+#include "gimcs/CSThreadExNet.h"
+#include "gimcs/Agent.h"
+#include "gimcs/Debug.h"
 
 namespace gimcs
 {

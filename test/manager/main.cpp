@@ -6,7 +6,7 @@
  */
 
 #include "messager.h"
-#include "CSMAgent.h"
+#include "gimcs/CSMAgent.h"
 
 int main(void)
 {

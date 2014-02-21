@@ -12,7 +12,7 @@
 
 
 #include <pthread.h>
-#include "CSThreadAvatar.h"
+#include "gimcs/CSThreadAvatar.h"
 
 namespace gimcs
 {

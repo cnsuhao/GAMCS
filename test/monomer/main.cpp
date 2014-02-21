@@ -1,6 +1,6 @@
 #include "monomer.h"
-#include "CSMAgent.h"
-#include "Mysql.h"
+#include "gimcs/CSMAgent.h"
+#include "gimcs/Mysql.h"
 
 int main(void)
 {

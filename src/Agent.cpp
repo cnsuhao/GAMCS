@@ -12,8 +12,8 @@
 
 
 #include <stdio.h>
-#include "Agent.h"
-#include "Debug.h"
+#include "gimcs/Agent.h"
+#include "gimcs/Debug.h"
 
 namespace gimcs
 {

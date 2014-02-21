@@ -7,7 +7,7 @@
 
 #ifndef MESSAGER_H_
 #define MESSAGER_H_
-#include "ExManager.h"
+#include "gimcs/ExManager.h"
 
 using namespace gimcs;
 

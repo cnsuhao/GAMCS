@@ -14,8 +14,8 @@
 #ifndef SALEMAN_H_
 #define SALEMAN_H_
 #include <string>
-#include <CSThreadAvatar.h>
 #include <math.h>
+#include "gimcs/CSThreadAvatar.h"
 
 using namespace gimcs;
 

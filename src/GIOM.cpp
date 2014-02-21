@@ -13,8 +13,9 @@
 
 #include <stdlib.h>
 #include <random>
-#include "Debug.h"
-#include "GIOM.h"
+#include <math.h>
+#include "gimcs/Debug.h"
+#include "gimcs/GIOM.h"
 
 namespace gimcs
 {
@@ -47,13 +48,13 @@ OSpace GIOM::Restrict(Input in, OSpace &outputs) const
  * \return output
  *
  */
-GIOM::Output GIOM::Process(Input in, OSpace &outputs)
+GIOM::Output GIOM::Process(Input in, OSpace &alpos_outputs)
 {
-    OSpace restricited_outputs = Restrict(in, outputs);    // get restricted output values first
+    OSpace restricited_outputs = Restrict(in, alpos_outputs);    // get restricted output values first
     if (restricited_outputs.Empty())    // no output generated, return an invalid GIOM::Output
         return INVALID_OUTPUT;
 
-    int sz = restricited_outputs.Size();    // number of outputs
+    int sz = restricited_outputs.Size();    // number of alpos_outputs
     int index = Random() % (sz);    // choose an output value randomly
     GIOM::Output out = restricited_outputs[index];
 
@@ -64,15 +65,19 @@ GIOM::Output GIOM::Process(Input in, OSpace &outputs)
     return out;
 }
 
-/** \brief Calculate the entropy of this GIOM under current restrict
+/** \brief Calculate the entropy of a state under restrict
  *
  * \return entropy value
  *
  */
-float GIOM::Entropy() const
+float GIOM::SingleOutputEntropy(Input in, OSpace &alpos_outputs) const
 {
-    printf("This function is not implemented yet!\n");
-    return 0.0;
+    OSpace restricted_outputs = Restrict(in, alpos_outputs);
+    if (restricted_outputs.Empty())
+        return 0.0;
+
+    int sz = restricted_outputs.Size();
+    return log2(sz);    // all the alpos_outputs have the same probability of occurrence
 }
 
 /** \brief Update inner states and prepare for the next process.

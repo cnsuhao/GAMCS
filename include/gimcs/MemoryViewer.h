@@ -17,8 +17,8 @@
 
 #ifndef MEMORYVIEWER_H_
 #define MEMORYVIEWER_H_
-#include "Debug.h"
-#include "Agent.h"
+#include "gimcs/Debug.h"
+#include "gimcs/Agent.h"
 
 namespace gimcs
 {

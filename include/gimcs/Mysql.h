@@ -19,7 +19,7 @@
 #define MYSQL_H_
 #include <mysql/mysql.h>
 #include <string>
-#include "Storage.h"
+#include "gimcs/Storage.h"
 
 namespace gimcs
 {

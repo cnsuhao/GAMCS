@@ -14,7 +14,7 @@
 #ifndef MOUSE_H_
 #define MOUSE_H_
 #include <string>
-#include "Avatar.h"
+#include "gimcs/Avatar.h"
 
 using namespace gimcs;
 

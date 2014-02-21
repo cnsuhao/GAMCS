@@ -5,8 +5,8 @@
  *      Author: andy
  */
 
-#include "stdio.h"
-#include "GIOM.h"
+#include <stdio.h>
+#include "gimcs/GIOM.h"
 
 using namespace gimcs;
 

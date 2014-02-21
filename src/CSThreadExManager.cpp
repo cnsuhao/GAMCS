@@ -12,7 +12,7 @@
 
 
 #include <pthread.h>
-#include "CSThreadExManager.h"
+#include "gimcs/CSThreadExManager.h"
 
 namespace gimcs
 {

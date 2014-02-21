@@ -18,12 +18,13 @@
 #include <unistd.h>
 #include <string>
 #include <iostream>
-#include "Agent.h"
-#include "Storage.h"
-#include "Mysql.h"
-#include "MemoryViewer.h"
-#include "DotViewer.h"
-#include "PrintViewer.h"
+#include "gimcs/Agent.h"
+#include "gimcs/Storage.h"
+#include "gimcs/Mysql.h"
+#include "gimcs/MemoryViewer.h"
+#include "gimcs/DotViewer.h"
+#include "gimcs/CDotViewer.h"
+#include "gimcs/PrintViewer.h"
 
 using namespace gimcs;
 
@@ -123,7 +124,7 @@ int main(int argc, char *argv[])
     else if (viewer_type.compare("cdot") == 0)
     {
         // use CleanShow of DotViewer
-        DotViewer *cdv = new DotViewer(storage);
+        DotViewer *cdv = new CDotViewer(storage);
         viewer = cdv;
     }
     else if (viewer_type.compare("prt") == 0)

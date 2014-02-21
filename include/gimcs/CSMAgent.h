@@ -18,7 +18,7 @@
 #ifndef CSMAGENT_H
 #define CSMAGENT_H
 #include <unordered_map>
-#include "MAgent.h"
+#include "gimcs/MAgent.h"
 
 namespace gimcs
 {
