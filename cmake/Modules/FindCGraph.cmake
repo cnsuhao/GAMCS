@@ -3,39 +3,50 @@
 #  CGRAPH_FOUND - System has GraphViz
 #  CGRAPH_INCLUDE_DIRS - The GraphViz include directories
 #  CGRAPH_LIBRARIES - The libraries needed to use GraphViz
-#  CGRAPH_LDFLAGS_OTHER - Other LDFLAGS needed te use GraphViz
-#  CGRAPH_DEFINITIONS - Compiler switches required for using GraphViz
 
-find_package(PkgConfig)
-if ("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSION_GREATER "2.8.1")
-   # "QUIET" was introduced in 2.8.2
-   set(_QUIET QUIET)
-endif ()
-pkg_check_modules(PC_LIBCGRAPH ${_QUIET} libcgraph)
+IF (WIN32)
+    FIND_PATH(CGRAPH_INCLUDE_DIR cgraph.h
+        PATHS
+        $ENV{CGRAPH_INCLUDE_DIR}
+        $ENV{CGRAPH_DIR}/include
+        $ENV{ProgramFiles}/Graphviz*/include
+        $ENV{SystemDrive}/Graphviz*/include)
 
-set (CGRAPH_MIN_VERSION "2.0.0")
-if ("${PC_LIBCGRAPH_VERSION}" VERSION_LESS ${CGRAPH_MIN_VERSION})
-   MESSAGE(STATUS "libcgraph version required: ${CGRAPH_MIN_VERSION}. Current version: ${PC_LIBCGRAPH_VERSION}.")
-else()
-   SET(LIBCGRAPH_REQUIRED_VERSION 1)
-endif()
+    IF (CMAKE_BUILD_TYPE STREQUAL Debug)
+        SET(libsuffix debug)
+    ELSE (CMAKE_BUILD_TYPE STREQUAL Debug)
+        SET(libsuffix release)
+    ENDIF (CMAKE_BUILD_TYPE STREQUAL Debug)
 
-if (LIBCGRAPH_REQUIRED_VERSION)
-   find_path(CGRAPH_INCLUDE_DIR cgraph.h
-      HINTS ${PC_LIBCGRAPH_INCLUDEDIR} ${PC_LIBCCGRAPH_INCLUDE_DIRS}
-      PATH_SUFFIXES cgraph )
+    FIND_LIBRARY(CGRAPH_LIBRARY 
+        NAMES cgraph libcgraph
+        PATHS
+        $ENV{CGRAPH_LIBRARY}
+        $ENV{CGRAPH_DIR}/lib/${libsuffix}/lib
+        $ENV{ProgramFiles}/Graphviz*/lib/${libsuffix}/lib
+        $ENV{SystemDrive}/Graphviz*/lib/${libsuffix}/lib)
+ELSE (WIN32)
+    FIND_PATH(CGRAPH_INCLUDE_DIR cgraph.h
+        PATHS
+        /usr/include
+        /usr/local/include
+        PATH_SUFFIXES graphviz)
 
-   find_library(CGRAPH_LIBRARY NAMES cgraph libcgraph
-      HINTS ${PC_LIBCGRAPH_LIBDIR} ${PC_LIBCGRAPH_LIBRARY_DIRS} )
+    FIND_LIBRARY(CGRAPH_LIBRARY 
+        NAMES cgraph libcgraph
+        PATHS
+        /usr/lib
+        /usr/local/lib
+        PATH_SUFFIXES graphviz)
+ENDIF (WIN32)
 
-   set(CGRAPH_INCLUDE_DIRS ${CGRAPH_INCLUDE_DIR})
-   set(CGRAPH_LIBRARIES ${CGRAPH_LIBRARY} )
+SET(CGRAPH_INCLUDE_DIRS ${CGRAPH_INCLUDE_DIR})
+SET(CGRAPH_LIBRARIES ${CGRAPH_LIBRARY} )
 
-   include(FindPackageHandleStandardArgs)
-   # handle the QUIETLY and REQUIRED arguments and set EINA_FOUND to TRUE
-   # if all listed variables are TRUE
-   find_package_handle_standard_args(cgraph DEFAULT_MSG
-       CGRAPH_INCLUDE_DIR CGRAPH_LIBRARY)
-endif (LIBCGRAPH_REQUIRED_VERSION)
+INCLUDE(FindPackageHandleStandardArgs)
+# handle the QUIETLY and REQUIRED arguments and set EINA_FOUND to TRUE
+# if all listed variables are TRUE
+find_package_handle_standard_args(cgraph DEFAULT_MSG
+    CGRAPH_INCLUDE_DIR CGRAPH_LIBRARY)
 
-mark_as_advanced(CGRAPH_INCLUDE_DIR CGRAPH_LIBRARY)
+MARK_AS_ADVANCED(CGRAPH_INCLUDE_DIR CGRAPH_LIBRARY)
