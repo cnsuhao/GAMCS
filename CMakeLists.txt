@@ -21,8 +21,6 @@ FIND_PACKAGE(MYSQL REQUIRED)
 INCLUDE_DIRECTORIES(${MYSQL_INCLUDE_DIRS})
 SET(LIBS ${LIBS} ${MYSQL_LIBRARIES})
 
-SET(LIBS ${LIBS} pthread)
-
 # configuration options
 option(GIMCS_DEBUG "Build with debug output" NO)
 
@@ -41,19 +39,22 @@ ENDIF()
 # detect compilers and set particular options
 IF (MSVC)
     # do something for msvs
+    SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi /Zc /Od")
+    SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zc /O2")
 ENDIF()
 
 IF (CMAKE_COMPILER_IS_GNUCXX)
     # do sth for gcc
+    SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Wno-write-strings -pg -g -std=c++0x")
+    SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -Wall -Wextra -Wno-write-strings -std=c++0x")
+
+    SET(LIBS ${LIBS} pthread)   # add pthread library
 ENDIF()
 
 # compile flags, Release by default
 IF (NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE Release)
 ENDIF()
-
-SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Wno-write-strings -pg -g -std=c++0x")
-SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -Wall -Wextra -Wno-write-strings -std=c++0x")
 
 # include directory
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)

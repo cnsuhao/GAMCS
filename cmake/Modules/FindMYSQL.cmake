@@ -1,42 +1,43 @@
-#
-# Find the MySQL client includes and library
-# 
+# - Try to find Mysql
+# Once done this will define
+#  MYSQL_FOUND - System has Mysql
+#  MYSQL_INCLUDE_DIRS - The Mysql include directories
+#  MYSQL_LIBRARIES - The libraries needed to use Mysql
 
-# This module defines
-# MYSQL_INCLUDE_DIRS, where to find mysql.h
-# MYSQL_LIBRARIES, the libraries to link against to connect to MySQL
-# MYSQL_FOUND, If false, you cannot build anything that requires MySQL.
+IF (WIN32)
+    FIND_PATH(MYSQL_INCLUDE_DIR mysql.h
+        PATHS
+        $ENV{MYSQL_INCLUDE_DIR}
+        $ENV{MYSQL_DIR}/include
+        $ENV{ProgramFiles}/MySQL/*/include
+        $ENV{SystemDrive}/MySQL/*/include)
 
-SET(MYSQL_FOUND 0)
+    FIND_LIBRARY(MYSQL_LIBRARY 
+        NAMES mysqlclient mysql libmysql
+        PATHS
+        $ENV{MYSQL_LIBRARY}
+        $ENV{MYSQL_DIR}/lib
+        $ENV{ProgramFiles}/MySQL/*/lib
+        $ENV{SystemDrive}/MySQL/*/lib)
+ELSE (WIN32)
+    FIND_PATH(MYSQL_INCLUDE_DIR mysql.h
+        PATHS
+        /usr/include
+        /usr/local/include
+        PATH_SUFFIXES mysql)
 
-FIND_PATH(MYSQL_INCLUDE_DIR mysql.h
-    /usr/include
-    /usr/include/mysql
-    /usr/local/include
-    /usr/local/include/mysql
-    /usr/local/mysql/include
-    /usr/local/mysql/include/mysql
-    DOC "Specify the directory containing mysql.h."
-    )
-
-FIND_LIBRARY(MYSQL_LIBRARY 
-    NAMES mysql libmysql mysqlclient
-    PATHS
-    /usr/lib
-    /usr/lib64
-    /usr/lib/mysql
-    /usr/lib64/mysql
-    /usr/local/lib
-    /usr/local/lib/mysql
-    /usr/local/mysql/lib
-    /usr/local/mysql/lib/mysql
-    DOC "Specify the mysql library here."
-    )
+    FIND_LIBRARY(MYSQL_LIBRARY 
+        NAMES mysqlclient mysql libmysql
+        PATHS
+        /usr/lib
+        /usr/local/lib
+        PATH_SUFFIXES mysql)
+ENDIF (WIN32)
 
 SET(MYSQL_INCLUDE_DIRS ${MYSQL_INCLUDE_DIR})
 SET(MYSQL_LIBRARIES ${MYSQL_LIBRARY} )
 
-include(FindPackageHandleStandardArgs)
+INCLUDE(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set EINA_FOUND to TRUE
 # if all listed variables are TRUE
 find_package_handle_standard_args(mysql DEFAULT_MSG
