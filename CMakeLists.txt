@@ -4,7 +4,7 @@ PROJECT(GIMCS CXX)   # Generalized Intelligence Model and Computer Simulation
 # version
 SET(GIMCS_MAJOR 0)
 SET(GIMCS_MINOR 1)
-SET(GIMCS_BUILD 0)
+SET(GIMCS_BUILD 1)
 
 SET(GIMCS_NAME gimcs)   
 SET(GIMCS_STATIC_NAME gimcs_static)
