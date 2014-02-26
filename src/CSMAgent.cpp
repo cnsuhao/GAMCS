@@ -10,7 +10,6 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #include <math.h>
 #include <float.h>
 #include <string.h>
@@ -127,14 +126,14 @@ void CSMAgent::LoadState(Storage *storage, Agent::State st)
         }
 
         // build mst's forward list
-        struct cs_ForwardArcState *mfas = NewFas(lk[i].eat, lk[i].act);
+        struct cs_ForwardLink *mfas = NewFlk(lk[i].eat, lk[i].act);
         mfas->nstate = nmst;
         // Add to mst's flist
         mfas->next = mst->flist;
         mst->flist = mfas;
 
         // build nmst's backward list
-        struct cs_BackArcState *mbas = NewBas();
+        struct cs_BackwardLink *mbas = NewBlk();
         mbas->pstate = mst;
         // Add to nmst's blist
         mbas->next = nmst->blist;
@@ -294,11 +293,11 @@ struct cs_State *CSMAgent::NewState(Agent::State st)
     mst->original_payoff = 0.0;    // any value, doesn't master, it'll be set when used. Note: this value is also used for unseen previous state recieved in links from others.
     mst->payoff = 0;
     mst->count = 1;    // it's created when we First encounter it
-    mst->flist = NULL;    // we just create a struct here, no links considered
-    mst->blist = NULL;
     mst->flag = NEW;    // it's new, and should be saved
-    mst->atlist = NULL;    // no actions or environment actions
-    mst->ealist = NULL;
+    mst->actlist = NULL;
+    mst->blist = NULL;
+
+    mst->prev = NULL;
     mst->next = NULL;
     return mst;
 }
@@ -310,36 +309,21 @@ struct cs_State *CSMAgent::NewState(Agent::State st)
 void CSMAgent::FreeState(struct cs_State *mst)
 {
     // before free the struct itself, free its subparts First
-    /* free atlist */
+    /* free actlist */
     struct cs_Action *ac, *nac;
-    for (ac = mst->atlist; ac != NULL; ac = nac)
+    for (ac = mst->actlist; ac != NULL; ac = nac)
     {
         nac = ac->next;
+
         FreeAc(ac);
     }
 
-    /* free ealist */
-    struct cs_EnvAction *ea, *nea;
-    for (ea = mst->ealist; ea != NULL; ea = nea)
-    {
-        nea = ea->next;
-        FreeEa(ea);
-    }
-
-    /* free flist */
-    struct cs_ForwardArcState *fas, *nfas;
-    for (fas = mst->flist; fas != NULL; fas = nfas)
-    {
-        nfas = fas->next;
-        FreeFas(fas);
-    }
-
     /* free blist */
-    struct cs_BackArcState *bas, *nbas;
+    struct cs_BackwardLink *bas, *nbas;
     for (bas = mst->blist; bas != NULL; bas = nbas)
     {
         nbas = bas->next;
-        FreeBas(bas);
+        FreeBlk(bas);
     }
 
     /* cut off the state */
@@ -356,15 +340,14 @@ void CSMAgent::FreeState(struct cs_State *mst)
  * \return a new forward arc struct
  *
  */
-
-struct cs_ForwardArcState *CSMAgent::NewFas(EnvAction eat, Agent::Action act)
+struct cs_ForwardLink *CSMAgent::NewFlk(EnvAction eat)
 {
-    struct cs_ForwardArcState *fas = (struct cs_ForwardArcState *) malloc(
-            sizeof(struct cs_ForwardArcState));
-
-    fas->act = act;
+    struct cs_ForwardLink *fas = (struct cs_ForwardLink *) malloc(
+            sizeof(struct cs_ForwardLink));
     fas->eat = eat;
+    fas->count = 1;
     fas->nstate = NULL;
+
     fas->next = NULL;
     return fas;
 }
@@ -374,7 +357,7 @@ struct cs_ForwardArcState *CSMAgent::NewFas(EnvAction eat, Agent::Action act)
  * \param fas the struct to be freed
  *
  */
-void CSMAgent::FreeFas(struct cs_ForwardArcState *fas)
+void CSMAgent::FreeFlk(struct cs_ForwardLink *fas)
 {
     return free(fas);
 }
@@ -384,10 +367,10 @@ void CSMAgent::FreeFas(struct cs_ForwardArcState *fas)
  * \return a new back arc struct
  *
  */
-struct cs_BackArcState *CSMAgent::NewBas()
+struct cs_BackwardLink *CSMAgent::NewBlk()
 {
-    struct cs_BackArcState *bas = (struct cs_BackArcState *) malloc(
-            sizeof(struct cs_BackArcState));
+    struct cs_BackwardLink *bas = (struct cs_BackwardLink *) malloc(
+            sizeof(struct cs_BackwardLink));
     bas->pstate = NULL;
     bas->next = NULL;
     return bas;
@@ -396,7 +379,7 @@ struct cs_BackArcState *CSMAgent::NewBas()
 /** \brief Free a back arc struct
  *
  */
-void CSMAgent::FreeBas(struct cs_BackArcState *bas)
+void CSMAgent::FreeBlk(struct cs_BackwardLink *bas)
 {
     return free(bas);
 }
@@ -408,13 +391,13 @@ void CSMAgent::FreeBas(struct cs_BackArcState *bas)
  * \return the action struct found, NULL if not found
  *
  */
-struct cs_Action* CSMAgent::Act2Struct(Agent::Action act,
+struct cs_Action* CSMAgent::AddrOfAct(Agent::Action act,
         const struct cs_State *mst) const
 {
     struct cs_Action *ac, *nac;
 
     // walk through action list
-    for (ac = mst->atlist; ac != NULL; ac = nac)
+    for (ac = mst->actlist; ac != NULL; ac = nac)
     {
         if (ac->act == act) return ac;
 
@@ -422,50 +405,6 @@ struct cs_Action* CSMAgent::Act2Struct(Agent::Action act,
     }
 
     return NULL;
-}
-
-/** \brief Convert from an environment action value to a EnvAction struct
- *
- * \param eat environment action value
- * \param mst in which state struct to search
- * \return the environment action struct found, NULL if not found
- *
- */
-struct cs_EnvAction* CSMAgent::Eat2Struct(EnvAction eat,
-        const struct cs_State *mst) const
-{
-    struct cs_EnvAction *ea, *nea;
-    // walk through environment Agent::Action list
-    for (ea = mst->ealist; ea != NULL; ea = nea)
-    {
-        if (ea->eat == eat) return ea;
-
-        nea = ea->next;
-    }
-
-    return NULL;
-}
-
-/** \brief Create a new Environment action struct
- *
- * \param eat environment action value
- * \return a new environment action struct
- *
- */
-struct cs_EnvAction *CSMAgent::NewEa(EnvAction eat)
-{
-    struct cs_EnvAction *ea = (struct cs_EnvAction *) malloc(
-            sizeof(struct cs_EnvAction));
-
-    ea->eat = eat;
-    ea->count = 1;
-    ea->next = NULL;
-    return ea;
-}
-
-void CSMAgent::FreeEa(struct cs_EnvAction *ea)
-{
-    return free(ea);
 }
 
 /** \brief Create a new action struct
@@ -480,13 +419,22 @@ struct cs_Action *CSMAgent::NewAc(Agent::Action act)
             sizeof(struct cs_Action));
 
     ac->act = act;
-    ac->payoff = 0;
+    ac->flist = NULL;
+
     ac->next = NULL;
     return ac;
 }
 
 void CSMAgent::FreeAc(struct cs_Action *ac)
 {
+    // free flist
+    struct cs_ForwardLink *flk, *nflk;
+    for (flk = ac->flist; flk != NULL; flk = nflk)
+    {
+        nflk = flk->next;
+        FreeFlk(flk);
+    }
+
     return free(ac);
 }
 
@@ -503,24 +451,29 @@ void CSMAgent::LinkStates(struct cs_State *pmst, EnvAction eat,
 {
     /* check if the link already exists, if so simply update the count of environment action */
     dbgmoreprt("Enter LinkStates()", "------------------------------------- Make Link: %ld == %ld + %ld => %ld\n", pmst->st, eat, act, mst->st);
-    struct cs_ForwardArcState *f, *nf;
-    for (f = pmst->flist; f != NULL; f = nf)
-    {
-        if (f->nstate->st == mst->st && f->act == act && f->eat == eat)    // two links equal if and only if their states equal, and actions equal, and environment action equal
-        {
-            dbgmoreprt("", "link already exists, increase ea count only\n");
-            struct cs_EnvAction *ea = Eat2Struct(eat, pmst);    // get the environment action struct
-            ea->count++;    // inc count
-            return;    // done, return
-        }
+    struct cs_Action *ac, *nac;
+    struct cs_ForwardLink *flk, *nflk;
 
-        nf = f->next;
+    ac = AddrOfAct(act, pmst);
+    if (ac != NULL)
+    {
+        for (flk = ac->flist; flk != NULL; flk = nflk)
+        {
+            if (flk == eat && flk->nstate->st == mst->st)    // link already exists
+            {
+                dbgmoreprt("", "link already exists, increase count only\n");
+                flk->count++;
+                return;    // done, return
+            }
+
+            nflk = flk->next;
+        }
     }
 
     dbgmoreprt("", "create new link...\n");
     /* link not exists, create a new link from pmst to mst */
     /* Add mst to pmst's flist */
-    struct cs_ForwardArcState *fas = NewFas(eat, act);
+    struct cs_ForwardLink *fas = NewFlk(eat, act);
     fas->nstate = mst;    // Next state is mst
     // Add fas to pmst's flist
     fas->next = pmst->flist;
@@ -528,7 +481,7 @@ void CSMAgent::LinkStates(struct cs_State *pmst, EnvAction eat,
 
     /* Add pmst to mst's blist */
     // state shouldn't repeat in backward list, check if already exists
-    struct cs_BackArcState *bas, *nbas;
+    struct cs_BackwardLink *bas, *nbas;
     for (bas = mst->blist; bas != NULL; bas = nbas)
     {
         if (bas->pstate == pmst)    // found
@@ -539,7 +492,7 @@ void CSMAgent::LinkStates(struct cs_State *pmst, EnvAction eat,
 
     if (bas == NULL)    // not found, create a new one and Add to blist
     {
-        bas = NewBas();
+        bas = NewBlk();
         bas->pstate = pmst;    // previous state is pmst
         // Add bas to mst's blist
         bas->next = mst->blist;
@@ -570,7 +523,7 @@ void CSMAgent::LinkStates(struct cs_State *pmst, EnvAction eat,
     }
 
     /* check action */
-    struct cs_Action *ac = Act2Struct(act, pmst);
+    struct cs_Action *ac = AddrOfAct(act, pmst);
     if (ac == NULL)    // action not exist, Add a new one to atlist of pmst
     {
         struct cs_Action *nac = NewAc(act);
@@ -593,7 +546,7 @@ float CSMAgent::MaxPayoffInEat(EnvAction eat, const struct cs_State *mst) const
     dbgmoreprt("Enter MaxPayoffEat()", "-------------- eat: %ld, state: %ld\n", eat, mst->st);
     float max_pf = -FLT_MAX;    // set to a possibly minimun value
     struct cs_State *nmst;
-    struct cs_ForwardArcState *fas, *nfas;
+    struct cs_ForwardLink *fas, *nfas;
 
     bool eat_found_in_flist = false;    // indicate if an env action in ealist was found on forward list, it should be consistent!
 
@@ -716,7 +669,7 @@ void CSMAgent::UpdateState(struct cs_State *mst)
         dbgmoreprt("UpdateState()", "Change to payoff: %.1f\n", payoff);
 
         /* update backwards recursively */
-        struct cs_BackArcState *bas, *nbas;
+        struct cs_BackwardLink *bas, *nbas;
         for (bas = mst->blist; bas != NULL; bas = nbas)
         {
             UpdateState(bas->pstate);    // recursively update
@@ -742,7 +695,7 @@ void CSMAgent::UpdateState(struct cs_State *mst)
 struct cs_State *CSMAgent::StateByEatAct(EnvAction eat, Agent::Action act,
         const struct cs_State *mst) const
 {
-    struct cs_ForwardArcState *fas, *nfas;
+    struct cs_ForwardLink *fas, *nfas;
     for (fas = mst->flist; fas != NULL; fas = nfas)
     {
         if (fas->eat == eat && fas->act == act)    // check both envir action and action value
@@ -796,7 +749,7 @@ OSpace CSMAgent::BestActions(const struct cs_State *mst, OSpace &acts) const
     Agent::Action act = acts.First();
     while (act != INVALID_OUTPUT)    // until out of bound
     {
-        struct cs_Action *mac = Act2Struct(act, mst);    // get action struct from values
+        struct cs_Action *mac = AddrOfAct(act, mst);    // get action struct from values
 
         if (mac != NULL)
             payoff = mac->payoff;
@@ -922,11 +875,11 @@ void CSMAgent::DeleteState(struct cs_State *mst)
 
     /* then free all data of state */
     // free flist
-    struct cs_ForwardArcState *fas, *nfas;
+    struct cs_ForwardLink *fas, *nfas;
     for (fas = mst->flist; fas != NULL; fas = nfas)
     {
         nfas = fas->next;
-        FreeFas(fas);
+        FreeFlk(fas);
     }
 
     // free ealist
@@ -1016,7 +969,7 @@ struct State_Info_Header *CSMAgent::GetStateInfo(Agent::State st) const
         nac = ac->next;
     }
     /* get forward link numbers */
-    struct cs_ForwardArcState *fas, *nfas;
+    struct cs_ForwardLink *fas, *nfas;
     for (fas = mst->flist; fas != NULL; fas = nfas)
     {
         lk_num++;
@@ -1187,7 +1140,7 @@ void CSMAgent::AddStateInfo(const State_Info_Header *stif)
      * The information of mst need to be merged to memory by update, otherwise others parts of the memory will know
      * nothing about mst, then the information we got is useless.
      * */
-    struct cs_BackArcState *bas, *nbas;
+    struct cs_BackwardLink *bas, *nbas;
     for (bas = mst->blist; bas != NULL; bas = nbas)
     {
         UpdateState(bas->pstate);    // update previous state one by one
@@ -1261,11 +1214,11 @@ void CSMAgent::UpdateStateInfo(const State_Info_Header *stif)
     mst->ealist = NULL;    // set as NULL!
 
     /* free flist */
-    struct cs_ForwardArcState *fas, *nfas;
+    struct cs_ForwardLink *fas, *nfas;
     for (fas = mst->flist; fas != NULL; fas = nfas)
     {
         nfas = fas->next;
-        FreeFas(fas);
+        FreeFlk(fas);
     }
     mst->flist = NULL;    // set as NULL!
 
@@ -1324,7 +1277,7 @@ void CSMAgent::UpdateStateInfo(const State_Info_Header *stif)
      * The information of mst need to be merged to memory by update, otherwise others parts of the memory will know
      * nothing about mst, then the information we got is useless.
      * */
-    struct cs_BackArcState *bas, *nbas;
+    struct cs_BackwardLink *bas, *nbas;
     for (bas = mst->blist; bas != NULL; bas = nbas)
     {
         UpdateState(bas->pstate);    // update previous state one by one

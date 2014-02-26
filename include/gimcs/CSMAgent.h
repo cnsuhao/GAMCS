@@ -14,7 +14,6 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #ifndef CSMAGENT_H
 #define CSMAGENT_H
 #include <unordered_map>
@@ -82,21 +81,17 @@ class CSMAgent: public MAgent
         void UpdateState(struct cs_State *); /**< update state payoff backward recursively */
 
         struct cs_State *NewState(Agent::State); /**< create a new state struct in memory */
-        struct cs_EnvAction *NewEa(Agent::EnvAction);
         struct cs_Action *NewAc(Agent::Action);
-        struct cs_ForwardArcState *NewFas(Agent::EnvAction, Agent::Action);
-        struct cs_BackArcState *NewBas();
+        struct cs_ForwardLink *NewFlk(Agent::EnvAction);
+        struct cs_BackwardLink *NewBlk();
         void FreeState(struct cs_State *); /**< free a state struct */
-        void FreeEa(struct cs_EnvAction *);
         void FreeAc(struct cs_Action *);
-        void FreeFas(struct cs_ForwardArcState *);
-        void FreeBas(struct cs_BackArcState *);
+        void FreeFlk(struct cs_ForwardLink *);
+        void FreeBlk(struct cs_BackwardLink *);
         void AddStateToMemory(struct cs_State *); /**< add a state struct to memory */
 
-        struct cs_Action *Act2Struct(Agent::Action,
+        struct cs_Action *AddrOfAct(Agent::Action,
                 const struct cs_State *) const; /**< find the Agent::Action struct address according to identity */
-        struct cs_EnvAction *Eat2Struct(Agent::EnvAction,
-                const struct cs_State *) const; /**< find the exact strut address according to identity */
         struct cs_State *StateByEatAct(Agent::EnvAction, Agent::Action,
                 const struct cs_State *) const; /**< find the following state according to exact and Agent::Action*/
         float MaxPayoffInEat(Agent::EnvAction, const struct cs_State *) const; /**< maximun payoff of all following states under a specfic exact */
@@ -104,38 +99,6 @@ class CSMAgent: public MAgent
 
         float CalStatePayoff(const struct cs_State *) const; /**< calculate payoff of a state */
         float CalActPayoff(Agent::Action, const struct cs_State *) const; /**< calculate payoff of an Agent::Action */
-};
-
-/** implementation of environment action information */
-struct cs_EnvAction
-{
-        Agent::EnvAction eat; /**< eact value */
-        unsigned long count; /**< eact count */
-        struct cs_EnvAction *next; /**< next struct */
-};
-
-/** implementation of action information */
-struct cs_Action
-{
-        Agent::Action act; /**< action value */
-        float payoff; /**< action payoff */
-        struct cs_Action *next;
-};
-
-/** implementation of forward link information */
-struct cs_ForwardArcState
-{
-        Agent::EnvAction eat; /**< exact */
-        Agent::Action act; /**< action */
-        struct cs_State *nstate; /**< following state */
-        struct cs_ForwardArcState *next;
-};
-
-/** implementation of backward link information */
-struct cs_BackArcState
-{
-        struct cs_State *pstate; /**< previous state */
-        struct cs_BackArcState *next;
 };
 
 /** state information */
@@ -146,12 +109,37 @@ struct cs_State
         float original_payoff; /**< original payoff of state */
         unsigned long count; /**< state count */
         enum CSMAgent::SgFlag flag; /**< flag used for storage */
-        struct cs_EnvAction *ealist; /**< exacts of this state */
-        struct cs_Action *atlist; /**< actions of this state */
-        struct cs_ForwardArcState *flist; /**< forward links */
-        struct cs_BackArcState *blist; /**< backward links */
+        struct cs_Action *actlist;
+        struct cs_BackwardLink *blist; /**< backward links */
+
         struct cs_State *prev;
         struct cs_State *next;
+};
+
+/** implementation of action information */
+struct cs_Action
+{
+        Agent::Action act; /**< action value */
+        cs_ForwardLink *flist;
+
+        struct cs_Action *next;
+};
+
+/** implementation of forward link information */
+struct cs_ForwardLink
+{
+        Agent::EnvAction eat;
+        unsigned long count; /**< eact count */
+        struct cs_State *nstate; /**< next state */
+
+        struct cs_ForwardLink *next;
+};
+
+/** implementation of backward link information */
+struct cs_BackwardLink
+{
+        struct cs_State *pstate; /**< previous state */
+        struct cs_BackwardLink *next;
 };
 
 }    // namespace gimcs
