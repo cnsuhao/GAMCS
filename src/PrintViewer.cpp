@@ -10,7 +10,6 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #include "gimcs/PrintViewer.h"
 #include "gimcs/Storage.h"
 
@@ -88,7 +87,6 @@ void PrintViewer::PrintStateInfo(const struct State_Info_Header *sthd) const
 {
     if (sthd == NULL) return;
 
-    int i = 0;
     printf("++++++++++++++++++++++++ State: %ld ++++++++++++++++++++++++++\n",
             sthd->st);
     printf("Original payoff: %.2f,\t Payoff: %.2f,\t Count: %ld, ActNum: %d\n",
@@ -99,19 +97,17 @@ void PrintViewer::PrintStateInfo(const struct State_Info_Header *sthd) const
     unsigned char *atp;
     // environment action information
     stp += sizeof(struct State_Info_Header);    // point to the first act
-    int anum;
-    for (anum = 0; anum < sthd->act_num; anum++)
+    Action_Info_Header *athd = NULL;
+    for (int anum = 0; anum < sthd->act_num; anum++)
     {
-        Action_Info_Header *athd = (Action_Info_Header *) stp;
-        atp = stp;
-        atp += sizeof(Action_Info_Header);    // point to the first eat of act
-        int i;
-        for (i = 0; i < athd->eat_num; i++)    // print every eat of this act
+        athd = (Action_Info_Header *) stp;
+        atp = stp + sizeof(Action_Info_Header);    // point to the first eat of act
+        EnvAction_Info *eaif = NULL;
+        for (int i = 0; i < athd->eat_num; i++)    // print every eat of this act
         {
-            EnvAction_Info *eaif = (EnvAction_Info *) atp;
-            printf(
-                    "\t  .|+++ %ld +++ %ld ++> %ld \t Count: %ld\n",
-                    athd->act, eaif->eat, eaif->nst, eaif->count);
+            eaif = (EnvAction_Info *) atp;
+            printf("\t  .|+++ %ld +++ %ld ++> %ld \t Count: %ld\n", athd->act,
+                    eaif->eat, eaif->nst, eaif->count);
 
             atp += sizeof(EnvAction_Info);    // point to the next eat
         }

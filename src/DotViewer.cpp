@@ -121,7 +121,7 @@ void DotViewer::DotStateInfo(const struct State_Info_Header *sthd) const
     else
         st_color = "black";
 
-    unsigned char *p = (unsigned char *) sthd;
+    unsigned char *stp = (unsigned char *) sthd;
     Agent::Action acts[sthd->act_num];
 
     printf("\nsubgraph state%ld\n{\n", sthd->st);
@@ -133,11 +133,11 @@ void DotViewer::DotStateInfo(const struct State_Info_Header *sthd) const
     printf("rank=\"sink\"\n");    // env nodes should be drawing under state node
     printf("node [shape=\"point\"]\n");
 
-    p += sizeof(struct State_Info_Header);    // point to the first act header
-    Action_Info_Header *pre_achd = NULL;
+    stp += sizeof(struct State_Info_Header);    // point to the first act header
+    Action_Info_Header *achd, *pre_achd = NULL;
     for (int i = 0; i < sthd->act_num; i++)
     {
-        Action_Info_Header *achd = (Action_Info_Header *) p;
+        achd = (Action_Info_Header *) stp;
         printf("act%sin%ld [label=\"\", height=0.3]\n",
                 Act2String(achd->act).c_str(), sthd->st);
         if (pre_achd != NULL)
@@ -146,7 +146,7 @@ void DotViewer::DotStateInfo(const struct State_Info_Header *sthd) const
                     Act2String(achd->act).c_str(), sthd->st);
 
         acts[i] = achd->act;    // save for using later
-        p += sizeof(Action_Info_Header)
+        stp += sizeof(Action_Info_Header)
                 + achd->eat_num * sizeof(EnvAction_Info);    // point to the next act header
         pre_achd = achd;
     }
@@ -168,31 +168,29 @@ void DotViewer::DotStateInfo(const struct State_Info_Header *sthd) const
     printf("}\n");    // end of subgraph state
 
     // actions ---> next states
-    unsigned char *stp = (unsigned char *) sthd;    // use point stp to travel through each subpart of state
-    unsigned char *atp;
+    stp = (unsigned char *) sthd;    // restart from sthd
+    unsigned char *atp = NULL;
     // environment action information
     stp += sizeof(struct State_Info_Header);    // point to the first act
-    int anum;
-    for (anum = 0; anum < sthd->act_num; anum++)
+    for (int anum = 0; anum < sthd->act_num; anum++)
     {
-        Action_Info_Header *athd = (Action_Info_Header *) stp;
+        achd = (Action_Info_Header *) stp;
 
-        atp = stp;
-        atp += sizeof(Action_Info_Header);    // point to the first eat of act
-        int i;
-        for (i = 0; i < athd->eat_num; i++)    // copy every eat of this act
+        atp = stp + sizeof(Action_Info_Header);    // point to the first eat of act
+        EnvAction_Info *eaif = NULL;
+        for (int i = 0; i < achd->eat_num; i++)    // copy every eat of this act
         {
-            EnvAction_Info *eaif = (EnvAction_Info *) atp;
+            eaif = (EnvAction_Info *) atp;
             printf(
                     "act%sin%ld -> st%ld [label=<<font color=\"red\">%ld (%ld)</font>>, color=\"red\", weight=1.]\n",
-                    Act2String(athd->act).c_str(), sthd->st, eaif->nst,
-                    athd->act, eaif->count);
+                    Act2String(achd->act).c_str(), sthd->st, eaif->nst,
+                    achd->act, eaif->count);
 
             atp += sizeof(EnvAction_Info);    // point to the next eat
         }
 
         stp += sizeof(Action_Info_Header)
-                + athd->eat_num * sizeof(EnvAction_Info);    // point to the next act
+                + achd->eat_num * sizeof(EnvAction_Info);    // point to the next act
     }
 }
 
@@ -258,7 +256,7 @@ void DotViewer::ShowState(Agent::State st)
     if (sthd != NULL)
     {
         Agent::Action acts[sthd->act_num];
-        unsigned char *p = (unsigned char *) sthd;
+        unsigned char *stp = (unsigned char *) sthd;
 
         printf("rank=\"same\"\n");
         printf("st%ld [label=\"%ld\\n(%.2f)\"]\n", sthd->st, sthd->st,
@@ -268,11 +266,11 @@ void DotViewer::ShowState(Agent::State st)
         printf("rank=\"same\"\n");    // env nodes should be drawing under state node
         printf("node [shape=\"point\"]\n");
 
-        p += sizeof(struct State_Info_Header);    // point to the first act header
-        Action_Info_Header *pre_achd = NULL;
+        stp += sizeof(struct State_Info_Header);    // point to the first act header
+        Action_Info_Header *achd, *pre_achd = NULL;
         for (int i = 0; i < sthd->act_num; i++)
         {
-            Action_Info_Header *achd = (Action_Info_Header *) p;
+            achd = (Action_Info_Header *) stp;
             printf("act%sin%ld [label=\"\", height=0.3]\n",
                     Act2String(achd->act).c_str(), sthd->st);
             if (pre_achd != NULL)
@@ -281,7 +279,8 @@ void DotViewer::ShowState(Agent::State st)
                         Act2String(achd->act).c_str(), sthd->st);
 
             acts[i] = achd->act;    // save for using later
-            p += sizeof(Action_Info_Header) + achd->eat_num * sizeof(EnvAction_Info);    // point to the next act header
+            stp += sizeof(Action_Info_Header)
+                    + achd->eat_num * sizeof(EnvAction_Info);    // point to the next act header
             pre_achd = achd;
         }
         printf("}\n");    // subgraph
@@ -295,25 +294,23 @@ void DotViewer::ShowState(Agent::State st)
         }
 
         // actions ---> next states
-        unsigned char *stp = (unsigned char *) sthd;    // use point stp to travel through each subpart of state
+        stp = (unsigned char *) sthd;    // restart from sthd
         unsigned char *atp;
         // environment action information
         stp += sizeof(struct State_Info_Header);    // point to the first act
-        int anum;
-        for (anum = 0; anum < sthd->act_num; anum++)
+        for (int anum = 0; anum < sthd->act_num; anum++)
         {
-            Action_Info_Header *athd = (Action_Info_Header *) stp;
+            achd = (Action_Info_Header *) stp;
 
-            atp = stp;
-            atp += sizeof(Action_Info_Header);    // point to the first eat of act
-            int i;
-            for (i = 0; i < athd->eat_num; i++)    // copy every eat of this act
+            atp = stp + sizeof(Action_Info_Header);    // point to the first eat of act
+            EnvAction_Info *eaif = NULL;
+            for (int i = 0; i < achd->eat_num; i++)    // copy every eat of this act
             {
-                EnvAction_Info *eaif = (EnvAction_Info *) atp;
+                eaif = (EnvAction_Info *) atp;
                 printf(
                         "act%sin%ld -> st%ld [label=<<font color=\"red\">%ld (%ld)</font>>, color=\"red\", weight=1.]\n",
-                        Act2String(athd->act).c_str(), sthd->st, eaif->nst,
-                        athd->act, eaif->count);
+                        Act2String(achd->act).c_str(), sthd->st, eaif->nst,
+                        achd->act, eaif->count);
 
                 // get the payoff of the next state, exclude self
                 if (eaif->nst != sthd->st)
@@ -331,7 +328,7 @@ void DotViewer::ShowState(Agent::State st)
             }
 
             stp += sizeof(Action_Info_Header)
-                    + athd->eat_num * sizeof(EnvAction_Info);    // point to the next act
+                    + achd->eat_num * sizeof(EnvAction_Info);    // point to the next act
         }
 
         free(sthd);

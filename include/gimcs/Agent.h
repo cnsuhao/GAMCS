@@ -16,7 +16,6 @@
 
 #ifndef AGENT_H
 #define AGENT_H
-#include <stddef.h>
 #include "gimcs/TSGIOM.h"
 #include "gimcs/Debug.h"
 
@@ -120,7 +119,7 @@ struct State_Info_Header
         float payoff; /**< payoff */
         unsigned long count; /**< times of travelling through this state */
         int act_num; /**< number of actions which have been performed */
-        size_t size; /**< size of the header (in Byte) */
+        unsigned int size; /**< size of the header (in Byte) */
 };
 
 /** memory information */

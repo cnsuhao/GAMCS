@@ -44,7 +44,7 @@ void Avatar::Launch()
     while (true)
     {
         ava_loop_count++;    // inc count
-        dbgmoreprt("Enter Launch Loop ", "----------------------------------------------------------- count == %d\n", ava_loop_count);
+        dbgmoreprt("Enter Launch Loop ", "----------------------------------------------------------- count == %ld\n", ava_loop_count);
 
         unsigned long start_time = GetCurrentTime();
 
