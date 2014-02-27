@@ -90,7 +90,7 @@ void Avatar::Launch()
         }
     }
     // quit
-    dbgmoreprt("Exit Launch Loop", "----------------------------------------------------------- Id: %d Exit!\n", id);
+    dbgmoreprt("Exit Launch Loop", "----------------------------------------------------------- %s Exit!\n", name.c_str());
     return;
 }
 

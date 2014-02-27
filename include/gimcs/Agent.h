@@ -14,7 +14,6 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #ifndef AGENT_H
 #define AGENT_H
 #include <stddef.h>
@@ -98,21 +97,11 @@ inline void Agent::SetDegreeOfCuriosity(float pf)
     degree_of_curiosity = pf;
 }
 
-/** forward link struct for a state
- *  current state + act + eat = nst
- */
-struct Forward_Link_Info
-{
-        Agent::Action act; /**< action */
-        Agent::EnvAction eat; /**< env act */
-        Agent::State nst; /**< next state */
-};
-
 /** action information */
-struct Action_Info
+struct Action_Info_Header
 {
         Agent::Action act; /**< action value */
-        float payoff; /**< action payoff  */
+        int eat_num; /**< number of environment actions which have been observed */
 };
 
 /** environment act information */
@@ -120,6 +109,7 @@ struct EnvAction_Info
 {
         Agent::EnvAction eat; /**< environment action value */
         unsigned long count; /**< count of experiencing times */
+        Agent::State nst; /**< next state */
 };
 
 /** Header of state information, this struct can be used to share with other agents */
@@ -129,9 +119,7 @@ struct State_Info_Header
         float original_payoff; /**< original payoff */
         float payoff; /**< payoff */
         unsigned long count; /**< times of travelling through this state */
-        int eat_num; /**< number of environment actions which have been observed */
         int act_num; /**< number of actions which have been performed */
-        int lk_num; /**< number of forward links to other states */
         size_t size; /**< size of the header (in Byte) */
 };
 
