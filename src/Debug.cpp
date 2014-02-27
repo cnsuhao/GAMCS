@@ -10,7 +10,6 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #include "gimcs/Debug.h"
 #include "gimcs/Agent.h"
 
@@ -21,45 +20,40 @@ namespace gimcs
  * \brief Pretty print State information
  * \param specified State information header
  */
-void PrintStateInfo(const struct State_Info_Header *stif)
+void PrintStateInfo(const struct State_Info_Header *sthd)
 {
-    if (stif == NULL) return;
+    if (sthd == NULL) return;
 
     int i = 0;
     printf("++++++++++++++++++++++++ State: %ld ++++++++++++++++++++++++++\n",
-            stif->st);
-    printf("Original payoff: %.2f,\t Payoff: %.2f,\t Count: %ld\n",
-            stif->original_payoff, stif->payoff, stif->count);
-    printf("------------------- ExActions, Num: %d -----------------------\n",
-            stif->eat_num);
-    unsigned char *p = (unsigned char *) stif;
-    p += sizeof(struct State_Info_Header);
-    struct EnvAction_Info *eaif = (struct EnvAction_Info *) p;
-    for (i = 0; i < stif->eat_num; i++)
+            sthd->st);
+    printf("Original payoff: %.2f,\t Payoff: %.2f,\t Count: %ld, ActNum: %d\n",
+            sthd->original_payoff, sthd->payoff, sthd->count, sthd->act_num);
+    printf("------------------------------------------------------------\n");
+    unsigned char *stp = (unsigned char *) sthd;    // use point stp to travel through each subpart of state
+    unsigned char *atp;
+    // environment action information
+    stp += sizeof(struct State_Info_Header);    // point to the first act
+    int anum;
+    for (anum = 0; anum < sthd->act_num; anum++)
     {
-        printf("\t EnvAction: %ld,\t\t Count: %ld\n", eaif[i].eat,
-                eaif[i].count);
+        Action_Info_Header *athd = (Action_Info_Header *) stp;
+        atp = stp;
+        atp += sizeof(Action_Info_Header);    // point to the first eat of act
+        int i;
+        for (i = 0; i < athd->eat_num; i++)    // print every eat of this act
+        {
+            EnvAction_Info *eaif = (EnvAction_Info *) atp;
+            printf(
+                    "\t  .|+++ %ld +++ %ld ++> %ld \t Count: %ld\n",
+                    athd->act, eaif->eat, eaif->nst, eaif->count);
+
+            atp += sizeof(EnvAction_Info);    // point to the next eat
+        }
+        stp += sizeof(Action_Info_Header)
+                + athd->eat_num * sizeof(EnvAction_Info);    // point to the next act
     }
-    printf("--------------------- Actions, Num: %d -----------------------\n",
-            stif->act_num);
-    int len = stif->eat_num * sizeof(struct EnvAction_Info);
-    p += len;
-    struct Action_Info *atif = (struct Action_Info *) p;
-    for (i = 0; i < stif->act_num; i++)
-    {
-        printf("\t Action: %ld,\t\t Payoff: %.2f\n", atif[i].act,
-                atif[i].payoff);
-    }
-    printf("------------------- ForwardLinks, Num: %d --------------------\n",
-            stif->lk_num);
-    len = stif->act_num * sizeof(struct Action_Info);
-    p += len;
-    struct Forward_Link_Info *lk = (struct Forward_Link_Info *) p;
-    for (i = 0; i < stif->lk_num; i++)
-    {
-        printf("\t ForwardLink:\t\t  .|+++ %ld +++ %ld ++> %ld\n", lk[i].eat,
-                lk[i].act, lk[i].nst);
-    }
+
     printf("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n");
 
     return;

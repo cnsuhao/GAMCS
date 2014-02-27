@@ -39,7 +39,7 @@ class MAgent: public Agent
         virtual void UpdateStateInfo(const struct State_Info_Header *) = 0;
         virtual void DeleteState(State) = 0;
 
-        virtual void UpdateState(State) = 0;
+        virtual void UpdatePayoff(State) = 0;
 
         /* iterate all states */
         virtual State FirstState() const = 0;

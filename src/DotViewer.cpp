@@ -10,7 +10,6 @@
 //
 // -----------------------------------------------------------------------------
 
-#include <map>
 #include <string>
 #include "gimcs/DotViewer.h"
 #include "gimcs/Agent.h"
@@ -90,107 +89,114 @@ void DotViewer::Show()
     storage->Close();
 }
 
-void DotViewer::DotStateInfo(const struct State_Info_Header *stif) const
+void DotViewer::DotStateInfo(const struct State_Info_Header *sthd) const
 {
     /* generated state example:
      *
      * subgraph state9
      * {
-     *    rank="same"
-     *    st9 [label="9"]
-     *    subgraph
-     *    {
-     *      rank="sink"
-     *      node [shape="point"]
-     *      eat0in9 [label=""]
-     *      eat1in9 [label=""]
-     *      eat0in9 -> eat1in9 [style=dashed, dir=none]
-     *    }
-     *    st9 -> eat0in9 [label="eat: 0 (123)"]
-     *    st9 -> eat1in9 [label="eat: 1 (12)"]
+     *      rank="same"
+     *      st9 [label="9"]
+     *      subgraph
+     *      {
+     *          rank="sink"
+     *          node [shape="point"]
+     *          act0in9 [label=""]
+     *          act1in9 [label=""]
+     *          act0in9 -> act1in9 [style=dashed, dir=none]
+     *      }
+     *      st9 -> act0in9 [label="act: -1"]
+     *      st9 -> act1in9 [label="act: 1"]
      * }
      *
-     * eat0in9 -> st8 [label="act: -1 (0.3)"]
-     * eat0in9 -> st10 [label="act: 1 (0.4)"]
-     *
+     * act0in9 -> st8 [label="eat: 0 (count)"]
+     * act1in9 -> st7 [label="eat: 0 (count)"]
      */
 
-    if (stif == NULL) return;
+    if (sthd == NULL) return;
 
     std::string st_color;
-    if (stif->st == last_state)
+    if (sthd->st == last_state)
         st_color = "#D3D300";    // highlight last state node
     else
         st_color = "black";
 
-    // store env action and action information
-    std::map<Agent::Action, float> actmap;
+    unsigned char *p = (unsigned char *) sthd;
+    Agent::Action acts[sthd->act_num];
 
-    unsigned char *p = (unsigned char *) stif;
-    printf("\nsubgraph state%ld\n{\n", stif->st);
+    printf("\nsubgraph state%ld\n{\n", sthd->st);
     printf("rank=\"same\"\n");
-    printf("st%ld [label=\"%ld\\n(%.2f)\", color=\"%s\"]\n", stif->st, stif->st,
-            stif->payoff, st_color.c_str());
-    // env action nodes and env action ---> env action
+    printf("st%ld [label=\"%ld\\n(%.2f)\", color=\"%s\"]\n", sthd->st, sthd->st,
+            sthd->payoff, st_color.c_str());
+    // action nodes and action ---> action
     printf("subgraph \n{\n");
     printf("rank=\"sink\"\n");    // env nodes should be drawing under state node
     printf("node [shape=\"point\"]\n");
-    p += sizeof(struct State_Info_Header);
-    struct EnvAction_Info *eaif = (struct EnvAction_Info *) p;
-    for (int i = 0; i < stif->eat_num; i++)
-    {
-        printf("eat%sin%ld [label=\"\", height=0.3]\n",
-                Eat2String(eaif[i].eat).c_str(), stif->st);
 
-        int j = i + 1;
-        if (j < stif->eat_num)
-        {
-            printf("eat%sin%ld -> eat%sin%ld [style=dashed, dir=none]\n",
-                    Eat2String(eaif[i].eat).c_str(), stif->st,
-                    Eat2String(eaif[j].eat).c_str(), stif->st);
-        }
+    p += sizeof(struct State_Info_Header);    // point to the first act header
+    Action_Info_Header *pre_achd = NULL;
+    for (int i = 0; i < sthd->act_num; i++)
+    {
+        Action_Info_Header *achd = (Action_Info_Header *) p;
+        printf("act%sin%ld [label=\"\", height=0.3]\n",
+                Act2String(achd->act).c_str(), sthd->st);
+        if (pre_achd != NULL)
+            printf("act%sin%ld -> act%sin%ld [style=dashed, dir=none]\n",
+                    Act2String(pre_achd->act).c_str(), sthd->st,
+                    Act2String(achd->act).c_str(), sthd->st);
+
+        acts[i] = achd->act;    // save for using later
+        p += sizeof(Action_Info_Header)
+                + achd->eat_num * sizeof(EnvAction_Info);    // point to the next act header
+        pre_achd = achd;
     }
     printf("}\n");    // subgraph
 
-    // state ---> env actions
-    for (int i = 0; i < stif->eat_num; i++)
+    // state ---> actions
+    for (int i = 0; i < sthd->act_num; i++)
     {
-        printf(
-                "st%ld -> eat%sin%ld [label=<<font color=\"blue\">%ld (%ld)</font>>, color=\"blue\", weight=2.]\n",
-                stif->st, Eat2String(eaif[i].eat).c_str(), stif->st,
-                eaif[i].eat, eaif[i].count);
+        if (sthd->st == last_state && acts[i] == last_action)    // highlight last action edge
+            printf(
+                    "st%ld -> act%sin%ld [label=<<font color=\"#D3D300\">%ld</font>>, color=\"#D3D300\", weight=2.]\n",
+                    sthd->st, Act2String(acts[i]).c_str(), sthd->st, acts[i]);
+        else
+            printf(
+                    "st%ld -> act%sin%ld [label=<<font color=\"blue\">%ld</font>>, color=\"blue\", weight=2.]\n",
+                    sthd->st, Act2String(acts[i]).c_str(), sthd->st, acts[i]);
+
     }
     printf("}\n");    // end of subgraph state
 
-    // store actions and their payoff
-    int len = stif->eat_num * sizeof(struct EnvAction_Info);
-    p += len;
-    struct Action_Info *atif = (struct Action_Info *) p;
-    for (int i = 0; i < stif->act_num; i++)
+    // actions ---> next states
+    unsigned char *stp = (unsigned char *) sthd;    // use point stp to travel through each subpart of state
+    unsigned char *atp;
+    // environment action information
+    stp += sizeof(struct State_Info_Header);    // point to the first act
+    int anum;
+    for (anum = 0; anum < sthd->act_num; anum++)
     {
-        actmap[atif[i].act] = atif[i].payoff;    // act: payoff
-    }
+        Action_Info_Header *athd = (Action_Info_Header *) stp;
 
-    // env actions ---> next states
-    len = stif->act_num * sizeof(struct Action_Info);
-    p += len;
-    struct Forward_Link_Info *lk = (struct Forward_Link_Info *) p;
-    for (int i = 0; i < stif->lk_num; i++)
-    {
-        if (stif->st == last_state && lk[i].act == last_action)    // highlight last action edge
+        atp = stp;
+        atp += sizeof(Action_Info_Header);    // point to the first eat of act
+        int i;
+        for (i = 0; i < athd->eat_num; i++)    // copy every eat of this act
+        {
+            EnvAction_Info *eaif = (EnvAction_Info *) atp;
             printf(
-                    "eat%sin%ld -> st%ld [label=<<font color=\"#D3D300\">%ld (%.2f)</font>>, color=\"#D3D300\", weight=1.]\n",
-                    Eat2String(lk[i].eat).c_str(), stif->st, lk[i].nst,
-                    lk[i].act, actmap[lk[i].act]);
-        else
-            printf(
-                    "eat%sin%ld -> st%ld [label=<<font color=\"red\">%ld (%.2f)</font>>, color=\"red\", weight=1.]\n",
-                    Eat2String(lk[i].eat).c_str(), stif->st, lk[i].nst,
-                    lk[i].act, actmap[lk[i].act]);
+                    "act%sin%ld -> st%ld [label=<<font color=\"red\">%ld (%ld)</font>>, color=\"red\", weight=1.]\n",
+                    Act2String(athd->act).c_str(), sthd->st, eaif->nst,
+                    athd->act, eaif->count);
+
+            atp += sizeof(EnvAction_Info);    // point to the next eat
+        }
+
+        stp += sizeof(Action_Info_Header)
+                + athd->eat_num * sizeof(EnvAction_Info);    // point to the next act
     }
 }
 
-const std::string DotViewer::Eat2String(Agent::EnvAction eat) const
+const std::string DotViewer::Act2String(Agent::EnvAction eat) const
 {
     char tmp[28];
     if (eat >= 0)
@@ -248,84 +254,93 @@ void DotViewer::ShowState(Agent::State st)
     printf("label=\"infoset of state %ld in memory %s\"\n", st,
             storage->GetMemoryName().c_str());
 
-    struct State_Info_Header *stif = storage->GetStateInfo(st);
-    if (stif != NULL)
+    struct State_Info_Header *sthd = storage->GetStateInfo(st);
+    if (sthd != NULL)
     {
-        // show state info
-        // store env action and action information
-        std::map<Agent::Action, float> actmap;
+        Agent::Action acts[sthd->act_num];
+        unsigned char *p = (unsigned char *) sthd;
 
-        unsigned char *p = (unsigned char *) stif;
-        printf("st%ld [label=\"%ld\\n(%.2f)\"]\n", stif->st, stif->st,
-                stif->payoff);
-        // env action nodes and env action ---> env action
-        printf("\nsubgraph {\n");    // use subgraph to align env action nodes
         printf("rank=\"same\"\n");
-        p += sizeof(struct State_Info_Header);
-        struct EnvAction_Info *eaif = (struct EnvAction_Info *) p;
-        for (int i = 0; i < stif->eat_num; i++)
-        {
-            printf("eat%sin%ld [shape=\"point\", label=\"\", height=0.3]\n",
-                    Eat2String(eaif[i].eat).c_str(), stif->st);
+        printf("st%ld [label=\"%ld\\n(%.2f)\"]\n", sthd->st, sthd->st,
+                sthd->payoff);
+        // action nodes and action ---> action
+        printf("subgraph \n{\n");
+        printf("rank=\"same\"\n");    // env nodes should be drawing under state node
+        printf("node [shape=\"point\"]\n");
 
-            int j = i + 1;
-            if (j < stif->eat_num)
-            {
-                printf("eat%sin%ld -> eat%sin%ld [style=dashed, dir=none]\n",
-                        Eat2String(eaif[i].eat).c_str(), stif->st,
-                        Eat2String(eaif[j].eat).c_str(), stif->st);
-            }
+        p += sizeof(struct State_Info_Header);    // point to the first act header
+        Action_Info_Header *pre_achd = NULL;
+        for (int i = 0; i < sthd->act_num; i++)
+        {
+            Action_Info_Header *achd = (Action_Info_Header *) p;
+            printf("act%sin%ld [label=\"\", height=0.3]\n",
+                    Act2String(achd->act).c_str(), sthd->st);
+            if (pre_achd != NULL)
+                printf("act%sin%ld -> act%sin%ld [style=dashed, dir=none]\n",
+                        Act2String(pre_achd->act).c_str(), sthd->st,
+                        Act2String(achd->act).c_str(), sthd->st);
+
+            acts[i] = achd->act;    // save for using later
+            p += sizeof(Action_Info_Header) + achd->eat_num * sizeof(EnvAction_Info);    // point to the next act header
+            pre_achd = achd;
         }
         printf("}\n");    // subgraph
 
-        // state ---> env actions
-        for (int i = 0; i < stif->eat_num; i++)
+        // state ---> actions
+        for (int i = 0; i < sthd->act_num; i++)
         {
             printf(
-                    "st%ld -> eat%sin%ld [label=<<font color=\"blue\">%ld (%ld)</font>>, color=\"blue\", weight=3.]\n",
-                    stif->st, Eat2String(eaif[i].eat).c_str(), stif->st,
-                    eaif[i].eat, eaif[i].count);
+                    "st%ld -> act%sin%ld [label=<<font color=\"blue\">%ld</font>>, color=\"blue\", weight=2.]\n",
+                    sthd->st, Act2String(acts[i]).c_str(), sthd->st, acts[i]);
         }
 
-        // store actions and their payoff
-        int len = stif->eat_num * sizeof(struct EnvAction_Info);
-        p += len;
-        struct Action_Info *atif = (struct Action_Info *) p;
-        for (int i = 0; i < stif->act_num; i++)
+        // actions ---> next states
+        unsigned char *stp = (unsigned char *) sthd;    // use point stp to travel through each subpart of state
+        unsigned char *atp;
+        // environment action information
+        stp += sizeof(struct State_Info_Header);    // point to the first act
+        int anum;
+        for (anum = 0; anum < sthd->act_num; anum++)
         {
-            actmap[atif[i].act] = atif[i].payoff;    // act: payoff
-        }
+            Action_Info_Header *athd = (Action_Info_Header *) stp;
 
-        // env actions ---> next states
-        len = stif->act_num * sizeof(struct Action_Info);
-        p += len;
-        struct Forward_Link_Info *lk = (struct Forward_Link_Info *) p;
-        for (int i = 0; i < stif->lk_num; i++)
-        {
-            printf(
-                    "eat%sin%ld -> st%ld [label=<<font color=\"red\">%ld (%.2f)</font>>, color=\"red\", weight=1.]\n",
-                    Eat2String(lk[i].eat).c_str(), stif->st, lk[i].nst,
-                    lk[i].act, actmap[lk[i].act]);
-
-            if (lk[i].nst != stif->st)    // get the payoff of next state, exclude self
+            atp = stp;
+            atp += sizeof(Action_Info_Header);    // point to the first eat of act
+            int i;
+            for (i = 0; i < athd->eat_num; i++)    // copy every eat of this act
             {
-                struct State_Info_Header *nstif = storage->GetStateInfo(
-                        lk[i].nst);
-                if (nstif == NULL)    // shouldn't happen
-                    ERROR("next state: %ld returns NULL!\n", lk[i].nst);
+                EnvAction_Info *eaif = (EnvAction_Info *) atp;
+                printf(
+                        "act%sin%ld -> st%ld [label=<<font color=\"red\">%ld (%ld)</font>>, color=\"red\", weight=1.]\n",
+                        Act2String(athd->act).c_str(), sthd->st, eaif->nst,
+                        athd->act, eaif->count);
 
-                printf("st%ld [label=\"%ld\\n(%.2f)\"]\n", lk[i].nst, lk[i].nst,
-                        nstif->payoff);    // print out next state
-                free(nstif);
+                // get the payoff of the next state, exclude self
+                if (eaif->nst != sthd->st)
+                {
+                    State_Info_Header *nstif = storage->GetStateInfo(eaif->nst);
+                    if (nstif == NULL)    // shouldn't happen
+                        ERROR("next state: %ld returns NULL!\n", eaif->nst);
+
+                    printf("st%ld [label=\"%ld\\n(%.2f)\"]\n", eaif->nst,
+                            eaif->nst, nstif->payoff);    // print out next state
+                    free(nstif);
+                }
+
+                atp += sizeof(EnvAction_Info);    // point to the next eat
             }
+
+            stp += sizeof(Action_Info_Header)
+                    + athd->eat_num * sizeof(EnvAction_Info);    // point to the next act
         }
 
-        free(stif);    // don't forget to free
+        free(sthd);
     }
     else    // state not found
     {
         printf("state %ld not found in memory!\n", st);
     }
+
     printf("}\n");    // digraph
     storage->Close();
 }

@@ -23,11 +23,17 @@ SET(LIBS ${LIBS} ${MYSQL_LIBRARIES})
 
 # configuration options
 option(GIMCS_DEBUG "Build with debug output" NO)
+option(GIMCS_DEBUG_MORE "Build with debug output" NO)
 
 # definitions
 IF (GIMCS_DEBUG)
     ADD_DEFINITIONS("-D_DEBUG_")
 ENDIF()
+
+IF (GIMCS_DEBUG_MORE)
+    ADD_DEFINITIONS("-D_DEBUG_MORE_")
+ENDIF()
+
 
 # detect platforms
 IF (WIN32)

@@ -12,7 +12,7 @@
 Monomer::Monomer(std::string n) :
         Avatar(n)
 {
-    position = 12;
+    position = 5;
 }
 
 Monomer::~Monomer()
@@ -47,7 +47,7 @@ OSpace Monomer::ActionCandidates(Agent::State st)
 //    UNUSED(st);
     static int count;
 //    UNUSED(st);
-    if (count < 50000)
+    if (count < 100)
     {
         OSpace acts;
         acts.Clear();
@@ -69,11 +69,10 @@ OSpace Monomer::ActionCandidates(Agent::State st)
 
 float Monomer::OriginalPayoff(Agent::State st)
 {
-    return -(st * 0.1);
-//    if (st == 9)
-//        return 1;
-//    else if (st == 13)
-//        return 2;
-//    else
-//        return 0;
+    if (st == 9)
+        return 1;
+    else if (st == 13)
+        return 2;
+    else
+        return 0;
 }

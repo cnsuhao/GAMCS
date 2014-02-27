@@ -45,7 +45,7 @@ class CSMAgent: public MAgent
         void AddStateInfo(const struct State_Info_Header *);
         void UpdateStateInfo(const struct State_Info_Header *);
         void DeleteState(State);
-        void UpdateState(State);
+        void UpdatePayoff(State);
 
         State FirstState() const;
         State NextState() const;
@@ -78,24 +78,23 @@ class CSMAgent: public MAgent
                 struct cs_State *); /**< link two states in memory with specfic exact and action */
         OSpace BestActions(const struct cs_State *, OSpace&) const; /**< find the best action of a state */
         struct cs_State *SearchState(Agent::State) const; /**< search state in memory by its identity */
-        void UpdateState(struct cs_State *); /**< update state payoff backward recursively */
+        void UpdateStatePayoff(struct cs_State *); /**< update state payoff backward recursively */
 
         struct cs_State *NewState(Agent::State); /**< create a new state struct in memory */
-        struct cs_Action *NewAc(Agent::Action);
-        struct cs_ForwardLink *NewFlk(Agent::EnvAction);
+        struct cs_Action *NewAct(Agent::Action);
+        struct cs_EnvAction *NewEat(Agent::EnvAction);
         struct cs_BackwardLink *NewBlk();
         void FreeState(struct cs_State *); /**< free a state struct */
-        void FreeAc(struct cs_Action *);
-        void FreeFlk(struct cs_ForwardLink *);
+        void FreeAct(struct cs_Action *);
+        void FreeEat(struct cs_EnvAction *);
         void FreeBlk(struct cs_BackwardLink *);
         void AddStateToMemory(struct cs_State *); /**< add a state struct to memory */
 
-        struct cs_Action *AddrOfAct(Agent::Action,
-                const struct cs_State *) const; /**< find the Agent::Action struct address according to identity */
-        struct cs_State *StateByEatAct(Agent::EnvAction, Agent::Action,
-                const struct cs_State *) const; /**< find the following state according to exact and Agent::Action*/
-        float MaxPayoffInEat(Agent::EnvAction, const struct cs_State *) const; /**< maximun payoff of all following states under a specfic exact */
-        float Prob(const struct cs_EnvAction*, const struct cs_State *) const; /**< probability of a exact */
+        struct cs_Action *ActAddr(Agent::Action, const struct cs_State *) const; /**< find the Agent::Action struct address according to identity */
+        struct cs_EnvAction *EatAddrInAct(Agent::EnvAction, cs_Action *);
+        void AddAct2State(cs_Action *, cs_State *);
+        void AddEat2Act(cs_EnvAction *, cs_Action *);
+        float Prob(const struct cs_EnvAction*, const struct cs_Action *) const; /**< probability of a exact */
 
         float CalStatePayoff(const struct cs_State *) const; /**< calculate payoff of a state */
         float CalActPayoff(Agent::Action, const struct cs_State *) const; /**< calculate payoff of an Agent::Action */
@@ -120,19 +119,19 @@ struct cs_State
 struct cs_Action
 {
         Agent::Action act; /**< action value */
-        cs_ForwardLink *flist;
+        cs_EnvAction *ealist;
 
         struct cs_Action *next;
 };
 
 /** implementation of forward link information */
-struct cs_ForwardLink
+struct cs_EnvAction
 {
         Agent::EnvAction eat;
         unsigned long count; /**< eact count */
         struct cs_State *nstate; /**< next state */
 
-        struct cs_ForwardLink *next;
+        struct cs_EnvAction *next;
 };
 
 /** implementation of backward link information */

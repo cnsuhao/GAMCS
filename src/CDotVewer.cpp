@@ -83,7 +83,7 @@ void CDotViewer::Show()
     storage->Close();
 }
 
-void CDotViewer::CleanDotStateInfo(const struct State_Info_Header *stif) const
+void CDotViewer::CleanDotStateInfo(const struct State_Info_Header *sthd) const
 {
     /* generated state example:
      *
@@ -92,20 +92,32 @@ void CDotViewer::CleanDotStateInfo(const struct State_Info_Header *stif) const
      * st9 -> st8 [label="<0, -1>"]
      * st9 -> st10 [label="<0, 1>"]
      */
-    if (stif == NULL) return;
+    if (sthd == NULL) return;
 
-    printf("\nst%ld [label=\"%ld\"]\n", stif->st, stif->st);
-    unsigned char *p = (unsigned char *) stif;
-    p += sizeof(struct State_Info_Header);
-    int len = stif->eat_num * sizeof(struct EnvAction_Info);
-    p += len;    // skip env actions
-    len = stif->act_num * sizeof(struct Action_Info);
-    p += len;    // skip actions
-    struct Forward_Link_Info *lk = (struct Forward_Link_Info *) p;    // reach forward links
-    for (int i = 0; i < stif->lk_num; i++)
+    printf("\nst%ld [label=\"%ld\"]\n", sthd->st, sthd->st);
+
+    unsigned char *stp = (unsigned char *) sthd;    // use point stp to travel through each subpart of state
+    unsigned char *atp;
+    // environment action information
+    stp += sizeof(struct State_Info_Header);    // point to the first act
+    int anum;
+    for (anum = 0; anum < sthd->act_num; anum++)
     {
-        printf("st%ld -> st%ld [label=\"<%ld, %ld>\"]\n", stif->st, lk[i].nst,
-                lk[i].eat, lk[i].act);
+        Action_Info_Header *athd = (Action_Info_Header *) stp;
+
+        atp = stp;
+        atp += sizeof(Action_Info_Header);    // point to the first eat of act
+        int i;
+        for (i = 0; i < athd->eat_num; i++)    // copy every eat of this act
+        {
+            EnvAction_Info *eaif = (EnvAction_Info *) atp;
+            printf("st%ld -> st%ld [label=\"<%ld, %ld>\"]\n", sthd->st,
+                    eaif->nst, eaif->eat, athd->act);
+
+            atp += sizeof(EnvAction_Info);    // point to the next eat
+        }
+        stp += sizeof(Action_Info_Header)
+                + athd->eat_num * sizeof(EnvAction_Info);    // point to the next act
     }
 }
 
