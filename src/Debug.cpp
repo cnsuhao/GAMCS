@@ -24,7 +24,6 @@ void PrintStateInfo(const struct State_Info_Header *sthd)
 {
     if (sthd == NULL) return;
 
-    int i = 0;
     printf("++++++++++++++++++++++++ State: %ld ++++++++++++++++++++++++++\n",
             sthd->st);
     printf("Original payoff: %.2f,\t Payoff: %.2f,\t Count: %ld, ActNum: %d\n",

@@ -90,8 +90,8 @@ class CSMAgent: public MAgent
         void FreeBlk(struct cs_BackwardLink *);
         void AddStateToMemory(struct cs_State *); /**< add a state struct to memory */
 
-        struct cs_Action *ActAddr(Agent::Action, const struct cs_State *) const; /**< find the Agent::Action struct address according to identity */
-        struct cs_EnvAction *EatAddrInAct(Agent::EnvAction, cs_Action *);
+        struct cs_Action *SearchAct(Agent::Action, const struct cs_State *) const; /**< find the Agent::Action struct address according to identity */
+        struct cs_EnvAction *SearchEat(Agent::EnvAction, cs_Action *);
         void AddAct2State(cs_Action *, cs_State *);
         void AddEat2Act(cs_EnvAction *, cs_Action *);
         float Prob(const struct cs_EnvAction*, const struct cs_Action *) const; /**< probability of a exact */

@@ -213,7 +213,7 @@ struct State_Info_Header *Mysql::GetStateInfo(Agent::State st) const
         return NULL;
     }
 
-    int sthd_size = atoi(row[5]);
+    unsigned int sthd_size = atoi(row[5]);
     State_Info_Header *sthd = (State_Info_Header *) malloc(sthd_size);
     sthd->st = atol(row[0]);
     sthd->original_payoff = atof(row[1]);
@@ -224,7 +224,7 @@ struct State_Info_Header *Mysql::GetStateInfo(Agent::State st) const
 
     unsigned char *stp = (unsigned char *) sthd;
     stp += sizeof(struct State_Info_Header);    // point to the first act
-    int acif_size = sthd_size - sizeof(State_Info_Header);
+    unsigned int acif_size = sthd_size - sizeof(State_Info_Header);
 
     assert(acif_size == lengths[6]);    // check
     memcpy(stp, row[6], acif_size);    // copy action infos

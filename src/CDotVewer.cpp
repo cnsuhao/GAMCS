@@ -112,7 +112,7 @@ void CDotViewer::CleanDotStateInfo(const struct State_Info_Header *sthd) const
         {
             EnvAction_Info *eaif = (EnvAction_Info *) atp;
             printf("st%ld -> st%ld [label=\"<%ld, %ld>\"]\n", sthd->st,
-                    eaif->nst, eaif->eat, athd->act);
+                    eaif->nst, athd->act, eaif->eat);
 
             atp += sizeof(EnvAction_Info);    // point to the next eat
         }

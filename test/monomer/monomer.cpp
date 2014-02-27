@@ -28,7 +28,10 @@ Agent::State Monomer::GetCurrentState()
 
 void Monomer::PerformAction(Agent::Action act)
 {
-    position += act;
+    if (act == 2)
+        position += 1;
+    else
+        position -= 1;
 
     if (position > 15) position = 15;
     if (position < 1) position = 1;
@@ -47,18 +50,18 @@ OSpace Monomer::ActionCandidates(Agent::State st)
 //    UNUSED(st);
     static int count;
 //    UNUSED(st);
-    if (count < 100)
+    if (count < 50)
     {
         OSpace acts;
         acts.Clear();
         if (st == 1)
-            acts.Add(1);
+            acts.Add(2);
         else if (st == 15)
-            acts.Add(-1);
+            acts.Add(1);
         else
         {
+            acts.Add(2);
             acts.Add(1);
-            acts.Add(-1);
         }
         count++;
         return acts;

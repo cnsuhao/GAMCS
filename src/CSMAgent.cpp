@@ -57,13 +57,13 @@ CSMAgent::~CSMAgent()
 void CSMAgent::LoadState(Storage *storage, Agent::State st)
 {
     State_Info_Header *sthd = storage->GetStateInfo(st);
-    PrintStateInfo(sthd);
     if (sthd == NULL)    // should not happen, otherwise database corrupted!
         ERROR(
                 "state: %ld should exist, but fetch from storage returns NULL, the database may be corrupted!\n",
                 st);
 
     struct cs_State *mst = SearchState(st);    // search memory for the state First
+    // FIXME: 态存储标志！！
     if (mst == NULL)
         AddStateInfo(sthd);
     else
@@ -76,7 +76,6 @@ void CSMAgent::LoadState(Storage *storage, Agent::State st)
 /** \brief Initialize memory, if saved, loaded from database to computer memory, otherwise do nothing.
  *
  */
-
 void CSMAgent::LoadMemoryFromStorage(Storage *storage)
 {
     if (storage == NULL)    // no database specified, do nothing
@@ -246,7 +245,6 @@ void CSMAgent::FreeState(struct cs_State *mst)
     for (ac = mst->actlist; ac != NULL; ac = nac)
     {
         nac = ac->next;
-
         FreeAct(ac);
     }
 
@@ -323,11 +321,10 @@ void CSMAgent::FreeBlk(struct cs_BackwardLink *bas)
  * \return the action struct found, NULL if not found
  *
  */
-struct cs_Action* CSMAgent::ActAddr(Agent::Action act,
+struct cs_Action* CSMAgent::SearchAct(Agent::Action act,
         const struct cs_State *mst) const
 {
     struct cs_Action *ac, *nac;
-
     // walk through action list
     for (ac = mst->actlist; ac != NULL; ac = nac)
     {
@@ -339,12 +336,9 @@ struct cs_Action* CSMAgent::ActAddr(Agent::Action act,
     return NULL;
 }
 
-struct cs_EnvAction *CSMAgent::EatAddrInAct(EnvAction eat, cs_Action *mact)
+struct cs_EnvAction *CSMAgent::SearchEat(EnvAction eat, cs_Action *mact)
 {
-    if (mact == NULL) return NULL;
-
     struct cs_EnvAction *meat, *nmeat;
-
     for (meat = mact->ealist; meat != NULL; meat = nmeat)
     {
         if (meat->eat == eat) return meat;
@@ -410,15 +404,15 @@ void CSMAgent::LinkStates(struct cs_State *mst, EnvAction eat,
         Agent::Action act, struct cs_State *nmst)
 {
     /* check if the link already exists, if so simply update the count of environment action */
-    dbgmoreprt("Enter LinkStates()", "------------------------------------- Make Link: %ld == %ld + %ld => %ld\n", mst->st, eat, act, nmst->st);
+    dbgmoreprt("Enter LinkStates()", "------------------- Make Link: %ld == %ld + %ld => %ld\n", mst->st, eat, act, nmst->st);
     struct cs_Action *mac;
     struct cs_EnvAction *meat;
 
-    mac = ActAddr(act, mst);
+    mac = SearchAct(act, mst);
     if (mac != NULL)
     {
-        meat = EatAddrInAct(eat, mac);
-        if (meat != NULL)
+        meat = SearchEat(eat, mac);
+        if (meat != NULL)    // link exists
         {
             if (meat->nstate->st != nmst->st)
             {
@@ -429,27 +423,25 @@ void CSMAgent::LinkStates(struct cs_State *mst, EnvAction eat,
             {
                 dbgmoreprt("LinkStates():", "link already exists, increase count only\n");
                 meat->count++;
-                return;
+                return;    // done, return
             }
         }
+        else    // act exists, but eat not exist, meat == NULL
+        {
+            dbgmoreprt("LinkStates():", "create new link...\n");
+            meat = NewEat(eat);
+            meat->nstate = nmst;    // link to nmst
+            AddEat2Act(meat, mac);
+        }
     }
-
-    dbgmoreprt("LinkStates():", "create new link...\n");
-
-    /* link not exists, create a new link from mst to nmst */
-    if (mac == NULL)    // act not exist
+    else    // act not exist
     {
+        dbgmoreprt("LinkStates():", "create new link...\n");
         mac = NewAct(act);
         AddAct2State(mac, mst);
 
         meat = NewEat(eat);
-        meat->nstate = nmst;
-        AddEat2Act(meat, mac);
-    }
-    else    // act exists, but eat not exist, meat == NULL
-    {
-        meat = NewEat(eat);
-        meat->nstate = nmst;
+        meat->nstate = nmst;    // link to nmst
         AddEat2Act(meat, mac);
     }
 
@@ -496,7 +488,6 @@ float CSMAgent::Prob(const struct cs_EnvAction *ea,
     for (pea = mac->ealist; pea != NULL; pea = pnea)
     {
         sum_eacount += pea->count;
-//        dbgprt("Prob", "eat: %ld, count %ld, ", pea->eat, pea->count);
 
         pnea = pea->next;
     }
@@ -524,7 +515,7 @@ float CSMAgent::Prob(const struct cs_EnvAction *ea,
  */
 float CSMAgent::CalStatePayoff(const struct cs_State *mst) const
 {
-    dbgmoreprt("\nCalStatePayoff()", "-------------------------------- state: %ld, count: %ld\n", mst->st, mst->count);
+    dbgmoreprt("\nCalStatePayoff()", "----------------------- state: %ld, count: %ld\n", mst->st, mst->count);
 
     float u0 = mst->original_payoff;
     float pf = u0;    // set initial value as original payoff
@@ -555,14 +546,12 @@ float CSMAgent::CalStatePayoff(const struct cs_State *mst) const
 void CSMAgent::UpdateStatePayoff(struct cs_State *mst)
 {
     /* update state's payoff recursively */
-    float payoff = CalStatePayoff(mst);
-    dbgmoreprt("\nUpdateState()", "------------------------------------------- state: %ld, intial payoff:%.1f to %.1f\n", mst->st, mst->payoff, payoff);
+    float payoff = CalStatePayoff(mst);    // recalculate its payoff
 
     if (fabsf(mst->payoff - payoff) >= threshold)    // compare with threshold, update if the diff exceeds threshold
     {
         mst->payoff = payoff;
-        dbgmoreprt("UpdateState()", "Change to payoff: %.1f\n", payoff);
-        if (mst->flag == SAVED) mst->flag = MODIFIED;    // set flag to indicate the modification, no need to change if it's NEW
+        dbgmoreprt("UpdateState()", "Change to payoff: %.3f\n", payoff);
 
         /* update backwards recursively */
         struct cs_BackwardLink *bas, *nbas;
@@ -574,9 +563,10 @@ void CSMAgent::UpdateStatePayoff(struct cs_State *mst)
     }
     else
     {
-        dbgmoreprt("UpdateState()", "Payoff no changes, it's smaller than %.1f\n", threshold);
+        dbgmoreprt("UpdateState()", "Payoff no changes, it's smaller than %.3f\n", threshold);
     }
 
+    if (mst->flag == SAVED) mst->flag = MODIFIED;    // set flag to indicate the modification, no need to change if it's NEW
     return;
 }
 
@@ -592,7 +582,7 @@ float CSMAgent::CalActPayoff(Agent::Action act,
     float payoff = 0;
 
     struct cs_EnvAction *ea, *nea;
-    struct cs_Action *mac = ActAddr(act, mst);
+    struct cs_Action *mac = SearchAct(act, mst);
     if (mac == NULL)    // this is an unseen action
         return degree_of_curiosity;
 
@@ -693,11 +683,6 @@ void CSMAgent::UpdateMemory(float oripayoff)
     }
     else    // current state struct already exists, update the count and link it to the previous state (LinkStates will handle it if the link already exists.)
     {
-        // test
-        State_Info_Header *tmphd = GetStateInfo(cur_in);
-        PrintStateInfo(tmphd);
-        free(tmphd);
-
         dbgmoreprt("", "current state is %ld, increase count and build the link\n", cur_mst->st);
         // update current state
         cur_mst->count++;    // inc state count
@@ -757,7 +742,7 @@ void CSMAgent::DeleteState(struct cs_State *mst)
  */
 OSpace CSMAgent::MaxPayoffRule(Agent::State st, OSpace &acts) const
 {
-    dbgmoreprt("Enter MaxPayoffRule() ", "-------------------------------------------------- State: %ld\n", st);
+    dbgmoreprt("Enter MaxPayoffRule() ", "---------------------- State: %ld\n", st);
     cur_mst = SearchState(st);    // get the state struct from state value
     OSpace re;
 
@@ -790,23 +775,23 @@ struct State_Info_Header *CSMAgent::GetStateInfo(Agent::State st) const
     struct cs_State *mst;
     mst = SearchState(st);    // find the state struct in computer memory
 
-    if (mst == NULL)    // error, not found
+    if (mst == NULL)    // not found
     {
         dbgmoreprt("GetStateInfo()", "state: %ld not found in memory!\n", st);
         return NULL;
     }
 
     // get the total size of state
-    int sthd_size = sizeof(State_Info_Header);
+    int sthd_size = sizeof(State_Info_Header);    // add state info header size
     int act_num = 0;
     struct cs_Action *mac, *nmac;
     struct cs_EnvAction *ea, *nea;
     for (mac = mst->actlist; mac != NULL; mac = nmac)
     {
-        sthd_size += sizeof(Action_Info_Header);
+        sthd_size += sizeof(Action_Info_Header);    // add up each action info header size
         for (ea = mac->ealist; ea != NULL; ea = nea)
         {
-            sthd_size += sizeof(EnvAction_Info);
+            sthd_size += sizeof(EnvAction_Info);    // add up each eat info size of each action
 
             nea = ea->next;
         }
@@ -825,20 +810,21 @@ struct State_Info_Header *CSMAgent::GetStateInfo(Agent::State st) const
     sthd->size = sthd_size;
 
     unsigned char *stp = (unsigned char *) sthd;    // use point stp to travel through each subpart of state
-    unsigned char *atp;
+    unsigned char *atp = NULL;
     stp += sizeof(State_Info_Header);    // point to the first act
+    Action_Info_Header *athd = NULL;
     for (mac = mst->actlist; mac != NULL; mac = nmac)
     {
-        Action_Info_Header *athd = (Action_Info_Header *) stp;
-        athd->act = mac->act;
+        athd = (Action_Info_Header *) stp;
+        athd->act = mac->act;    // fill action value
 
-        atp = stp;
-        atp += sizeof(Action_Info_Header);    // point to the first eat of act
+        atp = stp + sizeof(Action_Info_Header);    // point to the first eat of act
         int ea_num = 0;
+        EnvAction_Info *eaif = NULL;
         for (ea = mac->ealist; ea != NULL; ea = nea)
         {
-            EnvAction_Info *eaif = (EnvAction_Info *) atp;
-            eaif->eat = ea->eat;
+            eaif = (EnvAction_Info *) atp;
+            eaif->eat = ea->eat;    // fill env action info
             eaif->count = ea->count;
             eaif->nst = ea->nstate->st;
 
@@ -847,7 +833,7 @@ struct State_Info_Header *CSMAgent::GetStateInfo(Agent::State st) const
             nea = ea->next;
         }
 
-        athd->eat_num = ea_num;
+        athd->eat_num = ea_num;    // fill eat number
 
         stp += sizeof(Action_Info_Header)
                 + athd->eat_num * sizeof(EnvAction_Info);    // point to the next act
@@ -859,10 +845,8 @@ struct State_Info_Header *CSMAgent::GetStateInfo(Agent::State st) const
 
 void CSMAgent::AddStateInfo(const State_Info_Header *sthd)
 {
-    if (sthd == NULL) return;
-
 #ifdef _DEBUG_MORE_
-    printf("---------------------- AddStateInfo: ---------------------");
+    printf("---------------------- AddStateInfo: ---------------------\n");
     PrintStateInfo(sthd);
 #endif
 
@@ -891,20 +875,19 @@ void CSMAgent::AddStateInfo(const State_Info_Header *sthd)
     unsigned char *atp;
     // environment action information
     stp += sizeof(struct State_Info_Header);    // point to the first act
-    int anum;
-    for (anum = 0; anum < sthd->act_num; anum++)
+    Action_Info_Header *athd = NULL;
+    for (int anum = 0; anum < sthd->act_num; anum++)
     {
-        Action_Info_Header *athd = (Action_Info_Header *) stp;
+        athd = (Action_Info_Header *) stp;
         // create this act and add it to state
         cs_Action *mac = NewAct(athd->act);
         AddAct2State(mac, mst);
 
-        atp = stp;
-        atp += sizeof(Action_Info_Header);    // point to the first eat of act
-        int i;
-        for (i = 0; i < athd->eat_num; i++)    // copy every eat of this act
+        atp = stp + sizeof(Action_Info_Header);    // point to the first eat of act
+        EnvAction_Info *eaif = NULL;
+        for (int i = 0; i < athd->eat_num; i++)    // copy every eat of this act
         {
-            EnvAction_Info *eaif = (EnvAction_Info *) atp;
+            eaif = (EnvAction_Info *) atp;
             // create this eat and add it to act
             cs_EnvAction *meat = NewEat(eaif->eat);
             meat->count = eaif->count;
@@ -915,7 +898,7 @@ void CSMAgent::AddStateInfo(const State_Info_Header *sthd)
             {
                 // build the link
                 dbgmoreprt("next state", "%ld exists, build the link\n", nst);
-                meat->nstate = nmst;
+                meat->nstate = nmst;    // link to nmst
             }
             else    // for a non-existing Next state, we will create it, and build the link
             {
@@ -928,7 +911,7 @@ void CSMAgent::AddStateInfo(const State_Info_Header *sthd)
                 meat->nstate = nmst;
             }
 
-            AddEat2Act(meat, mac);
+            AddEat2Act(meat, mac);    // add eat to act
             atp += sizeof(EnvAction_Info);    // point to the next eat
         }
 
@@ -953,10 +936,8 @@ void CSMAgent::AddStateInfo(const State_Info_Header *sthd)
 
 void CSMAgent::UpdateStateInfo(const State_Info_Header *sthd)
 {
-    if (sthd == NULL) return;
-
 #ifdef _DEBUG_MORE_
-    printf("---------------------- UpdateStateInfo: ---------------------");
+    printf("---------------------- UpdateStateInfo: ---------------------\n");
     PrintStateInfo(sthd);
 #endif
 
@@ -991,21 +972,20 @@ void CSMAgent::UpdateStateInfo(const State_Info_Header *sthd)
     unsigned char *stp = (unsigned char *) sthd;    // use point stp to travel through each subpart of state
     unsigned char *atp;
     stp += sizeof(struct State_Info_Header);    // point to the first act
-    int anum;
+    Action_Info_Header *athd = NULL;
     // environment action information
-    for (anum = 0; anum < sthd->act_num; anum++)
+    for (int anum = 0; anum < sthd->act_num; anum++)
     {
-        Action_Info_Header *athd = (Action_Info_Header *) stp;
+        athd = (Action_Info_Header *) stp;
         // create this act and add it to state
         cs_Action *mac = NewAct(athd->act);
         AddAct2State(mac, mst);
 
-        atp = stp;
-        atp += sizeof(Action_Info_Header);    // point to the first eat of act
-        int i;
-        for (i = 0; i < athd->eat_num; i++)    // copy every eat of this act
+        atp = stp + sizeof(Action_Info_Header);    // point to the first eat of act
+        EnvAction_Info *eaif = NULL;
+        for (int i = 0; i < athd->eat_num; i++)    // copy every eat of this act
         {
-            EnvAction_Info *eaif = (EnvAction_Info *) atp;
+            eaif = (EnvAction_Info *) atp;
             // create this eat and add it to act
             cs_EnvAction *meat = NewEat(eaif->eat);
             meat->count = eaif->count;
