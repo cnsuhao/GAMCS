@@ -10,7 +10,6 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #include <set>
 #include <math.h>
 #include <string.h>
@@ -190,12 +189,14 @@ void ExManager::RecvStateInfo()
             struct State_Info_Header *merged_state = MergeStateInfo(my_state,
                     re_state);
             magent->UpdateStateInfo(merged_state);    // merge the recieved state information to memory
+            magent->UpdatePayoff(merged_state->st);    // update payoff
             free(my_state);
             free(merged_state);
         }
         else
         {
             magent->AddStateInfo(re_state);
+            magent->UpdatePayoff(re_state->st);    // update payoff
         }
 
     }

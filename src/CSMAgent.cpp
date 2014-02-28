@@ -63,7 +63,6 @@ void CSMAgent::LoadState(Storage *storage, Agent::State st)
                 st);
 
     struct cs_State *mst = SearchState(st);    // search memory for the state First
-    // FIXME: 态存储标志！！
     if (mst == NULL)
         AddStateInfo(sthd);
     else
@@ -89,14 +88,14 @@ void CSMAgent::LoadMemoryFromStorage(Storage *storage)
         fflush(stdout);
 
         /* load memory information */
-        unsigned long saved_state_num = 0;
+        unsigned long saved_state_num = 0, saved_lk_num = 0;
         struct Memory_Info *memif = storage->GetMemoryInfo();
         if (memif != NULL)
         {
             discount_rate = memif->discount_rate;
             threshold = memif->threshold;
-            saved_state_num = memif->state_num;
-            lk_num = memif->lk_num;
+            saved_state_num = memif->state_num;    // don't use state_num directly
+            saved_lk_num = memif->lk_num;    // don't use lk_num directly
             pre_in = memif->last_st;    // it's continuous
             pre_out = memif->last_act;    //
             free(memif);    // free it, the memory struct are not a substaintial struct for running, it's just used to store meta-memory information
@@ -114,12 +113,21 @@ void CSMAgent::LoadMemoryFromStorage(Storage *storage)
             progress++;
             PrintProcess(progress, saved_state_num, label);
         }
-        // check if number of states consistent
+
+        // do some check of numbers
+        // state number
         if (saved_state_num != state_num)
         {
             WARNNING(
                     "LoadMemory(): Number of states not consistent,which by stored meminfo says to be %ld, but in stateinfo is %ld, the storage may be conrupted!\n",
                     saved_state_num, state_num);
+        }
+        // link number
+        if (saved_lk_num != lk_num)
+        {
+            WARNNING(
+                    "LoadMemory(): Number of links not consistent,which by stored meminfo says to be %ld, but in stateinfo is %ld, the storage may be conrupted!\n",
+                    saved_lk_num, lk_num);
         }
     }
     else    // connect database failed!
@@ -164,23 +172,22 @@ void CSMAgent::DumpMemoryToStorage(Storage *storage) const
         // walk through all state structs
         for (mst = head; mst != NULL; mst = nmst)
         {
-            if (mst->flag == NEW)
+            if (storage->HasState(mst->st))
             {
-                dbgmoreprt("SaveMemory()", "state: %ld, Mark: %d\n", mst->st, mst->flag);
-                stif = GetStateInfo(mst->st);
-                assert(stif != NULL);
-                storage->AddStateInfo(stif);
-                free(stif);    // free
-            }
-            else if (mst->flag == MODIFIED)
-            {
-                dbgmoreprt("SaveMemory()", "state: %ld, Mark: %d\n", mst->st, mst->flag);
+                dbgmoreprt("SaveMemory()", "state: %ld, Mark: %d\n", mst->st);
                 stif = GetStateInfo(mst->st);
                 assert(stif != NULL);
                 storage->UpdateStateInfo(stif);
                 free(stif);    // free
             }
-            mst->flag = SAVED;    // update flag
+            else    // new state
+            {
+                dbgmoreprt("SaveMemory()", "state: %ld, Mark: %d\n", mst->st);
+                stif = GetStateInfo(mst->st);
+                assert(stif != NULL);
+                storage->AddStateInfo(stif);
+                free(stif);    // free
+            }
 
             index++;
             PrintProcess(index, state_num, label);
@@ -220,7 +227,6 @@ struct cs_State *CSMAgent::NewState(Agent::State st)
     mst->original_payoff = 0.0;    // any value, doesn't master, it'll be set when used. Note: this value is also used for unseen previous state recieved in links from others.
     mst->payoff = 0;
     mst->count = 1;    // it's created when we First encounter it
-    mst->flag = NEW;    // it's new, and should be saved
     mst->actlist = NULL;
     mst->blist = NULL;
 
@@ -361,6 +367,32 @@ void CSMAgent::AddEat2Act(cs_EnvAction *meat, cs_Action *mac)
     mac->ealist = meat;
 }
 
+void CSMAgent::AddState2Bcklist(cs_State *mst, cs_State *nmst)
+{
+    /* Check and add mst to nmst's blist */
+    // state shouldn't repeat in backward list, check if already exists
+    struct cs_BackwardLink *bas, *nbas;
+    for (bas = nmst->blist; bas != NULL; bas = nbas)
+    {
+        if (bas->pstate == mst)    // found
+            break;
+
+        nbas = bas->next;
+    }
+
+    if (bas == NULL)    // not found, create a new one and Add to blist
+    {
+        bas = NewBlk();
+        bas->pstate = mst;    // previous state is mst
+        // Add bas to nmst's blist
+        bas->next = nmst->blist;
+        nmst->blist = bas;
+    }
+    else    // found ,nothing to do
+    {
+    }
+}
+
 /** \brief Create a new action struct
  *
  * \param eat action value
@@ -387,6 +419,7 @@ void CSMAgent::FreeAct(struct cs_Action *ac)
     {
         nmeat = meat->next;
         FreeEat(meat);
+        lk_num--;    // decrease link number
     }
 
     return free(ac);
@@ -445,29 +478,7 @@ void CSMAgent::LinkStates(struct cs_State *mst, EnvAction eat,
         AddEat2Act(meat, mac);
     }
 
-    /* Check and add mst to nmst's blist */
-    // state shouldn't repeat in backward list, check if already exists
-    struct cs_BackwardLink *bas, *nbas;
-    for (bas = nmst->blist; bas != NULL; bas = nbas)
-    {
-        if (bas->pstate == mst)    // found
-            break;
-
-        nbas = bas->next;
-    }
-
-    if (bas == NULL)    // not found, create a new one and Add to blist
-    {
-        bas = NewBlk();
-        bas->pstate = mst;    // previous state is mst
-        // Add bas to nmst's blist
-        bas->next = nmst->blist;
-        nmst->blist = bas;
-    }
-    else    // found ,nothing to do
-    {
-    }
-
+    AddState2Bcklist(mst, nmst);
     lk_num++;    // update total link number
     return;
 }
@@ -566,7 +577,6 @@ void CSMAgent::UpdateStatePayoff(struct cs_State *mst)
         dbgmoreprt("UpdateState()", "Payoff no changes, it's smaller than %.3f\n", threshold);
     }
 
-    if (mst->flag == SAVED) mst->flag = MODIFIED;    // set flag to indicate the modification, no need to change if it's NEW
     return;
 }
 
@@ -896,20 +906,20 @@ void CSMAgent::AddStateInfo(const State_Info_Header *sthd)
             struct cs_State *nmst = SearchState(nst);    // find if the Next state exists
             if (nmst != NULL)    // if so, inc count and make the link
             {
-                // build the link
                 dbgmoreprt("next state", "%ld exists, build the link\n", nst);
-                meat->nstate = nmst;    // link to nmst
             }
             else    // for a non-existing Next state, we will create it, and build the link
             {
                 // create a new previous state
                 dbgmoreprt("next state", "%ld not exists, create it and build the link\n", nst);
-                struct cs_State *nmst = NewState(nst);
+                nmst = NewState(nst);
                 // Add to memory
                 AddStateToMemory(nmst);
-                // build the link
-                meat->nstate = nmst;
             }
+            // build the link
+            meat->nstate = nmst;    // forward link
+            AddState2Bcklist(mst, nmst);    // backward link
+            lk_num++;    // increase link number
 
             AddEat2Act(meat, mac);    // add eat to act
             atp += sizeof(EnvAction_Info);    // point to the next eat
@@ -917,18 +927,6 @@ void CSMAgent::AddStateInfo(const State_Info_Header *sthd)
 
         stp += sizeof(Action_Info_Header)
                 + athd->eat_num * sizeof(EnvAction_Info);    // point to the next act
-    }
-
-    /* UpdatePayoff starting from mst's previous states. This update is IMPORTANT!
-     * The information of mst need to be merged to memory by update, otherwise others parts of the memory will know
-     * nothing about mst, then the information we got is useless.
-     * */
-    struct cs_BackwardLink *bas, *nbas;
-    for (bas = mst->blist; bas != NULL; bas = nbas)
-    {
-        UpdateStatePayoff(bas->pstate);    // update previous state one by one
-
-        nbas = bas->next;
     }
 
     return;
@@ -989,25 +987,25 @@ void CSMAgent::UpdateStateInfo(const State_Info_Header *sthd)
             // create this eat and add it to act
             cs_EnvAction *meat = NewEat(eaif->eat);
             meat->count = eaif->count;
-            // links to the next state
+            // link to the next state
             Agent::State nst = eaif->nst;    // Next state value
             struct cs_State *nmst = SearchState(nst);    // find if the Next state exists
             if (nmst != NULL)    // if so, inc count and make the link
             {
-                // build the link
                 dbgmoreprt("next state", "%ld exists, build the link\n", nst);
-                meat->nstate = nmst;
             }
             else    // for a non-existing Next state, we will create it, and build the link
             {
                 // create a new previous state
                 dbgmoreprt("next state", "%ld not exists, create it and build the link\n", nst);
-                struct cs_State *nmst = NewState(nst);
+                nmst = NewState(nst);
                 // Add to memory
                 AddStateToMemory(nmst);
-                // build the link
-                meat->nstate = nmst;
             }
+            // build the link
+            meat->nstate = nmst;    // forward link
+            AddState2Bcklist(mst, nmst);    // backward link
+            lk_num++;    // increase link number
 
             AddEat2Act(meat, mac);
             atp += sizeof(EnvAction_Info);    // point to the next eat
@@ -1015,18 +1013,6 @@ void CSMAgent::UpdateStateInfo(const State_Info_Header *sthd)
 
         stp += sizeof(Action_Info_Header)
                 + athd->eat_num * sizeof(EnvAction_Info);    // point to the next act
-    }
-
-    /* UpdatePayoff starting from mst's previous states. This update is IMPORTANT!
-     * The information of mst need to be merged to memory by update, otherwise others parts of the memory will know
-     * nothing about mst, then the information we got is useless.
-     * */
-    struct cs_BackwardLink *bas, *nbas;
-    for (bas = mst->blist; bas != NULL; bas = nbas)
-    {
-        UpdateStatePayoff(bas->pstate);    // update previous state one by one
-
-        nbas = bas->next;
     }
 
     return;
