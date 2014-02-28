@@ -47,14 +47,11 @@ class Agent: public TSGIOM
         float GetDiscountRate() const;
         void SetThreshold(float);
         float GetThreshold() const;
-        void SetDegreeOfCuriosity(float);
 
     protected:
         int id; /**< agent Id */
         float discount_rate; /**< discount rate (0<,<1)when calculate state payoff */
         float threshold; /**< threshold used in payoff updating */
-
-        float degree_of_curiosity; /**< degree of curiosity to try unknown actions */
 
         OSpace Restrict(State, OSpace &) const; /**< reimplement restrict using maximun payoff rule  */
 
@@ -89,11 +86,6 @@ inline void Agent::SetThreshold(float th)
 inline float Agent::GetThreshold() const
 {
     return threshold;
-}
-
-inline void Agent::SetDegreeOfCuriosity(float pf)
-{
-    degree_of_curiosity = pf;
 }
 
 /** action information */

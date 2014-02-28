@@ -96,6 +96,7 @@ class CSMAgent: public MAgent
 
         float CalStatePayoff(const struct cs_State *) const; /**< calculate payoff of a state */
         float CalActPayoff(Agent::Action, const struct cs_State *) const; /**< calculate payoff of an Agent::Action */
+        float _CalActPayoff(const cs_Action *) const;
 };
 
 /** state information */

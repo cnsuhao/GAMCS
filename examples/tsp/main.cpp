@@ -20,7 +20,6 @@
 int main(void)
 {
     CSMAgent *agent = new CSMAgent(1, 0.8, 0.01);
-    agent->SetDegreeOfCuriosity(-5000);
 
     Saleman *saleman = new Saleman("Saleman");
     saleman->SetSps(-1);

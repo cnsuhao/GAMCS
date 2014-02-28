@@ -10,7 +10,6 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #include <stdio.h>
 #include "gimcs/Agent.h"
 #include "gimcs/Debug.h"
@@ -19,17 +18,17 @@ namespace gimcs
 {
 
 Agent::Agent() :
-        id(0), discount_rate(0.8), threshold(0.01), degree_of_curiosity(0.0)
+        id(0), discount_rate(0.8), threshold(0.01)
 {
 }
 
 Agent::Agent(int i) :
-        id(i), discount_rate(0.8), threshold(0.01), degree_of_curiosity(0.0)
+        id(i), discount_rate(0.8), threshold(0.01)
 {
 }
 
 Agent::Agent(int i, float dr, float th) :
-        id(i), discount_rate(dr), threshold(th), degree_of_curiosity(0.0)
+        id(i), discount_rate(dr), threshold(th)
 {
     // check validity
     if (discount_rate >= 1.0 || discount_rate < 0)    // discount rate range [0, 1)

@@ -50,7 +50,7 @@ OSpace Monomer::ActionCandidates(Agent::State st)
 //    UNUSED(st);
     static int count;
 //    UNUSED(st);
-    if (count < 50)
+    if (count < 200)
     {
         OSpace acts;
         acts.Clear();
