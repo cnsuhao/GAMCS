@@ -15,6 +15,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <queue>
+#include <set>
 #include "gimcs/CSMAgent.h"
 #include "gimcs/Storage.h"
 #include "gimcs/Debug.h"
@@ -174,7 +176,7 @@ void CSMAgent::DumpMemoryToStorage(Storage *storage) const
         {
             if (storage->HasState(mst->st))
             {
-                dbgmoreprt("SaveMemory()", "state: %ld, Mark: %d\n", mst->st);
+                dbgmoreprt("SaveMemory()", "Update state: %ld, Payoff: %.3f\n", mst->st, mst->payoff);
                 stif = GetStateInfo(mst->st);
                 assert(stif != NULL);
                 storage->UpdateStateInfo(stif);
@@ -182,7 +184,7 @@ void CSMAgent::DumpMemoryToStorage(Storage *storage) const
             }
             else    // new state
             {
-                dbgmoreprt("SaveMemory()", "state: %ld, Mark: %d\n", mst->st);
+                dbgmoreprt("SaveMemory()", "Add state: %ld, Payoff: %.3f\n", mst->st, mst->payoff);
                 stif = GetStateInfo(mst->st);
                 assert(stif != NULL);
                 storage->AddStateInfo(stif);
@@ -521,63 +523,83 @@ float CSMAgent::Prob(const struct cs_EnvAction *ea,
 
 /**
  * \brief Calculate payoff of the specified state
+ *
+ * $$u(I_i) = u_0(I_i) + \eta * MAX_{O^j_i\in \Lambda_i}(\sum_{k=1}^m{P(E^k_i|O^j_i)*u(I^{k,j}_i))$$
+ *
  * \param mst specified state
  * \return payoff of the state
  */
 float CSMAgent::CalStatePayoff(const struct cs_State *mst) const
 {
-    dbgmoreprt("\nCalStatePayoff()", "----------------------- state: %ld, count: %ld\n", mst->st, mst->count);
+    dbgmoreprt("\nCalStatePayoff()", "----------------- state: %ld, count: %ld\n", mst->st, mst->count);
 
     float u0 = mst->original_payoff;
-    float pf = u0;    // set initial value as original payoff
-    float tmp = 0.0;
 
+    if (mst->actlist == NULL)    // no any actions, return u0
+        return u0;
+
+    // find the maximun action payoff
+    float payoff = 0;
+    float max_pf = -FLT_MAX;
+    float action_payoff = 0;
     struct cs_Action *mac, *nmac;
-    struct cs_EnvAction *ea, *nea;
     for (mac = mst->actlist; mac != NULL; mac = nmac)
     {
-        for (ea = mac->ealist; ea != NULL; ea = nea)
+        action_payoff = _CalActPayoff(mac);
+        if (action_payoff > max_pf)
         {
-            tmp += Prob(ea, mac) * ea->nstate->payoff;
-
-            nea = ea->next;
+            max_pf = action_payoff;
         }
+
         nmac = mac->next;
     }
-    pf += discount_rate * tmp;
 
-    return pf;
+    payoff = u0 + discount_rate * max_pf;
+    return payoff;
 }
 
 /**
- * \brief Update states backwards recursively beginning from a specified state
+ * \brief Update states backwards beginning from a specified state
  * Note that: every time a state makes any changes, all its previous states must be updated!
  * \param mst a specified state where the update begins
  */
-void CSMAgent::UpdateStatePayoff(struct cs_State *mst)
+void CSMAgent::UpdateStatePayoff(cs_State *mst)
 {
-    /* update state's payoff recursively */
-    float payoff = CalStatePayoff(mst);    // recalculate its payoff
+    std::queue<cs_State *> update_queue;    // states to be updated
+    std::set<cs_State *> visited_states;    // states that has been updated
 
-    if (fabsf(mst->payoff - payoff) >= threshold)    // compare with threshold, update if the diff exceeds threshold
+    update_queue.push(mst);    // add the starting state
+    cs_State *cmst = NULL;
+    while (!update_queue.empty())
     {
-        mst->payoff = payoff;
-        dbgmoreprt("UpdateState()", "Change to payoff: %.3f\n", payoff);
+        cmst = update_queue.front();    // get the state at front
+        float payoff = CalStatePayoff(cmst);
 
-        /* update backwards recursively */
-        struct cs_BackwardLink *bas, *nbas;
-        for (bas = mst->blist; bas != NULL; bas = nbas)
+        if (fabsf(cmst->payoff - payoff) >= threshold)    // states are updated only when diff exceeds threshold
         {
-            UpdateStatePayoff(bas->pstate);    // recursively update
-            nbas = bas->next;
-        }
-    }
-    else
-    {
-        dbgmoreprt("UpdateState()", "Payoff no changes, it's smaller than %.3f\n", threshold);
-    }
+            cmst->payoff = payoff;
+            dbgmoreprt("UpdateState()", "State: %ld change to payoff: %.3f\n", cmst->st, payoff);
 
-    return;
+            // push previous states to queue
+            struct cs_BackwardLink *bas, *nbas;
+            for (bas = cmst->blist; bas != NULL; bas = nbas)
+            {
+                // visited state will not be pushed
+                if (visited_states.find(bas->pstate) == visited_states.end())    // not found
+                {
+                    update_queue.push(bas->pstate);
+                }
+                nbas = bas->next;
+            }
+        }
+        else
+        {
+            dbgmoreprt("UpdateState()", "State: %ld, payoff no changes, it's smaller than threshold\n", cmst->st);
+        }
+
+        visited_states.insert(cmst);    // save visited state
+        update_queue.pop();    // remove the state at front
+    }
 }
 
 /**
@@ -589,13 +611,21 @@ void CSMAgent::UpdateStatePayoff(struct cs_State *mst)
 float CSMAgent::CalActPayoff(Agent::Action act,
         const struct cs_State *mst) const
 {
+    cs_Action *mac = SearchAct(act, mst);
+    if (mac == NULL)    // this is an unseen action
+        return 0;    // 0 for unseen action
+
+    return _CalActPayoff(mac);
+}
+
+/**
+ * $$u(O^j_i) = \sum_{k=1}^m{P(E^k_i|O^j_i) * u(I^{k,j}_i)}$$
+ **/
+float CSMAgent::_CalActPayoff(const cs_Action *mac) const
+{
     float payoff = 0;
 
     struct cs_EnvAction *ea, *nea;
-    struct cs_Action *mac = SearchAct(act, mst);
-    if (mac == NULL)    // this is an unseen action
-        return degree_of_curiosity;
-
     for (ea = mac->ealist; ea != NULL; ea = nea)
     {
         payoff += Prob(ea, mac) * ea->nstate->payoff;
@@ -653,7 +683,6 @@ void CSMAgent::UpdateMemory(float oripayoff)
         {
             cur_mst = NewState(cur_in);
             cur_mst->original_payoff = oripayoff;    // set original payoff as given
-            cur_mst->payoff = oripayoff;    // set payoff as original payoff
 
             // Add current state to memory
             AddStateToMemory(cur_mst);

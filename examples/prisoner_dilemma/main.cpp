@@ -23,11 +23,9 @@ int main(void)
     Mysql mysqlB;
     mysqlB.SetDBArgs("localhost", "root", "huangk", "PrisonerB");
 
-    float discount_rate = 0.9;    // discount rate determines the final equilibrium!
+    float discount_rate = 0.0;    // discount rate determines the final equilibrium!
     CSMAgent agentA(1, discount_rate, 0.01);
     CSMAgent agentB(2, discount_rate, 0.01);
-    agentA.SetDegreeOfCuriosity(0.0);
-    agentB.SetDegreeOfCuriosity(0.0);
     agentA.LoadMemoryFromStorage(&mysqlA);
     agentB.LoadMemoryFromStorage(&mysqlB);
 
