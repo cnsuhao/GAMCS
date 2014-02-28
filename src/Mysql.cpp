@@ -253,7 +253,7 @@ bool Mysql::HasState(Agent::State st) const
     MYSQL_RES *result = mysql_store_result(db_con);
 
     int re;
-    if (result == NULL)
+    if (result->row_count == 0)    // 0 row found
         re = false;
     else
         re = true;

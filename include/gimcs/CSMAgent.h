@@ -31,10 +31,6 @@ class CSMAgent: public MAgent
 {
     public:
         typedef std::unordered_map<Agent::State, void *> StatesMap; /**< hash map from state value to state struct */
-        enum SgFlag
-        {
-            SAVED, NEW, MODIFIED
-        }; /**< storage status of a state */
 
         CSMAgent();
         CSMAgent(int);
@@ -90,10 +86,12 @@ class CSMAgent: public MAgent
         void FreeBlk(struct cs_BackwardLink *);
         void AddStateToMemory(struct cs_State *); /**< add a state struct to memory */
 
-        struct cs_Action *SearchAct(Agent::Action, const struct cs_State *) const; /**< find the Agent::Action struct address according to identity */
+        struct cs_Action *SearchAct(Agent::Action,
+                const struct cs_State *) const; /**< find the Agent::Action struct address according to identity */
         struct cs_EnvAction *SearchEat(Agent::EnvAction, cs_Action *);
         void AddAct2State(cs_Action *, cs_State *);
         void AddEat2Act(cs_EnvAction *, cs_Action *);
+        void AddState2Bcklist(cs_State *, cs_State *);
         float Prob(const struct cs_EnvAction*, const struct cs_Action *) const; /**< probability of a exact */
 
         float CalStatePayoff(const struct cs_State *) const; /**< calculate payoff of a state */
@@ -107,7 +105,6 @@ struct cs_State
         float payoff; /**< state payoff */
         float original_payoff; /**< original payoff of state */
         unsigned long count; /**< state count */
-        enum CSMAgent::SgFlag flag; /**< flag used for storage */
         struct cs_Action *actlist;
         struct cs_BackwardLink *blist; /**< backward links */
 
