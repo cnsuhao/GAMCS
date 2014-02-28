@@ -92,6 +92,7 @@ class CSMAgent: public MAgent
         void AddAct2State(cs_Action *, cs_State *);
         void AddEat2Act(cs_EnvAction *, cs_Action *);
         void AddState2Bcklist(cs_State *, cs_State *);
+        void BuildStatefromSIHd(const State_Info_Header *, cs_State *);
         float Prob(const struct cs_EnvAction*, const struct cs_Action *) const; /**< probability of a exact */
 
         float CalStatePayoff(const struct cs_State *) const; /**< calculate payoff of a state */

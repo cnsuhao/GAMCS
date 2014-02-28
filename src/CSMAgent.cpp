@@ -19,6 +19,7 @@
 #include <set>
 #include "gimcs/CSMAgent.h"
 #include "gimcs/Storage.h"
+#include "gimcs/StateInfoParser.h"
 #include "gimcs/Debug.h"
 
 namespace gimcs
@@ -882,6 +883,61 @@ struct State_Info_Header *CSMAgent::GetStateInfo(Agent::State st) const
     return sthd;
 }
 
+void CSMAgent::BuildStatefromSIHd(const State_Info_Header *sthd, cs_State *mst)
+{
+    // copy state information
+    mst->count = sthd->count;
+    mst->payoff = sthd->payoff;
+    mst->original_payoff = sthd->original_payoff;    // the original payoff is what really is important
+
+    // copy actlist
+    StateInfoParser sparser(sthd);
+    Action_Info_Header *athd = NULL;
+    EnvAction_Info *eaif = NULL;
+
+    athd = sparser.FirstAct();
+    while (athd != NULL)
+    {
+        // create this act and add it to state
+        cs_Action *mac = NewAct(athd->act);
+        AddAct2State(mac, mst);
+
+        eaif = sparser.FirstEat();
+        while (eaif != NULL)
+        {
+            // create this eat and add it to act
+            cs_EnvAction *meat = NewEat(eaif->eat);
+            meat->count = eaif->count;
+            // links to the next state
+            struct cs_State *nmst = SearchState(eaif->nst);    // find if the next state exists
+            if (nmst != NULL)    // if so, inc count and make the link
+            {
+                dbgmoreprt("next state", "%ld exists, build the link\n", nst);
+            }
+            else    // for a non-existing Next state, we will create it, and build the link
+            {
+                // create a new previous state
+                dbgmoreprt("next state", "%ld not exists, create it and build the link\n", nst);
+                nmst = NewState(eaif->nst);
+                // Add to memory
+                AddStateToMemory(nmst);
+            }
+            // build the link
+            meat->nstate = nmst;    // forward link
+            AddState2Bcklist(mst, nmst);    // backward link
+            lk_num++;    // increase link number
+
+            AddEat2Act(meat, mac);    // add eat to act
+
+            eaif = sparser.NextEat();    // next eat
+        }
+
+        athd = sparser.NextAct();    // next act
+    }
+
+    return;
+}
+
 void CSMAgent::AddStateInfo(const State_Info_Header *sthd)
 {
 #ifdef _DEBUG_MORE_
@@ -902,61 +958,10 @@ void CSMAgent::AddStateInfo(const State_Info_Header *sthd)
             "state: %ld, create it in memory.\n", sthd->st);
 
     mst = NewState(sthd->st);
-    // copy state information
-    mst->count = sthd->count;
-    mst->payoff = sthd->payoff;
-    mst->original_payoff = sthd->original_payoff;    // the original payoff is what really is important
     /* Add to memory */
     AddStateToMemory(mst);
 
-    // copy actlist
-    unsigned char *stp = (unsigned char *) sthd;    // use point stp to travel through each subpart of state
-    unsigned char *atp;
-    // environment action information
-    stp += sizeof(struct State_Info_Header);    // point to the first act
-    Action_Info_Header *athd = NULL;
-    for (int anum = 0; anum < sthd->act_num; anum++)
-    {
-        athd = (Action_Info_Header *) stp;
-        // create this act and add it to state
-        cs_Action *mac = NewAct(athd->act);
-        AddAct2State(mac, mst);
-
-        atp = stp + sizeof(Action_Info_Header);    // point to the first eat of act
-        EnvAction_Info *eaif = NULL;
-        for (int i = 0; i < athd->eat_num; i++)    // copy every eat of this act
-        {
-            eaif = (EnvAction_Info *) atp;
-            // create this eat and add it to act
-            cs_EnvAction *meat = NewEat(eaif->eat);
-            meat->count = eaif->count;
-            // links to the next state
-            Agent::State nst = eaif->nst;    // Next state value
-            struct cs_State *nmst = SearchState(nst);    // find if the Next state exists
-            if (nmst != NULL)    // if so, inc count and make the link
-            {
-                dbgmoreprt("next state", "%ld exists, build the link\n", nst);
-            }
-            else    // for a non-existing Next state, we will create it, and build the link
-            {
-                // create a new previous state
-                dbgmoreprt("next state", "%ld not exists, create it and build the link\n", nst);
-                nmst = NewState(nst);
-                // Add to memory
-                AddStateToMemory(nmst);
-            }
-            // build the link
-            meat->nstate = nmst;    // forward link
-            AddState2Bcklist(mst, nmst);    // backward link
-            lk_num++;    // increase link number
-
-            AddEat2Act(meat, mac);    // add eat to act
-            atp += sizeof(EnvAction_Info);    // point to the next eat
-        }
-
-        stp += sizeof(Action_Info_Header)
-                + athd->eat_num * sizeof(EnvAction_Info);    // point to the next act
-    }
+    BuildStatefromSIHd(sthd, mst);
 
     return;
 }
@@ -979,8 +984,7 @@ void CSMAgent::UpdateStateInfo(const State_Info_Header *sthd)
 
     dbgmoreprt("UpdateStateInfo()", "update information of state %ld.\n", sthd->st);
 
-    // free old stuff
-    // free actlist
+    // clear state first
     struct cs_Action *mac, *nmac;
     for (mac = mst->actlist; mac != NULL; mac = nmac)
     {
@@ -989,60 +993,7 @@ void CSMAgent::UpdateStateInfo(const State_Info_Header *sthd)
     }
     mst->actlist = NULL;    // set as NULL! It's very important!
 
-    // create and copy as AddStateInfo()
-    // copy state information
-    mst->count = sthd->count;
-    mst->payoff = sthd->payoff;
-    mst->original_payoff = sthd->original_payoff;    // the original payoff is what really is important
-
-    // copy actlist
-    unsigned char *stp = (unsigned char *) sthd;    // use point stp to travel through each subpart of state
-    unsigned char *atp;
-    stp += sizeof(struct State_Info_Header);    // point to the first act
-    Action_Info_Header *athd = NULL;
-    // environment action information
-    for (int anum = 0; anum < sthd->act_num; anum++)
-    {
-        athd = (Action_Info_Header *) stp;
-        // create this act and add it to state
-        cs_Action *mac = NewAct(athd->act);
-        AddAct2State(mac, mst);
-
-        atp = stp + sizeof(Action_Info_Header);    // point to the first eat of act
-        EnvAction_Info *eaif = NULL;
-        for (int i = 0; i < athd->eat_num; i++)    // copy every eat of this act
-        {
-            eaif = (EnvAction_Info *) atp;
-            // create this eat and add it to act
-            cs_EnvAction *meat = NewEat(eaif->eat);
-            meat->count = eaif->count;
-            // link to the next state
-            Agent::State nst = eaif->nst;    // Next state value
-            struct cs_State *nmst = SearchState(nst);    // find if the Next state exists
-            if (nmst != NULL)    // if so, inc count and make the link
-            {
-                dbgmoreprt("next state", "%ld exists, build the link\n", nst);
-            }
-            else    // for a non-existing Next state, we will create it, and build the link
-            {
-                // create a new previous state
-                dbgmoreprt("next state", "%ld not exists, create it and build the link\n", nst);
-                nmst = NewState(nst);
-                // Add to memory
-                AddStateToMemory(nmst);
-            }
-            // build the link
-            meat->nstate = nmst;    // forward link
-            AddState2Bcklist(mst, nmst);    // backward link
-            lk_num++;    // increase link number
-
-            AddEat2Act(meat, mac);
-            atp += sizeof(EnvAction_Info);    // point to the next eat
-        }
-
-        stp += sizeof(Action_Info_Header)
-                + athd->eat_num * sizeof(EnvAction_Info);    // point to the next act
-    }
+    BuildStatefromSIHd(sthd, mst);
 
     return;
 }

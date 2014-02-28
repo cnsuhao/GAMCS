@@ -12,6 +12,7 @@
 
 #include "gimcs/PrintViewer.h"
 #include "gimcs/Storage.h"
+#include "gimcs/StateInfoParser.h"
 
 namespace gimcs
 {
@@ -93,28 +94,25 @@ void PrintViewer::PrintStateInfo(const struct State_Info_Header *sthd) const
             sthd->original_payoff, sthd->payoff, sthd->count, sthd->act_num);
 
     printf("------------------------------------------------------------\n");
-    unsigned char *stp = (unsigned char *) sthd;    // use point stp to travel through each subpart of state
-    unsigned char *atp;
-    // environment action information
-    stp += sizeof(struct State_Info_Header);    // point to the first act
+
+    StateInfoParser sparser(sthd);
     Action_Info_Header *athd = NULL;
-    for (int anum = 0; anum < sthd->act_num; anum++)
+    EnvAction_Info *eaif = NULL;
+
+    athd = sparser.FirstAct();
+    while (athd != NULL)
     {
-        athd = (Action_Info_Header *) stp;
-        atp = stp + sizeof(Action_Info_Header);    // point to the first eat of act
-        EnvAction_Info *eaif = NULL;
-        for (int i = 0; i < athd->eat_num; i++)    // print every eat of this act
+        eaif = sparser.FirstEat();
+        while (eaif != NULL)
         {
-            eaif = (EnvAction_Info *) atp;
             printf("\t  .|+++ %ld +++ %ld ++> %ld \t Count: %ld\n", athd->act,
                     eaif->eat, eaif->nst, eaif->count);
 
-            atp += sizeof(EnvAction_Info);    // point to the next eat
+            eaif = sparser.NextEat();
         }
-        stp += sizeof(Action_Info_Header)
-                + athd->eat_num * sizeof(EnvAction_Info);    // point to the next act
-    }
 
+        athd = sparser.NextAct();
+    }
     printf("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n");
 
     return;

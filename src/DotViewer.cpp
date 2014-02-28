@@ -14,6 +14,7 @@
 #include "gimcs/DotViewer.h"
 #include "gimcs/Agent.h"
 #include "gimcs/Storage.h"
+#include "gimcs/StateInfoParser.h"
 
 namespace gimcs
 {
@@ -121,7 +122,6 @@ void DotViewer::DotStateInfo(const struct State_Info_Header *sthd) const
     else
         st_color = "black";
 
-    unsigned char *stp = (unsigned char *) sthd;
     Agent::Action acts[sthd->act_num];
 
     printf("\nsubgraph state%ld\n{\n", sthd->st);
@@ -133,11 +133,12 @@ void DotViewer::DotStateInfo(const struct State_Info_Header *sthd) const
     printf("rank=\"sink\"\n");    // env nodes should be drawing under state node
     printf("node [shape=\"point\"]\n");
 
-    stp += sizeof(struct State_Info_Header);    // point to the first act header
     Action_Info_Header *achd, *pre_achd = NULL;
-    for (int i = 0; i < sthd->act_num; i++)
+    StateInfoParser sparser(sthd);
+    achd = sparser.FirstAct();
+    int i = 0;
+    while (achd != NULL)
     {
-        achd = (Action_Info_Header *) stp;
         printf("act%sin%ld [label=\"\", height=0.3]\n",
                 Act2String(achd->act).c_str(), sthd->st);
         if (pre_achd != NULL)
@@ -145,10 +146,10 @@ void DotViewer::DotStateInfo(const struct State_Info_Header *sthd) const
                     Act2String(pre_achd->act).c_str(), sthd->st,
                     Act2String(achd->act).c_str(), sthd->st);
 
-        acts[i] = achd->act;    // save for using later
-        stp += sizeof(Action_Info_Header)
-                + achd->eat_num * sizeof(EnvAction_Info);    // point to the next act header
+        acts[i++] = achd->act;    // save for using later
         pre_achd = achd;
+
+        achd = sparser.NextAct();
     }
     printf("}\n");    // subgraph
 
@@ -167,30 +168,22 @@ void DotViewer::DotStateInfo(const struct State_Info_Header *sthd) const
     }
     printf("}\n");    // end of subgraph state
 
-    // actions ---> next states
-    stp = (unsigned char *) sthd;    // restart from sthd
-    unsigned char *atp = NULL;
-    // environment action information
-    stp += sizeof(struct State_Info_Header);    // point to the first act
-    for (int anum = 0; anum < sthd->act_num; anum++)
+    EnvAction_Info *eaif = NULL;
+    achd = sparser.FirstAct();    // restart from beginning
+    while (achd != NULL)
     {
-        achd = (Action_Info_Header *) stp;
-
-        atp = stp + sizeof(Action_Info_Header);    // point to the first eat of act
-        EnvAction_Info *eaif = NULL;
-        for (int i = 0; i < achd->eat_num; i++)    // copy every eat of this act
+        eaif = sparser.FirstEat();
+        while (eaif != NULL)
         {
-            eaif = (EnvAction_Info *) atp;
             printf(
                     "act%sin%ld -> st%ld [label=<<font color=\"red\">%ld (%ld)</font>>, color=\"red\", weight=1.]\n",
                     Act2String(achd->act).c_str(), sthd->st, eaif->nst,
                     achd->act, eaif->count);
 
-            atp += sizeof(EnvAction_Info);    // point to the next eat
+            eaif = sparser.NextEat();
         }
 
-        stp += sizeof(Action_Info_Header)
-                + achd->eat_num * sizeof(EnvAction_Info);    // point to the next act
+        achd = sparser.NextAct();
     }
 }
 
@@ -256,7 +249,6 @@ void DotViewer::ShowState(Agent::State st)
     if (sthd != NULL)
     {
         Agent::Action acts[sthd->act_num];
-        unsigned char *stp = (unsigned char *) sthd;
 
         printf("rank=\"same\"\n");
         printf("st%ld [label=\"%ld\\n(%.2f)\"]\n", sthd->st, sthd->st,
@@ -266,11 +258,12 @@ void DotViewer::ShowState(Agent::State st)
         printf("rank=\"same\"\n");    // env nodes should be drawing under state node
         printf("node [shape=\"point\"]\n");
 
-        stp += sizeof(struct State_Info_Header);    // point to the first act header
+        StateInfoParser sparser(sthd);
         Action_Info_Header *achd, *pre_achd = NULL;
-        for (int i = 0; i < sthd->act_num; i++)
+        achd = sparser.FirstAct();
+        int i = 0;
+        while (achd != NULL)
         {
-            achd = (Action_Info_Header *) stp;
             printf("act%sin%ld [label=\"\", height=0.3]\n",
                     Act2String(achd->act).c_str(), sthd->st);
             if (pre_achd != NULL)
@@ -278,10 +271,9 @@ void DotViewer::ShowState(Agent::State st)
                         Act2String(pre_achd->act).c_str(), sthd->st,
                         Act2String(achd->act).c_str(), sthd->st);
 
-            acts[i] = achd->act;    // save for using later
-            stp += sizeof(Action_Info_Header)
-                    + achd->eat_num * sizeof(EnvAction_Info);    // point to the next act header
+            acts[i++] = achd->act;    // save for using later
             pre_achd = achd;
+            achd = sparser.NextAct();
         }
         printf("}\n");    // subgraph
 
@@ -294,24 +286,17 @@ void DotViewer::ShowState(Agent::State st)
         }
 
         // actions ---> next states
-        stp = (unsigned char *) sthd;    // restart from sthd
-        unsigned char *atp;
-        // environment action information
-        stp += sizeof(struct State_Info_Header);    // point to the first act
-        for (int anum = 0; anum < sthd->act_num; anum++)
+        EnvAction_Info *eaif = NULL;
+        achd = sparser.FirstAct();    // restart from beginning
+        while (achd != NULL)
         {
-            achd = (Action_Info_Header *) stp;
-
-            atp = stp + sizeof(Action_Info_Header);    // point to the first eat of act
-            EnvAction_Info *eaif = NULL;
-            for (int i = 0; i < achd->eat_num; i++)    // copy every eat of this act
+            eaif = sparser.FirstEat();
+            while (eaif != NULL)
             {
-                eaif = (EnvAction_Info *) atp;
                 printf(
                         "act%sin%ld -> st%ld [label=<<font color=\"red\">%ld (%ld)</font>>, color=\"red\", weight=1.]\n",
                         Act2String(achd->act).c_str(), sthd->st, eaif->nst,
                         achd->act, eaif->count);
-
                 // get the payoff of the next state, exclude self
                 if (eaif->nst != sthd->st)
                 {
@@ -324,11 +309,10 @@ void DotViewer::ShowState(Agent::State st)
                     free(nstif);
                 }
 
-                atp += sizeof(EnvAction_Info);    // point to the next eat
+                eaif = sparser.NextEat();
             }
 
-            stp += sizeof(Action_Info_Header)
-                    + achd->eat_num * sizeof(EnvAction_Info);    // point to the next act
+            achd = sparser.NextAct();
         }
 
         free(sthd);

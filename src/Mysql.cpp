@@ -270,7 +270,7 @@ void Mysql::AddStateInfo(const struct State_Info_Header *sthd)
 {
     char str[256];
     sprintf(str,
-            "INSERT INTO %s(State, OriPayoff, Payoff, Count, ActNum, Size, ActInfos) VALUES(%ld, %.2f, %.2f, %ld, %d, %d,'%%s')",
+            "INSERT INTO %s(State, OriPayoff, Payoff, Count, ActNum, Size, ActInfos) VALUES(%ld, %f, %f, %ld, %d, %d,'%%s')",
             db_t_stateinfo.c_str(), sthd->st, sthd->original_payoff,
             sthd->payoff, sthd->count, sthd->act_num, sthd->size);    // first stag of building mysql insert query, actlist, eactlist and links are build below
     size_t str_len = strlen(str);
@@ -301,7 +301,7 @@ void Mysql::UpdateStateInfo(const struct State_Info_Header *sthd)
 {
     char str[256];
     sprintf(str,
-            "UPDATE %s SET OriPayoff=%.2f, Payoff=%.2f, Count=%ld, ActNum=%d, Size=%d, ActInfos='%%s' WHERE State=%ld",
+            "UPDATE %s SET OriPayoff=%f, Payoff=%f, Count=%ld, ActNum=%d, Size=%d, ActInfos='%%s' WHERE State=%ld",
             db_t_stateinfo.c_str(), sthd->original_payoff, sthd->payoff,
             sthd->count, sthd->act_num, sthd->size, sthd->st);    // first stage of building the update query
     size_t str_len = strlen(str);
@@ -354,7 +354,7 @@ void Mysql::AddMemoryInfo(const struct Memory_Info *memif)
     char query_str[256];
 
     sprintf(query_str,
-            "INSERT INTO %s(TimeStamp, DiscountRate, Threshold, NumStates, NumLinks, LastState, LastAction) VALUES(NULL, %.2f, %.2f, %ld, %ld, %ld, %ld)",
+            "INSERT INTO %s(TimeStamp, DiscountRate, Threshold, NumStates, NumLinks, LastState, LastAction) VALUES(NULL, %f, %f, %ld, %ld, %ld, %ld)",
             db_t_meminfo.c_str(), memif->discount_rate, memif->threshold,
             memif->state_num, memif->lk_num, memif->last_st, memif->last_act);    // build insert query
 
