@@ -8,6 +8,7 @@
 #include "gimcs/CDotViewer.h"
 #include "gimcs/Agent.h"
 #include "gimcs/Storage.h"
+#include "gimcs/StateInfoParser.h"
 
 namespace gimcs
 {
@@ -96,28 +97,23 @@ void CDotViewer::CleanDotStateInfo(const struct State_Info_Header *sthd) const
 
     printf("\nst%ld [label=\"%ld\"]\n", sthd->st, sthd->st);
 
-    unsigned char *stp = (unsigned char *) sthd;    // use point stp to travel through each subpart of state
-    unsigned char *atp;
-    // environment action information
-    stp += sizeof(struct State_Info_Header);    // point to the first act
-    int anum;
-    for (anum = 0; anum < sthd->act_num; anum++)
-    {
-        Action_Info_Header *athd = (Action_Info_Header *) stp;
+    StateInfoParser sparser(sthd);
+    Action_Info_Header *athd = NULL;
+    EnvAction_Info *eaif = NULL;
 
-        atp = stp;
-        atp += sizeof(Action_Info_Header);    // point to the first eat of act
-        int i;
-        for (i = 0; i < athd->eat_num; i++)    // copy every eat of this act
+    athd = sparser.FirstAct();
+    while (athd != NULL)
+    {
+        eaif = sparser.FirstEat();
+        while (eaif != NULL)
         {
-            EnvAction_Info *eaif = (EnvAction_Info *) atp;
             printf("st%ld -> st%ld [label=\"<%ld, %ld>\"]\n", sthd->st,
                     eaif->nst, athd->act, eaif->eat);
 
-            atp += sizeof(EnvAction_Info);    // point to the next eat
+            eaif = sparser.NextEat();
         }
-        stp += sizeof(Action_Info_Header)
-                + athd->eat_num * sizeof(EnvAction_Info);    // point to the next act
+
+        athd = sparser.NextAct();
     }
 }
 
