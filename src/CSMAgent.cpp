@@ -912,12 +912,12 @@ void CSMAgent::BuildStatefromSIHd(const State_Info_Header *sthd, cs_State *mst)
             struct cs_State *nmst = SearchState(eaif->nst);    // find if the next state exists
             if (nmst != NULL)    // if so, inc count and make the link
             {
-                dbgmoreprt("next state", "%ld exists, build the link\n", nst);
+                dbgmoreprt("next state", "%ld exists, build the link\n", eaif->nst);
             }
             else    // for a non-existing Next state, we will create it, and build the link
             {
                 // create a new previous state
-                dbgmoreprt("next state", "%ld not exists, create it and build the link\n", nst);
+                dbgmoreprt("next state", "%ld not exists, create it and build the link\n", eaif->nst);
                 nmst = NewState(eaif->nst);
                 // Add to memory
                 AddStateToMemory(nmst);
