@@ -221,7 +221,7 @@ struct cs_State *CSMAgent::SearchState(Agent::State st) const
  * \param st state value to be created
  * \return newly created state struct
  */
-struct cs_State *CSMAgent::NewState(Agent::State st)
+struct cs_State *CSMAgent::MallocState(Agent::State st)
 {
     struct cs_State *mst = (struct cs_State *) malloc(sizeof(struct cs_State));
     assert(mst != NULL);
@@ -265,10 +265,6 @@ void CSMAgent::FreeState(struct cs_State *mst)
         FreeBlk(bas);
     }
 
-    /* cut off the state */
-    if (mst->prev != NULL) mst->prev->next = mst->next;
-    if (mst->next != NULL) mst->next->prev = mst->prev;
-
     return free(mst);
 }
 
@@ -279,7 +275,7 @@ void CSMAgent::FreeState(struct cs_State *mst)
  * \return a new forward arc struct
  *
  */
-struct cs_EnvAction *CSMAgent::NewEat(EnvAction eat)
+struct cs_EnvAction *CSMAgent::MallocEat(EnvAction eat)
 {
     struct cs_EnvAction *meat = (struct cs_EnvAction *) malloc(
             sizeof(struct cs_EnvAction));
@@ -306,7 +302,7 @@ void CSMAgent::FreeEat(struct cs_EnvAction *meat)
  * \return a new back arc struct
  *
  */
-struct cs_BackwardLink *CSMAgent::NewBlk()
+struct cs_BackwardLink *CSMAgent::MallocBlk()
 {
     struct cs_BackwardLink *bas = (struct cs_BackwardLink *) malloc(
             sizeof(struct cs_BackwardLink));
@@ -330,7 +326,7 @@ void CSMAgent::FreeBlk(struct cs_BackwardLink *bas)
  * \return the action struct found, NULL if not found
  *
  */
-struct cs_Action* CSMAgent::SearchAct(Agent::Action act,
+struct cs_Action* CSMAgent::SearchActInState(Agent::Action act,
         const struct cs_State *mst) const
 {
     struct cs_Action *ac, *nac;
@@ -345,7 +341,7 @@ struct cs_Action* CSMAgent::SearchAct(Agent::Action act,
     return NULL;
 }
 
-struct cs_EnvAction *CSMAgent::SearchEat(EnvAction eat, cs_Action *mact)
+struct cs_EnvAction *CSMAgent::SearchEatInAct(EnvAction eat, cs_Action *mact)
 {
     struct cs_EnvAction *meat, *nmeat;
     for (meat = mact->ealist; meat != NULL; meat = nmeat)
@@ -358,7 +354,7 @@ struct cs_EnvAction *CSMAgent::SearchEat(EnvAction eat, cs_Action *mact)
     return NULL;
 }
 
-void CSMAgent::AddAct2State(cs_Action *mac, cs_State *mst)
+void CSMAgent::AddAct2State(struct cs_Action *mac, cs_State *mst)
 {
     mac->next = mst->actlist;
     mst->actlist = mac;
@@ -370,7 +366,7 @@ void CSMAgent::AddEat2Act(cs_EnvAction *meat, cs_Action *mac)
     mac->ealist = meat;
 }
 
-void CSMAgent::AddState2Bcklist(cs_State *mst, cs_State *nmst)
+void CSMAgent::AddState2Blist(cs_State *mst, cs_State *nmst)
 {
     /* Check and add mst to nmst's blist */
     // state shouldn't repeat in backward list, check if already exists
@@ -385,7 +381,7 @@ void CSMAgent::AddState2Bcklist(cs_State *mst, cs_State *nmst)
 
     if (bas == NULL)    // not found, create a new one and Add to blist
     {
-        bas = NewBlk();
+        bas = MallocBlk();
         bas->pstate = mst;    // previous state is mst
         // Add bas to nmst's blist
         bas->next = nmst->blist;
@@ -396,13 +392,100 @@ void CSMAgent::AddState2Bcklist(cs_State *mst, cs_State *nmst)
     }
 }
 
+void CSMAgent::RemoveActFromState(struct cs_Action *mac, struct cs_State *mst)
+{
+    struct cs_Action *tmp, *prev;
+    tmp = mst->actlist;
+    while (tmp != NULL)
+    {
+        if (tmp == mac)    // found
+        {
+            if (tmp == mst->actlist)    // it's head
+            {
+                mst->actlist = tmp->next;
+                return;
+            }
+            else
+            {
+                prev->next = tmp->next;
+                return;
+            }
+        }
+        else
+        {
+            prev = tmp;
+            tmp = tmp->next;
+        }
+    }
+    return;
+}
+
+void CSMAgent::RemoveEatFromAct(struct cs_EnvAction *meat,
+        struct cs_Action *mac)
+{
+    struct cs_EnvAction *tmp, *prev;
+    tmp = mac->ealist;
+    while (tmp != NULL)
+    {
+        if (tmp == meat)    // found
+        {
+            if (tmp == mac->ealist)    // head
+            {
+                mac->ealist = tmp->next;
+                return;
+            }
+            else
+            {
+                prev->next = tmp->next;
+                return;
+            }
+        }
+        else
+        {
+            prev = tmp;
+            tmp = tmp->next;
+        }
+    }
+    return;
+}
+
+void CSMAgent::RemoveStateFromBList(struct cs_State *mst, struct cs_State *nmst)
+{
+    struct cs_BackwardLink *tmp, *prev;
+    tmp = nmst->blist;
+    while (tmp != NULL)
+    {
+        if (tmp->pstate == mst)    // found
+        {
+            if (tmp == nmst->blist)    // head
+            {
+                nmst->blist = tmp->next;
+                FreeBlk(tmp);
+                return;
+            }
+            else
+            {
+                prev->next = tmp->next;
+                FreeBlk(tmp);
+                return;
+            }
+        }
+        else
+        {
+            prev = tmp;
+            tmp = tmp->next;
+        }
+    }
+    return;
+}
+
 /** \brief Create a new action struct
  *
  * \param eat action value
  * \return a new action struct
  *
  */
-struct cs_Action *CSMAgent::NewAct(Agent::Action act)
+struct cs_Action *CSMAgent::MallocAct(Agent::Action act)
 {
     struct cs_Action *ac = (struct cs_Action *) malloc(
             sizeof(struct cs_Action));
@@ -444,10 +527,10 @@ void CSMAgent::LinkStates(struct cs_State *mst, EnvAction eat,
     struct cs_Action *mac;
     struct cs_EnvAction *meat;
 
-    mac = SearchAct(act, mst);
+    mac = SearchActInState(act, mst);
     if (mac != NULL)
     {
-        meat = SearchEat(eat, mac);
+        meat = SearchEatInAct(eat, mac);
         if (meat != NULL)    // link exists
         {
             if (meat->nstate->st != nmst->st)
@@ -465,7 +548,7 @@ void CSMAgent::LinkStates(struct cs_State *mst, EnvAction eat,
         else    // act exists, but eat not exist, meat == NULL
         {
             dbgmoreprt("LinkStates():", "create new link...\n");
-            meat = NewEat(eat);
+            meat = MallocEat(eat);
             meat->nstate = nmst;    // link to nmst
             AddEat2Act(meat, mac);
         }
@@ -473,15 +556,15 @@ void CSMAgent::LinkStates(struct cs_State *mst, EnvAction eat,
     else    // act not exist
     {
         dbgmoreprt("LinkStates():", "create new link...\n");
-        mac = NewAct(act);
+        mac = MallocAct(act);
         AddAct2State(mac, mst);
 
-        meat = NewEat(eat);
+        meat = MallocEat(eat);
         meat->nstate = nmst;    // link to nmst
         AddEat2Act(meat, mac);
     }
 
-    AddState2Bcklist(mst, nmst);
+    AddState2Blist(mst, nmst);
     lk_num++;    // update total link number
     return;
 }
@@ -612,7 +695,7 @@ void CSMAgent::UpdateStatePayoff(cs_State *mst)
 float CSMAgent::CalActPayoff(Agent::Action act,
         const struct cs_State *mst) const
 {
-    cs_Action *mac = SearchAct(act, mst);
+    cs_Action *mac = SearchActInState(act, mst);
     if (mac == NULL)    // this is an unseen action
         return 0;    // 0 for unseen action
 
@@ -682,11 +765,11 @@ void CSMAgent::UpdateMemory(float oripayoff)
         //NOTE: cur_mst is already set in MaxPayoffRule() function
         if (cur_mst == NULL)    // create current state in memory
         {
-            cur_mst = NewState(cur_in);
+            cur_mst = MallocState(cur_in);
             cur_mst->original_payoff = oripayoff;    // set original payoff as given
 
             // Add current state to memory
-            AddStateToMemory(cur_mst);
+            AddStateToCMemory(cur_mst);
         }
         else    // state found, this could happen if others send state information to me before the First time I'm running
         {
@@ -711,11 +794,11 @@ void CSMAgent::UpdateMemory(float oripayoff)
     if (cur_mst == NULL)    // currrent state struct not exists in memory, create it in memory, and link it to the previous state
     {
         dbgmoreprt("", "current state not exists, create it and build the link\n");
-        cur_mst = NewState(cur_in);
+        cur_mst = MallocState(cur_in);
         cur_mst->original_payoff = oripayoff;
         cur_mst->payoff = oripayoff;
         // Add it to memory
-        AddStateToMemory(cur_mst);
+        AddStateToCMemory(cur_mst);
 
         // build the link
         EnvAction peat = cur_in - pre_in - pre_out;    // calcuate previous environment action. This formula is important!!!
@@ -756,21 +839,58 @@ void CSMAgent::FreeMemory()
  * \brief Remove and free a specified state from agent's memory.
  *
  * \param mst the state to be removed
- * FIXME: need to handle the links with other states!
  */
 void CSMAgent::DeleteState(struct cs_State *mst)
 {
-    WARNNING(
-            "DeleteState() is not completely implemented yet, it's buggy and will not work as expected, DON'T use it!\n");
-
     if (mst == NULL)
     {
         return;
     }
 
-    /* TODO: firstly remove forward and backward links with other states */
+    // first, remove mst from previous states' forward links
+    struct cs_BackwardLink *blk, *nblk;
+    struct cs_Action *mac, *nmac;
+    struct cs_EnvAction *meat, *nmeat;
+    struct cs_State *pmst, *nmst;
+    for (blk = mst->blist; blk != NULL; blk = nblk)
+    {
+        pmst = blk->pstate;
+        for (mac = pmst->actlist; mac != NULL; mac = nmac)
+        {
+            for (meat = mac->ealist; meat != NULL; meat = nmeat)
+            {
+                if (meat->nstate == mst)    // found
+                {
+                    RemoveEatFromAct(meat, mac);
+                    FreeEat(meat);
+                    break;    // check other acts
+                }
+
+                nmeat = meat->next;
+            }
+
+            nmac = mac->next;
+        }
+
+        nblk = blk->next;
+    }
+
+    // then, remove mst from following states' backward links
+    for (mac = mst->actlist; mac != NULL; mac = nmac)
+    {
+        for (meat = mac->ealist; meat != NULL; meat = nmeat)
+        {
+            nmst = meat->nstate;
+            RemoveStateFromBList(mst, nmst);
+
+            nmeat = meat->next;
+        }
+
+        nmac = mac->next;
+    }
 
     // free the state itself
+    RemoveStateFromCMemory(mst);
     return FreeState(mst);
 }
 
@@ -899,14 +1019,14 @@ void CSMAgent::BuildStatefromSIHd(const State_Info_Header *sthd, cs_State *mst)
     while (athd != NULL)
     {
         // create this act and add it to state
-        cs_Action *mac = NewAct(athd->act);
+        cs_Action *mac = MallocAct(athd->act);
         AddAct2State(mac, mst);
 
         eaif = sparser.FirstEat();
         while (eaif != NULL)
         {
             // create this eat and add it to act
-            cs_EnvAction *meat = NewEat(eaif->eat);
+            cs_EnvAction *meat = MallocEat(eaif->eat);
             meat->count = eaif->count;
             // links to the next state
             struct cs_State *nmst = SearchState(eaif->nst);    // find if the next state exists
@@ -918,13 +1038,13 @@ void CSMAgent::BuildStatefromSIHd(const State_Info_Header *sthd, cs_State *mst)
             {
                 // create a new previous state
                 dbgmoreprt("next state", "%ld not exists, create it and build the link\n", eaif->nst);
-                nmst = NewState(eaif->nst);
+                nmst = MallocState(eaif->nst);
                 // Add to memory
-                AddStateToMemory(nmst);
+                AddStateToCMemory(nmst);
             }
             // build the link
             meat->nstate = nmst;    // forward link
-            AddState2Bcklist(mst, nmst);    // backward link
+            AddState2Blist(mst, nmst);    // backward link
             lk_num++;    // increase link number
 
             AddEat2Act(meat, mac);    // add eat to act
@@ -957,9 +1077,9 @@ void CSMAgent::AddStateInfo(const State_Info_Header *sthd)
     dbgmoreprt("AddStateInfo()",
             "state: %ld, create it in memory.\n", sthd->st);
 
-    mst = NewState(sthd->st);
+    mst = MallocState(sthd->st);
     /* Add to memory */
-    AddStateToMemory(mst);
+    AddStateToCMemory(mst);
 
     BuildStatefromSIHd(sthd, mst);
 
@@ -1084,7 +1204,7 @@ void CSMAgent::PrintProcess(unsigned long current, unsigned long total,
     return;
 }
 
-void CSMAgent::AddStateToMemory(struct cs_State *nstate)
+void CSMAgent::AddStateToCMemory(struct cs_State *nstate)
 {
     // Add nstate to the front
     nstate->prev = NULL;
@@ -1092,8 +1212,19 @@ void CSMAgent::AddStateToMemory(struct cs_State *nstate)
     if (head != NULL) head->prev = nstate;
     head = nstate;
 
-    state_num++;
     states_map.insert(StatesMap::value_type(nstate->st, nstate));    // don't forget to update hash map
+    state_num++;
+}
+
+void CSMAgent::RemoveStateFromCMemory(cs_State *mst)
+{
+    // remove state from link
+    if (mst->prev != NULL) mst->prev->next = mst->next;
+    if (mst->next != NULL) mst->next->prev = mst->prev;
+
+    // remove state from hash map
+    states_map.erase(mst->st);
+    state_num--;
 }
 
 }    // namespace gimcs
