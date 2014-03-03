@@ -72,32 +72,34 @@ class CSMAgent: public MAgent
 
         void LinkStates(struct cs_State *, Agent::EnvAction, Agent::Action,
                 struct cs_State *); /**< link two states in memory with specfic exact and action */
-        void DeleteState(struct cs_State *); /**< delete state from memory network */
 
-        struct cs_State *MallocState(Agent::State); /**< create a new state  in memory */
-        struct cs_Action *MallocAct(Agent::Action);
-        struct cs_EnvAction *MallocEat(Agent::EnvAction);
-        struct cs_BackwardLink *MallocBlk();
+        struct cs_State *NewState(Agent::State); /**< create a new state  in memory */
+        struct cs_Action *NewAct(Agent::Action, struct cs_State *);
+        struct cs_EnvAction *NewEat(Agent::EnvAction, struct cs_State *,
+                struct cs_Action *);
+        struct cs_BackwardLink *NewBlk(struct cs_State *, struct cs_State *);
+
+        struct cs_State *SearchState(Agent::State) const; /**< search state in memory by its identity */
+        struct cs_Action *SearchAct(Agent::Action,
+                const struct cs_State *) const; /**< find the Agent::Action  address according to identity */
+        struct cs_EnvAction *SearchEat(Agent::EnvAction, struct cs_State *,
+                const struct cs_Action *) const;
+        struct cs_BackwardLink *SearchBlk(struct cs_State *,
+                const struct cs_State *) const;
+
+        void _DeleteState(struct cs_State *); /**< delete state from memory network */
+        void DeleteAct(Agent::Action, struct cs_State *);
+        void DeleteEat(Agent::EnvAction, const struct cs_State *,
+                struct cs_Action *);
+        void DeleteBlk(struct cs_State *, struct cs_State *);
+
         void FreeState(struct cs_State *); /**< free a state  */
         void FreeAct(struct cs_Action *);
         void FreeEat(struct cs_EnvAction *);
         void FreeBlk(struct cs_BackwardLink *);
         void FreeMemory(); /**< free all space of memory in computer memory*/
-        void AddStateToCMemory(struct cs_State *); /**< add a state  to computer memory */
-        struct cs_State *SearchState(Agent::State) const; /**< search state in memory by its identity */
-        void RemoveStateFromCMemory(struct cs_State *);
 
-        struct cs_Action *SearchActInState(Agent::Action,
-                const struct cs_State *) const; /**< find the Agent::Action  address according to identity */
-        struct cs_EnvAction *SearchEatInAct(Agent::EnvAction,
-                struct cs_Action *);
-        void AddAct2State(struct cs_Action *, struct cs_State *);
-        void AddEat2Act(struct cs_EnvAction *, struct cs_Action *);
-        void AddState2Blist(struct cs_State *, struct cs_State *);
-        void RemoveActFromState(struct cs_Action *, struct cs_State *);
-        void RemoveEatFromAct(struct cs_EnvAction *, struct cs_Action *);
-        void RemoveStateFromBList(struct cs_State *, struct cs_State *);
-        void BuildStatefromSIHd(const struct State_Info_Header *,
+        void BuildStateFromHeader(const struct State_Info_Header *,
                 struct cs_State *);
 
         float CalStatePayoff(const struct cs_State *) const; /**< calculate payoff of a state */
