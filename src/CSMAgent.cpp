@@ -434,12 +434,14 @@ void CSMAgent::DeleteEat(Agent::EnvAction eat, const struct cs_State *nst,
             {
                 mac->ealist = tmp->next;
                 FreeEat(tmp);
+                lk_num--;    // decrease link number
                 return;
             }
             else
             {
                 prev->next = tmp->next;
                 FreeEat(tmp);
+                lk_num--;    // decrease link number
                 return;
             }
         }
@@ -450,7 +452,6 @@ void CSMAgent::DeleteEat(Agent::EnvAction eat, const struct cs_State *nst,
         }
     }
 
-    lk_num--;    // decrease link number
     return;
 }
 
@@ -826,6 +827,38 @@ void CSMAgent::FreeMemory()
     states_map.clear();
 }
 
+void CSMAgent::ClearState(struct cs_State *mst)
+{
+    if (mst == NULL)
+    {
+        return;
+    }
+    // before free the struct itself, free its subparts First
+    /* free actlist */
+    struct cs_Action *ac, *nac;
+    for (ac = mst->actlist; ac != NULL; ac = nac)
+    {
+        nac = ac->next;
+        // free ealist
+        struct cs_EnvAction *meat, *nmeat;
+        for (meat = ac->ealist; meat != NULL; meat = nmeat)
+        {
+            nmeat = meat->next;
+            FreeEat(meat);
+            lk_num--;    // decrease link number
+        }
+        FreeAct(ac);
+    }
+
+    /* free blist */
+    struct cs_BackwardLink *bas, *nbas;
+    for (bas = mst->blist; bas != NULL; bas = nbas)
+    {
+        nbas = bas->next;
+        FreeBlk(bas);
+    }
+}
+
 /**
  * \brief Remove and free a specified state from agent's memory.
  *
@@ -848,7 +881,7 @@ void CSMAgent::_DeleteState(struct cs_State *mst)
         pmst = blk->pstate;
         for (mac = pmst->actlist; mac != NULL; mac = nmac)
         {
-            Agent::EnvAction eat = pmst->st - mst->st - mac->act;    // calculate the possible eat
+            Agent::EnvAction eat = mst->st - pmst->st - mac->act;    // calculate the possible eat
             DeleteEat(eat, mst, mac);
 
             nmac = mac->next;
@@ -872,6 +905,7 @@ void CSMAgent::_DeleteState(struct cs_State *mst)
     }
 
     // free the state itself
+    ClearState(mst);    // clear state, update lk_num etc
     // remove state from link
     if (mst->prev != NULL) mst->prev->next = mst->next;
     if (mst->next != NULL) mst->next->prev = mst->prev;

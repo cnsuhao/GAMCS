@@ -13,5 +13,8 @@ int main(void)
     mono.ConnectAgent(&ma);
     mono.Launch();
 
+    ma.DeleteState(6);
+    ma.DeleteState(9);
+
     ma.DumpMemoryToStorage(&mysql);
 }

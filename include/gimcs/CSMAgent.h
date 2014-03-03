@@ -87,6 +87,7 @@ class CSMAgent: public MAgent
         struct cs_BackwardLink *SearchBlk(struct cs_State *,
                 const struct cs_State *) const;
 
+        void ClearState(struct cs_State *);
         void _DeleteState(struct cs_State *); /**< delete state from memory network */
         void DeleteAct(Agent::Action, struct cs_State *);
         void DeleteEat(Agent::EnvAction, const struct cs_State *,
