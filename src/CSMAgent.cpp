@@ -827,38 +827,6 @@ void CSMAgent::FreeMemory()
     states_map.clear();
 }
 
-void CSMAgent::ClearState(struct cs_State *mst)
-{
-    if (mst == NULL)
-    {
-        return;
-    }
-    // before free the struct itself, free its subparts First
-    /* free actlist */
-    struct cs_Action *ac, *nac;
-    for (ac = mst->actlist; ac != NULL; ac = nac)
-    {
-        nac = ac->next;
-        // free ealist
-        struct cs_EnvAction *meat, *nmeat;
-        for (meat = ac->ealist; meat != NULL; meat = nmeat)
-        {
-            nmeat = meat->next;
-            FreeEat(meat);
-            lk_num--;    // decrease link number
-        }
-        FreeAct(ac);
-    }
-
-    /* free blist */
-    struct cs_BackwardLink *bas, *nbas;
-    for (bas = mst->blist; bas != NULL; bas = nbas)
-    {
-        nbas = bas->next;
-        FreeBlk(bas);
-    }
-}
-
 /**
  * \brief Remove and free a specified state from agent's memory.
  *
@@ -904,9 +872,20 @@ void CSMAgent::_DeleteState(struct cs_State *mst)
         nmac = mac->next;
     }
 
+    // update lk_num
+    for (mac = mst->actlist; mac != NULL; mac = nmac)
+    {
+        for (meat = mac->ealist; meat != NULL; meat = nmeat)
+        {
+            lk_num--;    // every link from mst will be deleted
+            nmeat = meat->next;
+        }
+        nmac = mac->next;
+    }
+
     // free the state itself
-    ClearState(mst);    // clear state, update lk_num etc
-    // remove state from link
+    // remove state from the double link
+    if (head == mst) head = mst->next;    // it's head
     if (mst->prev != NULL) mst->prev->next = mst->next;
     if (mst->next != NULL) mst->next->prev = mst->prev;
 
@@ -1121,8 +1100,15 @@ void CSMAgent::UpdateStateInfo(const State_Info_Header *sthd)
 
     // clear state first
     struct cs_Action *mac, *nmac;
+    struct cs_EnvAction *meat, *nmeat;
     for (mac = mst->actlist; mac != NULL; mac = nmac)
     {
+        for (meat = mac->ealist; meat != NULL; meat = nmeat)
+        {
+            lk_num--;    // decrease link number for each eat
+            nmeat = meat->next;
+        }
+
         nmac = mac->next;
         FreeAct(mac);
     }
