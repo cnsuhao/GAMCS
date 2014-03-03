@@ -216,7 +216,7 @@ struct State_Info_Header *ExManager::MergeStateInfo(
         return NULL;
     }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_MORE_
     printf(
             "*************************** merge %ld to %ld ********************************\n",
             recvsthd->st, origsthd->st);
@@ -224,14 +224,23 @@ struct State_Info_Header *ExManager::MergeStateInfo(
     PrintStateInfo(recvsthd);
 #endif
 
-    char act_buffer[origsthd->act_num + recvsthd->act_num][2048];    // buffer for manipulating act info
+    // make copy, ensure the incoming arguments will not be changed
+    char *origsthd_buf[origsthd->size];
+    memcpy(origsthd_buf, origsthd, origsthd->size);
+    State_Info_Header *tmp_origsthd = (State_Info_Header *) origsthd_buf;
+    char *recvsthd_buf[recvsthd->size];
+    memcpy(recvsthd_buf, recvsthd, recvsthd->size);
+    State_Info_Header *tmp_recvsthd = (State_Info_Header *) recvsthd_buf;
+
+    char act_buffer[tmp_origsthd->act_num + tmp_recvsthd->act_num][tmp_origsthd->size
+            + tmp_recvsthd->size];    // buffer for manipulating act info, make sure it's big enough
     int act_num = 0;    // total number of acts
 
-    // halve eat count first
+    /********* halve eat count first **********/
     Action_Info_Header *achd = NULL;
     EnvAction_Info *eaif = NULL;
-    // origsthd
-    StateInfoParser oparser(origsthd);
+    // tmp_origsthd
+    StateInfoParser oparser(tmp_origsthd);
     achd = oparser.FirstAct();
     while (achd != NULL)
     {
@@ -244,8 +253,8 @@ struct State_Info_Header *ExManager::MergeStateInfo(
 
         achd = oparser.NextAct();
     }
-    // recvsthd, and copy all acts to buffer
-    StateInfoParser rparser(recvsthd);
+    // tmp_recvsthd, and copy all acts to buffer
+    StateInfoParser rparser(tmp_recvsthd);
     achd = rparser.FirstAct();
     while (achd != NULL)
     {
@@ -262,12 +271,13 @@ struct State_Info_Header *ExManager::MergeStateInfo(
         act_num++;    // increase act count
         achd = rparser.NextAct();
     }
+    /*******************************************/
 
     unsigned char *buf_acpt = NULL;
     Action_Info_Header *buf_achd = NULL;
     unsigned char *buf_eapt = NULL;
     EnvAction_Info *buf_eaif = NULL;
-    // compare each act from origsthd with acts from recvsthd
+    // compare each act from tmp_origsthd with acts from tmp_recvsthd
     int tmp_act_num = act_num;    // act_num will be changed
     achd = oparser.FirstAct();
     while (achd != NULL)
@@ -276,17 +286,16 @@ struct State_Info_Header *ExManager::MergeStateInfo(
         // traverse all acts in buffer
         for (i = 0; i < tmp_act_num; i++)
         {
-            buf_acpt = (unsigned char *)act_buffer[i];
-            buf_achd = (Action_Info_Header *)buf_acpt;
+            buf_acpt = (unsigned char *) act_buffer[i];
+            buf_achd = (Action_Info_Header *) buf_acpt;
             if (buf_achd->act == achd->act)
             {
-                // compare each eat from origsthd with eats from recvsthd
+                // compare each eat from tmp_origsthd with eats from tmp_recvsthd
                 int tmp_eat_num = buf_achd->eat_num;    // eat_num will be changed
                 eaif = oparser.FirstEat();
                 while (eaif != NULL)
                 {
-                    buf_eapt = (buf_acpt
-                            + sizeof(Action_Info_Header));    // move to the first eat
+                    buf_eapt = (buf_acpt + sizeof(Action_Info_Header));    // move to the first eat
                     buf_eaif = (EnvAction_Info *) buf_eapt;
                     int j;
                     // traverse all eats of current act in buffer
@@ -301,7 +310,7 @@ struct State_Info_Header *ExManager::MergeStateInfo(
                         buf_eapt += sizeof(EnvAction_Info);    // next eat info
                     }
 
-                    if (j >= tmp_eat_num)    // eat not found, it's a new eat in origsthd
+                    if (j >= tmp_eat_num)    // eat not found, it's a new eat in tmp_origsthd
                     {
                         // append it to current act buffer
                         memcpy(
@@ -318,7 +327,7 @@ struct State_Info_Header *ExManager::MergeStateInfo(
             }
         }
 
-        if (i >= tmp_act_num)    // act not found, it's a new act in origsthd
+        if (i >= tmp_act_num)    // act not found, it's a new act in tmp_origsthd
         {
             // append it to act buffer
             memcpy(act_buffer[act_num], achd,
@@ -342,11 +351,11 @@ struct State_Info_Header *ExManager::MergeStateInfo(
 
     State_Info_Header *sthd = (State_Info_Header *) malloc(sthd_size);
     // fill the header
-    sthd->st = recvsthd->st;
+    sthd->st = tmp_recvsthd->st;
     sthd->act_num = act_num;
-    sthd->count = round((origsthd->count + recvsthd->count) / 2.0);
-    sthd->payoff = recvsthd->payoff;
-    sthd->original_payoff = recvsthd->original_payoff;
+    sthd->count = round((tmp_origsthd->count + tmp_recvsthd->count) / 2.0);
+    sthd->payoff = tmp_recvsthd->payoff;
+    sthd->original_payoff = tmp_recvsthd->original_payoff;
     sthd->size = sthd_size;
 
     // copy act info from buffer
@@ -358,11 +367,11 @@ struct State_Info_Header *ExManager::MergeStateInfo(
         buf_achd = (Action_Info_Header *) act_buffer[i];
         act_size = sizeof(Action_Info_Header)
                 + buf_achd->eat_num * sizeof(EnvAction_Info);
-        memcpy(ptr, buf_acpt, act_size);
+        memcpy(ptr, buf_achd, act_size);
         ptr += act_size;
     }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_MORE_
     printf(
             "------------------------------ merged result -------------------------------------\n");
     PrintStateInfo(sthd);
