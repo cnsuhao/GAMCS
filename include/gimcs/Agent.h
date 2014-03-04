@@ -22,8 +22,8 @@
 namespace gimcs
 {
 
-const unsigned long INVALID_STATE = INVALID_INPUT;
-const long INVALID_ACTION = INVALID_OUTPUT;
+const uint64_t INVALID_STATE = INVALID_INPUT;
+const int64_t INVALID_ACTION = INVALID_OUTPUT;
 
 /**
  * Intelligent Agent
@@ -33,7 +33,7 @@ class Agent: public TSGIOM
     public:
         typedef GIOM::Input State; /**< for agent we call an input as a state */
         typedef GIOM::Output Action; /**< action as output */
-        typedef long EnvAction; /**< environment action */
+        typedef int64_t EnvAction; /**< environment action */
 
         Agent();
         Agent(int);
@@ -92,7 +92,7 @@ inline float Agent::GetThreshold() const
 struct Action_Info_Header
 {
         Agent::Action act; /**< action value */
-        int eat_num; /**< number of environment actions which have been observed */
+        unsigned long eat_num; /**< number of environment actions which have been observed */
 };
 
 /** environment act information */
@@ -110,7 +110,7 @@ struct State_Info_Header
         float original_payoff; /**< original payoff */
         float payoff; /**< payoff */
         unsigned long count; /**< times of travelling through this state */
-        int act_num; /**< number of actions which have been performed */
+        unsigned long act_num; /**< number of actions which have been performed */
         unsigned int size; /**< size of the header (in Byte) */
 };
 
@@ -119,8 +119,8 @@ struct Memory_Info
 {
         float discount_rate; /**< discount rate */
         float threshold; /**< threshold */
-        unsigned long state_num; /**< total number of states in memroy */
-        unsigned long lk_num; /**< total number of links between states in memory */
+        uint64_t state_num; /**< total number of states in memroy */
+        uint64_t lk_num; /**< total number of links between states in memory */
         Agent::State last_st; /**< last experienced state when saving memory */
         Agent::Action last_act; /**< last performed Agent::Action when saving memory */
 };

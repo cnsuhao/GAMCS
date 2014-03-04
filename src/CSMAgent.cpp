@@ -91,7 +91,7 @@ void CSMAgent::LoadMemoryFromStorage(Storage *storage)
         fflush(stdout);
 
         /* load memory information */
-        unsigned long saved_state_num = 0, saved_lk_num = 0;
+        uint64_t saved_state_num = 0, saved_lk_num = 0;
         struct Memory_Info *memif = storage->GetMemoryInfo();
         if (memif != NULL)
         {

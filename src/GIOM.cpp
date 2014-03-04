@@ -10,7 +10,6 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #include <stdlib.h>
 #include <random>
 #include <math.h>
@@ -54,8 +53,8 @@ GIOM::Output GIOM::Process(Input in, OSpace &alpos_outputs)
     if (restricited_outputs.Empty())    // no output generated, return an invalid GIOM::Output
         return INVALID_OUTPUT;
 
-    int sz = restricited_outputs.Size();    // number of alpos_outputs
-    int index = Random() % (sz);    // choose an output value randomly
+    uint64_t sz = restricited_outputs.Size();    // number of alpos_outputs
+    uint64_t index = Random() % (sz);    // choose an output value randomly
     GIOM::Output out = restricited_outputs[index];
 
     // record input and output
@@ -73,10 +72,9 @@ GIOM::Output GIOM::Process(Input in, OSpace &alpos_outputs)
 float GIOM::SingleOutputEntropy(Input in, OSpace &alpos_outputs) const
 {
     OSpace restricted_outputs = Restrict(in, alpos_outputs);
-    if (restricted_outputs.Empty())
-        return 0.0;
+    if (restricted_outputs.Empty()) return 0.0;
 
-    int sz = restricted_outputs.Size();
+    uint64_t sz = restricted_outputs.Size();
     return log2(sz);    // all the alpos_outputs have the same probability of occurrence
 }
 
@@ -91,9 +89,9 @@ void GIOM::Update()
     return;
 }
 
-long GIOM::Random() const
+uint64_t GIOM::Random() const
 {
-    std::uniform_int_distribution<long> dist(0, LONG_MAX);
+    std::uniform_int_distribution<uint64_t> dist(0, UINT64_MAX);    // act ranges: -2^63+1 ~ 2^63+1, which has a maximun number 2^64
     std::random_device rd;    // to get true random on linux, use rand("/dev/random");
 
     return dist(rd);

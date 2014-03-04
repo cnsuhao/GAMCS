@@ -26,20 +26,20 @@ void PrintStateInfo(const struct State_Info_Header *sthd)
 
     printf("++++++++++++++++++++++++ State: %ld ++++++++++++++++++++++++++\n",
             sthd->st);
-    printf("Original payoff: %.2f,\t Payoff: %.2f,\t Count: %ld, ActNum: %d\n",
+    printf("Original payoff: %.2f,\t Payoff: %.2f,\t Count: %ld, ActNum: %ld\n",
             sthd->original_payoff, sthd->payoff, sthd->count, sthd->act_num);
     printf("------------------------------------------------------------\n");
     unsigned char *stp = (unsigned char *) sthd;    // use point stp to travel through each subpart of state
     unsigned char *atp;
     // environment action information
     stp += sizeof(struct State_Info_Header);    // point to the first act
-    int anum;
+    unsigned long anum;
     for (anum = 0; anum < sthd->act_num; anum++)
     {
         Action_Info_Header *athd = (Action_Info_Header *) stp;
         atp = stp;
         atp += sizeof(Action_Info_Header);    // point to the first eat of act
-        int i;
+        unsigned long i;
         for (i = 0; i < athd->eat_num; i++)    // print every eat of this act
         {
             EnvAction_Info *eaif = (EnvAction_Info *) atp;
