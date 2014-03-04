@@ -14,18 +14,17 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #ifndef GIOM_H
 #define GIOM_H
-#include <climits>    // LONG_MAX
+#include <cstdint>
 #include <stddef.h>     // NULL
 #include "gimcs/Debug.h"
 
 namespace gimcs
 {
 
-const unsigned long INVALID_INPUT = 0; /**< valid states start from 1 */
-const long INVALID_OUTPUT = LONG_MAX; /**< the maximun value is used to indicate an invalid output, be careful! */
+const uint64_t INVALID_INPUT = UINT64_MAX; /**< the maximun value is used to indicate invalid input */
+const int64_t INVALID_OUTPUT = INT64_MAX; /**< the maximun value is used to indicate an invalid output, be careful! */
 
 class OSpace;
 
@@ -35,8 +34,8 @@ class OSpace;
 class GIOM
 {
     public:
-        typedef unsigned long Input; /**< input value, positive numbers */
-        typedef long Output; /**< output value, output is the difference of two inputs, so it can be negetive, range: - max(Input) ~ +max(Input)*/
+        typedef uint64_t Input; /**< input value, valid inputs are 0 ~ 2^63-1 (yes, it's 63bit, not 64!) */
+        typedef int64_t Output; /**< output value, output is the difference of two inputs, so it can be negetive, range: - max(Input) ~ +max(Input)*/
 
         /** Default constructor */
         GIOM();
@@ -53,7 +52,7 @@ class GIOM
         unsigned long process_count; /**< count of processing */
 
     private:
-        long Random() const; /**< generate a random number in range 0 to LONG_MAX. It's where all possibilities and miracles come from! */
+        uint64_t Random() const; /**< generate a random number in range 0 to LONG_MAX. It's where all possibilities and miracles come from! */
 };
 
 /**
@@ -78,7 +77,7 @@ class OSpace
             SPARE_CAPACITY = 16
         };
 
-        typedef unsigned long olsize_t;
+        typedef uint64_t olsize_t;    // actions have the maximun number of 2^64
 
         explicit OSpace(olsize_t initfn = 0) :
                 frag_num(initfn), the_capacity(initfn + SPARE_CAPACITY), current_index(

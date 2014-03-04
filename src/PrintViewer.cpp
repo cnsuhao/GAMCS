@@ -90,7 +90,7 @@ void PrintViewer::PrintStateInfo(const struct State_Info_Header *sthd) const
 
     printf("++++++++++++++++++++++++ State: %ld ++++++++++++++++++++++++++\n",
             sthd->st);
-    printf("Original payoff: %.2f,\t Payoff: %.2f,\t Count: %ld, ActNum: %d\n",
+    printf("Original payoff: %.2f,\t Payoff: %.2f,\t Count: %ld, ActNum: %ld\n",
             sthd->original_payoff, sthd->payoff, sthd->count, sthd->act_num);
 
     printf("------------------------------------------------------------\n");

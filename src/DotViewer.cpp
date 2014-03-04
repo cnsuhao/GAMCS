@@ -154,7 +154,7 @@ void DotViewer::DotStateInfo(const struct State_Info_Header *sthd) const
     printf("}\n");    // subgraph
 
     // state ---> actions
-    for (int i = 0; i < sthd->act_num; i++)
+    for (unsigned long i = 0; i < sthd->act_num; i++)
     {
         if (sthd->st == last_state && acts[i] == last_action)    // highlight last action edge
             printf(
@@ -278,7 +278,7 @@ void DotViewer::ShowState(Agent::State st)
         printf("}\n");    // subgraph
 
         // state ---> actions
-        for (int i = 0; i < sthd->act_num; i++)
+        for (unsigned long i = 0; i < sthd->act_num; i++)
         {
             printf(
                     "st%ld -> act%sin%ld [label=<<font color=\"blue\">%ld</font>>, color=\"blue\", weight=2.]\n",

@@ -60,7 +60,7 @@ int Mysql::Connect()
     /* create table if not exists */
     char tb_string[256];
     sprintf(tb_string,
-            "CREATE TABLE IF NOT EXISTS %s.%s(State BIGINT PRIMARY KEY, OriPayoff FLOAT, Payoff FLOAT, Count BIGINT, ActNum INT, Size INT, ActInfos BLOB) \
+            "CREATE TABLE IF NOT EXISTS %s.%s(State BIGINT PRIMARY KEY, OriPayoff FLOAT, Payoff FLOAT, Count BIGINT, ActNum BIGINT, Size INT, ActInfos BLOB) \
             ENGINE MyISAM ",
             db_name.c_str(), db_t_stateinfo.c_str());
     if (mysql_query(db_con, tb_string))
@@ -131,7 +131,7 @@ Agent::State Mysql::NextState() const
  * \param index index
  * \return state value of that index, INVALID_STATE for error or not found
  */
-Agent::State Mysql::StateByIndex(unsigned long index) const
+Agent::State Mysql::StateByIndex(uint64_t index) const
 {
     char query_str[256];
     sprintf(query_str, "SELECT * FROM %s LIMIT %ld, 1", db_t_stateinfo.c_str(),
@@ -270,7 +270,7 @@ void Mysql::AddStateInfo(const struct State_Info_Header *sthd)
 {
     char str[256];
     sprintf(str,
-            "INSERT INTO %s(State, OriPayoff, Payoff, Count, ActNum, Size, ActInfos) VALUES(%ld, %f, %f, %ld, %d, %d,'%%s')",
+            "INSERT INTO %s(State, OriPayoff, Payoff, Count, ActNum, Size, ActInfos) VALUES(%ld, %f, %f, %ld, %ld, %d,'%%s')",
             db_t_stateinfo.c_str(), sthd->st, sthd->original_payoff,
             sthd->payoff, sthd->count, sthd->act_num, sthd->size);    // first stag of building mysql insert query, actlist, eactlist and links are build below
     size_t str_len = strlen(str);
@@ -301,7 +301,7 @@ void Mysql::UpdateStateInfo(const struct State_Info_Header *sthd)
 {
     char str[256];
     sprintf(str,
-            "UPDATE %s SET OriPayoff=%f, Payoff=%f, Count=%ld, ActNum=%d, Size=%d, ActInfos='%%s' WHERE State=%ld",
+            "UPDATE %s SET OriPayoff=%f, Payoff=%f, Count=%ld, ActNum=%ld, Size=%d, ActInfos='%%s' WHERE State=%ld",
             db_t_stateinfo.c_str(), sthd->original_payoff, sthd->payoff,
             sthd->count, sthd->act_num, sthd->size, sthd->st);    // first stage of building the update query
     size_t str_len = strlen(str);

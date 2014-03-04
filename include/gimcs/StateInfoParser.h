@@ -41,9 +41,9 @@ class StateInfoParser
     private:
         const State_Info_Header *my_sthd;
         unsigned char *atp;
-        int act_index;
+        unsigned long act_index;
         unsigned char *eap;
-        int eat_index;
+        unsigned long eat_index;
 };
 
 } /* namespace gimcs */
