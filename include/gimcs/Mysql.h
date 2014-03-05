@@ -19,7 +19,6 @@
 #define MYSQL_H_
 #include <mysql/mysql.h>
 #include <string>
-#include <stdint.h>
 #include "gimcs/Storage.h"
 
 namespace gimcs
@@ -67,9 +66,9 @@ class Mysql: public Storage
         std::string db_name; /**< database name */
         std::string db_t_stateinfo; /**< table name for storing state information */
         std::string db_t_meminfo; /**< table name for storing memory information */
-        mutable uint64_t current_index;
+        mutable gimcs_uint current_index;
 
-        Agent::State StateByIndex(uint64_t) const;
+        Agent::State StateByIndex(unsigned long) const;
 };
 
 inline std::string Mysql::GetMemoryName() const

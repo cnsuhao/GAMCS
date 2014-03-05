@@ -22,16 +22,21 @@ INCLUDE_DIRECTORIES(${MYSQL_INCLUDE_DIRS})
 SET(LIBS ${LIBS} ${MYSQL_LIBRARIES})
 
 # configuration options
-option(GIMCS_DEBUG "Build with debug output" NO)
-option(GIMCS_DEBUG_MORE "Build with debug output" NO)
+OPTION(DEBUG "Build with debug output" NO)
+OPTION(DEBUG_MORE "Build with debug output" NO)
+OPTION(INT_BITS "Bitwise of integer" 64)
+
+MESSAGE(STATUS "Input/Output bitwise " ${INT_BITS})
+
+CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/config.h.in ${PROJECT_SOURCE_DIR}/include/gimcs/config.h)
 
 # definitions
-IF (GIMCS_DEBUG)
+IF (DEBUG)
     ADD_DEFINITIONS("-D_DEBUG_")
     SET(CMAKE_BUILD_TYPE Debug)
 ENDIF()
 
-IF (GIMCS_DEBUG_MORE)
+IF (DEBUG_MORE)
     ADD_DEFINITIONS("-D_DEBUG_MORE_")
     SET(CMAKE_BUILD_TYPE Debug)
 ENDIF()
@@ -89,6 +94,8 @@ SET(LIBGIMCS_PUBLIC_HDRS
     ${PROJECT_SOURCE_DIR}/include/gimcs/DotViewer.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/CDotViewer.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/Debug.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/StateInfoParser.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/config.h
     )
 
 # install prefix

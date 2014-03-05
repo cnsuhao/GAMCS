@@ -211,14 +211,14 @@ struct State_Info_Header *ExManager::MergeStateInfo(
     if (origsthd->st != recvsthd->st)
     {
         WARNNING(
-                "MergeStateInfo(): state value dones't match, one is %ld, the other is %ld, this shouldn't happen!\n",
+                "MergeStateInfo(): state value dones't match, one is %" ST_FMT ", the other is %" ST_FMT ", this shouldn't happen!\n",
                 origsthd->st, recvsthd->st);
         return NULL;
     }
 
 #ifdef _DEBUG_MORE_
     printf(
-            "*************************** merge %ld to %ld ********************************\n",
+            "*************************** merge %" ST_FMT " to %" ST_FMT " ********************************\n",
             recvsthd->st, origsthd->st);
     PrintStateInfo(origsthd);
     PrintStateInfo(recvsthd);
@@ -390,7 +390,7 @@ void ExManager::SendStateInfo(int toneb, Agent::State st) const
         return;
     }
 
-    dbgmoreprt("***", "%d send %ld to %d\n", id, st, toneb);
+    dbgmoreprt("***", "%d send %" ST_FMT " to %d\n", id, st, toneb);
     exnet->Send(id, toneb, stif, stif->size);    // call the send facility in ienet
     free(stif);    // free
 

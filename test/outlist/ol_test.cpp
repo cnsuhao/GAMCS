@@ -17,7 +17,7 @@ int main(void)
     ol.Add(2);
     ol.Add(3);
     ol.Add(10, 14, 2);
-    ol.Add(20, 10, 1);
+    ol.Add(20, 10, -1);
 
     printf("Outputs: ");
     GIOM::Output out = ol.First();
@@ -32,4 +32,7 @@ int main(void)
     int i = 7;
     printf("index %d is %ld\n", i, ol[i]);
     printf("capacity is %ld\n", ol.Capacity());
+
+    gimcs_uint j = 9999;
+    printf("gimcs_uint size: %d\n", sizeof(j));
 }

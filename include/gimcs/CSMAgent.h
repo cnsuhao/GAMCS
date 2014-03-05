@@ -52,8 +52,8 @@ class CSMAgent: public MAgent
         void DumpMemoryToStorage(Storage *) const; /**< save memory to database */
 
     private:
-        uint64_t state_num; /**< total number of states in memory */
-        uint64_t lk_num; /**< total number of links between states in memory */
+        unsigned long state_num; /**< total number of states in memory */
+        unsigned long lk_num; /**< total number of links between states in memory */
 
         struct cs_State *head; /**< memory head*/
         StatesMap states_map; /**< hash map from state values to state  */

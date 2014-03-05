@@ -24,7 +24,7 @@ void PrintStateInfo(const struct State_Info_Header *sthd)
 {
     if (sthd == NULL) return;
 
-    printf("++++++++++++++++++++++++ State: %ld ++++++++++++++++++++++++++\n",
+    printf("++++++++++++++++++++++++ State: %" ST_FMT " ++++++++++++++++++++++++++\n",
             sthd->st);
     printf("Original payoff: %.2f,\t Payoff: %.2f,\t Count: %ld, ActNum: %ld\n",
             sthd->original_payoff, sthd->payoff, sthd->count, sthd->act_num);
@@ -44,7 +44,7 @@ void PrintStateInfo(const struct State_Info_Header *sthd)
         {
             EnvAction_Info *eaif = (EnvAction_Info *) atp;
             printf(
-                    "\t  .|+++ %ld +++ %ld ++> %ld \t Count: %ld\n",
+                    "\t  .|+++ %" ACT_FMT " +++ %" ACT_FMT " ++> %" ST_FMT " \t Count: %ld\n",
                     athd->act, eaif->eat, eaif->nst, eaif->count);
 
             atp += sizeof(EnvAction_Info);    // point to the next eat
