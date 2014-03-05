@@ -62,7 +62,7 @@ void CSMAgent::LoadState(Storage *storage, Agent::State st)
     State_Info_Header *sthd = storage->GetStateInfo(st);
     if (sthd == NULL)    // should not happen, otherwise database corrupted!
         ERROR(
-                "state: %ld should exist, but fetch from storage returns NULL, the database may be corrupted!\n",
+                "state: %" ST_FMT " should exist, but fetch from storage returns NULL, the database may be corrupted!\n",
                 st);
 
     struct cs_State *mst = SearchState(st);    // search memory for the state First
@@ -91,7 +91,7 @@ void CSMAgent::LoadMemoryFromStorage(Storage *storage)
         fflush(stdout);
 
         /* load memory information */
-        uint64_t saved_state_num = 0, saved_lk_num = 0;
+        unsigned long saved_state_num = 0, saved_lk_num = 0;
         struct Memory_Info *memif = storage->GetMemoryInfo();
         if (memif != NULL)
         {
@@ -177,7 +177,7 @@ void CSMAgent::DumpMemoryToStorage(Storage *storage) const
         {
             if (storage->HasState(mst->st))
             {
-                dbgmoreprt("SaveMemory()", "Update state: %ld, Payoff: %.3f\n", mst->st, mst->payoff);
+                dbgmoreprt("SaveMemory()", "Update state: %" ST_FMT ", Payoff: %.3f\n", mst->st, mst->payoff);
                 stif = GetStateInfo(mst->st);
                 assert(stif != NULL);
                 storage->UpdateStateInfo(stif);
@@ -185,7 +185,7 @@ void CSMAgent::DumpMemoryToStorage(Storage *storage) const
             }
             else    // new state
             {
-                dbgmoreprt("SaveMemory()", "Add state: %ld, Payoff: %.3f\n", mst->st, mst->payoff);
+                dbgmoreprt("SaveMemory()", "Add state: %" ST_FMT ", Payoff: %.3f\n", mst->st, mst->payoff);
                 stif = GetStateInfo(mst->st);
                 assert(stif != NULL);
                 storage->AddStateInfo(stif);
@@ -529,7 +529,7 @@ void CSMAgent::FreeAct(struct cs_Action *ac)
 void CSMAgent::LinkStates(struct cs_State *mst, EnvAction eat,
         Agent::Action act, struct cs_State *nmst)
 {
-    dbgmoreprt("Enter LinkStates()", "------------------- Make Link: %ld == %ld + %ld => %ld\n", mst->st, eat, act, nmst->st);
+    dbgmoreprt("Enter LinkStates()", "------------------- Make Link: %" ST_FMT " == %" ACT_FMT " + %" ACT_FMT " => %" ST_FMT "\n", mst->st, eat, act, nmst->st);
 
     // mst->st + eat + act == nmst->st!
     assert(mst->st + eat + act == nmst->st);
@@ -587,7 +587,7 @@ float CSMAgent::Prob(const struct cs_EnvAction *ea,
     }
 
     // state count donesn't equal to sum of eacount due to the set operation (actually state count will become smaller than sum eacount gradually)
-    dbgmoreprt("Prob", "------- action: %ld\n", mac->act);dbgmoreprt("Prob", "sum: %ld\n", sum_eacount);
+    dbgmoreprt("Prob", "------- action: %" ACT_FMT "\n", mac->act);dbgmoreprt("Prob", "sum: %ld\n", sum_eacount);
 
     float re = (1.0 / sum_eacount) * eacount;    // number of env actions divided by the total number
     /* do some checks below */
@@ -595,7 +595,7 @@ float CSMAgent::Prob(const struct cs_EnvAction *ea,
     if (re < 0 || re > 1)    // check failed
     {
         ERROR(
-                "Prob(): probability is %.2f, which must in range [0, 1]. action: %ld, eact is %ld, count is %ld, total eacount is %ld.\n",
+                "Prob(): probability is %.2f, which must in range [0, 1]. action: %" ACT_FMT ", eact is %" ACT_FMT ", count is %ld, total eacount is %ld.\n",
                 re, mac->act, ea->eat, eacount, sum_eacount);
     }
 
@@ -612,7 +612,7 @@ float CSMAgent::Prob(const struct cs_EnvAction *ea,
  */
 float CSMAgent::CalStatePayoff(const struct cs_State *mst) const
 {
-    dbgmoreprt("\nCalStatePayoff()", "----------------- state: %ld, count: %ld\n", mst->st, mst->count);
+    dbgmoreprt("\nCalStatePayoff()", "----------------- state: %" ST_FMT ", count: %ld\n", mst->st, mst->count);
 
     float u0 = mst->original_payoff;
 
@@ -659,7 +659,7 @@ void CSMAgent::UpdateStatePayoff(cs_State *mst)
         if (fabsf(cmst->payoff - payoff) >= threshold)    // states are updated only when diff exceeds threshold
         {
             cmst->payoff = payoff;
-            dbgmoreprt("UpdateState()", "State: %ld change to payoff: %.3f\n", cmst->st, payoff);
+            dbgmoreprt("UpdateState()", "State: %" ST_FMT " change to payoff: %.3f\n", cmst->st, payoff);
 
             // push previous states to queue
             struct cs_BackwardLink *bas, *nbas;
@@ -675,7 +675,7 @@ void CSMAgent::UpdateStatePayoff(cs_State *mst)
         }
         else
         {
-            dbgmoreprt("UpdateState()", "State: %ld, payoff no changes, it's smaller than threshold\n", cmst->st);
+            dbgmoreprt("UpdateState()", "State: %" ST_FMT ", payoff no changes, it's smaller than threshold\n", cmst->st);
         }
 
         visited_states.insert(cmst);    // save visited state
@@ -798,7 +798,7 @@ void CSMAgent::UpdateMemory(float oripayoff)
     }
     else    // current state struct already exists, update the count and link it to the previous state (LinkStates will handle it if the link already exists.)
     {
-        dbgmoreprt("", "current state is %ld, increase count and build the link\n", cur_mst->st);
+        dbgmoreprt("", "current state is %" ST_FMT ", increase count and build the link\n", cur_mst->st);
         // update current state
         cur_mst->count++;    // inc state count
         cur_mst->original_payoff = oripayoff;    // reset original payoff
@@ -904,7 +904,7 @@ void CSMAgent::_DeleteState(struct cs_State *mst)
  */
 OSpace CSMAgent::MaxPayoffRule(Agent::State st, OSpace &acts) const
 {
-    dbgmoreprt("Enter MaxPayoffRule() ", "---------------------- State: %ld\n", st);
+    dbgmoreprt("Enter MaxPayoffRule() ", "---------------------- State: %" ST_FMT "\n", st);
     cur_mst = SearchState(st);    // get the state struct from state value
     OSpace re;
 
@@ -939,7 +939,7 @@ struct State_Info_Header *CSMAgent::GetStateInfo(Agent::State st) const
 
     if (mst == NULL)    // not found
     {
-        dbgmoreprt("GetStateInfo()", "state: %ld not found in memory!\n", st);
+        dbgmoreprt("GetStateInfo()", "state: %" ST_FMT " not found in memory!\n", st);
         return NULL;
     }
 
@@ -1031,12 +1031,12 @@ void CSMAgent::BuildStateFromHeader(const State_Info_Header *sthd,
             struct cs_State *nmst = SearchState(eaif->nst);    // find if the next state exists
             if (nmst != NULL)    // if so, inc count and make the link
             {
-                dbgmoreprt("next state", "%ld exists, build the link\n", eaif->nst);
+                dbgmoreprt("next state", "%" ST_FMT " exists, build the link\n", eaif->nst);
             }
             else    // for a non-existing Next state, we will create it, and build the link
             {
                 // create a new previous state
-                dbgmoreprt("next state", "%ld not exists, create it and build the link\n", eaif->nst);
+                dbgmoreprt("next state", "%" ST_FMT " not exists, create it and build the link\n", eaif->nst);
                 nmst = NewState(eaif->nst);
             }
             // build the link
@@ -1065,13 +1065,13 @@ void CSMAgent::AddStateInfo(const State_Info_Header *sthd)
     if (mst != NULL)    // state already exists, use UpdateStateInfo() instead!
     {
         WARNNING(
-                "AddStateInfo(): state %ld already exists in memory, if you want to change it, using UpdateStateInfo()!\n",
+                "AddStateInfo(): state %" ST_FMT " already exists in memory, if you want to change it, using UpdateStateInfo()!\n",
                 sthd->st);
         return;
     }
 
     dbgmoreprt("AddStateInfo()",
-            "state: %ld, create it in memory.\n", sthd->st);
+            "state: %" ST_FMT ", create it in memory.\n", sthd->st);
 
     mst = NewState(sthd->st);
 
@@ -1091,12 +1091,12 @@ void CSMAgent::UpdateStateInfo(const State_Info_Header *sthd)
     if (mst == NULL)    // state doesn't exists, use AddStateInfo() instead!
     {
         WARNNING(
-                "UpdateStateInfo(): state %ld doesn't exist in memory, if you want to add it, using AddStateInfo()!\n",
+                "UpdateStateInfo(): state %" ST_FMT " doesn't exist in memory, if you want to add it, using AddStateInfo()!\n",
                 sthd->st);
         return;
     }
 
-    dbgmoreprt("UpdateStateInfo()", "update information of state %ld.\n", sthd->st);
+    dbgmoreprt("UpdateStateInfo()", "update information of state %" ST_FMT ".\n", sthd->st);
 
     // clear state first
     struct cs_Action *mac, *nmac;

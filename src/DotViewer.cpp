@@ -84,7 +84,7 @@ void DotViewer::Show()
             st = storage->NextState();
         }
         else
-            ERROR("Show(): state: %ld information is NULL!\n", st);
+            ERROR("Show(): state: %" ST_FMT " information is NULL!\n", st);
     }
     printf("}\n");    // digraph
     storage->Close();
@@ -124,9 +124,9 @@ void DotViewer::DotStateInfo(const struct State_Info_Header *sthd) const
 
     Agent::Action acts[sthd->act_num];
 
-    printf("\nsubgraph state%ld\n{\n", sthd->st);
+    printf("\nsubgraph state%" ST_FMT "\n{\n", sthd->st);
     printf("rank=\"same\"\n");
-    printf("st%ld [label=\"%ld\\n(%.2f)\", color=\"%s\"]\n", sthd->st, sthd->st,
+    printf("st%" ST_FMT " [label=\"%" ST_FMT "\\n(%.2f)\", color=\"%s\"]\n", sthd->st, sthd->st,
             sthd->payoff, st_color.c_str());
     // action nodes and action ---> action
     printf("subgraph \n{\n");
@@ -139,12 +139,12 @@ void DotViewer::DotStateInfo(const struct State_Info_Header *sthd) const
     int i = 0;
     while (achd != NULL)
     {
-        printf("act%sin%ld [label=\"\", height=0.3]\n",
+        printf("act%sin%" ST_FMT " [label=\"\", height=0.3]\n",
                 Act2String(achd->act).c_str(), sthd->st);
         if (pre_achd != NULL)
-            printf("act%sin%ld -> act%sin%ld [style=dashed, dir=none]\n",
-                    Act2String(pre_achd->act).c_str(), sthd->st,
-                    Act2String(achd->act).c_str(), sthd->st);
+        printf("act%sin%" ST_FMT " -> act%sin%" ST_FMT " [style=dashed, dir=none]\n",
+                Act2String(pre_achd->act).c_str(), sthd->st,
+                Act2String(achd->act).c_str(), sthd->st);
 
         acts[i++] = achd->act;    // save for using later
         pre_achd = achd;
@@ -156,174 +156,174 @@ void DotViewer::DotStateInfo(const struct State_Info_Header *sthd) const
     // state ---> actions
     for (unsigned long i = 0; i < sthd->act_num; i++)
     {
-        if (sthd->st == last_state && acts[i] == last_action)    // highlight last action edge
-            printf(
-                    "st%ld -> act%sin%ld [label=<<font color=\"#D3D300\">%ld</font>>, color=\"#D3D300\", weight=2.]\n",
-                    sthd->st, Act2String(acts[i]).c_str(), sthd->st, acts[i]);
-        else
-            printf(
-                    "st%ld -> act%sin%ld [label=<<font color=\"blue\">%ld</font>>, color=\"blue\", weight=2.]\n",
-                    sthd->st, Act2String(acts[i]).c_str(), sthd->st, acts[i]);
+    if (sthd->st == last_state && acts[i] == last_action)    // highlight last action edge
+    printf(
+            "st%" ST_FMT " -> act%sin%" ST_FMT " [label=<<font color=\"#D3D300\">%" ACT_FMT "</font>>, color=\"#D3D300\", weight=2.]\n",
+            sthd->st, Act2String(acts[i]).c_str(), sthd->st, acts[i]);
+    else
+    printf(
+            "st%" ST_FMT " -> act%sin%" ST_FMT " [label=<<font color=\"blue\">%" ACT_FMT "</font>>, color=\"blue\", weight=2.]\n",
+            sthd->st, Act2String(acts[i]).c_str(), sthd->st, acts[i]);
 
-    }
-    printf("}\n");    // end of subgraph state
+}
+printf("}\n");    // end of subgraph state
 
-    EnvAction_Info *eaif = NULL;
-    achd = sparser.FirstAct();    // restart from beginning
-    while (achd != NULL)
+EnvAction_Info *eaif = NULL;
+achd = sparser.FirstAct();    // restart from beginning
+while (achd != NULL)
+{
+    eaif = sparser.FirstEat();
+    while (eaif != NULL)
     {
-        eaif = sparser.FirstEat();
-        while (eaif != NULL)
-        {
-            printf(
-                    "act%sin%ld -> st%ld [label=<<font color=\"red\">%ld (%ld)</font>>, color=\"red\", weight=1.]\n",
-                    Act2String(achd->act).c_str(), sthd->st, eaif->nst,
-                    achd->act, eaif->count);
+        printf(
+                "act%sin%" ST_FMT " -> st%" ST_FMT " [label=<<font color=\"red\">%" ACT_FMT " (%ld)</font>>, color=\"red\", weight=1.]\n",
+                Act2String(achd->act).c_str(), sthd->st, eaif->nst,
+                eaif->eat, eaif->count);
 
-            eaif = sparser.NextEat();
-        }
-
-        achd = sparser.NextAct();
+        eaif = sparser.NextEat();
     }
+
+    achd = sparser.NextAct();
+}
 }
 
-const std::string DotViewer::Act2String(Agent::EnvAction eat) const
+const std::string DotViewer::Act2String(Agent::Action act) const
 {
-    char tmp[28];
-    if (eat >= 0)
-    {
-        sprintf(tmp, "%ld", eat);
-        std::string str(tmp);
-        return str;
-    }
-    else    // eat < 0, since dot doesn't support minus sign, so we convert '-' to '_'
-    {
-        sprintf(tmp, "_%ld", -eat);
-        std::string str(tmp);
-        return str;
-    }
+char tmp[28];
+if (act >= 0)
+{
+    sprintf(tmp, "%" ACT_FMT, act);
+    std::string str(tmp);
+    return str;
+}
+else    // eat < 0, since dot doesn't support minus sign, so we convert '-' to '_'
+{
+    sprintf(tmp, "_%" ACT_FMT, -act);
+    std::string str(tmp);
+    return str;
+}
 }
 
 void DotViewer::ShowState(Agent::State st)
 {
-    int re = storage->Connect();
-    if (re != 0)    // connect failed
-    {
-        WARNNING("DotViewer ShowState(): connect to storage failed!\n");
-        return;
-    }
+int re = storage->Connect();
+if (re != 0)    // connect failed
+{
+    WARNNING("DotViewer ShowState(): connect to storage failed!\n");
+    return;
+}
 
-    printf(
-            "/* This is the dot file of agent memory automaticlly generated by DotViewer */\n\n");
+printf(
+        "/* This is the dot file of agent memory automaticlly generated by DotViewer */\n\n");
 
-    // generated dot file example:
-    /*
-     * digraph Mouse_1 {
-     * node [color=black,shape=circle]
-     * rank="same"
-     * st1 [label="1\n(3.00)"]
-     *
-     * subgraph {
-     * rank="same"
-     * eat1in1 [shape="point", label="", height=0.3]
-     * eat0in1 [shape="point", label="", height=0.3]
-     * eat1in1 -> eat0in1 [style=dashed, dir=none]
-     * }
-     * st1 -> eat1in1 [label=<<font color="blue">e: 1 (1)</font>>, color="blue", weight=3.]
-     * st1 -> eat0in1 [label=<<font color="blue">e: 0 (4)</font>>, color="blue", weight=3.]
-     *
-     * eat1in1 -> st1 [label=<<font color="red">a: -1 (0.60)</font>>, color="red", weight=1.]
-     * eat0in1 -> st2 [label=<<font color="red">a: 1 (2.74)</font>>, color="red", weight=1.]
-     * st2 [label="2\n(1.00)"]
-     * }
-     */
+// generated dot file example:
+/*
+ * digraph Mouse_1 {
+ * node [color=black,shape=circle]
+ * rank="same"
+ * st1 [label="1\n(3.00)"]
+ *
+ * subgraph {
+ * rank="same"
+ * eat1in1 [shape="point", label="", height=0.3]
+ * eat0in1 [shape="point", label="", height=0.3]
+ * eat1in1 -> eat0in1 [style=dashed, dir=none]
+ * }
+ * st1 -> eat1in1 [label=<<font color="blue">e: 1 (1)</font>>, color="blue", weight=3.]
+ * st1 -> eat0in1 [label=<<font color="blue">e: 0 (4)</font>>, color="blue", weight=3.]
+ *
+ * eat1in1 -> st1 [label=<<font color="red">a: -1 (0.60)</font>>, color="red", weight=1.]
+ * eat0in1 -> st2 [label=<<font color="red">a: 1 (2.74)</font>>, color="red", weight=1.]
+ * st2 [label="2\n(1.00)"]
+ * }
+ */
 
-    printf("digraph %s_%ld \n{\n", storage->GetMemoryName().c_str(), st);
-    // state info
-    printf("node [color=black,shape=circle]\n");
+printf("digraph %s_%" ST_FMT " \n{\n", storage->GetMemoryName().c_str(), st);
+// state info
+printf("node [color=black,shape=circle]\n");
+printf("rank=\"same\"\n");
+printf("label=\"infoset of state %" ST_FMT " in memory %s\"\n", st,
+        storage->GetMemoryName().c_str());
+
+struct State_Info_Header *sthd = storage->GetStateInfo(st);
+if (sthd != NULL)
+{
+    Agent::Action acts[sthd->act_num];
+
     printf("rank=\"same\"\n");
-    printf("label=\"infoset of state %ld in memory %s\"\n", st,
-            storage->GetMemoryName().c_str());
+    printf("st%" ST_FMT " [label=\"%" ST_FMT "\\n(%.2f)\"]\n", sthd->st, sthd->st,
+            sthd->payoff);
+    // action nodes and action ---> action
+    printf("subgraph \n{\n");
+    printf("rank=\"same\"\n");    // env nodes should be drawing under state node
+    printf("node [shape=\"point\"]\n");
 
-    struct State_Info_Header *sthd = storage->GetStateInfo(st);
-    if (sthd != NULL)
+    StateInfoParser sparser(sthd);
+    Action_Info_Header *achd, *pre_achd = NULL;
+    achd = sparser.FirstAct();
+    int i = 0;
+    while (achd != NULL)
     {
-        Agent::Action acts[sthd->act_num];
+        printf("act%sin%" ST_FMT " [label=\"\", height=0.3]\n",
+                Act2String(achd->act).c_str(), sthd->st);
+        if (pre_achd != NULL)
+        printf("act%sin%" ST_FMT " -> act%sin%" ST_FMT " [style=dashed, dir=none]\n",
+                Act2String(pre_achd->act).c_str(), sthd->st,
+                Act2String(achd->act).c_str(), sthd->st);
 
-        printf("rank=\"same\"\n");
-        printf("st%ld [label=\"%ld\\n(%.2f)\"]\n", sthd->st, sthd->st,
-                sthd->payoff);
-        // action nodes and action ---> action
-        printf("subgraph \n{\n");
-        printf("rank=\"same\"\n");    // env nodes should be drawing under state node
-        printf("node [shape=\"point\"]\n");
-
-        StateInfoParser sparser(sthd);
-        Action_Info_Header *achd, *pre_achd = NULL;
-        achd = sparser.FirstAct();
-        int i = 0;
-        while (achd != NULL)
-        {
-            printf("act%sin%ld [label=\"\", height=0.3]\n",
-                    Act2String(achd->act).c_str(), sthd->st);
-            if (pre_achd != NULL)
-                printf("act%sin%ld -> act%sin%ld [style=dashed, dir=none]\n",
-                        Act2String(pre_achd->act).c_str(), sthd->st,
-                        Act2String(achd->act).c_str(), sthd->st);
-
-            acts[i++] = achd->act;    // save for using later
-            pre_achd = achd;
-            achd = sparser.NextAct();
-        }
-        printf("}\n");    // subgraph
-
-        // state ---> actions
-        for (unsigned long i = 0; i < sthd->act_num; i++)
-        {
-            printf(
-                    "st%ld -> act%sin%ld [label=<<font color=\"blue\">%ld</font>>, color=\"blue\", weight=2.]\n",
-                    sthd->st, Act2String(acts[i]).c_str(), sthd->st, acts[i]);
-        }
-
-        // actions ---> next states
-        EnvAction_Info *eaif = NULL;
-        achd = sparser.FirstAct();    // restart from beginning
-        while (achd != NULL)
-        {
-            eaif = sparser.FirstEat();
-            while (eaif != NULL)
-            {
-                printf(
-                        "act%sin%ld -> st%ld [label=<<font color=\"red\">%ld (%ld)</font>>, color=\"red\", weight=1.]\n",
-                        Act2String(achd->act).c_str(), sthd->st, eaif->nst,
-                        achd->act, eaif->count);
-                // get the payoff of the next state, exclude self
-                if (eaif->nst != sthd->st)
-                {
-                    State_Info_Header *nstif = storage->GetStateInfo(eaif->nst);
-                    if (nstif == NULL)    // shouldn't happen
-                        ERROR("next state: %ld returns NULL!\n", eaif->nst);
-
-                    printf("st%ld [label=\"%ld\\n(%.2f)\"]\n", eaif->nst,
-                            eaif->nst, nstif->payoff);    // print out next state
-                    free(nstif);
-                }
-
-                eaif = sparser.NextEat();
-            }
-
-            achd = sparser.NextAct();
-        }
-
-        free(sthd);
+        acts[i++] = achd->act;    // save for using later
+        pre_achd = achd;
+        achd = sparser.NextAct();
     }
-    else    // state not found
+    printf("}\n");    // subgraph
+
+    // state ---> actions
+    for (unsigned long i = 0; i < sthd->act_num; i++)
     {
-        printf("state %ld not found in memory!\n", st);
+    printf(
+            "st%" ST_FMT " -> act%sin%" ST_FMT " [label=<<font color=\"blue\">%" ACT_FMT "</font>>, color=\"blue\", weight=2.]\n",
+            sthd->st, Act2String(acts[i]).c_str(), sthd->st, acts[i]);
+}
+
+// actions ---> next states
+EnvAction_Info *eaif = NULL;
+achd = sparser.FirstAct();    // restart from beginning
+while (achd != NULL)
+{
+    eaif = sparser.FirstEat();
+    while (eaif != NULL)
+    {
+        printf(
+                "act%sin%" ST_FMT " -> st%" ST_FMT " [label=<<font color=\"red\">%" ACT_FMT " (%ld)</font>>, color=\"red\", weight=1.]\n",
+                Act2String(achd->act).c_str(), sthd->st, eaif->nst,
+                eaif->eat, eaif->count);
+        // get the payoff of the next state, exclude self
+        if (eaif->nst != sthd->st)
+        {
+            State_Info_Header *nstif = storage->GetStateInfo(eaif->nst);
+            if (nstif == NULL)    // shouldn't happen
+                ERROR("next state: %" ST_FMT " returns NULL!\n", eaif->nst);
+
+            printf("st%" ST_FMT " [label=\"%" ST_FMT "\\n(%.2f)\"]\n", eaif->nst,
+                    eaif->nst, nstif->payoff);    // print out next state
+            free(nstif);
+        }
+
+        eaif = sparser.NextEat();
     }
 
-    printf("}\n");    // digraph
-    storage->Close();
+    achd = sparser.NextAct();
+}
+
+free(sthd);
+}
+else    // state not found
+{
+printf("state %" ST_FMT " not found in memory!\n", st);
+}
+
+printf("}\n");    // digraph
+storage->Close();
 }
 
 }    // namespace gimcs

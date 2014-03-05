@@ -78,7 +78,7 @@ void CDotViewer::Show()
             st = storage->NextState();
         }
         else
-            ERROR("Show(): state: %ld information is NULL!\n", st);
+            ERROR("Show(): state: %" ST_FMT " information is NULL!\n", st);
     }
     printf("}\n");    // digraph
     storage->Close();
@@ -95,7 +95,7 @@ void CDotViewer::CleanDotStateInfo(const struct State_Info_Header *sthd) const
      */
     if (sthd == NULL) return;
 
-    printf("\nst%ld [label=\"%ld\"]\n", sthd->st, sthd->st);
+    printf("\nst%" ST_FMT " [label=\"%" ST_FMT "\"]\n", sthd->st, sthd->st);
 
     StateInfoParser sparser(sthd);
     Action_Info_Header *athd = NULL;
@@ -107,7 +107,7 @@ void CDotViewer::CleanDotStateInfo(const struct State_Info_Header *sthd) const
         eaif = sparser.FirstEat();
         while (eaif != NULL)
         {
-            printf("st%ld -> st%ld [label=\"<%ld, %ld>\"]\n", sthd->st,
+            printf("st%" ST_FMT " -> st%" ST_FMT " [label=\"<%" ACT_FMT ", %" ACT_FMT ">\"]\n", sthd->st,
                     eaif->nst, athd->act, eaif->eat);
 
             eaif = sparser.NextEat();

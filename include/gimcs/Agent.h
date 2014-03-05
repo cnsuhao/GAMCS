@@ -22,8 +22,11 @@
 namespace gimcs
 {
 
-const uint64_t INVALID_STATE = INVALID_INPUT;
-const int64_t INVALID_ACTION = INVALID_OUTPUT;
+#define ST_FMT IN_FMT
+#define ACT_FMT OUT_FMT
+
+const gimcs_uint INVALID_STATE = INVALID_INPUT;
+const gimcs_int INVALID_ACTION = INVALID_OUTPUT;
 
 /**
  * Intelligent Agent
@@ -33,7 +36,7 @@ class Agent: public TSGIOM
     public:
         typedef GIOM::Input State; /**< for agent we call an input as a state */
         typedef GIOM::Output Action; /**< action as output */
-        typedef int64_t EnvAction; /**< environment action */
+        typedef gimcs_int EnvAction; /**< environment action */
 
         Agent();
         Agent(int);
@@ -119,8 +122,8 @@ struct Memory_Info
 {
         float discount_rate; /**< discount rate */
         float threshold; /**< threshold */
-        uint64_t state_num; /**< total number of states in memroy */
-        uint64_t lk_num; /**< total number of links between states in memory */
+        unsigned long state_num; /**< total number of states in memroy */
+        unsigned long lk_num; /**< total number of links between states in memory */
         Agent::State last_st; /**< last experienced state when saving memory */
         Agent::Action last_act; /**< last performed Agent::Action when saving memory */
 };

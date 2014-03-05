@@ -40,7 +40,7 @@ class DotViewer: public MemoryViewer
         void ShowState(Agent::State);
     private:
         void DotStateInfo(const struct State_Info_Header *) const;
-        const std::string Act2String(Agent::EnvAction) const;
+        const std::string Act2String(Agent::Action) const;
 
         Agent::State last_state;
         Agent::Action last_action;

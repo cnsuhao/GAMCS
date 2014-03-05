@@ -50,8 +50,8 @@ void PrintViewer::Show()
         printf("threshold: \t%.2f\n", memif->threshold);
         printf("number of states: \t%ld\n", memif->state_num);
         printf("number of links: \t%ld\n", memif->lk_num);
-        printf("last state: \t%ld\n", memif->last_st);
-        printf("last action: \t%ld\n", memif->last_act);
+        printf("last state: \t%" ST_FMT "\n", memif->last_st);
+        printf("last action: \t%" ACT_FMT "\n", memif->last_act);
         free(memif);    // free it, the memory struct are not a substaintial struct for running, it's just used to store meta-memory information
         printf(
                 "===========================================================\n\n");
@@ -75,7 +75,7 @@ void PrintViewer::Show()
             st = storage->NextState();
         }
         else
-            ERROR("Show(): state: %ld information is NULL!\n", st);
+            ERROR("Show(): state: %" ST_FMT " information is NULL!\n", st);
     }
     storage->Close();
 }
@@ -88,7 +88,7 @@ void PrintViewer::PrintStateInfo(const struct State_Info_Header *sthd) const
 {
     if (sthd == NULL) return;
 
-    printf("++++++++++++++++++++++++ State: %ld ++++++++++++++++++++++++++\n",
+    printf("++++++++++++++++++++++++ State: %" ST_FMT " ++++++++++++++++++++++++++\n",
             sthd->st);
     printf("Original payoff: %.2f,\t Payoff: %.2f,\t Count: %ld, ActNum: %ld\n",
             sthd->original_payoff, sthd->payoff, sthd->count, sthd->act_num);
@@ -105,7 +105,7 @@ void PrintViewer::PrintStateInfo(const struct State_Info_Header *sthd) const
         eaif = sparser.FirstEat();
         while (eaif != NULL)
         {
-            printf("\t  .|+++ %ld +++ %ld ++> %ld \t Count: %ld\n", athd->act,
+            printf("\t  .|+++ %" ACT_FMT " +++ %" ACT_FMT " ++> %" ST_FMT " \t Count: %ld\n", athd->act,
                     eaif->eat, eaif->nst, eaif->count);
 
             eaif = sparser.NextEat();
@@ -135,7 +135,7 @@ void PrintViewer::ShowState(Agent::State st)
     }
     else
     {
-        printf("state %ld not found in memory!\n", st);
+        printf("state %" ST_FMT " not found in memory!\n", st);
     }
     storage->Close();
 }

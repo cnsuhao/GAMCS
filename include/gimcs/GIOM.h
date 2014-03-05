@@ -16,15 +16,48 @@
 
 #ifndef GIOM_H
 #define GIOM_H
-#include <cstdint>
 #include <stddef.h>     // NULL
+#define __STDC_LIMIT_MACROS     // UINT64_MAX
+#include <stdint.h>
+#define __STDC_FORMAT_MACROS    // PRIu64
+#include <inttypes.h>
+#include "gimcs/config.h"
 #include "gimcs/Debug.h"
+
+#if INT_BITS == 16
+typedef uint16_t gimcs_uint;
+typedef int16_t gimcs_int;
+#define UINT_FMT PRIu16
+#define INT_FMT PRId16
+#define GIMCS_UINT_MAX UINT16_MAX
+#define GIMCS_INT_MAX INT16_MAX
+
+#elif INT_BITS == 32
+typedef uint32_t gimcs_uint;
+typedef int32_t gimcs_int;
+#define UINT_FMT PRIu32
+#define INT_FMT PRId32
+#define GIMCS_UINT_MAX UINT32_MAX
+#define GIMCS_INT_MAX INT32_MAX
+
+#else
+typedef uint64_t gimcs_uint;
+typedef int64_t gimcs_int;
+#define UINT_FMT PRIu64
+#define INT_FMT PRId64
+#define GIMCS_UINT_MAX UINT64_MAX
+#define GIMCS_INT_MAX INT64_MAX
+
+#endif
 
 namespace gimcs
 {
 
-const uint64_t INVALID_INPUT = UINT64_MAX; /**< the maximun value is used to indicate invalid input */
-const int64_t INVALID_OUTPUT = INT64_MAX; /**< the maximun value is used to indicate an invalid output, be careful! */
+#define IN_FMT UINT_FMT
+#define OUT_FMT INT_FMT
+
+const gimcs_uint INVALID_INPUT = GIMCS_UINT_MAX; /**< the maximun value is used to indicate invalid input */
+const gimcs_int INVALID_OUTPUT = GIMCS_INT_MAX; /**< the maximun value is used to indicate an invalid output, be careful! */
 
 class OSpace;
 
@@ -34,8 +67,8 @@ class OSpace;
 class GIOM
 {
     public:
-        typedef uint64_t Input; /**< input value, valid inputs are 0 ~ 2^63-1 (yes, it's 63bit, not 64!) */
-        typedef int64_t Output; /**< output value, output is the difference of two inputs, so it can be negetive, range: - max(Input) ~ +max(Input)*/
+        typedef gimcs_uint Input; /**< input value, valid inputs are 0 ~ 2^63-1 (yes, it's 63bit, not 64!) */
+        typedef gimcs_int Output; /**< output value, output is the difference of two inputs, so it can be negetive, range: - max(Input) ~ +max(Input)*/
 
         /** Default constructor */
         GIOM();
@@ -52,7 +85,7 @@ class GIOM
         unsigned long process_count; /**< count of processing */
 
     private:
-        uint64_t Random() const; /**< generate a random number in range 0 to LONG_MAX. It's where all possibilities and miracles come from! */
+        gimcs_uint Random() const; /**< generate a random number in range 0 to LONG_MAX. It's where all possibilities and miracles come from! */
 };
 
 /**
@@ -77,7 +110,7 @@ class OSpace
             SPARE_CAPACITY = 16
         };
 
-        typedef uint64_t olsize_t;    // actions have the maximun number of 2^64
+        typedef gimcs_uint olsize_t;    // actions have the maximun number of 2^64
 
         explicit OSpace(olsize_t initfn = 0) :
                 frag_num(initfn), the_capacity(initfn + SPARE_CAPACITY), current_index(
@@ -225,7 +258,7 @@ class OSpace
         {
             // check range
             if ((end - start) / step < 0)
-                ERROR("Invalid range! %ld --> %ld (step: %ld) \n", start, end,
+                ERROR("Invalid range! %" OUT_FMT " --> %" OUT_FMT " (step: %" OUT_FMT ") \n", start, end,
                         step);
 
             if (frag_num == the_capacity) Expand(2 * the_capacity);
