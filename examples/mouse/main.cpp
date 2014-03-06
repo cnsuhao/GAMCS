@@ -21,15 +21,15 @@ int main(void)
     CSMAgent ma(1, 0.9, 0.01);
 #ifdef _WITH_MYSQL_
     Mysql mysql;
-    mysql.SetDBArgs("localhost", "root", "huangk", "Mouse");
-    ma.LoadMemoryFromStorage(&mysql);
+    mysql.setDBArgs("localhost", "root", "huangk", "Mouse");
+    ma.loadMemoryFromStorage(&mysql);
 #endif
 
     Mouse mouse("Mouse");
-    mouse.ConnectAgent(&ma);
-    mouse.Launch();
+    mouse.connectAgent(&ma);
+    mouse.launch();
 
 #ifdef _WITH_MYSQL_
-    ma.DumpMemoryToStorage(&mysql);
+    ma.dumpMemoryToStorage(&mysql);
 #endif
 }

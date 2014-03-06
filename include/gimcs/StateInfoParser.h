@@ -31,12 +31,12 @@ class StateInfoParser
         StateInfoParser(const State_Info_Header *);
         virtual ~StateInfoParser();
 
-        Action_Info_Header *Move2Act(Agent::Action);
-        Action_Info_Header *FirstAct();
-        Action_Info_Header *NextAct();
-        EnvAction_Info *Move2Eat(Agent::EnvAction);
-        EnvAction_Info *FirstEat();
-        EnvAction_Info *NextEat();
+        Action_Info_Header *move2Act(Agent::Action);
+        Action_Info_Header *firstAct();
+        Action_Info_Header *nextAct();
+        EnvAction_Info *move2Eat(Agent::EnvAction);
+        EnvAction_Info *firstEat();
+        EnvAction_Info *nextEat();
 
     private:
         const State_Info_Header *my_sthd;

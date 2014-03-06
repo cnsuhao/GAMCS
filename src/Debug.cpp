@@ -20,7 +20,7 @@ namespace gimcs
  * \brief Pretty print State information
  * \param specified State information header
  */
-void PrintStateInfo(const struct State_Info_Header *sthd)
+void printStateInfo(const struct State_Info_Header *sthd)
 {
     if (sthd == NULL) return;
 

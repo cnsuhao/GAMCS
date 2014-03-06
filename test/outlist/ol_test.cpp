@@ -13,25 +13,25 @@ using namespace gimcs;
 int main(void)
 {
     OSpace ol;
-    ol.Add(1);
-    ol.Add(2);
-    ol.Add(3);
-    ol.Add(10, 14, 2);
-    ol.Add(20, 10, -1);
+    ol.add(1);
+    ol.add(2);
+    ol.add(3);
+    ol.add(10, 14, 2);
+    ol.add(20, 10, -1);
 
     printf("Outputs: ");
-    GIOM::Output out = ol.First();
+    GIOM::Output out = ol.first();
     while (out != GIOM::INVALID_OUTPUT)
     {
         printf("%" OUT_FMT ", ", out);
-        out = ol.Next();
+        out = ol.next();
     }
     printf("\n");
 
-    printf("size: %" GIMCS_UINT_FMT "\n", ol.Size());
+    printf("size: %" GIMCS_UINT_FMT "\n", ol.size());
     int i = 7;
     printf("index %d is %" OUT_FMT "\n", i, ol[i]);
-    printf("capacity is %" GIMCS_UINT_FMT "\n", ol.Capacity());
+    printf("capacity is %" GIMCS_UINT_FMT "\n", ol.capacity());
 
     gimcs_uint j = 9999;
     printf("gimcs_uint size: %d\n", sizeof(j));

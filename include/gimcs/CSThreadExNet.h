@@ -59,27 +59,27 @@ class CSThreadExNet: public ExNet
         CSThreadExNet(int);
         virtual ~CSThreadExNet();
 
-        void LoadTopoFromFile(char *); /**< load topological structure of network from a file */
-        void DumpTopoToFile(char *) const; /**< dump topological structure of network to file */
+        void loadTopoFromFile(char *); /**< load topological structure of network from a file */
+        void dumpTopoToFile(char *) const; /**< dump topological structure of network to file */
 
     private:
-        void AddMember(int);
-        void AddNeighbour(int, int);
-        void RemoveMember(int);
-        void RemoveNeighbour(int, int);
+        void addMember(int);
+        void addNeighbour(int, int);
+        void removeMember(int);
+        void removeNeighbour(int, int);
 
-        std::set<int> GetNeighbours(int) const;
-        std::set<int> GetAllMembers() const;
-        bool CheckNeighbourShip(int, int) const;
+        std::set<int> getNeighbours(int) const;
+        std::set<int> getAllMembers() const;
+        bool checkNeighbourShip(int, int) const;
 
-        int Send(int, int, void *, size_t); /**< the interface members can use to send messages to a neighbour */
-        int Recv(int, int, void *, size_t); /**< the interface members can use to recv message from a neighbour */
+        int send(int, int, void *, size_t); /**< the interface members can use to send messages to a neighbour */
+        int recv(int, int, void *, size_t); /**< the interface members can use to recv message from a neighbour */
 
-        struct Channel *GetChannel(int); /**< get channel of a specified member */
-        void Notify(int); /**< notify a member of new messages recieved */
+        struct Channel *getChannel(int); /**< get channel of a specified member */
+        void notify(int); /**< notify a member of new messages recieved */
 
-        int WrapInc(int); /**< increase message point, when reach MSG_POOL_SIZE wrap from 0 */
-        int WrapDec(int); /**< decrease message point, when reach 0 wrap from MSG_POOL_SIZE */
+        int wrapInc(int); /**< increase message point, when reach MSG_POOL_SIZE wrap from 0 */
+        int wrapDec(int); /**< decrease message point, when reach 0 wrap from MSG_POOL_SIZE */
 
         std::set<int> members; /**< save all members */
         struct Channel channels[MAX_MEMBER]; /**< channels for all members */
@@ -91,12 +91,12 @@ class CSThreadExNet: public ExNet
  * \param id member id
  * \return channel address
  */
-inline struct Channel *CSThreadExNet::GetChannel(int id)
+inline struct Channel *CSThreadExNet::getChannel(int id)
 {
     return &channels[id];
 }
 
-inline std::set<int> CSThreadExNet::GetAllMembers() const
+inline std::set<int> CSThreadExNet::getAllMembers() const
 {
     return members;
 }

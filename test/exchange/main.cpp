@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
         char db_name[16];
         Mysql *ml = new Mysql();
         sprintf(db_name, "Member_%d", i);
-        ml->SetDBArgs("localhost", "root", "huangk", db_name);
+        ml->setDBArgs("localhost", "root", "huangk", db_name);
 
         // agent
         CSMAgent *agent = new CSMAgent(i + 1, 0.8, 0.01);    // agent id start from 1
@@ -43,9 +43,9 @@ int main(int argc, char *argv[])
 
         // avatar
         Messager *messager = new Messager(i + 1);
-        messager->Ava_SetSps(-1);
-        messager->ConnectMAgent(agent);
-        messager->JoinExNet(&network);
+        messager->ava_setSps(-1);
+        messager->connectMAgent(agent);
+        messager->joinExNet(&network);
 
         mysql[i] = ml;
         messagers[i] = messager;
@@ -53,11 +53,11 @@ int main(int argc, char *argv[])
     }
 
     // load topo
-    network.LoadTopoFromFile(argv[2]);
+    network.loadTopoFromFile(argv[2]);
 
     /* launch messagers */
     for (int i = 0; i < member_num; i++)
-        tids[i] = messagers[i]->ThreadRun();    // launch
+        tids[i] = messagers[i]->threadRun();    // launch
 
     // wait
     for (int i = 0; i < member_num; i++)
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
         delete mysql[i];
     }
     // save topo structure
-    network.DumpTopoToFile("dump.exnet");
+    network.dumpTopoToFile("dump.exnet");
 
     printf("------- quit!\n");
 

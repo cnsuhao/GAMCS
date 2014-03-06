@@ -36,26 +36,26 @@ class ExManager: private Avatar
         ExManager(int);
         virtual ~ExManager();
 
-        void Run();
-        void Exchange();
+        void run();
+        void exchange();
 
-        void ConnectMAgent(MAgent *);
-        void SetCps(int);
-        void Ava_SetSps(int);
+        void connectMAgent(MAgent *);
+        void setCps(int);
+        void ava_setSps(int);
 
-        void JoinExNet(ExNet *);
-        void LeaveExNet();
-        void AddNeighbour(int);
-        void RemoveNeighbour(int);
-        std::set<int> GetMyNeighbours() const;
-        bool CheckNeighbourShip(int) const;
+        void joinExNet(ExNet *);
+        void leaveExNet();
+        void addNeighbour(int);
+        void removeNeighbour(int);
+        std::set<int> getMyNeighbours() const;
+        bool checkNeighbourShip(int) const;
 
     protected:
         int id;
-        virtual Agent::State Ava_GetCurrentState() = 0;
-        virtual void Ava_PerformAction(Agent::Action) = 0;
-        virtual OSpace Ava_ActionCandidates(Agent::State) = 0;
-        virtual float Ava_OriginalPayoff(Agent::State);
+        virtual Agent::State ava_getCurrentState() = 0;
+        virtual void ava_performAction(Agent::Action) = 0;
+        virtual OSpace ava_actionCandidates(Agent::State) = 0;
+        virtual float ava_originalPayoff(Agent::State);
 
     private:
         MAgent *magent;
@@ -63,26 +63,26 @@ class ExManager: private Avatar
         int cps; /**< count per sending */
         bool quit;
 
-        struct State_Info_Header *MergeStateInfo(
+        struct State_Info_Header *mergeStateInfo(
                 const struct State_Info_Header *,
                 const struct State_Info_Header *) const;
-        void RecvStateInfo();
-        void SendStateInfo(int, Agent::State) const;
+        void recvStateInfo();
+        void sendStateInfo(int, Agent::State) const;
 
-        Agent::State GetCurrentState();
-        void PerformAction(Agent::Action);
-        OSpace ActionCandidates(Agent::State);
-        float OriginalPayoff(Agent::State);
+        Agent::State getCurrentState();
+        void performAction(Agent::Action);
+        OSpace actionCandidates(Agent::State);
+        float originalPayoff(Agent::State);
 };
 
-inline void ExManager::SetCps(int c)
+inline void ExManager::setCps(int c)
 {
     cps = c;
 }
 
-inline void ExManager::Ava_SetSps(int s)
+inline void ExManager::ava_setSps(int s)
 {
-    SetSps(s);
+    setSps(s);
 }
 
 }    // namespace gimcs

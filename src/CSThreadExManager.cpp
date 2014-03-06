@@ -30,7 +30,7 @@ CSThreadExManager::~CSThreadExManager()
 {
 }
 
-pthread_t CSThreadExManager::ThreadRun()
+pthread_t CSThreadExManager::threadRun()
 {
     pthread_t tid;
     pthread_create(&tid, NULL, hook, this);

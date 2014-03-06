@@ -30,13 +30,13 @@ class Msger: public ExManager
         Agent::State position;
         int count;
 
-        Agent::State Ava_GetCurrentState()
+        Agent::State ava_getCurrentState()
         {
             printf("Messager %d, State: %" ST_FMT "\n", id, position);
             return position;
         }
 
-        void Ava_PerformAction(Agent::Action act)
+        void ava_performAction(Agent::Action act)
         {
             position += act;
 
@@ -45,21 +45,21 @@ class Msger: public ExManager
             return;
         }
 
-        OSpace Ava_ActionCandidates(Agent::State st)
+        OSpace ava_actionCandidates(Agent::State st)
         {
             if (count < 5000)
             {
                 OSpace acts;
-                acts.Clear();
+                acts.clear();
                 if (st == 1)    // position 1
                 {
-                    acts.Add(1);
+                    acts.add(1);
                     count++;
                     return acts;
                 }
 
-                acts.Add(1);
-                acts.Add(-1);
+                acts.add(1);
+                acts.add(-1);
                 count++;
                 return acts;
             }
@@ -67,7 +67,7 @@ class Msger: public ExManager
                 return OSpace();    // return an empty list
         }
 
-        float Ava_OriginalPayoff(Agent::State st)
+        float ava_originalPayoff(Agent::State st)
         {
             if (st == 9)
                 return 1;

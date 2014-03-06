@@ -13,6 +13,7 @@ SET(GIMCS_VERSION ${GIMCS_MAJOR}.${GIMCS_MINOR}.${GIMCS_BUILD})
 # configuration options
 OPTION(DEBUG "Build with debug output" NO)
 OPTION(DEBUG_MORE "Build with debug output" NO)
+MESSAGE(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 OPTION(INT_BITS "Bitwise of integer" 64)    # 8, 16, 32, 64
 MESSAGE(STATUS "Input/Output bitwise " ${INT_BITS})
 OPTION(WITH_MYSQL "Build with Mysql support" YES)   # Mysql is a kind of storage to save memories of agent
@@ -20,7 +21,7 @@ MESSAGE(STATUS "Mysql support: " ${WITH_MYSQL})
 OPTION(WITH_CGRAPH "Build with CGraph support" NO)  # CGraph supports reading topo structure from .dot file directly
 MESSAGE(STATUS "CGraph support: " ${WITH_CGRAPH})
 
-# dependent packages
+# find dependencies
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 IF (WITH_MYSQL)
@@ -35,7 +36,7 @@ IF (WITH_CGRAPH)
     SET(LIBS ${LIBS} ${CGRAPH_LIBRARIES})
 ENDIF ()
 
-# definitions
+# macro definitions
 IF (DEBUG)
     ADD_DEFINITIONS("-D_DEBUG_")
     SET(CMAKE_BUILD_TYPE Debug)
@@ -81,13 +82,11 @@ IF (NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE Release)
 ENDIF()
 
-MESSAGE(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
-
 # include directory
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
 
 # public headers
-SET(GIMCS_CORE_HDRS 
+SET(GIMCS_GIM_HDRS 
     ${PROJECT_SOURCE_DIR}/include/gimcs/GIOM.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/TSGIOM.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/Agent.h
@@ -98,7 +97,6 @@ SET(GIMCS_CORE_HDRS
     ${PROJECT_SOURCE_DIR}/include/gimcs/ExManager.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/Storage.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/MemoryViewer.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/Debug.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/config.h
     )
 
@@ -110,6 +108,7 @@ SET(GIMCS_CS_HDRS
     ${PROJECT_SOURCE_DIR}/include/gimcs/PrintViewer.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/DotViewer.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/CDotViewer.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/Debug.h
     )
 
 SET(GIMCS_MYSQL_HDRS
@@ -118,13 +117,13 @@ SET(GIMCS_MYSQL_HDRS
 
 IF (WITH_MYSQL)
     SET(GIMCS_PUBLIC_HDRS
-        ${GIMCS_CORE_HDRS}
+        ${GIMCS_GIM_HDRS}
         ${GIMCS_CS_HDRS}
         ${GIMCS_MYSQL_HDRS}
         )
 ELSE (WITH_MYSQL)
     SET(GIMCS_PUBLIC_HDRS
-        ${GIMCS_CORE_HDRS}
+        ${GIMCS_GIM_HDRS}
         ${GIMCS_CS_HDRS}
         )
 ENDIF()

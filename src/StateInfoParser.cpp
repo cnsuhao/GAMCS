@@ -36,7 +36,7 @@ StateInfoParser::~StateInfoParser()
 {
 }
 
-Action_Info_Header *StateInfoParser::FirstAct()
+Action_Info_Header *StateInfoParser::firstAct()
 {
     if (my_sthd->act_num == 0)    // no any act
         return NULL;
@@ -51,7 +51,7 @@ Action_Info_Header *StateInfoParser::FirstAct()
     return (Action_Info_Header *) atp;
 }
 
-Action_Info_Header *StateInfoParser::NextAct()
+Action_Info_Header *StateInfoParser::nextAct()
 {
     act_index++;
     if (act_index >= my_sthd->act_num)    // no more acts
@@ -66,22 +66,22 @@ Action_Info_Header *StateInfoParser::NextAct()
     return (Action_Info_Header *) atp;
 }
 
-Action_Info_Header *StateInfoParser::Move2Act(Agent::Action act)
+Action_Info_Header *StateInfoParser::move2Act(Agent::Action act)
 {
     Action_Info_Header *athd = NULL;
 
-    athd = FirstAct();
+    athd = firstAct();
     while (athd != NULL)
     {
         if (athd->act == act) return athd;
 
-        athd = NextAct();
+        athd = nextAct();
     }
 
     return NULL;    // not found
 }
 
-EnvAction_Info *StateInfoParser::FirstEat()
+EnvAction_Info *StateInfoParser::firstEat()
 {
     Action_Info_Header *athd = (Action_Info_Header *) atp;    // atp should point to some act header
     if (athd->eat_num == 0)    // no any eat
@@ -93,7 +93,7 @@ EnvAction_Info *StateInfoParser::FirstEat()
     return (EnvAction_Info *) eap;
 }
 
-EnvAction_Info *StateInfoParser::NextEat()
+EnvAction_Info *StateInfoParser::nextEat()
 {
     Action_Info_Header *athd = (Action_Info_Header *) atp;
 
@@ -106,16 +106,16 @@ EnvAction_Info *StateInfoParser::NextEat()
     return (EnvAction_Info *) eap;
 }
 
-EnvAction_Info *StateInfoParser::Move2Eat(Agent::EnvAction eat)
+EnvAction_Info *StateInfoParser::move2Eat(Agent::EnvAction eat)
 {
     EnvAction_Info *eaif = NULL;
 
-    eaif = FirstEat();
+    eaif = firstEat();
     while (eaif != NULL)
     {
         if (eaif->eat == eat) return eaif;
 
-        eaif = NextEat();
+        eaif = nextEat();
     }
 
     return NULL;    // not found

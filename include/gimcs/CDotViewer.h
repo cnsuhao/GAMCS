@@ -25,10 +25,10 @@ class CDotViewer: public DotViewer
         CDotViewer(Storage *);
         virtual ~CDotViewer();
 
-        void Show(); /**< show agent memory cleanly */
+        void show(); /**< show agent memory cleanly */
 
     private:
-        void CleanDotStateInfo(const struct State_Info_Header *) const; /**< show state info cleanly */
+        void cleanDotStateInfo(const struct State_Info_Header *) const; /**< show state info cleanly */
 
         Agent::State last_state;
         Agent::Action last_action;

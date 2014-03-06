@@ -24,13 +24,13 @@ Mouse::~Mouse()
     //dtor
 }
 
-Agent::State Mouse::GetCurrentState()
+Agent::State Mouse::getCurrentState()
 {
     printf("%s, State %d\n", name.c_str(), position);
     return position;
 }
 
-void Mouse::PerformAction(Agent::Action act)
+void Mouse::performAction(Agent::Action act)
 {
     position += act;
 
@@ -47,15 +47,15 @@ void Mouse::PerformAction(Agent::Action act)
  *
  */
 
-OSpace Mouse::ActionCandidates(Agent::State st)
+OSpace Mouse::actionCandidates(Agent::State st)
 {
 //    UNUSED(st);
     if (count < 500)
     {
         OSpace acts;
-        acts.Clear();
-        acts.Add(1);
-        acts.Add(-1);
+        acts.clear();
+        acts.add(1);
+        acts.add(-1);
         count++;
         return acts;
     }
@@ -63,7 +63,7 @@ OSpace Mouse::ActionCandidates(Agent::State st)
         return OSpace();    // return an empty list
 }
 
-float Mouse::OriginalPayoff(Agent::State st)
+float Mouse::originalPayoff(Agent::State st)
 {
     if (st == 6)
         return 1;

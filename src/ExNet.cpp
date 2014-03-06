@@ -31,10 +31,10 @@ ExNet::~ExNet()
 {
 }
 
-bool ExNet::HasMember(int mid) const
+bool ExNet::hasMember(int mid) const
 {
     bool re = false;
-    std::set<int> allmembers = GetAllMembers();
+    std::set<int> allmembers = getAllMembers();
     if (allmembers.find(mid) != allmembers.end())    // found
     re = true;
 

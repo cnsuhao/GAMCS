@@ -35,10 +35,10 @@ class Avatar
         Avatar(std::string);
         virtual ~Avatar();
 
-        void Launch(); /**< launch this avatar */
+        void launch(); /**< launch this avatar */
 
-        void ConnectAgent(Agent *); /**< connect to an agent */
-        void SetSps(int);
+        void connectAgent(Agent *); /**< connect to an agent */
+        void setSps(int);
 
     protected:
         std::string name; /**< avatar's name */
@@ -47,17 +47,17 @@ class Avatar
 
         Agent *myagent; /**< connected agent */
 
-        virtual Agent::State GetCurrentState() = 0; /**< get current state */
-        virtual void PerformAction(Agent::Action) = 0; /**< perform an real action */
-        virtual OSpace ActionCandidates(Agent::State) = 0; /**< return a list of all action candidates of a Agent::State */
-        virtual float OriginalPayoff(Agent::State); /**< original payoff of a state */
+        virtual Agent::State getCurrentState() = 0; /**< get current state */
+        virtual void performAction(Agent::Action) = 0; /**< perform an real action */
+        virtual OSpace actionCandidates(Agent::State) = 0; /**< return a list of all action candidates of a Agent::State */
+        virtual float originalPayoff(Agent::State); /**< original payoff of a state */
 
     private:
-        unsigned long GetCurrentTime(); /**< current time in millisecond */
+        unsigned long getCurrentTime(); /**< current time in millisecond */
         unsigned long control_step_time; /**< delta time in millisecond requested bewteen two steps */
 };
 
-inline void Avatar::SetSps(int s)
+inline void Avatar::setSps(int s)
 {
     sps = s;
     if (sps <= 0)    // no control
@@ -70,7 +70,7 @@ inline void Avatar::SetSps(int s)
  * \brief Connect to an agent.
  * \param agt agent to be connected
  */
-inline void Avatar::ConnectAgent(Agent *agt)
+inline void Avatar::connectAgent(Agent *agt)
 {
     myagent = agt;
 }

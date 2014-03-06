@@ -32,21 +32,21 @@ class ExNet
         ExNet(int);
         virtual ~ExNet();
 
-        int NumberOfMembers() const; /**< number of members in this network */
-        bool HasMember(int) const; /**< check if a member exists in network */
+        int numberOfMembers() const; /**< number of members in this network */
+        bool hasMember(int) const; /**< check if a member exists in network */
         /* build the network */
-        virtual void AddMember(int) = 0; /**< add a new member to network */
-        virtual void AddNeighbour(int, int) = 0; /**< add a neighbour to a member */
+        virtual void addMember(int) = 0; /**< add a new member to network */
+        virtual void addNeighbour(int, int) = 0; /**< add a neighbour to a member */
 
-        virtual void RemoveMember(int) = 0; /**< remove a member from network */
-        virtual void RemoveNeighbour(int, int) = 0; /**< remove a specified neighbour from a member */
+        virtual void removeMember(int) = 0; /**< remove a member from network */
+        virtual void removeNeighbour(int, int) = 0; /**< remove a specified neighbour from a member */
         /* queries */
-        virtual std::set<int> GetNeighbours(int) const = 0; /**< get a neighbours list of a specified member */
-        virtual std::set<int> GetAllMembers() const = 0; /**< get all members in this network */
-        virtual bool CheckNeighbourShip(int, int) const = 0; /**< detect if a member has a specified neighbour */
+        virtual std::set<int> getNeighbours(int) const = 0; /**< get a neighbours list of a specified member */
+        virtual std::set<int> getAllMembers() const = 0; /**< get all members in this network */
+        virtual bool checkNeighbourShip(int, int) const = 0; /**< detect if a member has a specified neighbour */
         /* Sharing facilities which can be used by members in this net */
-        virtual int Send(int, int, void *, size_t) = 0; /**< some agent send message to a neighbour */
-        virtual int Recv(int, int, void *, size_t) = 0; /**< some agent recieve message from a neighbour */
+        virtual int send(int, int, void *, size_t) = 0; /**< some agent send message to a neighbour */
+        virtual int recv(int, int, void *, size_t) = 0; /**< some agent recieve message from a neighbour */
 
     protected:
         int id;
@@ -56,9 +56,9 @@ class ExNet
  * \brief Get member number in group.
  * \return number of members
  */
-inline int ExNet::NumberOfMembers() const
+inline int ExNet::numberOfMembers() const
 {
-    return GetAllMembers().size();
+    return getAllMembers().size();
 }
 
 }    // namespace gimcs

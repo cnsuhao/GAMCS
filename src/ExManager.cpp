@@ -35,57 +35,57 @@ ExManager::~ExManager()
 {
 }
 
-void ExManager::ConnectMAgent(MAgent *agent)
+void ExManager::connectMAgent(MAgent *agent)
 {
-    ConnectAgent(dynamic_cast<Agent *>(agent));
+    connectAgent(dynamic_cast<Agent *>(agent));
     magent = agent;
 }
 
-void ExManager::Run()
+void ExManager::run()
 {
     while (!quit)
     {
         // launch or relaunch
-        Launch();
+        launch();
 
         // launch stopped, time to exchange memory
-        Exchange();
+        exchange();
     }
 }
 
-void ExManager::Exchange()
+void ExManager::exchange()
 {
     if (exnet == NULL) return;
 
-    RecvStateInfo();
+    recvStateInfo();
 
-    std::set<int> my_neighbours = GetMyNeighbours();
+    std::set<int> my_neighbours = getMyNeighbours();
     for (std::set<int>::iterator nit = my_neighbours.begin();
             nit != my_neighbours.end(); ++nit)
     {
-        Agent::State st_send = magent->NextState();
-        if (st_send == Agent::INVALID_STATE) st_send = magent->FirstState();
+        Agent::State st_send = magent->nextState();
+        if (st_send == Agent::INVALID_STATE) st_send = magent->firstState();
 
-        if (st_send != Agent::INVALID_STATE) SendStateInfo(*nit, st_send);
+        if (st_send != Agent::INVALID_STATE) sendStateInfo(*nit, st_send);
     }
 }
 
-void ExManager::JoinExNet(ExNet *net)
+void ExManager::joinExNet(ExNet *net)
 {
     exnet = net;
-    exnet->AddMember(id);
+    exnet->addMember(id);
 }
 
-void ExManager::LeaveExNet()
+void ExManager::leaveExNet()
 {
     if (exnet == NULL) return;
 
-    exnet->RemoveMember(id);
+    exnet->removeMember(id);
     exnet = NULL;
     return;
 }
 
-void ExManager::AddNeighbour(int nid)
+void ExManager::addNeighbour(int nid)
 {
 // chech if joined in any network
     if (exnet == NULL)
@@ -96,10 +96,10 @@ void ExManager::AddNeighbour(int nid)
         return;
     }
 
-    exnet->AddNeighbour(id, nid);
+    exnet->addNeighbour(id, nid);
 }
 
-void ExManager::RemoveNeighbour(int nid)
+void ExManager::removeNeighbour(int nid)
 {
 // chech if joined in any network
     if (exnet == NULL)
@@ -110,10 +110,10 @@ void ExManager::RemoveNeighbour(int nid)
         return;
     }
 
-    exnet->RemoveNeighbour(id, nid);
+    exnet->removeNeighbour(id, nid);
 }
 
-std::set<int> ExManager::GetMyNeighbours() const
+std::set<int> ExManager::getMyNeighbours() const
 {
 // chech if joined in any network
     if (exnet == NULL)
@@ -124,10 +124,10 @@ std::set<int> ExManager::GetMyNeighbours() const
         return std::set<int>();
     }
 
-    return exnet->GetNeighbours(id);
+    return exnet->getNeighbours(id);
 }
 
-bool ExManager::CheckNeighbourShip(int nid) const
+bool ExManager::checkNeighbourShip(int nid) const
 {
 // chech if joined in any network
     if (exnet == NULL)
@@ -138,20 +138,20 @@ bool ExManager::CheckNeighbourShip(int nid) const
         return false;
     }
 
-    return exnet->CheckNeighbourShip(id, nid);
+    return exnet->checkNeighbourShip(id, nid);
 }
 
-inline Agent::State ExManager::GetCurrentState()
+inline Agent::State ExManager::getCurrentState()
 {
-    return Ava_GetCurrentState();
+    return ava_getCurrentState();
 }
 
-inline void ExManager::PerformAction(Agent::Action act)
+inline void ExManager::performAction(Agent::Action act)
 {
-    return Ava_PerformAction(act);
+    return ava_performAction(act);
 }
 
-inline OSpace ExManager::ActionCandidates(Agent::State st)
+inline OSpace ExManager::actionCandidates(Agent::State st)
 {
     // check exps
     if (ava_loop_count % cps == 0)    // time to stop avatar and exchange memory
@@ -159,52 +159,52 @@ inline OSpace ExManager::ActionCandidates(Agent::State st)
         return OSpace();
     }
 
-    OSpace outputs = Ava_ActionCandidates(st);
-    if (outputs.Empty()) quit = true;    // quit when avatar quits
+    OSpace outputs = ava_actionCandidates(st);
+    if (outputs.empty()) quit = true;    // quit when avatar quits
     return outputs;
 }
 
-inline float ExManager::OriginalPayoff(Agent::State st)
+inline float ExManager::originalPayoff(Agent::State st)
 {
-    return Ava_OriginalPayoff(st);
+    return ava_originalPayoff(st);
 }
 
-float ExManager::Ava_OriginalPayoff(Agent::State st)
+float ExManager::ava_originalPayoff(Agent::State st)
 {
     UNUSED(st);
     return 1.0;
 }
 
-void ExManager::RecvStateInfo()
+void ExManager::recvStateInfo()
 {
     char re_buf[2048];    // buffer for recieved message
 
-    if (exnet->Recv(id, -1, re_buf, 2048) != 0)    // fetch one message from any agent
+    if (exnet->recv(id, -1, re_buf, 2048) != 0)    // fetch one message from any agent
     {
         dbgmoreprt("***", "%d recv from anyone\n", id);
 
         struct State_Info_Header *re_state = (struct State_Info_Header *) re_buf;
-        struct State_Info_Header *my_state = magent->GetStateInfo(re_state->st);
+        struct State_Info_Header *my_state = magent->getStateInfo(re_state->st);
         if (my_state != NULL)
         {
-            struct State_Info_Header *merged_state = MergeStateInfo(my_state,
+            struct State_Info_Header *merged_state = mergeStateInfo(my_state,
                     re_state);
-            magent->UpdateStateInfo(merged_state);    // merge the recieved state information to memory
-            magent->UpdatePayoff(merged_state->st);    // update payoff
+            magent->updateStateInfo(merged_state);    // merge the recieved state information to memory
+            magent->updatePayoff(merged_state->st);    // update payoff
             free(my_state);
             free(merged_state);
         }
         else
         {
-            magent->AddStateInfo(re_state);
-            magent->UpdatePayoff(re_state->st);    // update payoff
+            magent->addStateInfo(re_state);
+            magent->updatePayoff(re_state->st);    // update payoff
         }
 
     }
     return;
 }
 
-struct State_Info_Header *ExManager::MergeStateInfo(
+struct State_Info_Header *ExManager::mergeStateInfo(
         const struct State_Info_Header *origsthd,
         const struct State_Info_Header *recvsthd) const
 {
@@ -241,35 +241,35 @@ struct State_Info_Header *ExManager::MergeStateInfo(
     EnvAction_Info *eaif = NULL;
     // tmp_origsthd
     StateInfoParser oparser(tmp_origsthd);
-    achd = oparser.FirstAct();
+    achd = oparser.firstAct();
     while (achd != NULL)
     {
-        eaif = oparser.FirstEat();
+        eaif = oparser.firstEat();
         while (eaif != NULL)
         {
             eaif->count = round(eaif->count / 2.0);
-            eaif = oparser.NextEat();
+            eaif = oparser.nextEat();
         }
 
-        achd = oparser.NextAct();
+        achd = oparser.nextAct();
     }
     // tmp_recvsthd, and copy all acts to buffer
     StateInfoParser rparser(tmp_recvsthd);
-    achd = rparser.FirstAct();
+    achd = rparser.firstAct();
     while (achd != NULL)
     {
-        eaif = rparser.FirstEat();
+        eaif = rparser.firstEat();
         while (eaif != NULL)
         {
             eaif->count = round(eaif->count / 2.0);
-            eaif = rparser.NextEat();
+            eaif = rparser.nextEat();
         }
         memcpy(act_buffer[act_num], achd,
                 sizeof(Action_Info_Header)
                         + achd->eat_num * sizeof(EnvAction_Info));
 
         act_num++;    // increase act count
-        achd = rparser.NextAct();
+        achd = rparser.nextAct();
     }
     /*******************************************/
 
@@ -279,7 +279,7 @@ struct State_Info_Header *ExManager::MergeStateInfo(
     EnvAction_Info *buf_eaif = NULL;
     // compare each act from tmp_origsthd with acts from tmp_recvsthd
     int tmp_act_num = act_num;    // act_num will be changed
-    achd = oparser.FirstAct();
+    achd = oparser.firstAct();
     while (achd != NULL)
     {
         int i;
@@ -292,7 +292,7 @@ struct State_Info_Header *ExManager::MergeStateInfo(
             {
                 // compare each eat from tmp_origsthd with eats from tmp_recvsthd
                 int tmp_eat_num = buf_achd->eat_num;    // eat_num will be changed
-                eaif = oparser.FirstEat();
+                eaif = oparser.firstEat();
                 while (eaif != NULL)
                 {
                     buf_eapt = (buf_acpt + sizeof(Action_Info_Header));    // move to the first eat
@@ -321,7 +321,7 @@ struct State_Info_Header *ExManager::MergeStateInfo(
                         buf_achd->eat_num++;
                     }
 
-                    eaif = oparser.NextEat();
+                    eaif = oparser.nextEat();
                 }
                 break;
             }
@@ -336,7 +336,7 @@ struct State_Info_Header *ExManager::MergeStateInfo(
             act_num++;
         }
 
-        achd = oparser.NextAct();
+        achd = oparser.nextAct();
     }
 
     // get total sthd_size
@@ -381,17 +381,17 @@ struct State_Info_Header *ExManager::MergeStateInfo(
     return sthd;
 }
 
-void ExManager::SendStateInfo(int toneb, Agent::State st) const
+void ExManager::sendStateInfo(int toneb, Agent::State st) const
 {
     struct State_Info_Header *stif = NULL;
-    stif = magent->GetStateInfo(st);    // the st may not exist
+    stif = magent->getStateInfo(st);    // the st may not exist
     if (stif == NULL)
     {
         return;
     }
 
     dbgmoreprt("***", "%d send %" ST_FMT " to %d\n", id, st, toneb);
-    exnet->Send(id, toneb, stif, stif->size);    // call the send facility in ienet
+    exnet->send(id, toneb, stif, stif->size);    // call the send facility in ienet
     free(stif);    // free
 
     return;

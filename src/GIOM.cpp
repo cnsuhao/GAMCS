@@ -29,13 +29,13 @@ GIOM::~GIOM()
 }
 
 /** \brief Restrict capacity for the GIOM.
- * Minimun restrict by default, which means NO restriction at all here.
+ * Minimun restrain by default, which means NO restriction at all here.
  * \param in input value
  * \param outputs all possible outputs for current input
- * \return output space after restrict
+ * \return output space after restrain
  *
  */
-OSpace GIOM::Restrict(Input in, OSpace &outputs) const
+OSpace GIOM::restrain(Input in, OSpace &outputs) const
 {
     UNUSED(in);
     return outputs;    // return all outputs
@@ -47,14 +47,14 @@ OSpace GIOM::Restrict(Input in, OSpace &outputs) const
  * \return output
  *
  */
-GIOM::Output GIOM::Process(Input in, OSpace &alpos_outputs)
+GIOM::Output GIOM::process(Input in, OSpace &alpos_outputs)
 {
-    OSpace restricited_outputs = Restrict(in, alpos_outputs);    // get restricted output values first
-    if (restricited_outputs.Empty())    // no output generated, return an invalid GIOM::Output
+    OSpace restricited_outputs = restrain(in, alpos_outputs);    // get restricted output values first
+    if (restricited_outputs.empty())    // no output generated, return an invalid GIOM::Output
         return INVALID_OUTPUT;
 
-    gimcs_uint sz = restricited_outputs.Size();    // number of alpos_outputs
-    gimcs_uint index = Random() % (sz);    // choose an output value randomly
+    gimcs_uint sz = restricited_outputs.size();    // number of alpos_outputs
+    gimcs_uint index = myRandom() % (sz);    // choose an output value randomly
     GIOM::Output out = restricited_outputs[index];
 
     // record input and output
@@ -64,24 +64,24 @@ GIOM::Output GIOM::Process(Input in, OSpace &alpos_outputs)
     return out;
 }
 
-/** \brief Calculate the entropy of a state under restrict
+/** \brief Calculate the entropy of a state under restrain
  *
  * \return entropy value
  *
  */
-float GIOM::SingleOutputEntropy(Input in, OSpace &alpos_outputs) const
+float GIOM::singleOutputEntropy(Input in, OSpace &alpos_outputs) const
 {
-    OSpace restricted_outputs = Restrict(in, alpos_outputs);
-    if (restricted_outputs.Empty()) return 0.0;
+    OSpace restricted_outputs = restrain(in, alpos_outputs);
+    if (restricted_outputs.empty()) return 0.0;
 
-    gimcs_uint sz = restricted_outputs.Size();
+    gimcs_uint sz = restricted_outputs.size();
     return log2(sz);    // all the alpos_outputs have the same probability of occurrence
 }
 
-/** \brief Update inner states and prepare for the next process.
+/** \brief update inner states and prepare for the next process.
  * Nothing to do for GIOM.
  */
-void GIOM::Update()
+void GIOM::update()
 {
     // clear state and prepare for the next process
     cur_in = INVALID_INPUT;
@@ -89,7 +89,7 @@ void GIOM::Update()
     return;
 }
 
-gimcs_uint GIOM::Random() const
+gimcs_uint GIOM::myRandom() const
 {
     std::uniform_int_distribution<gimcs_uint> dist(0, GIMCS_UINT_MAX);    // act ranges: -2^63+1 ~ 2^63+1, which has a maximun number 2^64
     std::random_device rd;    // to get true random on linux, use rand("/dev/random");

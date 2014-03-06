@@ -1,4 +1,4 @@
-SET(GIMCS_CORE_SRCS
+SET(GIMCS_GIM_SRCS
     ./GIOM.cpp
     ./TSGIOM.cpp
     ./StateInfoParser.cpp
@@ -9,7 +9,6 @@ SET(GIMCS_CORE_SRCS
     ./ExManager.cpp
     ./Storage.cpp
     ./MemoryViewer.cpp
-    ./Debug.cpp
     )
 
 SET(GIMCS_CS_SRCS
@@ -20,6 +19,7 @@ SET(GIMCS_CS_SRCS
     ./PrintViewer.cpp
     ./DotViewer.cpp
     ./CDotVewer.cpp
+    ./Debug.cpp
     )
 
 SET(GIMCS_MYSQL_SRCS
@@ -28,20 +28,20 @@ SET(GIMCS_MYSQL_SRCS
 
 IF (WITH_MYSQL)
     SET(GIMCS_LIB_SRCS
-        ${GIMCS_CORE_SRCS}
+        ${GIMCS_GIM_SRCS}
         ${GIMCS_CS_SRCS}
         ${GIMCS_MYSQL_SRCS}
         )
 ELSE (WITH_MYSQL)
     SET(GIMCS_LIB_SRCS
-        ${GIMCS_CORE_SRCS}
+        ${GIMCS_GIM_SRCS}
         ${GIMCS_CS_SRCS}
         )
 ENDIF()
 
 # shared library
 ADD_LIBRARY(${GIMCS_NAME} SHARED ${GIMCS_LIB_SRCS})
-TARGET_LINK_LIBRARIES(${GIMCS_NAME} ${LIBS})   # depended libraries
+TARGET_LINK_LIBRARIES(${GIMCS_NAME} ${LIBS})   # dependencies
 SET_TARGET_PROPERTIES(${GIMCS_NAME} PROPERTIES CLEAN_DIRECT_OUTPUT 1 
     VERSION ${GIMCS_MAJOR}.${GIMCS_MINOR} SOVERSION ${GIMCS_MAJOR})
 

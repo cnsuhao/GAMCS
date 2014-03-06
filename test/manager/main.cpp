@@ -12,7 +12,7 @@ int main(void)
 {
     CSMAgent ma(1, 0.9, 0.01);
     Msger msger(1);
-    msger.ConnectMAgent(&ma);
-    msger.Run();
+    msger.connectMAgent(&ma);
+    msger.run();
 }
 

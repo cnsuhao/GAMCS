@@ -79,21 +79,21 @@ class GIOM
         GIOM();
         /** Default destructor */
         virtual ~GIOM();
-        Output Process(Input, OSpace &); /**< choose an output value in an output space under a specified input value */
-        float SingleOutputEntropy(Input, OSpace &) const; /**< calculate entropy of a specified input */
-        virtual void Update(); /**< update inner states of GIOM, derived classes may have their own inner states to update */
+        Output process(Input, OSpace &); /**< choose an output value in an output space under a specified input value */
+        float singleOutputEntropy(Input, OSpace &) const; /**< calculate entropy of a specified input */
+        virtual void update(); /**< update inner states of GIOM, derived classes may have their own inner states to update */
 
         static const Input INVALID_INPUT = GIMCS_UINT_MAX; /**< the maximun value is used to indicate invalid input */
         static const Output INVALID_OUTPUT = GIMCS_INT_MAX; /**< the maximun value is used to indicate an invalid output, be careful! */
 
     protected:
-        virtual OSpace Restrict(Input, OSpace &) const; /**< restrict the output space to a subspace */
+        virtual OSpace restrain(Input, OSpace &) const; /**< restrain the output space to a subspace */
         Input cur_in; /**< input value */
         Output cur_out; /**< output value corresponding to cur_in */
         unsigned long process_count; /**< count of processing */
 
     private:
-        gimcs_uint Random() const; /**< generate a random number in range 0 to LONG_MAX. It's where all possibilities and miracles come from! */
+        gimcs_uint myRandom() const; /**< generate a random number in range 0 to LONG_MAX. It's where all possibilities and miracles come from! */
 };
 
 /**
@@ -140,22 +140,22 @@ class OSpace
         }
 
         /**
-         * Check if the space is Empty
+         * Check if the space is empty
          * @return true or false
          */
-        bool Empty() const
+        bool empty() const
         {
-            return (Size() == 0);
+            return (size() == 0);
         }
 
         /**
          * Get the total number of outputs in space
          * @return  the number
          */
-        olsize_t Size() const
+        olsize_t size() const
         {
             olsize_t total_size = 0;
-            // traverse each frament and collect the total Size
+            // traverse each frament and collect the total size
             for (olsize_t i = 0; i < frag_num; i++)
             {
                 OFragment *frag = outputs + i;
@@ -166,10 +166,10 @@ class OSpace
         }
 
         /**
-         * Current Capacity of the space
-         * @return  Capacity
+         * Current capacity of the space
+         * @return  capacity
          */
-        olsize_t Capacity() const
+        olsize_t capacity() const
         {
             return the_capacity;
         }
@@ -241,13 +241,13 @@ class OSpace
         }
 
         /**
-         * Add a single output to space
+         * add a single output to space
          * @param output output
          */
-        void Add(GIOM::Output output)
+        void add(GIOM::Output output)
         {
-            // check if exceeds the Capacity
-            if (frag_num == the_capacity) Expand(2 * the_capacity + 1);
+            // check if exceeds the capacity
+            if (frag_num == the_capacity) expand(2 * the_capacity + 1);
 
             OFragment new_frag;
             new_frag.start = output;
@@ -257,12 +257,12 @@ class OSpace
         }
 
         /**
-         * Add a output range to space
+         * add a output range to space
          * @param start start output
          * @param end   end output
          * @param step increasing or decreasing step
          */
-        void Add(GIOM::Output start, GIOM::Output end, GIOM::Output step)
+        void add(GIOM::Output start, GIOM::Output end, GIOM::Output step)
         {
             // check range
             if ((end - start) / step < 0)
@@ -270,7 +270,7 @@ class OSpace
                         "Invalid range! %" OUT_FMT " --> %" OUT_FMT " (step: %" OUT_FMT ") \n",
                         start, end, step);
 
-            if (frag_num == the_capacity) Expand(2 * the_capacity);
+            if (frag_num == the_capacity) expand(2 * the_capacity);
 
             OFragment new_frag;
             new_frag.start = start;
@@ -280,15 +280,15 @@ class OSpace
         }
 
         /**
-         * Expend space Capacity.
-         * @param ncap new Capacity
+         * Expend space capacity.
+         * @param ncap new capacity
          */
-        void Expand(olsize_t ncap)
+        void expand(olsize_t ncap)
         {
-            if (ncap < frag_num) return;    // the new Capacity should at least include all current fragments
+            if (ncap < frag_num) return;    // the new capacity should at least include all current fragments
 
             OFragment *old_list = outputs;
-            // Add up the spare
+            // add up the spare
             ncap += SPARE_CAPACITY;
             outputs = new OFragment[ncap];
             // copy all fragments to new place
@@ -302,37 +302,37 @@ class OSpace
         }
 
         /**
-         * Clear the space.
+         * clear the space.
          */
-        void Clear()
+        void clear()
         {
             frag_num = 0;
         }
 
         /**
-         * Get the First output in space.
-         * @return the First output
+         * Get the first output in space.
+         * @return the first output
          */
-        GIOM::Output First() const
+        GIOM::Output first() const
         {
             current_index = 0;
             return operator[](current_index);
         }
 
         /**
-         * Get the Last output in space.
-         * @return the Last output
+         * Get the last output in space.
+         * @return the last output
          */
-        GIOM::Output Last() const
+        GIOM::Output last() const
         {
-            return operator[](Size());
+            return operator[](size());
         }
 
         /**
-         * Iterator the space and get the Next output.
-         * @return the Next output
+         * Iterator the space and get the next output.
+         * @return the next output
          */
-        GIOM::Output Next() const
+        GIOM::Output next() const
         {
             current_index++;
             return operator[](current_index);
@@ -340,7 +340,7 @@ class OSpace
 
     private:
         olsize_t frag_num;    // number of fragments
-        olsize_t the_capacity;    // space Capacity
+        olsize_t the_capacity;    // space capacity
         mutable olsize_t current_index;    // used by iterator
         OFragment *outputs;
 };

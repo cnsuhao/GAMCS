@@ -33,12 +33,12 @@ class CSThreadExManager: public ExManager
         CSThreadExManager(int);
         virtual ~CSThreadExManager();
 
-        pthread_t ThreadRun();
+        pthread_t threadRun();
 
     private:
         static void* hook(void* args)
         { /**< hook to run a class function(Launch() here) in a thread */
-            reinterpret_cast<ExManager *>(args)->Run();
+            reinterpret_cast<ExManager *>(args)->run();
             return NULL;
         }
 };

@@ -102,10 +102,10 @@ int main(int argc, char *argv[])
 
         Mysql *mysql = new Mysql();
         if (remain_arg == 4)
-        mysql->SetDBArgs(argv[optind], argv[optind + 1], argv[optind + 2],
+        mysql->setDBArgs(argv[optind], argv[optind + 1], argv[optind + 2],
                 argv[optind + 3]);
         else if (remain_arg == 3)
-        mysql->SetDBArgs("localhost", argv[optind], argv[optind + 1],
+        mysql->setDBArgs("localhost", argv[optind], argv[optind + 1],
                 argv[optind + 2]);
         storage = mysql;
 #else
@@ -151,9 +151,9 @@ int main(int argc, char *argv[])
 
 // show
     if (st != Agent::INVALID_STATE)
-        viewer->ShowState(st);
+        viewer->showState(st);
     else
-        viewer->Show();
+        viewer->show();
 
     delete storage;
     delete viewer;

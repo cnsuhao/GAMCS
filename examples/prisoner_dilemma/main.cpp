@@ -25,33 +25,33 @@ int main(void)
 
 #ifdef _WITH_MYSQL_
     Mysql mysqlA;
-    mysqlA.SetDBArgs("localhost", "root", "huangk", "PrisonerA");
+    mysqlA.setDBArgs("localhost", "root", "huangk", "PrisonerA");
     Mysql mysqlB;
-    mysqlB.SetDBArgs("localhost", "root", "huangk", "PrisonerB");
+    mysqlB.setDBArgs("localhost", "root", "huangk", "PrisonerB");
 
-    agentA.LoadMemoryFromStorage(&mysqlA);
-    agentB.LoadMemoryFromStorage(&mysqlB);
+    agentA.loadMemoryFromStorage(&mysqlA);
+    agentB.loadMemoryFromStorage(&mysqlB);
 #endif
 
     PrisonerA pA("prisonerA");
     PrisonerB pB("prisonerB");
-    pA.ConnectAgent(&agentA);
-    pB.ConnectAgent(&agentB);
-    pA.SetSps(50);
-    pB.SetSps(50);
+    pA.connectAgent(&agentA);
+    pB.connectAgent(&agentB);
+    pA.setSps(50);
+    pB.setSps(50);
 
     // launch
     pthread_t tids[2];
-    tids[0] = pA.ThreadLaunch();
-    tids[1] = pB.ThreadLaunch();
+    tids[0] = pA.threadLaunch();
+    tids[1] = pB.threadLaunch();
 
     // wait
     pthread_join(tids[0], NULL);
     pthread_join(tids[1], NULL);
 
 #ifdef _WITH_MYSQL_
-    agentA.DumpMemoryToStorage(&mysqlA);
-    agentB.DumpMemoryToStorage(&mysqlB);
+    agentA.dumpMemoryToStorage(&mysqlA);
+    agentB.dumpMemoryToStorage(&mysqlB);
 #endif
     return 0;
 }

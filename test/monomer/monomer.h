@@ -16,15 +16,15 @@ class Monomer: public Avatar
     private:
         Agent::State position;
 
-        Agent::State GetCurrentState();
-        void PerformAction(Agent::Action);
-        OSpace ActionCandidates(Agent::State);
-        float OriginalPayoff(Agent::State);
-        void SendStateInfo(Agent::State)
+        Agent::State getCurrentState();
+        void performAction(Agent::Action);
+        OSpace actionCandidates(Agent::State);
+        float originalPayoff(Agent::State);
+        void sendStateInfo(Agent::State)
         {
             // no social communication supported
         }
-        void RecvStateInfo()
+        void recvStateInfo()
         {
             // no social communication supported
         }
