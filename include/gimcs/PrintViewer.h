@@ -35,10 +35,10 @@ class PrintViewer: public MemoryViewer
         PrintViewer(Storage *);
         virtual ~PrintViewer();
 
-        void Show();
-        void ShowState(Agent::State);
+        void show();
+        void showState(Agent::State);
     private:
-        void PrintStateInfo(const struct State_Info_Header *) const;
+        void printStateInfo(const struct State_Info_Header *) const;
 };
 
 }    // namespace gimcs

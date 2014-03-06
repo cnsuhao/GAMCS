@@ -26,17 +26,17 @@ TSGIOM::~TSGIOM()
 {
 }
 
-/** \brief Update inner states
+/** \brief update inner states
  *
  *
  */
-void TSGIOM::Update()
+void TSGIOM::update()
 {
     /* update time sequence */
     pre_in = cur_in;
     pre_out = cur_out;
 
-    GIOM::Update();
+    GIOM::update();
     return;
 }
 
@@ -47,7 +47,7 @@ void TSGIOM::Update()
  * \return outputs distribution after restricting
  *
  */
-OSpace TSGIOM::Restrict(Input in, OSpace &outlist) const
+OSpace TSGIOM::restrain(Input in, OSpace &outlist) const
 {
     UNUSED(in);
     return outlist;

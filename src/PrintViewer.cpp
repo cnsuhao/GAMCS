@@ -31,9 +31,9 @@ PrintViewer::~PrintViewer()
 {
 }
 
-void PrintViewer::Show()
+void PrintViewer::show()
 {
-    int re = storage->Connect();
+    int re = storage->connect();
     if (re != 0)    // connect failed
     {
         WARNNING("PrintViewer Show(): connect to storage failed!\n");
@@ -41,7 +41,7 @@ void PrintViewer::Show()
     }
 
     // print memory info
-    struct Memory_Info *memif = storage->GetMemoryInfo();
+    struct Memory_Info *memif = storage->getMemoryInfo();
     if (memif != NULL)
     {
         printf("\n");
@@ -59,32 +59,32 @@ void PrintViewer::Show()
     else
     {
         printf("Memory not found in storage!\n");
-        storage->Close();
+        storage->close();
         return;
     }
 
     // print states info
-    Agent::State st = storage->FirstState();
+    Agent::State st = storage->firstState();
     while (st != Agent::INVALID_STATE)    // get state value
     {
-        struct State_Info_Header *stif = storage->GetStateInfo(st);
+        struct State_Info_Header *stif = storage->getStateInfo(st);
         if (stif != NULL)
         {
-            PrintStateInfo(stif);
+            printStateInfo(stif);
             free(stif);
-            st = storage->NextState();
+            st = storage->nextState();
         }
         else
             ERROR("Show(): state: %" ST_FMT " information is NULL!\n", st);
     }
-    storage->Close();
+    storage->close();
 }
 
 /**
  * \brief Pretty print State information
  * \param specified State information header
  */
-void PrintViewer::PrintStateInfo(const struct State_Info_Header *sthd) const
+void PrintViewer::printStateInfo(const struct State_Info_Header *sthd) const
 {
     if (sthd == NULL) return;
 
@@ -99,45 +99,45 @@ void PrintViewer::PrintStateInfo(const struct State_Info_Header *sthd) const
     Action_Info_Header *athd = NULL;
     EnvAction_Info *eaif = NULL;
 
-    athd = sparser.FirstAct();
+    athd = sparser.firstAct();
     while (athd != NULL)
     {
-        eaif = sparser.FirstEat();
+        eaif = sparser.firstEat();
         while (eaif != NULL)
         {
             printf("\t  .|+++ %" ACT_FMT " +++ %" ACT_FMT " ++> %" ST_FMT " \t Count: %ld\n", athd->act,
                     eaif->eat, eaif->nst, eaif->count);
 
-            eaif = sparser.NextEat();
+            eaif = sparser.nextEat();
         }
 
-        athd = sparser.NextAct();
+        athd = sparser.nextAct();
     }
     printf("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n");
 
     return;
 }
 
-void PrintViewer::ShowState(Agent::State st)
+void PrintViewer::showState(Agent::State st)
 {
-    int re = storage->Connect();
+    int re = storage->connect();
     if (re != 0)    // connect failed
     {
         WARNNING("PrintViewer ShowState(): connect to storage failed!\n");
         return;
     }
 
-    struct State_Info_Header *stif = storage->GetStateInfo(st);
+    struct State_Info_Header *stif = storage->getStateInfo(st);
     if (stif != NULL)
     {
-        PrintStateInfo(stif);
+        printStateInfo(stif);
         free(stif);
     }
     else
     {
         printf("state %" ST_FMT " not found in memory!\n", st);
     }
-    storage->Close();
+    storage->close();
 }
 
 }    // namespace gimcs

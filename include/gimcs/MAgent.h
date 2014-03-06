@@ -34,17 +34,17 @@ class MAgent: public Agent
         MAgent(int, float, float);
         virtual ~MAgent();
 
-        virtual struct State_Info_Header *GetStateInfo(State) const = 0;
-        virtual void AddStateInfo(const struct State_Info_Header *) = 0;
-        virtual void UpdateStateInfo(const struct State_Info_Header *) = 0;
-        virtual void DeleteState(State) = 0;
+        virtual struct State_Info_Header *getStateInfo(State) const = 0;
+        virtual void addStateInfo(const struct State_Info_Header *) = 0;
+        virtual void updateStateInfo(const struct State_Info_Header *) = 0;
+        virtual void deleteState(State) = 0;
 
-        virtual void UpdatePayoff(State) = 0;
+        virtual void updatePayoff(State) = 0;
 
         /* iterate all states */
-        virtual State FirstState() const = 0;
-        virtual State NextState() const = 0;
-        virtual bool HasState(State) const = 0;
+        virtual State firstState() const = 0;
+        virtual State nextState() const = 0;
+        virtual bool hasState(State) const = 0;
 };
 
 }    // namespace gimcs

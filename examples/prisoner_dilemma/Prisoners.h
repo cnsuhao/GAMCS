@@ -59,7 +59,7 @@ class PrisonerA: public CSThreadAvatar
         }
 
     private:
-        Agent::State GetCurrentState()
+        Agent::State getCurrentState()
         {
             while (actB == false)
                 usleep(10000);    // sleep, wait for B to act
@@ -68,36 +68,36 @@ class PrisonerA: public CSThreadAvatar
             return current_state;
         }
 
-        void PerformAction(Agent::Action act)
+        void performAction(Agent::Action act)
         {
             current_state += act;
             actA = true;
         }
 
-        OSpace ActionCandidates(Agent::State st)
+        OSpace actionCandidates(Agent::State st)
         {
             static int count = 0;
             OSpace re;
-            re.Clear();
+            re.clear();
             if (count < runtimes)    // run times
             {
                 switch (st)
                 {
                     case 1:
-                        re.Add(0);
-                        re.Add(1);
+                        re.add(0);
+                        re.add(1);
                         break;
                     case 2:
-                        re.Add(0);
-                        re.Add(-1);
+                        re.add(0);
+                        re.add(-1);
                         break;
                     case 3:
-                        re.Add(0);
-                        re.Add(1);
+                        re.add(0);
+                        re.add(1);
                         break;
                     case 4:
-                        re.Add(0);
-                        re.Add(-1);
+                        re.add(0);
+                        re.add(-1);
                         break;
                     default:
                         printf(
@@ -113,7 +113,7 @@ class PrisonerA: public CSThreadAvatar
             return re;
         }
 
-        float OriginalPayoff(Agent::State st)
+        float originalPayoff(Agent::State st)
         {
             float payoff = 0.0;
             switch (st)
@@ -149,7 +149,7 @@ class PrisonerB: public CSThreadAvatar
         }
 
     private:
-        Agent::State GetCurrentState()
+        Agent::State getCurrentState()
         {
             while (actA == false)
                 usleep(10000);    // sleep, wait for A to act
@@ -157,36 +157,36 @@ class PrisonerB: public CSThreadAvatar
             return current_state;
         }
 
-        void PerformAction(Agent::Action act)
+        void performAction(Agent::Action act)
         {
             current_state += act;
             actB = true;
         }
 
-        OSpace ActionCandidates(Agent::State st)
+        OSpace actionCandidates(Agent::State st)
         {
             OSpace re;
-            re.Clear();
+            re.clear();
 
             if (!quit_notification)    // check quit
             {
                 switch (st)
                 {
                     case 1:
-                        re.Add(0);
-                        re.Add(2);
+                        re.add(0);
+                        re.add(2);
                         break;
                     case 2:
-                        re.Add(0);
-                        re.Add(2);
+                        re.add(0);
+                        re.add(2);
                         break;
                     case 3:
-                        re.Add(0);
-                        re.Add(-2);
+                        re.add(0);
+                        re.add(-2);
                         break;
                     case 4:
-                        re.Add(0);
-                        re.Add(-2);
+                        re.add(0);
+                        re.add(-2);
                         break;
                     default:
                         printf(
@@ -196,7 +196,7 @@ class PrisonerB: public CSThreadAvatar
             return re;
         }
 
-        float OriginalPayoff(Agent::State st)
+        float originalPayoff(Agent::State st)
         {
             float payoff = 0.0;
             switch (st)

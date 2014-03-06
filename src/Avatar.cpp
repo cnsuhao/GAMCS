@@ -37,40 +37,40 @@ Avatar::~Avatar()
 }
 
 /**
- * \brief Launch a avatar continuously.
+ * \brief launch a avatar continuously.
  */
-void Avatar::Launch()
+void Avatar::launch()
 {
     while (true)
     {
         ava_loop_count++;    // inc count
         dbgmoreprt("Enter Launch Loop ", "------------------------------ count == %ld\n", ava_loop_count);
 
-        unsigned long start_time = GetCurrentTime();
+        unsigned long start_time = getCurrentTime();
 
         /* Perceive the outside world */
-        Agent::State cs = GetCurrentState();    // get current state
+        Agent::State cs = getCurrentState();    // get current state
         dbgmoreprt("Launch():", "%s, State: %ld\n", name.c_str(), cs);
 
         /* Process stage */
-        OSpace acts = ActionCandidates(cs);    // get all action candidates of a state
+        OSpace acts = actionCandidates(cs);    // get all action candidates of a state
 
-        Agent::Action act = myagent->Process(cs, acts);    // choose an action from candidates
+        Agent::Action act = myagent->process(cs, acts);    // choose an action from candidates
         // check validation
         if (act == Agent::INVALID_ACTION)    // no valid actions available, reach a dead end, quit. !!!: be sure to check this before update stage
             break;// exit point here
 
-        /* Update stage */
-        float oripayoff = OriginalPayoff(cs);    // get original payoff of a state
-        myagent->Update(oripayoff);    // agent update inner states
+        /* update stage */
+        float oripayoff = originalPayoff(cs);    // get original payoff of a state
+        myagent->update(oripayoff);    // agent update inner states
 
         /* Perform action to the outside world */
-        PerformAction(act);    // otherwise, perform the action
+        performAction(act);    // otherwise, perform the action
 
         // handle time related job
         if (sps > 0)    // no control when sps <= 0
         {
-            unsigned long end_time = GetCurrentTime();
+            unsigned long end_time = getCurrentTime();
             unsigned long consumed_time = end_time - start_time;
             long time_remaining = control_step_time - consumed_time;
             if (time_remaining > 0)    // remaining time
@@ -100,13 +100,13 @@ void Avatar::Launch()
  * \return original payoff of st
  *
  */
-float Avatar::OriginalPayoff(Agent::State st)
+float Avatar::originalPayoff(Agent::State st)
 {
     UNUSED(st);
     return 1.0;    // original payoff of states is 1.0 by default
 }
 
-unsigned long Avatar::GetCurrentTime()
+unsigned long Avatar::getCurrentTime()
 {
     struct timeb tb;
     ftime(&tb);

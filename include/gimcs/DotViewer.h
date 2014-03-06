@@ -36,11 +36,11 @@ class DotViewer: public MemoryViewer
         DotViewer(Storage *);
         virtual ~DotViewer();
 
-        void Show();
-        void ShowState(Agent::State);
+        void show();
+        void showState(Agent::State);
     private:
-        void DotStateInfo(const struct State_Info_Header *) const;
-        const std::string Act2String(Agent::Action) const;
+        void dotStateInfo(const struct State_Info_Header *) const;
+        const std::string act2String(Agent::Action) const;
 
         Agent::State last_state;
         Agent::Action last_action;

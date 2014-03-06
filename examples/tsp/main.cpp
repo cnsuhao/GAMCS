@@ -22,10 +22,10 @@ int main(void)
     CSMAgent *agent = new CSMAgent(1, 0.8, 0.01);
 
     Saleman *saleman = new Saleman("Saleman");
-    saleman->SetSps(-1);
-    saleman->ConnectAgent(agent);
+    saleman->setSps(-1);
+    saleman->connectAgent(agent);
 
-    pthread_t tid = saleman->ThreadLaunch();
+    pthread_t tid = saleman->threadLaunch();
 
     pthread_join(tid, NULL);
 

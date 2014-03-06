@@ -43,26 +43,26 @@ Agent::~Agent()
 {
 }
 
-/** \brief Restrict capacity of an agent.
+/** \brief restrain capacity of an agent.
  *  Comply with maximun payoff rule.
  * \param st state identity
  * \param acts all possible actions of st
  * \return action distribution after appling maximun payoff restrict
  *
  */
-OSpace Agent::Restrict(Agent::State st, OSpace &acts) const
+OSpace Agent::restrain(Agent::State st, OSpace &acts) const
 {
-    return MaxPayoffRule(st, acts);
+    return maxPayoffRule(st, acts);
 }
 
-/** \brief Update inner states.
+/** \brief update inner states.
  *
  */
 
-void Agent::Update(float oripayoff)
+void Agent::update(float oripayoff)
 {
-    UpdateMemory(oripayoff);    // update memory
-    TSGIOM::Update();
+    updateMemory(oripayoff);    // update memory
+    TSGIOM::update();
     return;
 }
 

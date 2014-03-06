@@ -5,16 +5,16 @@
 int main(void)
 {
     Mysql mysql;
-    mysql.SetDBArgs("localhost", "root", "huangk", "Monomer");
+    mysql.setDBArgs("localhost", "root", "huangk", "Monomer");
     CSMAgent ma(1, 0.9, 0.01);
-    ma.LoadMemoryFromStorage(&mysql);
+    ma.loadMemoryFromStorage(&mysql);
 
     Monomer mono("Monomer");
-    mono.ConnectAgent(&ma);
-    mono.Launch();
+    mono.connectAgent(&ma);
+    mono.launch();
 
-    ma.DeleteState(6);
-    ma.DeleteState(9);
+    ma.deleteState(6);
+    ma.deleteState(9);
 
-    ma.DumpMemoryToStorage(&mysql);
+    ma.dumpMemoryToStorage(&mysql);
 }

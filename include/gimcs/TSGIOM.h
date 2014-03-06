@@ -30,10 +30,10 @@ class TSGIOM: public GIOM
     public:
         TSGIOM();
         virtual ~TSGIOM();
-        virtual void Update();    // reimplement Update, add time sequence
+        virtual void update();    // reimplement update, add time sequence
 
     protected:
-        virtual OSpace Restrict(Input, OSpace &) const;    // reimplement Restrict
+        virtual OSpace restrain(Input, OSpace &) const;    // reimplement restrain
         /* bring in the time sequence feature */
         Input pre_in; /**< previous input value */
         Output pre_out; /**< previous output value */

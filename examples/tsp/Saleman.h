@@ -81,24 +81,24 @@ class Saleman: public CSThreadAvatar
         }
 
     private:
-        Agent::State GetCurrentState()
+        Agent::State getCurrentState()
         {
             // encode state
-            EncodeState(path, current_state);
+            encodeState(path, current_state);
             printf("Saleman: %s State: <%" ST_FMT ">,\t", name.c_str(), current_state);
-            PrintPath(path);
+            printPath(path);
 
             return current_state;
         }
 
-        OSpace ActionCandidates(Agent::State st)
+        OSpace actionCandidates(Agent::State st)
         {
             OSpace re;
 
             if (count < 50000)
             {
                 int tmp_path[CITY_NUM];
-                DecodeState(st, tmp_path);
+                decodeState(st, tmp_path);
 
                 int acts[CITY_NUM];
                 Agent::Action act;
@@ -117,8 +117,8 @@ class Saleman: public CSThreadAvatar
                             {
                                 acts[i] = delta;
                                 acts[j] = -delta;
-                                EncodeAction(acts, act);
-                                re.Add(act);
+                                encodeAction(acts, act);
+                                re.add(act);
                                 break;
                             }
                         }
@@ -129,19 +129,19 @@ class Saleman: public CSThreadAvatar
             return re;
         }
 
-        void PerformAction(Agent::Action act)
+        void performAction(Agent::Action act)
         {
             // apply act
             current_state += act;
 
-            DecodeState(current_state, path);
+            decodeState(current_state, path);
         }
 
-        float OriginalPayoff(Agent::State st)
+        float originalPayoff(Agent::State st)
         {
             // decode state
             int tmp_path[CITY_NUM];
-            DecodeState(st, tmp_path);
+            decodeState(st, tmp_path);
             // calculate the path length
             int city, ncity;
             int total_distance = 0;
@@ -162,7 +162,7 @@ class Saleman: public CSThreadAvatar
 
         }
 
-        void EncodeState(const int path[CITY_NUM], Agent::State &encoded_st)
+        void encodeState(const int path[CITY_NUM], Agent::State &encoded_st)
         {
             encoded_st = 0;
             for (int i = 0; i < CITY_NUM; i++)
@@ -171,7 +171,7 @@ class Saleman: public CSThreadAvatar
             }
         }
 
-        void DecodeState(Agent::State st, int decode_path[CITY_NUM])
+        void decodeState(Agent::State st, int decode_path[CITY_NUM])
         {
             for (int i = CITY_NUM - 1; i >= 0; i--)
             {
@@ -185,7 +185,7 @@ class Saleman: public CSThreadAvatar
             }
         }
 
-        void EncodeAction(const int act[CITY_NUM], Agent::Action &encoded_act)
+        void encodeAction(const int act[CITY_NUM], Agent::Action &encoded_act)
         {
             encoded_act = 0;
             for (int i = 0; i < CITY_NUM; i++)
@@ -194,7 +194,7 @@ class Saleman: public CSThreadAvatar
             }
         }
 
-        void PrintPath(int path[CITY_NUM])
+        void printPath(int path[CITY_NUM])
         {
             printf("Path: ");
             for (int i = 0; i < CITY_NUM; i++)

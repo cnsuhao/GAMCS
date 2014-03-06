@@ -24,7 +24,7 @@ namespace gimcs
  * \brief Connect to database.
  * \return -1 for error, 0 for success
  */
-int Mysql::Connect()
+int Mysql::connect()
 {
     if (mysql_library_init(0, NULL, NULL))
     {
@@ -85,7 +85,7 @@ int Mysql::Connect()
 /**
  * \brief Close database.
  */
-void Mysql::Close()
+void Mysql::close()
 {
     if (db_con == NULL)
         return;
@@ -104,7 +104,7 @@ void Mysql::Close()
  * \param passwd password of username
  * \param name of the database
  */
-void Mysql::SetDBArgs(std::string srv, std::string usr, std::string passwd,
+void Mysql::setDBArgs(std::string srv, std::string usr, std::string passwd,
         std::string db)
 {
     db_server = srv;
@@ -114,16 +114,16 @@ void Mysql::SetDBArgs(std::string srv, std::string usr, std::string passwd,
     return;
 }
 
-Agent::State Mysql::FirstState() const
+Agent::State Mysql::firstState() const
 {
     current_index = 0;
-    return StateByIndex(current_index);
+    return stateByIndex(current_index);
 }
 
-Agent::State Mysql::NextState() const
+Agent::State Mysql::nextState() const
 {
     current_index++;
-    return StateByIndex(current_index);
+    return stateByIndex(current_index);
 }
 
 /**
@@ -131,7 +131,7 @@ Agent::State Mysql::NextState() const
  * \param index index
  * \return state value of that index, INVALID_STATE for error or not found
  */
-Agent::State Mysql::StateByIndex(unsigned long index) const
+Agent::State Mysql::stateByIndex(unsigned long index) const
 {
     char query_str[256];
     sprintf(query_str, "SELECT * FROM %s LIMIT %ld, 1", db_t_stateinfo.c_str(),
@@ -171,7 +171,7 @@ Agent::State Mysql::StateByIndex(unsigned long index) const
  * \param st state value
  * \return fetched state information, NULL if error
  */
-struct State_Info_Header *Mysql::GetStateInfo(Agent::State st) const
+struct State_Info_Header *Mysql::getStateInfo(Agent::State st) const
 {
     if (st == Agent::INVALID_STATE)
     {
@@ -238,7 +238,7 @@ struct State_Info_Header *Mysql::GetStateInfo(Agent::State st) const
  * \param state value
  * \return 1 if found, 0 if not
  */
-bool Mysql::HasState(Agent::State st) const
+bool Mysql::hasState(Agent::State st) const
 {
     char query_string[256];
     sprintf(query_string, "SELECT * FROM %s WHERE State=%" ST_FMT,
@@ -266,7 +266,7 @@ bool Mysql::HasState(Agent::State st) const
  * \brief Add state information to database.
  * \param stif header pointed to state information
  */
-void Mysql::AddStateInfo(const struct State_Info_Header *sthd)
+void Mysql::addStateInfo(const struct State_Info_Header *sthd)
 {
     char str[256];
     sprintf(str,
@@ -297,7 +297,7 @@ void Mysql::AddStateInfo(const struct State_Info_Header *sthd)
  * \brief Update information of a state already exists in database.
  * \param stif header pointed to the modified state information
  */
-void Mysql::UpdateStateInfo(const struct State_Info_Header *sthd)
+void Mysql::updateStateInfo(const struct State_Info_Header *sthd)
 {
     char str[256];
     sprintf(str,
@@ -329,7 +329,7 @@ void Mysql::UpdateStateInfo(const struct State_Info_Header *sthd)
  * \param st state value to be delete
  * FIXME: need to handle the links with other states!
  */
-void Mysql::DeleteState(Agent::State st)
+void Mysql::deleteState(Agent::State st)
 {
     WARNNING(
             "DeleteState() is not completely implemented yet, it's buggy and will not work as expected, DON'T use it!\n");
@@ -349,7 +349,7 @@ void Mysql::DeleteState(Agent::State st)
 /**
  * \brief Add memory statistics to database.
  */
-void Mysql::AddMemoryInfo(const struct Memory_Info *memif)
+void Mysql::addMemoryInfo(const struct Memory_Info *memif)
 {
     char query_str[256];
 
@@ -371,7 +371,7 @@ void Mysql::AddMemoryInfo(const struct Memory_Info *memif)
  * \brief Fetch memory statistics from database.
  * \return memory info struct, NULL if error
  */
-struct Memory_Info *Mysql::GetMemoryInfo() const
+struct Memory_Info *Mysql::getMemoryInfo() const
 {
     char query_str[256];
     sprintf(query_str, "SELECT * FROM %s ORDER BY TimeStamp DESC LIMIT 1",

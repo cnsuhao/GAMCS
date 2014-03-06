@@ -41,22 +41,22 @@ class Mysql: public Storage
         {
         }
 
-        int Connect();
-        void Close();
-        void SetDBArgs(std::string, std::string, std::string, std::string);
+        int connect();
+        void close();
+        void setDBArgs(std::string, std::string, std::string, std::string);
 
-        Agent::State FirstState() const;
-        Agent::State NextState() const;
-        bool HasState(Agent::State) const;
+        Agent::State firstState() const;
+        Agent::State nextState() const;
+        bool hasState(Agent::State) const;
 
-        struct State_Info_Header *GetStateInfo(Agent::State) const;
-        void AddStateInfo(const struct State_Info_Header *);
-        void UpdateStateInfo(const struct State_Info_Header *);
-        void DeleteState(Agent::State);
+        struct State_Info_Header *getStateInfo(Agent::State) const;
+        void addStateInfo(const struct State_Info_Header *);
+        void updateStateInfo(const struct State_Info_Header *);
+        void deleteState(Agent::State);
 
-        void AddMemoryInfo(const struct Memory_Info *);
-        struct Memory_Info *GetMemoryInfo() const;
-        std::string GetMemoryName() const;
+        void addMemoryInfo(const struct Memory_Info *);
+        struct Memory_Info *getMemoryInfo() const;
+        std::string getMemoryName() const;
 
     private:
         MYSQL *db_con; /**< database connection handler */
@@ -68,10 +68,10 @@ class Mysql: public Storage
         std::string db_t_meminfo; /**< table name for storing memory information */
         mutable gimcs_uint current_index;
 
-        Agent::State StateByIndex(unsigned long) const;
+        Agent::State stateByIndex(unsigned long) const;
 };
 
-inline std::string Mysql::GetMemoryName() const
+inline std::string Mysql::getMemoryName() const
 {
     return db_name;
 }

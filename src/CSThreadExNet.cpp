@@ -78,7 +78,7 @@ CSThreadExNet::~CSThreadExNet()
  * \param length length of the message
  * \return length of message that has been sent to the neighbour
  */
-int CSThreadExNet::Send(int fromid, int toid, void *buffer, size_t buf_size)
+int CSThreadExNet::send(int fromid, int toid, void *buffer, size_t buf_size)
 {
     if (buf_size > DATA_SIZE)    // check size
     {
@@ -95,18 +95,18 @@ int CSThreadExNet::Send(int fromid, int toid, void *buffer, size_t buf_size)
             "****************************** Send End **********************************\n\n");
 #endif // _DEBUG_
 
-    struct Channel *chan = GetChannel(toid);    // get its channel
+    struct Channel *chan = getChannel(toid);    // get its channel
     pthread_mutex_lock(&chan->mutex);    // lock before write message to it
 
     // check if msg buffer is not NULL, this may happen when a member has a neighbour that has been removed from net.
     if (chan->msg == NULL)    // neighbour has been removed from network
     {
         pthread_mutex_unlock(&chan->mutex);    // unlock
-        RemoveNeighbour(fromid, toid);    // break up with removed member
+        removeNeighbour(fromid, toid);    // break up with removed member
         return 0;    // no msg is sent
     }
 
-    chan->ptr = WrapInc(chan->ptr);    // move to the next empty place
+    chan->ptr = wrapInc(chan->ptr);    // move to the next empty place
 
     // copy msg
     memcpy(chan->msg[chan->ptr].data, buffer, buf_size);    // copy message to the channel
@@ -127,14 +127,14 @@ int CSThreadExNet::Send(int fromid, int toid, void *buffer, size_t buf_size)
  * \param length of the message to be recieved
  * \return length of message recieved
  */
-int CSThreadExNet::Recv(int toid, int fromid, void *buffer, size_t buf_size)
+int CSThreadExNet::recv(int toid, int fromid, void *buffer, size_t buf_size)
 {
     if (buf_size > DATA_SIZE)    // check length
     {
         WARNNING("Recv()- requested data length exceeds DATA_SIZE.\n");
     }
 
-    struct Channel *chan = GetChannel(toid);    // get my channel
+    struct Channel *chan = getChannel(toid);    // get my channel
     size_t re = 0;
     pthread_mutex_lock(&chan->mutex);    // lock it before reading, prevent concurrent writtings
 
@@ -151,7 +151,7 @@ int CSThreadExNet::Recv(int toid, int fromid, void *buffer, size_t buf_size)
 
             // decrease counts
             chan->msg_num--;    // dec the message number
-            chan->ptr = WrapDec(chan->ptr);    // dec the point
+            chan->ptr = wrapDec(chan->ptr);    // dec the point
 
             // check msg size before return
             struct State_Info_Header *stif = (struct State_Info_Header *) buffer;
@@ -185,18 +185,18 @@ int CSThreadExNet::Recv(int toid, int fromid, void *buffer, size_t buf_size)
                     memcpy(buffer, chan->msg[tmp_ptr].data, buf_size);    // fetch the msg
 
                     // move msgs
-                    tmp_ptr = WrapInc(tmp_ptr);    // start from the next msg
-                    while (tmp_ptr != WrapInc(chan->ptr))    // stop when exceeds the latest
+                    tmp_ptr = wrapInc(tmp_ptr);    // start from the next msg
+                    while (tmp_ptr != wrapInc(chan->ptr))    // stop when exceeds the latest
                     {
-                        memcpy(chan->msg[WrapDec(tmp_ptr)].data,
+                        memcpy(chan->msg[wrapDec(tmp_ptr)].data,
                                 chan->msg[tmp_ptr].data, DATA_SIZE);
 
-                        tmp_ptr = WrapInc(tmp_ptr);    // next msg
+                        tmp_ptr = wrapInc(tmp_ptr);    // next msg
                     }
                     // move done
 
                     // decrease counts
-                    chan->ptr = WrapDec(chan->ptr);
+                    chan->ptr = wrapDec(chan->ptr);
                     chan->msg_num--;
 
                     // check msg size before return
@@ -234,7 +234,7 @@ int CSThreadExNet::Recv(int toid, int fromid, void *buffer, size_t buf_size)
  * \param id member id
  * \return neighbour list
  */
-std::set<int> CSThreadExNet::GetNeighbours(int id) const
+std::set<int> CSThreadExNet::getNeighbours(int id) const
 {
     std::set<int> neighs;
     neighs.clear();
@@ -249,10 +249,10 @@ std::set<int> CSThreadExNet::GetNeighbours(int id) const
     return neighs;
 }
 
-void CSThreadExNet::AddMember(int mem)
+void CSThreadExNet::addMember(int mem)
 {
     // check if exceeds max member size
-    if (NumberOfMembers() >= MAX_MEMBER)
+    if (numberOfMembers() >= MAX_MEMBER)
     ERROR("AddMember(): maximun member number reachs, can't add more!\n");
 
     // check if alread exists
@@ -269,7 +269,7 @@ void CSThreadExNet::AddMember(int mem)
     channels[mem].ptr = 0;
 }
 
-void CSThreadExNet::AddNeighbour(int mem, int neb)
+void CSThreadExNet::addNeighbour(int mem, int neb)
 {
     // check if member exists
     if (members.find(mem) == members.end())    // not found
@@ -318,7 +318,7 @@ void CSThreadExNet::AddNeighbour(int mem, int neb)
     neighlist[mem] = nneigh;
 }
 
-void CSThreadExNet::RemoveMember(int mem)
+void CSThreadExNet::removeMember(int mem)
 {
     // check if exists
     if (members.find(mem) == members.end())    // not found
@@ -347,7 +347,7 @@ void CSThreadExNet::RemoveMember(int mem)
     members.erase(mem);
 }
 
-void CSThreadExNet::RemoveNeighbour(int mem, int neighbour)
+void CSThreadExNet::removeNeighbour(int mem, int neighbour)
 {
     // check if member exists
     if (members.find(mem) == members.end())    // not found
@@ -392,7 +392,7 @@ void CSThreadExNet::RemoveNeighbour(int mem, int neighbour)
 
 }
 
-bool CSThreadExNet::CheckNeighbourShip(int from, int to) const
+bool CSThreadExNet::checkNeighbourShip(int from, int to) const
 {
     bool connected = false;
     struct Neigh *nb, *nnb;
@@ -414,7 +414,7 @@ bool CSThreadExNet::CheckNeighbourShip(int from, int to) const
  * This function will not add new members but just make neighbours.
  * \param tf file name
  */
-void CSThreadExNet::LoadTopoFromFile(char *tf)
+void CSThreadExNet::loadTopoFromFile(char *tf)
 {
     // check file type
     char *ext = strrchr(tf, '.');    // find the dot
@@ -443,7 +443,7 @@ void CSThreadExNet::LoadTopoFromFile(char *tf)
             ERROR("LoadTopoFromFile(): can't get node id from file!\n");
             int mid = atoi(str_nid);
             // check if member has joined in network
-            if (!HasMember(mid))// not join
+            if (!hasMember(mid))// not join
             {
                 WARNNING(
                         "LoadTopoFromFile: can not add neighbours for member %d, it's not in network, join in first!\n",
@@ -462,7 +462,7 @@ void CSThreadExNet::LoadTopoFromFile(char *tf)
                 neigh_node = edge->node;
                 int neb = atoi(agget(neigh_node, "id"));// get neighbour's id
 
-                AddNeighbour(mid, neb);
+                addNeighbour(mid, neb);
             }
 
         }
@@ -470,7 +470,7 @@ void CSThreadExNet::LoadTopoFromFile(char *tf)
         fclose(topofs);    // close file
 #else
         ERROR(
-                "LoadTopoFromFIle: GIMCS is built without support of CGraph, can not read .dot file!\n");
+                "LoadTopoFromFIle: GIMCS is built without support of CGraph, can not read .dot file!\nConfigure with option -DWITH_CGRAPH=YES\n");
 #endif
     }
     else if (strcmp(ext, "exnet") == 0)    // *.exnet
@@ -492,7 +492,7 @@ void CSThreadExNet::LoadTopoFromFile(char *tf)
             if (strcmp(const_cast<char *>(p), "#") == 0) continue;    // p is #, comment line
             int mid = atoi(p);    // member id
             // check if member has joined in network
-            if (!HasMember(mid))    // not join
+            if (!hasMember(mid))    // not join
             {
                 WARNNING(
                         "LoadTopoFromFile: can not add neighbours for member %d, it's not in network, join in first!\n",
@@ -507,7 +507,7 @@ void CSThreadExNet::LoadTopoFromFile(char *tf)
                 {
                     if (strcmp(const_cast<char *>(p), "#") == 0) break;    // p is #, comment begins
                     int nid = atoi(p);    // neighbour id
-                    AddNeighbour(mid, nid);
+                    addNeighbour(mid, nid);
                 }
             }
         }
@@ -525,7 +525,7 @@ void CSThreadExNet::LoadTopoFromFile(char *tf)
 /**
  * \brief Dump structure of communication network to file
  */
-void CSThreadExNet::DumpTopoToFile(char *tf) const
+void CSThreadExNet::dumpTopoToFile(char *tf) const
 {
     // check file type
     char *ext = strrchr(tf, '.');    // find the dot
@@ -557,17 +557,17 @@ void CSThreadExNet::DumpTopoToFile(char *tf) const
         fprintf(topofs, "digraph CommNet_%d \n{\n", id);
         fprintf(topofs,
                 "label=\"Topo Structure of CommNet %d\\n#members: %d, ...\"\n",
-                id, NumberOfMembers());    // statistics about the network can be put here
+                id, numberOfMembers());    // statistics about the network can be put here
         fprintf(topofs, "node [color=\"black\", shape=\"circle\"]\n");
         fprintf(topofs, "rank=\"same\"\n");
 
-        std::set<int> allmembers = GetAllMembers();
+        std::set<int> allmembers = getAllMembers();
         for (std::set<int>::iterator mit = allmembers.begin();
                 mit != allmembers.end(); ++mit)
         {
             fprintf(topofs, "\nmem%d [label=\"%d\", id=\"%d\"]\n", *mit, *mit,
                     *mit);
-            std::set<int> neighbours = GetNeighbours(*mit);
+            std::set<int> neighbours = getNeighbours(*mit);
             for (std::set<int>::iterator nit = neighbours.begin();
                     nit != neighbours.end(); ++nit)
             {
@@ -590,12 +590,12 @@ void CSThreadExNet::DumpTopoToFile(char *tf) const
         fprintf(topofs, "#       member2 : neighbour1 neighbour2 ... \n");
         fprintf(topofs, "#          ... \n\n");
 
-        std::set<int> allmembers = GetAllMembers();
+        std::set<int> allmembers = getAllMembers();
         for (std::set<int>::iterator mit = allmembers.begin();
                 mit != allmembers.end(); ++mit)
         {
             fprintf(topofs, "%d : ", *mit);
-            std::set<int> neighbours = GetNeighbours(*mit);
+            std::set<int> neighbours = getNeighbours(*mit);
             for (std::set<int>::iterator nit = neighbours.begin();
                     nit != neighbours.end(); ++nit)
             {
@@ -614,7 +614,7 @@ void CSThreadExNet::DumpTopoToFile(char *tf) const
     return;
 }
 
-int CSThreadExNet::WrapInc(int ptr)
+int CSThreadExNet::wrapInc(int ptr)
 {
     int nptr;
     if (ptr == MSG_POOL_SIZE - 1)
@@ -625,7 +625,7 @@ int CSThreadExNet::WrapInc(int ptr)
     return nptr;
 }
 
-int CSThreadExNet::WrapDec(int ptr)
+int CSThreadExNet::wrapDec(int ptr)
 {
     int nptr;
     if (ptr == 0)

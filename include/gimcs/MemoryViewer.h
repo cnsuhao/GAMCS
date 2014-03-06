@@ -35,15 +35,15 @@ class MemoryViewer
         MemoryViewer(Storage *);
         virtual ~MemoryViewer();
 
-        void AttachStorage(Storage *); /**< set storage in which memory is stored */
-        virtual void Show() = 0; /**< show the whole memory */
-        virtual void ShowState(Agent::State) = 0; /**< show a specified state */
+        void attachStorage(Storage *); /**< set storage in which memory is stored */
+        virtual void show() = 0; /**< show the whole memory */
+        virtual void showState(Agent::State) = 0; /**< show a specified state */
 
     protected:
         Storage *storage;
 };
 
-inline void MemoryViewer::AttachStorage(Storage *sg)
+inline void MemoryViewer::attachStorage(Storage *sg)
 {
     storage = sg;
 }

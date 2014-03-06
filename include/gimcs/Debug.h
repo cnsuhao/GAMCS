@@ -41,7 +41,7 @@ namespace gimcs
 
 #define UNUSED(expr) do { (void)(expr); } while (0)
 
-void PrintStateInfo(const struct State_Info_Header *);
+void printStateInfo(const struct State_Info_Header *);
 
 }
 #endif // DEBUG_H
