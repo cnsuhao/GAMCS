@@ -10,21 +10,26 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #include "Mouse.h"
 #include "gimcs/CSMAgent.h"
+#ifdef _WITH_MYSQL_
 #include "gimcs/Mysql.h"
+#endif
 
 int main(void)
 {
+    CSMAgent ma(1, 0.9, 0.01);
+#ifdef _WITH_MYSQL_
     Mysql mysql;
     mysql.SetDBArgs("localhost", "root", "huangk", "Mouse");
-    CSMAgent ma(1, 0.9, 0.01);
     ma.LoadMemoryFromStorage(&mysql);
+#endif
 
     Mouse mouse("Mouse");
     mouse.ConnectAgent(&ma);
     mouse.Launch();
 
+#ifdef _WITH_MYSQL_
     ma.DumpMemoryToStorage(&mysql);
+#endif
 }
