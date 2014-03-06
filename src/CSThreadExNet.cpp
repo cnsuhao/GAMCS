@@ -10,9 +10,10 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #include <climits>
+#ifdef _WITH_CGRAPH_
 #include <graphviz/cgraph.h>
+#endif
 #include <assert.h>
 #include <cassert>
 #include <stdio.h>
@@ -415,50 +416,109 @@ bool CSThreadExNet::CheckNeighbourShip(int from, int to) const
  */
 void CSThreadExNet::LoadTopoFromFile(char *tf)
 {
-    Agraph_t *graph;
-    Agnode_t *node, *neigh_node;
-    Agedge_t *edge;
+    // check file type
+    char *ext = strrchr(tf, '.');    // find the dot
+    ext++;
 
-    FILE *topofs = fopen(tf, "r");
-    if (topofs == NULL)
-    ERROR("LoadTopoFromFile: network %d can't open topofile: %s!\n", id, tf);
-
-    // load graph from file
-    graph = agread(topofs, 0);
-    fclose(topofs);
-
-    // traversal each node in graph
-    for (node = agfstnode(graph); node; node = agnxtnode(graph, node))
+    if (strcmp(ext, "dot") == 0)    // *.dot
     {
-        const char *str_nid = agget(node, "id");    // get agent id
-        if (str_nid == NULL)
-        ERROR("LoadTopoFromFile(): can't get node id from file!\n");
-        int mid = atoi(str_nid);
-        // check if member has joined in network
-        if (!HasMember(mid))    // not join
+#ifdef _WITH_CGRAPH_
+        Agraph_t *graph;
+        Agnode_t *node, *neigh_node;
+        Agedge_t *edge;
+
+        // open file
+        FILE *topofs = fopen(tf, "r");
+        if (topofs == NULL)
+        ERROR("LoadTopoFromFile: network %d can't open topofile: %s!\n", id, tf);
+
+        // load graph from file
+        graph = agread(topofs, 0);
+
+        // traversal each node in graph
+        for (node = agfstnode(graph); node; node = agnxtnode(graph, node))
         {
-            WARNNING(
-                    "LoadTopoFromFile: can not add neighbours for member %d, it's not in network, join in first!\n",
-                    mid);
-            continue;
+            const char *str_nid = agget(node, "id");    // get agent id
+            if (str_nid == NULL)
+            ERROR("LoadTopoFromFile(): can't get node id from file!\n");
+            int mid = atoi(str_nid);
+            // check if member has joined in network
+            if (!HasMember(mid))// not join
+            {
+                WARNNING(
+                        "LoadTopoFromFile: can not add neighbours for member %d, it's not in network, join in first!\n",
+                        mid);
+                continue;
+            }
+
+            // get its neighbours
+            for (edge = agfstout(graph, node); edge; edge = agnxtout(graph, edge))
+            {
+                //            const char *str_edint = agget(edge, "interval");    // get interval from edge
+                //            if (str_edint == NULL)
+                //                ERROR("LoadTopoFromFile(): can't get edge interval from file!\n");
+                //            int interval = atoi(str_edint);
+
+                neigh_node = edge->node;
+                int neb = atoi(agget(neigh_node, "id"));// get neighbour's id
+
+                AddNeighbour(mid, neb);
+            }
+
         }
-
-        // get its neighbours
-        for (edge = agfstout(graph, node); edge; edge = agnxtout(graph, edge))
-        {
-//            const char *str_edint = agget(edge, "interval");    // get interval from edge
-//            if (str_edint == NULL)
-//                ERROR("LoadTopoFromFile(): can't get edge interval from file!\n");
-//            int interval = atoi(str_edint);
-
-            neigh_node = edge->node;
-            int neb = atoi(agget(neigh_node, "id"));    // get neighbour's id
-
-            AddNeighbour(mid, neb);
-        }
-
+        agclose(graph);
+        fclose(topofs);    // close file
+#else
+        ERROR(
+                "LoadTopoFromFIle: GIMCS is built without support of CGraph, can not read .dot file!\n");
+#endif
     }
-    agclose(graph);
+    else if (strcmp(ext, "exnet") == 0)    // *.exnet
+    {
+        // open file
+        FILE *topofs = fopen(tf, "r");
+        if (topofs == NULL)
+            ERROR("LoadTopoFromFile: network %d can't open topofile: %s!\n", id,
+                    tf);
+
+        /* parse file, add member and build neighlist */
+        char line[4096];    // buffer for reading a line in topofile, make sure it's big enough
+        const char *delim = ": ";    // delimiter bewteen member Id and its neighbour Ids
+        while (fgets(line, 4096, topofs))    // read till end
+        {
+            // get the member itself first
+            char *p = strtok(line, delim);
+            if (!p) break;
+            if (strcmp(const_cast<char *>(p), "#") == 0) continue;    // p is #, comment line
+            int mid = atoi(p);    // member id
+            // check if member has joined in network
+            if (!HasMember(mid))    // not join
+            {
+                WARNNING(
+                        "LoadTopoFromFile: can not add neighbours for member %d, it's not in network, join in first!\n",
+                        mid);
+                continue;
+            }
+            // parse and get its neighbours
+            while (p)
+            {
+                p = strtok(NULL, delim);
+                if (p && (atoi(p) != mid))    // exclude self
+                {
+                    if (strcmp(const_cast<char *>(p), "#") == 0) break;    // p is #, comment begins
+                    int nid = atoi(p);    // neighbour id
+                    AddNeighbour(mid, nid);
+                }
+            }
+        }
+
+        fclose(topofs);
+    }
+    else    // other file type to be supported
+    {
+        ERROR("LoadTopoFromFile: Unrecognized topo file type: %s\n", tf);
+    }
+
     return;
 }
 
@@ -467,49 +527,91 @@ void CSThreadExNet::LoadTopoFromFile(char *tf)
  */
 void CSThreadExNet::DumpTopoToFile(char *tf) const
 {
-    FILE *topofs = fopen(tf, "w+");
-    if (topofs == NULL)
-    ERROR("DumpTopoToFile: network %d can't open topofile: %s!\n", id, tf);
+    // check file type
+    char *ext = strrchr(tf, '.');    // find the dot
+    ext++;
 
-    /* topo file example:
-     * diagraph CommNet_1 {
-     * label = "#members: 3, ..."
-     * node [color=black, shape=circle]
-     * rank="same"
-     *
-     * mem1 [label="1", id="1"]
-     * mem2 [label="2", id="2"]
-     * mem3 [label="3", id="3"]
-     *
-     * mem1 -> mem2 [label="100", interval="100"]
-     * mem3 -> mem1 [label="50" , interval="50"]
-     * }
-     */
-
-    fprintf(topofs, "/* Topological structure dumped by CommNet %d */\n\n", id);
-    fprintf(topofs, "digraph CommNet_%d \n{\n", id);
-    fprintf(topofs,
-            "label=\"Topo Structure of CommNet %d\\n#members: %d, ...\"\n", id,
-            NumberOfMembers());    // statistics about the network can be put here
-    fprintf(topofs, "node [color=\"black\", shape=\"circle\"]\n");
-    fprintf(topofs, "rank=\"same\"\n");
-
-    std::set<int> allmembers = GetAllMembers();
-    for (std::set<int>::iterator mit = allmembers.begin();
-            mit != allmembers.end(); ++mit)
+    if (strcmp(ext, "dot") == 0)    // *.dot, dump to dot file doesn't need CGraph
     {
-        fprintf(topofs, "\nmem%d [label=\"%d\", id=\"%d\"]\n", *mit, *mit,
-                *mit);
-        std::set<int> neighbours = GetNeighbours(*mit);
-        for (std::set<int>::iterator nit = neighbours.begin();
-                nit != neighbours.end(); ++nit)
+        FILE *topofs = fopen(tf, "w+");
+        if (topofs == NULL)
+        ERROR("DumpTopoToFile: network %d can't open topofile: %s!\n", id, tf);
+
+        /* topo file example:
+         * diagraph CommNet_1 {
+         * label = "#members: 3, ..."
+         * node [color=black, shape=circle]
+         * rank="same"
+         *
+         * mem1 [label="1", id="1"]
+         * mem2 [label="2", id="2"]
+         * mem3 [label="3", id="3"]
+         *
+         * mem1 -> mem2 [label="100", interval="100"]
+         * mem3 -> mem1 [label="50" , interval="50"]
+         * }
+         */
+
+        fprintf(topofs, "/* Topological structure dumped by CommNet %d */\n\n",
+                id);
+        fprintf(topofs, "digraph CommNet_%d \n{\n", id);
+        fprintf(topofs,
+                "label=\"Topo Structure of CommNet %d\\n#members: %d, ...\"\n",
+                id, NumberOfMembers());    // statistics about the network can be put here
+        fprintf(topofs, "node [color=\"black\", shape=\"circle\"]\n");
+        fprintf(topofs, "rank=\"same\"\n");
+
+        std::set<int> allmembers = GetAllMembers();
+        for (std::set<int>::iterator mit = allmembers.begin();
+                mit != allmembers.end(); ++mit)
         {
-            fprintf(topofs, "mem%d -> mem%d\n", *mit, *nit);
+            fprintf(topofs, "\nmem%d [label=\"%d\", id=\"%d\"]\n", *mit, *mit,
+                    *mit);
+            std::set<int> neighbours = GetNeighbours(*mit);
+            for (std::set<int>::iterator nit = neighbours.begin();
+                    nit != neighbours.end(); ++nit)
+            {
+                fprintf(topofs, "mem%d -> mem%d\n", *mit, *nit);
+            }
         }
+
+        fprintf(topofs, "}\n");    // diagraph
+        fclose(topofs);
+    }
+    else if (strcmp(ext, "exnet") == 0)
+    {
+        FILE *topofs = fopen(tf, "w+");
+        if (topofs == NULL)
+        ERROR("DumpTopoToFile: network %d can't open topofile: %s!\n", id, tf);
+
+        fprintf(topofs, "# Topo file dumped by CommNet %d\n", id);
+        fprintf(topofs, "# Syntax: \n");
+        fprintf(topofs, "#       member1 : neighbour1 neighbour2 ... \n");
+        fprintf(topofs, "#       member2 : neighbour1 neighbour2 ... \n");
+        fprintf(topofs, "#          ... \n\n");
+
+        std::set<int> allmembers = GetAllMembers();
+        for (std::set<int>::iterator mit = allmembers.begin();
+                mit != allmembers.end(); ++mit)
+        {
+            fprintf(topofs, "%d : ", *mit);
+            std::set<int> neighbours = GetNeighbours(*mit);
+            for (std::set<int>::iterator nit = neighbours.begin();
+                    nit != neighbours.end(); ++nit)
+            {
+                fprintf(topofs, "%d ", *nit);
+            }
+            fprintf(topofs, "\n");
+        }
+
+        fclose(topofs);
+    }
+    else    // other type to be supported
+    {
+        ERROR("DumpTopoToFile: Unrecognized topo file type: %s\n", tf);
     }
 
-    fprintf(topofs, "}\n");    // diagraph
-    fclose(topofs);
+    return;
 }
 
 int CSThreadExNet::WrapInc(int ptr)

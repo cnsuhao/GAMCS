@@ -74,6 +74,7 @@ int main(int argc, char *argv[])
         delete mysql[i];
     }
     // save topo structure
+    network.DumpTopoToFile("dump.exnet");
 
     printf("------- quit!\n");
 

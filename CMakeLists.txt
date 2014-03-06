@@ -10,25 +10,30 @@ SET(GIMCS_NAME gimcs)
 SET(GIMCS_STATIC_NAME gimcs_static)
 SET(GIMCS_VERSION ${GIMCS_MAJOR}.${GIMCS_MINOR}.${GIMCS_BUILD})
 
-# needed packages
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
-
-FIND_PACKAGE(CGraph REQUIRED)
-INCLUDE_DIRECTORIES(${CGRAPH_INCLUDE_DIRS})
-SET(LIBS ${LIBS} ${CGRAPH_LIBRARIES})
-
-FIND_PACKAGE(MYSQL REQUIRED)
-INCLUDE_DIRECTORIES(${MYSQL_INCLUDE_DIRS})
-SET(LIBS ${LIBS} ${MYSQL_LIBRARIES})
-
 # configuration options
 OPTION(DEBUG "Build with debug output" NO)
 OPTION(DEBUG_MORE "Build with debug output" NO)
 OPTION(INT_BITS "Bitwise of integer" 64)    # 8, 16, 32, 64
-
 MESSAGE(STATUS "Input/Output bitwise " ${INT_BITS})
+OPTION(WITH_MYSQL "Build with Mysql support" YES)   # Mysql is a kind of storage to save memories of agent
+MESSAGE(STATUS "Mysql support: " ${WITH_MYSQL})
+OPTION(WITH_CGRAPH "Build with CGraph support" NO)  # CGraph supports reading topo structure from .dot file directly
+MESSAGE(STATUS "CGraph support: " ${WITH_CGRAPH})
 
-CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/config.h.in ${PROJECT_SOURCE_DIR}/include/gimcs/config.h)
+# dependent packages
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+
+IF (WITH_MYSQL)
+    FIND_PACKAGE(MYSQL REQUIRED)
+    INCLUDE_DIRECTORIES(${MYSQL_INCLUDE_DIRS})
+    SET(LIBS ${LIBS} ${MYSQL_LIBRARIES})
+ENDIF ()
+
+IF (WITH_CGRAPH)
+    FIND_PACKAGE(CGraph REQUIRED)
+    INCLUDE_DIRECTORIES(${CGRAPH_INCLUDE_DIRS})
+    SET(LIBS ${LIBS} ${CGRAPH_LIBRARIES})
+ENDIF ()
 
 # definitions
 IF (DEBUG)
@@ -41,6 +46,13 @@ IF (DEBUG_MORE)
     SET(CMAKE_BUILD_TYPE Debug)
 ENDIF()
 
+IF (WITH_MYSQL)
+    ADD_DEFINITIONS("-D_WITH_MYSQL_")
+ENDIF()
+
+IF (WITH_CGRAPH)
+    ADD_DEFINITIONS("-D_WITH_CGRAPH_")
+ENDIF()
 
 # detect platforms
 IF (WIN32)
@@ -75,35 +87,57 @@ MESSAGE(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
 
 # public headers
-SET(LIBGIMCS_PUBLIC_HDRS
+SET(GIMCS_CORE_HDRS 
     ${PROJECT_SOURCE_DIR}/include/gimcs/GIOM.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/TSGIOM.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/Agent.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/StateInfoParser.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/MAgent.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/CSMAgent.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/Avatar.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/CSThreadAvatar.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/ExNet.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/CSThreadExNet.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/ExManager.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/CSThreadExManager.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/Storage.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/Mysql.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/MemoryViewer.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/Debug.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/config.h
+    )
+
+SET(GIMCS_CS_HDRS
+    ${PROJECT_SOURCE_DIR}/include/gimcs/CSMAgent.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/CSThreadAvatar.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/CSThreadExNet.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/CSThreadExManager.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/PrintViewer.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/DotViewer.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/CDotViewer.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/Debug.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/StateInfoParser.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/config.h
     )
+
+SET(GIMCS_MYSQL_HDRS
+    ${PROJECT_SOURCE_DIR}/include/gimcs/Mysql.h
+    )
+
+IF (WITH_MYSQL)
+    SET(GIMCS_PUBLIC_HDRS
+        ${GIMCS_CORE_HDRS}
+        ${GIMCS_CS_HDRS}
+        ${GIMCS_MYSQL_HDRS}
+        )
+ELSE (WITH_MYSQL)
+    SET(GIMCS_PUBLIC_HDRS
+        ${GIMCS_CORE_HDRS}
+        ${GIMCS_CS_HDRS}
+        )
+ENDIF()
+
+# configuration file
+CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/config.h.in ${PROJECT_SOURCE_DIR}/include/gimcs/config.h)
 
 # install prefix
 SET(PREFIX  ${CMAKE_INSTALL_PREFIX})
 
 # install header files
 SET(INCLUDEDIR  ${CMAKE_INSTALL_PREFIX}/include/gimcs)
-INSTALL(FILES ${LIBGIMCS_PUBLIC_HDRS} DESTINATION ${INCLUDEDIR})
+INSTALL(FILES ${GIMCS_PUBLIC_HDRS} DESTINATION ${INCLUDEDIR})
 
 # sub directories
 ADD_SUBDIRECTORY(src)

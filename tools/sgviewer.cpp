@@ -14,17 +14,18 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #include <unistd.h>
 #include <string>
 #include <iostream>
 #include "gimcs/Agent.h"
 #include "gimcs/Storage.h"
-#include "gimcs/Mysql.h"
 #include "gimcs/MemoryViewer.h"
 #include "gimcs/DotViewer.h"
 #include "gimcs/CDotViewer.h"
 #include "gimcs/PrintViewer.h"
+#ifdef _WITH_MYSQL_
+#include "gimcs/Mysql.h"
+#endif
 
 using namespace gimcs;
 
@@ -53,8 +54,8 @@ int main(int argc, char *argv[])
     std::string storage_name;
     std::string viewer_type;
 
-    Storage *storage;
-    MemoryViewer *viewer;
+    Storage *storage = NULL;
+    MemoryViewer *viewer = NULL;
     Agent::State st = Agent::INVALID_STATE;
 
     static const char *optString = "S:V:W:?";
@@ -91,6 +92,7 @@ int main(int argc, char *argv[])
     // check storage names
     if (storage_name.compare("mysql") == 0)    // storage is mysql
     {
+#ifdef _WITH_MYSQL_
         int remain_arg = argc - optind;
         if (remain_arg != 4 && remain_arg != 3)    // args: server username passwd database, in which server can be ommit
         {
@@ -100,12 +102,18 @@ int main(int argc, char *argv[])
 
         Mysql *mysql = new Mysql();
         if (remain_arg == 4)
-            mysql->SetDBArgs(argv[optind], argv[optind + 1], argv[optind + 2],
-                    argv[optind + 3]);
+        mysql->SetDBArgs(argv[optind], argv[optind + 1], argv[optind + 2],
+                argv[optind + 3]);
         else if (remain_arg == 3)
-            mysql->SetDBArgs("localhost", argv[optind], argv[optind + 1],
-                    argv[optind + 2]);
+        mysql->SetDBArgs("localhost", argv[optind], argv[optind + 1],
+                argv[optind + 2]);
         storage = mysql;
+#else
+        std::cout << "GIMCS is built without support of Mysql!" << std::endl;
+        std::cout << "Configure with option \"-DWITH_MYSQL=YES\"" << std::endl
+                << std::endl;
+        display_usage();
+#endif
     }    // other storages come here
     else
     {
@@ -114,7 +122,7 @@ int main(int argc, char *argv[])
         display_usage();
     }
 
-    // check viewer types
+// check viewer types
     if (viewer_type.compare("dot") == 0)
     {
         // use DotViewer
@@ -141,7 +149,7 @@ int main(int argc, char *argv[])
         display_usage();
     }
 
-    // show
+// show
     if (st != Agent::INVALID_STATE)
         viewer->ShowState(st);
     else

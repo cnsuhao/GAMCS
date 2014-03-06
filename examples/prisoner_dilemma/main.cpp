@@ -10,24 +10,28 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #include <pthread.h>
 #include "gimcs/CSMAgent.h"
-#include "gimcs/Mysql.h"
 #include "Prisoners.h"
+#ifdef _WITH_MYSQL_
+#include "gimcs/Mysql.h"
+#endif
 
 int main(void)
 {
+    float discount_rate = 0.0;    // discount rate determines the final equilibrium!
+    CSMAgent agentA(1, discount_rate, 0.01);
+    CSMAgent agentB(2, discount_rate, 0.01);
+
+#ifdef _WITH_MYSQL_
     Mysql mysqlA;
     mysqlA.SetDBArgs("localhost", "root", "huangk", "PrisonerA");
     Mysql mysqlB;
     mysqlB.SetDBArgs("localhost", "root", "huangk", "PrisonerB");
 
-    float discount_rate = 0.0;    // discount rate determines the final equilibrium!
-    CSMAgent agentA(1, discount_rate, 0.01);
-    CSMAgent agentB(2, discount_rate, 0.01);
     agentA.LoadMemoryFromStorage(&mysqlA);
     agentB.LoadMemoryFromStorage(&mysqlB);
+#endif
 
     PrisonerA pA("prisonerA");
     PrisonerB pB("prisonerB");
@@ -45,8 +49,10 @@ int main(void)
     pthread_join(tids[0], NULL);
     pthread_join(tids[1], NULL);
 
+#ifdef _WITH_MYSQL_
     agentA.DumpMemoryToStorage(&mysqlA);
     agentB.DumpMemoryToStorage(&mysqlB);
+#endif
     return 0;
 }
 
