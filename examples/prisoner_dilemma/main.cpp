@@ -11,7 +11,7 @@
 // -----------------------------------------------------------------------------
 
 #include <pthread.h>
-#include "gimcs/CSMAgent.h"
+#include "gimcs/CSOSAgent.h"
 #include "Prisoners.h"
 #ifdef _WITH_MYSQL_
 #include "gimcs/Mysql.h"
@@ -20,8 +20,8 @@
 int main(void)
 {
     float discount_rate = 0.0;    // discount rate determines the final equilibrium!
-    CSMAgent agentA(1, discount_rate, 0.01);
-    CSMAgent agentB(2, discount_rate, 0.01);
+    CSOSAgent agentA(1, discount_rate, 0.01);
+    CSOSAgent agentB(2, discount_rate, 0.01);
 
 #ifdef _WITH_MYSQL_
     Mysql mysqlA;

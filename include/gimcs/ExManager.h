@@ -23,7 +23,7 @@
 namespace gimcs
 {
 
-class MAgent;
+class OSAgent;
 class ExNet;
 
 /**
@@ -39,7 +39,7 @@ class ExManager: private Avatar
         void run();
         void exchange();
 
-        void connectMAgent(MAgent *);
+        void connectMAgent(OSAgent *);
         void setCps(int);
         void ava_setSps(int);
 
@@ -58,7 +58,7 @@ class ExManager: private Avatar
         virtual float ava_originalPayoff(Agent::State);
 
     private:
-        MAgent *magent;
+        OSAgent *magent;
         ExNet *exnet;
         int cps; /**< count per sending */
         bool quit;

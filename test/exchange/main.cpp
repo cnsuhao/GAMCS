@@ -8,7 +8,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include "gimcs/CSThreadExNet.h"
-#include "gimcs/CSMAgent.h"
+#include "gimcs/CSOSAgent.h"
 #include "gimcs/Mysql.h"
 #include "messager.h"
 
@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     CSThreadExNet network(1);
 
     Messager *messagers[member_num];
-    CSMAgent *agents[member_num];
+    CSOSAgent *agents[member_num];
     Mysql *mysql[member_num];
     pthread_t tids[member_num];
 
@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
         ml->setDBArgs("localhost", "root", "huangk", db_name);
 
         // agent
-        CSMAgent *agent = new CSMAgent(i + 1, 0.8, 0.01);    // agent id start from 1
+        CSOSAgent *agent = new CSOSAgent(i + 1, 0.8, 0.01);    // agent id start from 1
 //        agent->LoadMemoryFromStorage(ml);
 
         // avatar

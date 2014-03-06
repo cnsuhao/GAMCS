@@ -6,11 +6,11 @@
  */
 
 #include "messager.h"
-#include "gimcs/CSMAgent.h"
+#include "gimcs/CSOSAgent.h"
 
 int main(void)
 {
-    CSMAgent ma(1, 0.9, 0.01);
+    CSOSAgent ma(1, 0.9, 0.01);
     Msger msger(1);
     msger.connectMAgent(&ma);
     msger.run();

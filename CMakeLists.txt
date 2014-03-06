@@ -91,7 +91,7 @@ SET(GIMCS_GIM_HDRS
     ${PROJECT_SOURCE_DIR}/include/gimcs/TSGIOM.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/Agent.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/StateInfoParser.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/MAgent.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/OSAgent.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/Avatar.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/ExNet.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/ExManager.h
@@ -101,7 +101,7 @@ SET(GIMCS_GIM_HDRS
     )
 
 SET(GIMCS_CS_HDRS
-    ${PROJECT_SOURCE_DIR}/include/gimcs/CSMAgent.h
+    ${PROJECT_SOURCE_DIR}/include/gimcs/CSOSAgent.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/CSThreadAvatar.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/CSThreadExNet.h
     ${PROJECT_SOURCE_DIR}/include/gimcs/CSThreadExManager.h

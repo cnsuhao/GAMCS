@@ -14,29 +14,29 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CSMAGENT_H
-#define CSMAGENT_H
+#ifndef CSOSAGENT_H_
+#define CSOSAGENT_H_
 #include <unordered_map>
-#include "gimcs/MAgent.h"
+#include "gimcs/OSAgent.h"
 
 namespace gimcs
 {
 
-// forward declaration
-class Storage;
-
 /**
- * Computer Simulation MAgent, where computer was used to implement an agent.
+ * Computer Simulation OSAgent, where computer was used to implement an agent.
  */
-class CSMAgent: public MAgent
+class CSOSAgent: public OSAgent
 {
     public:
         typedef std::unordered_map<Agent::State, void *> StatesMap; /**< hash map from state value to state  */
 
-        CSMAgent();
-        CSMAgent(int);
-        CSMAgent(int, float, float);
-        ~CSMAgent();
+        CSOSAgent();
+        CSOSAgent(int);
+        CSOSAgent(int, float, float);
+        ~CSOSAgent();
+
+        int connect();    // connect to agent memory
+        void close();    // close connection to agent memory
 
         State_Info_Header *getStateInfo(State) const; /**< implementing GetStateInfo function */
         void addStateInfo(const struct State_Info_Header *);
@@ -44,12 +44,17 @@ class CSMAgent: public MAgent
         void deleteState(State);
         void updatePayoff(State);
 
+        void addMemoryInfo(const struct Memory_Info *);
+        struct Memory_Info *getMemoryInfo() const;
+        std::string getMemoryName() const;
+
+        // iterate
         State firstState() const;
         State nextState() const;
         bool hasState(State) const;
 
-        void loadMemoryFromStorage(Storage *); /**< load memory from database */
-        void dumpMemoryToStorage(Storage *) const; /**< save memory to database */
+        void loadMemoryFromStorage(Storage *); /**< load memory from storage */
+        void dumpMemoryToStorage(Storage *) const; /**< dump memory to storage */
 
     private:
         unsigned long state_num; /**< total number of states in memory */
@@ -148,4 +153,4 @@ struct cs_BackwardLink
 };
 
 }    // namespace gimcs
-#endif // CSMAGENT_H
+#endif // CSOSAGENT_H_
