@@ -140,7 +140,7 @@ Agent::State Mysql::StateByIndex(unsigned long index) const
     if (mysql_query(db_con, query_str))
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
-        return INVALID_STATE;
+        return Agent::INVALID_STATE;
     }
 
     MYSQL_RES *result = mysql_store_result(db_con);
@@ -148,7 +148,7 @@ Agent::State Mysql::StateByIndex(unsigned long index) const
     if (result == NULL)
     {
         dbgmoreprt("StateByIndex()", "result is  NULL!\n");
-        return INVALID_STATE;
+        return Agent::INVALID_STATE;
     }
 
     MYSQL_ROW row = mysql_fetch_row(result);
@@ -158,7 +158,7 @@ Agent::State Mysql::StateByIndex(unsigned long index) const
     {
         dbgmoreprt("StateByIndex()", "lengths is null\n");
         mysql_free_result(result);
-        return INVALID_STATE;
+        return Agent::INVALID_STATE;
     }
     Agent::State rs = atol(row[0]);
 
@@ -173,7 +173,7 @@ Agent::State Mysql::StateByIndex(unsigned long index) const
  */
 struct State_Info_Header *Mysql::GetStateInfo(Agent::State st) const
 {
-    if (st == INVALID_STATE)
+    if (st == Agent::INVALID_STATE)
     {
         dbgprt("Mysql GetStateInfo()", "invalid state value\n");
         return NULL;

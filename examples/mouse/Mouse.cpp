@@ -26,7 +26,7 @@ Mouse::~Mouse()
 
 Agent::State Mouse::GetCurrentState()
 {
-    printf("%s, State %ld\n", name.c_str(), position);
+    printf("%s, State %d\n", name.c_str(), position);
     return position;
 }
 

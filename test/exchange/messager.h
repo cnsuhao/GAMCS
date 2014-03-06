@@ -32,7 +32,7 @@ class Messager: public CSThreadExManager
 
         Agent::State Ava_GetCurrentState()
         {
-            printf("Messager %d, State: %ld\n", id, position);
+            printf("Messager %d, State: %" ST_FMT "\n", id, position);
             return position;
         }
 

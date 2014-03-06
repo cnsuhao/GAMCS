@@ -21,17 +21,17 @@ int main(void)
 
     printf("Outputs: ");
     GIOM::Output out = ol.First();
-    while (out != INVALID_OUTPUT)
+    while (out != GIOM::INVALID_OUTPUT)
     {
-        printf("%ld, ", out);
+        printf("%" OUT_FMT ", ", out);
         out = ol.Next();
     }
     printf("\n");
 
-    printf("size: %ld\n", ol.Size());
+    printf("size: %" GIMCS_UINT_FMT "\n", ol.Size());
     int i = 7;
-    printf("index %d is %ld\n", i, ol[i]);
-    printf("capacity is %ld\n", ol.Capacity());
+    printf("index %d is %" OUT_FMT "\n", i, ol[i]);
+    printf("capacity is %" GIMCS_UINT_FMT "\n", ol.Capacity());
 
     gimcs_uint j = 9999;
     printf("gimcs_uint size: %d\n", sizeof(j));

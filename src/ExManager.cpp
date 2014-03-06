@@ -64,9 +64,9 @@ void ExManager::Exchange()
             nit != my_neighbours.end(); ++nit)
     {
         Agent::State st_send = magent->NextState();
-        if (st_send == INVALID_STATE) st_send = magent->FirstState();
+        if (st_send == Agent::INVALID_STATE) st_send = magent->FirstState();
 
-        if (st_send != INVALID_STATE) SendStateInfo(*nit, st_send);
+        if (st_send != Agent::INVALID_STATE) SendStateInfo(*nit, st_send);
     }
 }
 

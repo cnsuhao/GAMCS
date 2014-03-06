@@ -2,9 +2,9 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(GIMCS CXX)   # Generalized Intelligence Model and Computer Simulation
 
 # version
-SET(GIMCS_MAJOR 0)
-SET(GIMCS_MINOR 1)
-SET(GIMCS_BUILD 1)
+SET(GIMCS_MAJOR 1)
+SET(GIMCS_MINOR 0)
+SET(GIMCS_BUILD 0)
 
 SET(GIMCS_NAME gimcs)   
 SET(GIMCS_STATIC_NAME gimcs_static)
@@ -24,7 +24,7 @@ SET(LIBS ${LIBS} ${MYSQL_LIBRARIES})
 # configuration options
 OPTION(DEBUG "Build with debug output" NO)
 OPTION(DEBUG_MORE "Build with debug output" NO)
-OPTION(INT_BITS "Bitwise of integer" 64)
+OPTION(INT_BITS "Bitwise of integer" 64)    # 8, 16, 32, 64
 
 MESSAGE(STATUS "Input/Output bitwise " ${INT_BITS})
 

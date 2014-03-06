@@ -22,7 +22,7 @@ Monomer::~Monomer()
 
 Agent::State Monomer::GetCurrentState()
 {
-    printf("%s, %ld\n", name.c_str(), position);
+    printf("%s, %" ST_FMT "\n", name.c_str(), position);
     return position;
 }
 

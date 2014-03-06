@@ -24,40 +24,45 @@
 #include "gimcs/config.h"
 #include "gimcs/Debug.h"
 
-#if INT_BITS == 16
+namespace gimcs
+{
+
+#if INT_BITS == 8
+typedef uint8_t gimcs_uint;
+typedef int8_t gimcs_int;
+#define GIMCS_UINT_FMT PRIu8
+#define GIMCS_INT_FMT PRId8
+#define GIMCS_UINT_MAX UINT8_MAX
+#define GIMCS_INT_MAX INT8_MAX
+
+#elif INT_BITS == 16
 typedef uint16_t gimcs_uint;
 typedef int16_t gimcs_int;
-#define UINT_FMT PRIu16
-#define INT_FMT PRId16
+#define GIMCS_UINT_FMT PRIu16
+#define GIMCS_INT_FMT PRId16
 #define GIMCS_UINT_MAX UINT16_MAX
 #define GIMCS_INT_MAX INT16_MAX
 
 #elif INT_BITS == 32
 typedef uint32_t gimcs_uint;
 typedef int32_t gimcs_int;
-#define UINT_FMT PRIu32
-#define INT_FMT PRId32
+#define GIMCS_UINT_FMT PRIu32
+#define GIMCS_INT_FMT PRId32
 #define GIMCS_UINT_MAX UINT32_MAX
 #define GIMCS_INT_MAX INT32_MAX
 
-#else
+#else       // 64bit by default
 typedef uint64_t gimcs_uint;
 typedef int64_t gimcs_int;
-#define UINT_FMT PRIu64
-#define INT_FMT PRId64
+#define GIMCS_UINT_FMT PRIu64
+#define GIMCS_INT_FMT PRId64
 #define GIMCS_UINT_MAX UINT64_MAX
 #define GIMCS_INT_MAX INT64_MAX
 
 #endif
 
-namespace gimcs
-{
-
-#define IN_FMT UINT_FMT
-#define OUT_FMT INT_FMT
-
-const gimcs_uint INVALID_INPUT = GIMCS_UINT_MAX; /**< the maximun value is used to indicate invalid input */
-const gimcs_int INVALID_OUTPUT = GIMCS_INT_MAX; /**< the maximun value is used to indicate an invalid output, be careful! */
+#define IN_FMT GIMCS_UINT_FMT       // usage: printf("%" IN_FMT "\n", intput);
+#define OUT_FMT GIMCS_INT_FMT       // usage: printf("%" OUT_FMT "\n", output);
 
 class OSpace;
 
@@ -77,6 +82,9 @@ class GIOM
         Output Process(Input, OSpace &); /**< choose an output value in an output space under a specified input value */
         float SingleOutputEntropy(Input, OSpace &) const; /**< calculate entropy of a specified input */
         virtual void Update(); /**< update inner states of GIOM, derived classes may have their own inner states to update */
+
+        static const Input INVALID_INPUT = GIMCS_UINT_MAX; /**< the maximun value is used to indicate invalid input */
+        static const Output INVALID_OUTPUT = GIMCS_INT_MAX; /**< the maximun value is used to indicate an invalid output, be careful! */
 
     protected:
         virtual OSpace Restrict(Input, OSpace &) const; /**< restrict the output space to a subspace */
@@ -121,7 +129,7 @@ class OSpace
 
         OSpace(const OSpace &other) :
                 frag_num(0), the_capacity(SPARE_CAPACITY), current_index(0), outputs(
-                NULL)
+                        NULL)
         {
             operator=(other);
         }
@@ -179,7 +187,7 @@ class OSpace
 
             if (index < total_num)    // subscript out of bound
             {
-                return INVALID_OUTPUT;
+                return GIOM::INVALID_OUTPUT;
             }
 
             olsize_t i;
@@ -201,7 +209,7 @@ class OSpace
 
             if (i >= frag_num)    // superscript out of bound
             {
-                return INVALID_OUTPUT;
+                return GIOM::INVALID_OUTPUT;
             }
 
             return out_wanted;
@@ -258,8 +266,9 @@ class OSpace
         {
             // check range
             if ((end - start) / step < 0)
-                ERROR("Invalid range! %" OUT_FMT " --> %" OUT_FMT " (step: %" OUT_FMT ") \n", start, end,
-                        step);
+                ERROR(
+                        "Invalid range! %" OUT_FMT " --> %" OUT_FMT " (step: %" OUT_FMT ") \n",
+                        start, end, step);
 
             if (frag_num == the_capacity) Expand(2 * the_capacity);
 
