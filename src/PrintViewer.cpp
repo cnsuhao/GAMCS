@@ -65,7 +65,7 @@ void PrintViewer::Show()
 
     // print states info
     Agent::State st = storage->FirstState();
-    while (st != INVALID_STATE)    // get state value
+    while (st != Agent::INVALID_STATE)    // get state value
     {
         struct State_Info_Header *stif = storage->GetStateInfo(st);
         if (stif != NULL)

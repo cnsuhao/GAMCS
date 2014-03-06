@@ -25,9 +25,6 @@ namespace gimcs
 #define ST_FMT IN_FMT
 #define ACT_FMT OUT_FMT
 
-const gimcs_uint INVALID_STATE = INVALID_INPUT;
-const gimcs_int INVALID_ACTION = INVALID_OUTPUT;
-
 /**
  * Intelligent Agent
  */
@@ -36,7 +33,7 @@ class Agent: public TSGIOM
     public:
         typedef GIOM::Input State; /**< for agent we call an input as a state */
         typedef GIOM::Output Action; /**< action as output */
-        typedef gimcs_int EnvAction; /**< environment action */
+        typedef GIOM::Output EnvAction; /**< environment action */
 
         Agent();
         Agent(int);
@@ -50,6 +47,9 @@ class Agent: public TSGIOM
         float GetDiscountRate() const;
         void SetThreshold(float);
         float GetThreshold() const;
+
+        static const State INVALID_STATE = INVALID_INPUT;
+        static const Action INVALID_ACTION = INVALID_OUTPUT;
 
     protected:
         int id; /**< agent Id */

@@ -69,7 +69,7 @@ class Saleman: public CSThreadAvatar
 {
     public:
         Saleman(std::string n) :
-                CSThreadAvatar(n), count(0), current_state(INVALID_STATE)
+                CSThreadAvatar(n), count(0), current_state(Agent::INVALID_STATE)
         {
             for (int i = 0; i < CITY_NUM; i++)
             {
@@ -85,7 +85,7 @@ class Saleman: public CSThreadAvatar
         {
             // encode state
             EncodeState(path, current_state);
-            printf("Saleman: %s State: <%ld>,\t", name.c_str(), current_state);
+            printf("Saleman: %s State: <%" ST_FMT ">,\t", name.c_str(), current_state);
             PrintPath(path);
 
             return current_state;

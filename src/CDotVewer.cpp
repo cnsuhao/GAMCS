@@ -14,12 +14,12 @@ namespace gimcs
 {
 
 CDotViewer::CDotViewer() :
-        last_state(INVALID_STATE), last_action(INVALID_ACTION)
+        last_state(Agent::INVALID_STATE), last_action(Agent::INVALID_ACTION)
 {
 }
 
 CDotViewer::CDotViewer(Storage *sg) :
-        DotViewer(sg), last_state(INVALID_STATE), last_action(INVALID_ACTION)
+        DotViewer(sg), last_state(Agent::INVALID_STATE), last_action(Agent::INVALID_ACTION)
 {
 }
 
@@ -68,7 +68,7 @@ void CDotViewer::Show()
     printf("rank=\"same\"\n");
     // print states info
     Agent::State st = storage->FirstState();
-    while (st != INVALID_STATE)    // get state value
+    while (st != Agent::INVALID_STATE)    // get state value
     {
         struct State_Info_Header *stif = storage->GetStateInfo(st);
         if (stif != NULL)

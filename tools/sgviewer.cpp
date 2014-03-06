@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 
     Storage *storage;
     MemoryViewer *viewer;
-    Agent::State st = INVALID_STATE;
+    Agent::State st = Agent::INVALID_STATE;
 
     static const char *optString = "S:V:W:?";
 
@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
     }
 
     // show
-    if (st != INVALID_STATE)
+    if (st != Agent::INVALID_STATE)
         viewer->ShowState(st);
     else
         viewer->Show();

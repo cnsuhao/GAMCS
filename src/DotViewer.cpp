@@ -20,12 +20,12 @@ namespace gimcs
 {
 
 DotViewer::DotViewer() :
-        last_state(INVALID_STATE), last_action(INVALID_ACTION)
+        last_state(Agent::INVALID_STATE), last_action(Agent::INVALID_ACTION)
 {
 }
 
 DotViewer::DotViewer(Storage *sg) :
-        MemoryViewer(sg), last_state(INVALID_STATE), last_action(INVALID_ACTION)
+        MemoryViewer(sg), last_state(Agent::INVALID_STATE), last_action(Agent::INVALID_ACTION)
 {
 }
 
@@ -74,7 +74,7 @@ void DotViewer::Show()
     printf("rank=\"same\"\n");
     // print states info
     Agent::State st = storage->FirstState();
-    while (st != INVALID_STATE)    // get state value
+    while (st != Agent::INVALID_STATE)    // get state value
     {
         struct State_Info_Header *stif = storage->GetStateInfo(st);
         if (stif != NULL)

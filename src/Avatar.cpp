@@ -44,7 +44,7 @@ void Avatar::Launch()
     while (true)
     {
         ava_loop_count++;    // inc count
-        dbgmoreprt("Enter Launch Loop ", "----------------------------------------------------------- count == %ld\n", ava_loop_count);
+        dbgmoreprt("Enter Launch Loop ", "------------------------------ count == %ld\n", ava_loop_count);
 
         unsigned long start_time = GetCurrentTime();
 
@@ -57,7 +57,7 @@ void Avatar::Launch()
 
         Agent::Action act = myagent->Process(cs, acts);    // choose an action from candidates
         // check validation
-        if (act == INVALID_ACTION)    // no valid actions available, reach a dead end, quit. !!!: be sure to check this before update stage
+        if (act == Agent::INVALID_ACTION)    // no valid actions available, reach a dead end, quit. !!!: be sure to check this before update stage
             break;// exit point here
 
         /* Update stage */

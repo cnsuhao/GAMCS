@@ -27,7 +27,7 @@ class Mouse: public Avatar
         ~Mouse();
 
     private:
-        Agent::State position;
+        int position;
         int count;
 
         Agent::State GetCurrentState();
