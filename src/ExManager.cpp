@@ -184,6 +184,8 @@ void ExManager::recvStateInfo()
         dbgmoreprt("***", "%d recv from anyone\n", id);
 
         struct State_Info_Header *re_state = (struct State_Info_Header *) re_buf;
+
+        magent->connect();    // connect to agent for get/add state info
         struct State_Info_Header *my_state = magent->getStateInfo(re_state->st);
         if (my_state != NULL)
         {
@@ -200,6 +202,7 @@ void ExManager::recvStateInfo()
             magent->updatePayoff(re_state->st);    // update payoff
         }
 
+        magent->close();    // close connection
     }
     return;
 }
@@ -384,7 +387,9 @@ struct State_Info_Header *ExManager::mergeStateInfo(
 void ExManager::sendStateInfo(int toneb, Agent::State st) const
 {
     struct State_Info_Header *stif = NULL;
+    magent->connect();
     stif = magent->getStateInfo(st);    // the st may not exist
+    magent->close();
     if (stif == NULL)
     {
         return;
