@@ -14,39 +14,43 @@
 //
 // -----------------------------------------------------------------------------
 
-
-#ifndef MAGENT_H_
-#define MAGENT_H_
+#ifndef OSAGENT_H_
+#define OSAGENT_H_
 
 #include "gimcs/Agent.h"
+#include "gimcs/Storage.h"
 
 namespace gimcs
 {
 
 /**
- *  Manipulatable Agent
+ *  Open Storage Agent.
+ *  Agent with storage interface.
  */
-class MAgent: public Agent
+class OSAgent: public Agent, public Storage
 {
     public:
-        MAgent();
-        MAgent(int);
-        MAgent(int, float, float);
-        virtual ~MAgent();
+        OSAgent()
+        {
+        }
 
-        virtual struct State_Info_Header *getStateInfo(State) const = 0;
-        virtual void addStateInfo(const struct State_Info_Header *) = 0;
-        virtual void updateStateInfo(const struct State_Info_Header *) = 0;
-        virtual void deleteState(State) = 0;
+        OSAgent(int i) :
+                Agent(i)
+        {
+        }
 
-        virtual void updatePayoff(State) = 0;
+        OSAgent(int i, float dr, float th) :
+                Agent(i, dr, th)
+        {
+        }
 
-        /* iterate all states */
-        virtual State firstState() const = 0;
-        virtual State nextState() const = 0;
-        virtual bool hasState(State) const = 0;
+        virtual ~OSAgent()
+        {
+        }
+
+        virtual void updatePayoff(State) = 0; /**< update payoff beginning from a specified state */
 };
 
 }    // namespace gimcs
 
-#endif /* MAGENT_H_ */
+#endif /* OSAGENT_H_ */

@@ -11,14 +11,14 @@
 // -----------------------------------------------------------------------------
 
 #include "Mouse.h"
-#include "gimcs/CSMAgent.h"
+#include "gimcs/CSOSAgent.h"
 #ifdef _WITH_MYSQL_
 #include "gimcs/Mysql.h"
 #endif
 
 int main(void)
 {
-    CSMAgent ma(1, 0.9, 0.01);
+    CSOSAgent ma(1, 0.9, 0.01);
 #ifdef _WITH_MYSQL_
     Mysql mysql;
     mysql.setDBArgs("localhost", "root", "huangk", "Mouse");

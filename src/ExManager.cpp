@@ -14,7 +14,7 @@
 #include <math.h>
 #include <string.h>
 #include "gimcs/ExNet.h"
-#include "gimcs/MAgent.h"
+#include "gimcs/OSAgent.h"
 #include "gimcs/ExManager.h"
 #include "gimcs/StateInfoParser.h"
 
@@ -35,7 +35,7 @@ ExManager::~ExManager()
 {
 }
 
-void ExManager::connectMAgent(MAgent *agent)
+void ExManager::connectMAgent(OSAgent *agent)
 {
     connectAgent(dynamic_cast<Agent *>(agent));
     magent = agent;

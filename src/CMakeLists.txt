@@ -3,22 +3,20 @@ SET(GIMCS_GIM_SRCS
     ./TSGIOM.cpp
     ./StateInfoParser.cpp
     ./Agent.cpp
-    ./MAgent.cpp
     ./Avatar.cpp
     ./ExNet.cpp
     ./ExManager.cpp
-    ./Storage.cpp
     ./MemoryViewer.cpp
     )
 
 SET(GIMCS_CS_SRCS
-    ./CSMAgent.cpp
+    ./CSOSAgent.cpp
     ./CSThreadAvatar.cpp
     ./CSThreadExNet.cpp
     ./CSThreadExManager.cpp
     ./PrintViewer.cpp
     ./DotViewer.cpp
-    ./CDotVewer.cpp
+    ./CDotViewer.cpp
     ./Debug.cpp
     )
 

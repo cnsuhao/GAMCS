@@ -13,13 +13,13 @@
 
 #include <pthread.h>
 #include <stdio.h>
-#include "gimcs/CSMAgent.h"
+#include "gimcs/CSOSAgent.h"
 #include "gimcs/Mysql.h"
 #include "Saleman.h"
 
 int main(void)
 {
-    CSMAgent *agent = new CSMAgent(1, 0.8, 0.01);
+    CSOSAgent *agent = new CSOSAgent(1, 0.8, 0.01);
 
     Saleman *saleman = new Saleman("Saleman");
     saleman->setSps(-1);
