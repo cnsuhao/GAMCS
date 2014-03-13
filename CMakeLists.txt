@@ -13,7 +13,6 @@ SET(GIMCS_VERSION ${GIMCS_MAJOR}.${GIMCS_MINOR}.${GIMCS_BUILD})
 # configuration options
 OPTION(DEBUG "Build with debug output" NO)
 OPTION(DEBUG_MORE "Build with debug output" NO)
-MESSAGE(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 OPTION(INT_BITS "Bitwise of integer" 64)    # 8, 16, 32, 64
 MESSAGE(STATUS "Input/Output bitwise " ${INT_BITS})
 OPTION(WITH_MYSQL "Build with Mysql support" YES)   # Mysql is a kind of storage to save memories of agent
@@ -81,6 +80,8 @@ ENDIF()
 IF (NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE Release)
 ENDIF()
+
+MESSAGE(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 
 # include directory
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)

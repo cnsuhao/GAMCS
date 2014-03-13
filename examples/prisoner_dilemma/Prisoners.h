@@ -59,7 +59,7 @@ class PrisonerA: public CSThreadAvatar
         }
 
     private:
-        Agent::State getCurrentState()
+        Agent::State percieveState()
         {
             while (actB == false)
                 usleep(10000);    // sleep, wait for B to act
@@ -149,7 +149,7 @@ class PrisonerB: public CSThreadAvatar
         }
 
     private:
-        Agent::State getCurrentState()
+        Agent::State percieveState()
         {
             while (actA == false)
                 usleep(10000);    // sleep, wait for A to act

@@ -20,7 +20,7 @@ Monomer::~Monomer()
     //dtor
 }
 
-Agent::State Monomer::getCurrentState()
+Agent::State Monomer::percieveState()
 {
     printf("%s, %" ST_FMT "\n", name.c_str(), position);
     return position;

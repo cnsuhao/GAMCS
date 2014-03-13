@@ -29,13 +29,13 @@ GIOM::~GIOM()
 }
 
 /** \brief Restrict capacity for the GIOM.
- * Minimun restrain by default, which means NO restriction at all here.
+ * Minimun constrain by default, which means NO restriction at all here.
  * \param in input value
  * \param outputs all possible outputs for current input
- * \return output space after restrain
+ * \return output space after constrain
  *
  */
-OSpace GIOM::restrain(Input in, OSpace &outputs) const
+OSpace GIOM::constrain(Input in, OSpace &outputs) const
 {
     UNUSED(in);
     return outputs;    // return all outputs
@@ -49,7 +49,7 @@ OSpace GIOM::restrain(Input in, OSpace &outputs) const
  */
 GIOM::Output GIOM::process(Input in, OSpace &alpos_outputs)
 {
-    OSpace restricited_outputs = restrain(in, alpos_outputs);    // get restricted output values first
+    OSpace restricited_outputs = constrain(in, alpos_outputs);    // get restricted output values first
     if (restricited_outputs.empty())    // no output generated, return an invalid GIOM::Output
         return INVALID_OUTPUT;
 
@@ -64,14 +64,14 @@ GIOM::Output GIOM::process(Input in, OSpace &alpos_outputs)
     return out;
 }
 
-/** \brief Calculate the entropy of a state under restrain
+/** \brief Calculate the entropy of a state under constrain
  *
  * \return entropy value
  *
  */
 float GIOM::singleOutputEntropy(Input in, OSpace &alpos_outputs) const
 {
-    OSpace restricted_outputs = restrain(in, alpos_outputs);
+    OSpace restricted_outputs = constrain(in, alpos_outputs);
     if (restricted_outputs.empty()) return 0.0;
 
     gimcs_uint sz = restricted_outputs.size();

@@ -87,7 +87,7 @@ class GIOM
         static const Output INVALID_OUTPUT = GIMCS_INT_MAX; /**< the maximun value is used to indicate an invalid output, be careful! */
 
     protected:
-        virtual OSpace restrain(Input, OSpace &) const; /**< restrain the output space to a subspace */
+        virtual OSpace constrain(Input, OSpace &) const; /**< constrain the output space to a subspace */
         Input cur_in; /**< input value */
         Output cur_out; /**< output value corresponding to cur_in */
         unsigned long process_count; /**< count of processing */

@@ -69,7 +69,7 @@ class ExManager: private Avatar
         void recvStateInfo();
         void sendStateInfo(int, Agent::State) const;
 
-        Agent::State getCurrentState();
+        Agent::State percieveState();
         void performAction(Agent::Action);
         OSpace actionCandidates(Agent::State);
         float originalPayoff(Agent::State);
