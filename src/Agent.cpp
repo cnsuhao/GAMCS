@@ -43,14 +43,14 @@ Agent::~Agent()
 {
 }
 
-/** \brief restrain capacity of an agent.
+/** \brief constrain capacity of an agent.
  *  Comply with maximun payoff rule.
  * \param st state identity
  * \param acts all possible actions of st
  * \return action distribution after appling maximun payoff restrict
  *
  */
-OSpace Agent::restrain(Agent::State st, OSpace &acts) const
+OSpace Agent::constrain(Agent::State st, OSpace &acts) const
 {
     return maxPayoffRule(st, acts);
 }

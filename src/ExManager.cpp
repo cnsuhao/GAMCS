@@ -141,7 +141,7 @@ bool ExManager::checkNeighbourShip(int nid) const
     return exnet->checkNeighbourShip(id, nid);
 }
 
-inline Agent::State ExManager::getCurrentState()
+inline Agent::State ExManager::percieveState()
 {
     return ava_getCurrentState();
 }

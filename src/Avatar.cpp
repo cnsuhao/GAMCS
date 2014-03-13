@@ -49,7 +49,7 @@ void Avatar::launch()
         unsigned long start_time = getCurrentTime();
 
         /* Perceive the outside world */
-        Agent::State cs = getCurrentState();    // get current state
+        Agent::State cs = percieveState();    // get current state
         dbgmoreprt("Launch():", "%s, State: %ld\n", name.c_str(), cs);
 
         /* Process stage */

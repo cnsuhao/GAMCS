@@ -47,7 +47,7 @@ void TSGIOM::update()
  * \return outputs distribution after restricting
  *
  */
-OSpace TSGIOM::restrain(Input in, OSpace &outlist) const
+OSpace TSGIOM::constrain(Input in, OSpace &outlist) const
 {
     UNUSED(in);
     return outlist;

@@ -81,7 +81,7 @@ class Saleman: public CSThreadAvatar
         }
 
     private:
-        Agent::State getCurrentState()
+        Agent::State percieveState()
         {
             // encode state
             encodeState(path, current_state);

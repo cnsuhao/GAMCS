@@ -47,7 +47,7 @@ class Avatar
 
         Agent *myagent; /**< connected agent */
 
-        virtual Agent::State getCurrentState() = 0; /**< get current state */
+        virtual Agent::State percieveState() = 0; /**< get current state */
         virtual void performAction(Agent::Action) = 0; /**< perform an real action */
         virtual OSpace actionCandidates(Agent::State) = 0; /**< return a list of all action candidates of a Agent::State */
         virtual float originalPayoff(Agent::State); /**< original payoff of a state */

@@ -56,7 +56,7 @@ class Agent: public TSGIOM
         float discount_rate; /**< discount rate (0<,<1)when calculate state payoff */
         float threshold; /**< threshold used in payoff updating */
 
-        OSpace restrain(State, OSpace &) const; /**< reimplement restrict using maximun payoff rule  */
+        OSpace constrain(State, OSpace &) const; /**< reimplement restrict using maximun payoff rule  */
 
         /** These two functions are implementation dependant, declared as pure virtual functions */
         virtual OSpace maxPayoffRule(State, OSpace &) const = 0; /**< implementation of maximun payoff rule */

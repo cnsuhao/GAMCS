@@ -30,7 +30,7 @@ class Mouse: public Avatar
         int position;
         int count;
 
-        Agent::State getCurrentState();
+        Agent::State percieveState();
         void performAction(Agent::Action);
         OSpace actionCandidates(Agent::State);
         float originalPayoff(Agent::State);

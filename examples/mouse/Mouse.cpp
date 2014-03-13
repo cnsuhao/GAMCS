@@ -24,7 +24,7 @@ Mouse::~Mouse()
     //dtor
 }
 
-Agent::State Mouse::getCurrentState()
+Agent::State Mouse::percieveState()
 {
     printf("%s, State %d\n", name.c_str(), position);
     return position;
