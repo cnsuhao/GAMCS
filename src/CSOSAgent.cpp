@@ -394,6 +394,7 @@ struct cs_BackwardLink *CSOSAgent::searchBlk(struct cs_State *pmst,
 void CSOSAgent::deleteAct(Agent::Action act, struct cs_State *mst)
 {
     struct cs_Action *tmp, *prev = NULL;
+    struct cs_EnvAction *meat, *nmeat;
     tmp = mst->actlist;
     while (tmp != NULL)
     {
@@ -402,17 +403,29 @@ void CSOSAgent::deleteAct(Agent::Action act, struct cs_State *mst)
             if (tmp == mst->actlist)    // it's head
             {
                 mst->actlist = tmp->next;
-                freeAct(tmp);
+                // update link number
+                for (meat = tmp->ealist; meat != NULL; meat = nmeat)
+                {
+                    lk_num--;    // every link from this act will be deleted
+                    nmeat = meat->next;
+                }
+                freeAct(tmp);   // then free itself
                 return;
             }
             else
             {
                 prev->next = tmp->next;
+                // update link number
+                for (meat = tmp->ealist; meat != NULL; meat = nmeat)
+                {
+                    lk_num--;    // every link from this act will be deleted
+                    nmeat = meat->next;
+                }
                 freeAct(tmp);
                 return;
             }
         }
-        else
+        else    // check next act
         {
             prev = tmp;
             tmp = tmp->next;
