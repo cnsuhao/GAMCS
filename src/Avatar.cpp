@@ -41,6 +41,10 @@ Avatar::~Avatar()
  */
 void Avatar::launch()
 {
+    // check if agent is connected
+    if (myagent == NULL)
+        ERROR("launch(): Avatar is not connected to any agent!\n");
+
     while (true)
     {
         ava_loop_count++;    // inc count
