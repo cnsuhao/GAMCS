@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -17,9 +17,9 @@
 
 #ifndef TSGIOM_H
 #define TSGIOM_H
-#include "gimcs/GIOM.h"
+#include "gamcs/GIOM.h"
 
-namespace gimcs
+namespace gamcs
 {
 
 /**
@@ -40,5 +40,5 @@ class TSGIOM: public GIOM
     private:
 };
 
-}    // namespace gimcs
+}    // namespace gamcs
 #endif // TSGIOM_H

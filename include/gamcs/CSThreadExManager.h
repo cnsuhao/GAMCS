@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -18,9 +18,9 @@
 #ifndef CSTHREADEXMANAGER_H
 #define CSTHREADEXMANAGER_H
 #include <pthread.h>
-#include "gimcs/ExManager.h"
+#include "gamcs/ExManager.h"
 
-namespace gimcs
+namespace gamcs
 {
 
 /**

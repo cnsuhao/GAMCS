@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -19,9 +19,9 @@
 #define MYSQL_H_
 #include <mysql/mysql.h>
 #include <string>
-#include "gimcs/Storage.h"
+#include "gamcs/Storage.h"
 
-namespace gimcs
+namespace gamcs
 {
 
 /**
@@ -66,7 +66,7 @@ class Mysql: public Storage
         std::string db_name; /**< database name */
         std::string db_t_stateinfo; /**< table name for storing state information */
         std::string db_t_meminfo; /**< table name for storing memory information */
-        mutable gimcs_uint current_index;
+        mutable gamcs_uint current_index;
 
         Agent::State stateByIndex(unsigned long) const;
 };
@@ -76,5 +76,5 @@ inline std::string Mysql::getMemoryName() const
     return db_name;
 }
 
-}    // namespace gimcs
+}    // namespace gamcs
 #endif /* MYSQL_H_ */

@@ -1,13 +1,13 @@
-# GIMCS 
+# GAMCS 
 
-GIMCS是"_Generalized Intelligence Model and Computer Simulation_"的缩写，意指“广义智能模型与计算机模拟”。
-这是一套我个人研究的理论模型，GIMCS是用面向对象语言C++对这个模型的描述和一种计算机实现。
+GAMCS是"_Generalized Agent Model and Computer Simulation_"的缩写，意指“广义智能体模型与计算机模拟”。
+这是一套我个人研究的理论模型，GAMCS是用面向对象语言C++对这个模型的描述和一种计算机实现。
 
 关于这个模型的更多内容，参见项目网站。
 
 ## 安装指南
 
-目前GIMCS的开发主要是在**Linux**平台完成，其他平台未经测试。
+目前GAMCS的开发主要是在**Linux**平台完成，其他平台未经测试。
 
 欢迎大家帮助在其他平台编译和测试。
 
@@ -37,4 +37,4 @@ GIMCS是"_Generalized Intelligence Model and Computer Simulation_"的缩写，�
 
 ## 项目网站
 
-http://www.andy87.com/gimcs
+http://www.andy87.com/gamcs

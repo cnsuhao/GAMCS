@@ -6,7 +6,7 @@
  */
 
 #include "messager.h"
-#include "gimcs/CSOSAgent.h"
+#include "gamcs/CSOSAgent.h"
 
 int main(void)
 {

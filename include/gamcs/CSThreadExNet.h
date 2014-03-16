@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -18,9 +18,9 @@
 #ifndef CSTHREADEXNET_H_
 #define CSTHREADEXNET_H_
 #include <set>
-#include "gimcs/ExNet.h"
+#include "gamcs/ExNet.h"
 
-namespace gimcs
+namespace gamcs
 {
 
 /**
@@ -119,5 +119,5 @@ struct Neigh
         struct Neigh *next; /**< next neigh */
 };
 
-}    // namespace gimcs
+}    // namespace gamcs
 #endif /* CSTHREADEXNET_H_ */

@@ -12,4 +12,4 @@ FOREACH(file_i ${DENET_TOPO_FILES})
       COMMAND ${CMAKE_COMMAND} ARGS -E copy
       ${file_i} $<TARGET_FILE_DIR:exchange_test>)     # copy topo file to bin directory
 ENDFOREACH(file_i)
-TARGET_LINK_LIBRARIES(exchange_test ${GIMCS_NAME})  
+TARGET_LINK_LIBRARIES(exchange_test ${GAMCS_NAME})  

@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -17,12 +17,12 @@
 #include <assert.h>
 #include <queue>
 #include <set>
-#include "gimcs/CSOSAgent.h"
-#include "gimcs/Storage.h"
-#include "gimcs/StateInfoParser.h"
-#include "gimcs/Debug.h"
+#include "gamcs/CSOSAgent.h"
+#include "gamcs/Storage.h"
+#include "gamcs/StateInfoParser.h"
+#include "gamcs/Debug.h"
 
-namespace gimcs
+namespace gamcs
 {
 
 CSOSAgent::CSOSAgent() :
@@ -1256,4 +1256,4 @@ void CSOSAgent::printProcess(unsigned long current, unsigned long total,
     return;
 }
 
-}    // namespace gimcs
+}    // namespace gamcs

@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -17,9 +17,9 @@
 #ifndef CSOSAGENT_H_
 #define CSOSAGENT_H_
 #include <unordered_map>
-#include "gimcs/OSAgent.h"
+#include "gamcs/OSAgent.h"
 
-namespace gimcs
+namespace gamcs
 {
 
 /**
@@ -152,5 +152,5 @@ struct cs_BackwardLink
         struct cs_BackwardLink *next;
 };
 
-}    // namespace gimcs
+}    // namespace gamcs
 #endif // CSOSAGENT_H_

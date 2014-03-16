@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -20,11 +20,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
-#include "gimcs/CSThreadExNet.h"
-#include "gimcs/Agent.h"
-#include "gimcs/Debug.h"
+#include "gamcs/CSThreadExNet.h"
+#include "gamcs/Agent.h"
+#include "gamcs/Debug.h"
 
-namespace gimcs
+namespace gamcs
 {
 
 CSThreadExNet::CSThreadExNet()
@@ -470,7 +470,7 @@ void CSThreadExNet::loadTopoFromFile(char *tf)
         fclose(topofs);    // close file
 #else
         ERROR(
-                "LoadTopoFromFIle: GIMCS is built without support of CGraph, can not read .dot file!\nConfigure with option -DWITH_CGRAPH=YES\n");
+                "LoadTopoFromFIle: GAMCS is built without support of CGraph, can not read .dot file!\nConfigure with option -DWITH_CGRAPH=YES\n");
 #endif
     }
     else if (strcmp(ext, "exnet") == 0)    // *.exnet
@@ -636,4 +636,4 @@ int CSThreadExNet::wrapDec(int ptr)
     return nptr;
 }
 
-}    // namespace gimcs
+}    // namespace gamcs

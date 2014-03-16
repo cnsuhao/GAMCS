@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -12,11 +12,11 @@
 
 
 #include <stddef.h>
-#include "gimcs/MemoryViewer.h"
-#include "gimcs/Storage.h"
-#include "gimcs/Debug.h"
+#include "gamcs/MemoryViewer.h"
+#include "gamcs/Storage.h"
+#include "gamcs/Debug.h"
 
-namespace gimcs
+namespace gamcs
 {
 
 MemoryViewer::MemoryViewer() :
@@ -33,4 +33,4 @@ MemoryViewer::~MemoryViewer()
 {
 }
 
-}    // namespace gimcs
+}    // namespace gamcs

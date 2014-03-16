@@ -1,7 +1,7 @@
 #include "monomer.h"
-#include "gimcs/CSOSAgent.h"
-#include "gimcs/Mysql.h"
-#include "gimcs/CDotViewer.h"
+#include "gamcs/CSOSAgent.h"
+#include "gamcs/Mysql.h"
+#include "gamcs/CDotViewer.h"
 
 
 int main(void)

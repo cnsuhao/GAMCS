@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -12,9 +12,9 @@
 
 
 #include <pthread.h>
-#include "gimcs/CSThreadExManager.h"
+#include "gamcs/CSThreadExManager.h"
 
-namespace gimcs
+namespace gamcs
 {
 
 CSThreadExManager::CSThreadExManager()
@@ -38,4 +38,4 @@ pthread_t CSThreadExManager::threadRun()
     return tid;
 }
 
-}    // namespace gimcs
+}    // namespace gamcs

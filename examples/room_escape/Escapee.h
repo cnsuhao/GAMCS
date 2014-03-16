@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -13,9 +13,9 @@
 #ifndef ESCAPEE_H_
 #define ESCAPEE_H_
 #include <string>
-#include "gimcs/Avatar.h"
+#include "gamcs/Avatar.h"
 
-using namespace gimcs;
+using namespace gamcs;
 
 class Escapee: public Avatar
 {
@@ -40,7 +40,7 @@ class Escapee: public Avatar
             return current_room;
         }
 
-        OSpace actionCandidates(Agent::State st)
+        OSpace availableActions(Agent::State st)
         {
             OSpace acts;
             if (count < max_count)

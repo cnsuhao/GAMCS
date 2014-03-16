@@ -8,11 +8,11 @@
 #ifndef CDOTVIEWER_H_
 #define CDOTVIEWER_H_
 
-#include "gimcs/DotViewer.h"
-#include "gimcs/MemoryViewer.h"
-#include "gimcs/Agent.h"
+#include "gamcs/DotViewer.h"
+#include "gamcs/MemoryViewer.h"
+#include "gamcs/Agent.h"
 
-namespace gimcs
+namespace gamcs
 {
 
 /**
@@ -34,6 +34,6 @@ class CDotViewer: public DotViewer
         Agent::Action last_action;
 };
 
-} /* namespace gimcs */
+} /* namespace gamcs */
 
 #endif /* CDOTVIEWER_H_ */

@@ -1,6 +1,6 @@
 LINK_DIRECTORIES(${LIBDIR}) # library search path
 ADD_EXECUTABLE(sgviewer sgviewer.cpp)
-TARGET_LINK_LIBRARIES(sgviewer ${GIMCS_NAME}) 
+TARGET_LINK_LIBRARIES(sgviewer ${GAMCS_NAME}) 
 
 # install tools
 SET(EXEC_PREFIX ${CMAKE_INSTALL_PREFIX}/bin)

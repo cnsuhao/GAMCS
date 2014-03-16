@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -17,10 +17,10 @@
 
 #ifndef PRINTVEWER_H_
 #define PRINTVEWER_H_
-#include "gimcs/MemoryViewer.h"
-#include "gimcs/Agent.h"
+#include "gamcs/MemoryViewer.h"
+#include "gamcs/Agent.h"
 
-namespace gimcs
+namespace gamcs
 {
 
 class Storage;
@@ -41,5 +41,5 @@ class PrintViewer: public MemoryViewer
         void printStateInfo(const struct State_Info_Header *) const;
 };
 
-}    // namespace gimcs
+}    // namespace gamcs
 #endif /* PRINTVEWER_H_ */

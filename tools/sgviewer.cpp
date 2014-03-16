@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -17,17 +17,17 @@
 #include <unistd.h>
 #include <string>
 #include <iostream>
-#include "gimcs/Agent.h"
-#include "gimcs/Storage.h"
-#include "gimcs/MemoryViewer.h"
-#include "gimcs/DotViewer.h"
-#include "gimcs/CDotViewer.h"
-#include "gimcs/PrintViewer.h"
+#include "gamcs/Agent.h"
+#include "gamcs/Storage.h"
+#include "gamcs/MemoryViewer.h"
+#include "gamcs/DotViewer.h"
+#include "gamcs/CDotViewer.h"
+#include "gamcs/PrintViewer.h"
 #ifdef _WITH_MYSQL_
-#include "gimcs/Mysql.h"
+#include "gamcs/Mysql.h"
 #endif
 
-using namespace gimcs;
+using namespace gamcs;
 
 void display_usage(void)
 {
@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
                 argv[optind + 2]);
         storage = mysql;
 #else
-        std::cout << "GIMCS is built without support of Mysql!" << std::endl;
+        std::cout << "GAMCS is built without support of Mysql!" << std::endl;
         std::cout << "Configure with option \"-DWITH_MYSQL=YES\"" << std::endl
                 << std::endl;
         display_usage();

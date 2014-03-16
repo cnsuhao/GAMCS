@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -16,10 +16,10 @@
 
 #ifndef AGENT_H
 #define AGENT_H
-#include "gimcs/TSGIOM.h"
-#include "gimcs/Debug.h"
+#include "gamcs/TSGIOM.h"
+#include "gamcs/Debug.h"
 
-namespace gimcs
+namespace gamcs
 {
 
 #define ST_FMT IN_FMT
@@ -128,5 +128,5 @@ struct Memory_Info
         Agent::Action last_act; /**< last performed Agent::Action when saving memory */
 };
 
-}    // namespace gimcs
+}    // namespace gamcs
 #endif // AGENT_H

@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -15,9 +15,9 @@
 #define SALEMAN_H_
 #include <string>
 #include <math.h>
-#include "gimcs/CSThreadAvatar.h"
+#include "gamcs/CSThreadAvatar.h"
 
-using namespace gimcs;
+using namespace gamcs;
 
 const int CITY_NUM = 8;    // number of cities, start from 0
 
@@ -91,7 +91,7 @@ class Saleman: public CSThreadAvatar
             return current_state;
         }
 
-        OSpace actionCandidates(Agent::State st)
+        OSpace availableActions(Agent::State st)
         {
             OSpace re;
 

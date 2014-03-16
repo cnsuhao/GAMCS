@@ -7,9 +7,9 @@
 
 #include <pthread.h>
 #include <stdio.h>
-#include "gimcs/CSThreadExNet.h"
-#include "gimcs/CSOSAgent.h"
-#include "gimcs/Mysql.h"
+#include "gamcs/CSThreadExNet.h"
+#include "gamcs/CSOSAgent.h"
+#include "gamcs/Mysql.h"
 #include "messager.h"
 
 int main(int argc, char *argv[])

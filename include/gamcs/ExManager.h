@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -17,10 +17,10 @@
 #ifndef EXMANAGER_H
 #define EXMANAGER_H
 #include <set>
-#include "gimcs/Avatar.h"
-#include "gimcs/Agent.h"
+#include "gamcs/Avatar.h"
+#include "gamcs/Agent.h"
 
-namespace gimcs
+namespace gamcs
 {
 
 class OSAgent;
@@ -71,7 +71,7 @@ class ExManager: private Avatar
 
         Agent::State percieveState();
         void performAction(Agent::Action);
-        OSpace actionCandidates(Agent::State);
+        OSpace availableActions(Agent::State);
         float originalPayoff(Agent::State);
 };
 
@@ -85,5 +85,5 @@ inline void ExManager::ava_setSps(int s)
     setSps(s);
 }
 
-}    // namespace gimcs
+}    // namespace gamcs
 #endif /* EXMANAGER_H */

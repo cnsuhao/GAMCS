@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -13,12 +13,12 @@
 #include <set>
 #include <math.h>
 #include <string.h>
-#include "gimcs/ExNet.h"
-#include "gimcs/OSAgent.h"
-#include "gimcs/ExManager.h"
-#include "gimcs/StateInfoParser.h"
+#include "gamcs/ExNet.h"
+#include "gamcs/OSAgent.h"
+#include "gamcs/ExManager.h"
+#include "gamcs/StateInfoParser.h"
 
-namespace gimcs
+namespace gamcs
 {
 
 ExManager::ExManager() :
@@ -151,7 +151,7 @@ inline void ExManager::performAction(Agent::Action act)
     return ava_performAction(act);
 }
 
-inline OSpace ExManager::actionCandidates(Agent::State st)
+inline OSpace ExManager::availableActions(Agent::State st)
 {
     // check exps
     if (ava_loop_count % cps == 0)    // time to stop avatar and exchange memory
@@ -402,4 +402,4 @@ void ExManager::sendStateInfo(int toneb, Agent::State st) const
     return;
 }
 
-}    // namespace gimcs
+}    // namespace gamcs

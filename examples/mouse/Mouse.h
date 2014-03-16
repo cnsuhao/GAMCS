@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -14,9 +14,9 @@
 #ifndef MOUSE_H_
 #define MOUSE_H_
 #include <string>
-#include "gimcs/Avatar.h"
+#include "gamcs/Avatar.h"
 
-using namespace gimcs;
+using namespace gamcs;
 
 class Mouse: public Avatar
 {
@@ -32,7 +32,7 @@ class Mouse: public Avatar
 
         Agent::State percieveState();
         void performAction(Agent::Action);
-        OSpace actionCandidates(Agent::State);
+        OSpace availableActions(Agent::State);
         float originalPayoff(Agent::State);
 };
 

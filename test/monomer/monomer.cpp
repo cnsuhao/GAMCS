@@ -45,7 +45,7 @@ void Monomer::performAction(Agent::Action act)
  * \return all possible outputs for the input
  *
  */
-OSpace Monomer::actionCandidates(Agent::State st)
+OSpace Monomer::availableActions(Agent::State st)
 {
 //    UNUSED(st);
     static int count;

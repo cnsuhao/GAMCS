@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -17,9 +17,9 @@
 #ifndef AVATAR_H_
 #define AVATAR_H_
 #include <string>
-#include "gimcs/Agent.h"
+#include "gamcs/Agent.h"
 
-namespace gimcs
+namespace gamcs
 {
 
 class DENet;
@@ -49,7 +49,7 @@ class Avatar
 
         virtual Agent::State percieveState() = 0; /**< get current state */
         virtual void performAction(Agent::Action) = 0; /**< perform an real action */
-        virtual OSpace actionCandidates(Agent::State) = 0; /**< return a list of all action candidates of a Agent::State */
+        virtual OSpace availableActions(Agent::State) = 0; /**< return a list of all action candidates of a Agent::State */
         virtual float originalPayoff(Agent::State); /**< original payoff of a state */
 
     private:
@@ -75,5 +75,5 @@ inline void Avatar::connectAgent(Agent *agt)
     myagent = agt;
 }
 
-}    // namespace gimcs
+}    // namespace gamcs
 #endif // AVATAR_H_
