@@ -9,7 +9,7 @@
 # Project related configuration options
 #---------------------------------------------------------------------------
 DOXYFILE_ENCODING = UTF-8
-PROJECT_NAME = GIMCS
+PROJECT_NAME = GAMCS
 PROJECT_NUMBER = 0.1.1
 PROJECT_BRIEF = 
 PROJECT_LOGO = 
@@ -95,7 +95,7 @@ WARN_LOGFILE = "/home/andy/Code/MyWork/libagent/doxygen/doxygen.log"
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT = /home/andy/Code/MyWork/GIMCS/include /home/andy/Code/MyWork/GIMCS/src
+INPUT = /home/andy/Code/MyWork/GAMCS/include /home/andy/Code/MyWork/GAMCS/src
 INPUT_ENCODING = UTF-8
 FILE_PATTERNS = 
 RECURSIVE = YES
@@ -149,7 +149,7 @@ DOCSET_BUNDLE_ID = org.doxygen.Project
 DOCSET_PUBLISHER_ID = org.doxygen.Publisher
 DOCSET_PUBLISHER_NAME = Publisher
 GENERATE_HTMLHELP = NO
-CHM_FILE = "../gimcs.chm"
+CHM_FILE = "../gamcs.chm"
 HHC_LOCATION = 
 GENERATE_CHI = NO
 CHM_INDEX_ENCODING = 

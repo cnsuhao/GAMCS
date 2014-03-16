@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -16,9 +16,9 @@
 
 #ifndef STATEINFOPARSER_H_
 #define STATEINFOPARSER_H_
-#include "gimcs/Agent.h"
+#include "gamcs/Agent.h"
 
-namespace gimcs
+namespace gamcs
 {
 
 /**
@@ -46,6 +46,6 @@ class StateInfoParser
         unsigned long eat_index;
 };
 
-} /* namespace gimcs */
+} /* namespace gamcs */
 
 #endif /* STATEINFOPARSER_H_ */

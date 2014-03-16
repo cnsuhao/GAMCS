@@ -5,12 +5,12 @@
  *      Author: andy
  */
 
-#include "gimcs/CDotViewer.h"
-#include "gimcs/Agent.h"
-#include "gimcs/Storage.h"
-#include "gimcs/StateInfoParser.h"
+#include "gamcs/CDotViewer.h"
+#include "gamcs/Agent.h"
+#include "gamcs/Storage.h"
+#include "gamcs/StateInfoParser.h"
 
-namespace gimcs
+namespace gamcs
 {
 
 CDotViewer::CDotViewer() :
@@ -117,4 +117,4 @@ void CDotViewer::cleanDotStateInfo(const struct State_Info_Header *sthd) const
     }
 }
 
-} /* namespace gimcs */
+} /* namespace gamcs */

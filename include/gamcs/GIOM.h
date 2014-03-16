@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -21,48 +21,48 @@
 #include <stdint.h>
 #define __STDC_FORMAT_MACROS    // PRIu64
 #include <inttypes.h>
-#include "gimcs/config.h"
-#include "gimcs/Debug.h"
+#include "gamcs/config.h"
+#include "gamcs/Debug.h"
 
-namespace gimcs
+namespace gamcs
 {
 
 #if INT_BITS == 8
-typedef uint8_t gimcs_uint;
-typedef int8_t gimcs_int;
-#define GIMCS_UINT_FMT PRIu8
-#define GIMCS_INT_FMT PRId8
-#define GIMCS_UINT_MAX UINT8_MAX
-#define GIMCS_INT_MAX INT8_MAX
+typedef uint8_t gamcs_uint;
+typedef int8_t gamcs_int;
+#define GAMCS_UINT_FMT PRIu8
+#define GAMCS_INT_FMT PRId8
+#define GAMCS_UINT_MAX UINT8_MAX
+#define GAMCS_INT_MAX INT8_MAX
 
 #elif INT_BITS == 16
-typedef uint16_t gimcs_uint;
-typedef int16_t gimcs_int;
-#define GIMCS_UINT_FMT PRIu16
-#define GIMCS_INT_FMT PRId16
-#define GIMCS_UINT_MAX UINT16_MAX
-#define GIMCS_INT_MAX INT16_MAX
+typedef uint16_t gamcs_uint;
+typedef int16_t gamcs_int;
+#define GAMCS_UINT_FMT PRIu16
+#define GAMCS_INT_FMT PRId16
+#define GAMCS_UINT_MAX UINT16_MAX
+#define GAMCS_INT_MAX INT16_MAX
 
 #elif INT_BITS == 32
-typedef uint32_t gimcs_uint;
-typedef int32_t gimcs_int;
-#define GIMCS_UINT_FMT PRIu32
-#define GIMCS_INT_FMT PRId32
-#define GIMCS_UINT_MAX UINT32_MAX
-#define GIMCS_INT_MAX INT32_MAX
+typedef uint32_t gamcs_uint;
+typedef int32_t gamcs_int;
+#define GAMCS_UINT_FMT PRIu32
+#define GAMCS_INT_FMT PRId32
+#define GAMCS_UINT_MAX UINT32_MAX
+#define GAMCS_INT_MAX INT32_MAX
 
 #else       // 64bit by default
-typedef uint64_t gimcs_uint;
-typedef int64_t gimcs_int;
-#define GIMCS_UINT_FMT PRIu64
-#define GIMCS_INT_FMT PRId64
-#define GIMCS_UINT_MAX UINT64_MAX
-#define GIMCS_INT_MAX INT64_MAX
+typedef uint64_t gamcs_uint;
+typedef int64_t gamcs_int;
+#define GAMCS_UINT_FMT PRIu64
+#define GAMCS_INT_FMT PRId64
+#define GAMCS_UINT_MAX UINT64_MAX
+#define GAMCS_INT_MAX INT64_MAX
 
 #endif
 
-#define IN_FMT GIMCS_UINT_FMT       // usage: printf("%" IN_FMT "\n", intput);
-#define OUT_FMT GIMCS_INT_FMT       // usage: printf("%" OUT_FMT "\n", output);
+#define IN_FMT GAMCS_UINT_FMT       // usage: printf("%" IN_FMT "\n", intput);
+#define OUT_FMT GAMCS_INT_FMT       // usage: printf("%" OUT_FMT "\n", output);
 
 class OSpace;
 
@@ -72,8 +72,8 @@ class OSpace;
 class GIOM
 {
     public:
-        typedef gimcs_uint Input; /**< input value, valid inputs are 0 ~ 2^63-1 (yes, it's 63bit, not 64!) */
-        typedef gimcs_int Output; /**< output value, output is the difference of two inputs, so it can be negetive, range: - max(Input) ~ +max(Input)*/
+        typedef gamcs_uint Input; /**< input value, valid inputs are 0 ~ 2^63-1 (yes, it's 63bit, not 64!) */
+        typedef gamcs_int Output; /**< output value, output is the difference of two inputs, so it can be negetive, range: - max(Input) ~ +max(Input)*/
 
         /** Default constructor */
         GIOM();
@@ -83,8 +83,8 @@ class GIOM
         float singleOutputEntropy(Input, OSpace &) const; /**< calculate entropy of a specified input */
         virtual void update(); /**< update inner states of GIOM, derived classes may have their own inner states to update */
 
-        static const Input INVALID_INPUT = GIMCS_UINT_MAX; /**< the maximun value is used to indicate invalid input */
-        static const Output INVALID_OUTPUT = GIMCS_INT_MAX; /**< the maximun value is used to indicate an invalid output, be careful! */
+        static const Input INVALID_INPUT = GAMCS_UINT_MAX; /**< the maximun value is used to indicate invalid input */
+        static const Output INVALID_OUTPUT = GAMCS_INT_MAX; /**< the maximun value is used to indicate an invalid output, be careful! */
 
     protected:
         virtual OSpace constrain(Input, OSpace &) const; /**< constrain the output space to a subspace */
@@ -93,7 +93,7 @@ class GIOM
         unsigned long process_count; /**< count of processing */
 
     private:
-        gimcs_uint myRandom() const; /**< generate a random number in range 0 to LONG_MAX. It's where all possibilities and miracles come from! */
+        gamcs_uint myRandom() const; /**< generate a random number in range 0 to LONG_MAX. It's where all possibilities and miracles come from! */
 };
 
 /**
@@ -118,7 +118,7 @@ class OSpace
             SPARE_CAPACITY = 16
         };
 
-        typedef gimcs_uint olsize_t;    // actions have the maximun number of 2^64
+        typedef gamcs_uint olsize_t;    // actions have the maximun number of 2^64
 
         explicit OSpace(olsize_t initfn = 0) :
                 frag_num(initfn), the_capacity(initfn + SPARE_CAPACITY), current_index(
@@ -345,5 +345,5 @@ class OSpace
         OFragment *outputs;
 };
 
-}    // namespace gimcs
+}    // namespace gamcs
 #endif // GIOM_H

@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -11,12 +11,12 @@
 // -----------------------------------------------------------------------------
 
 #include <string>
-#include "gimcs/DotViewer.h"
-#include "gimcs/Agent.h"
-#include "gimcs/Storage.h"
-#include "gimcs/StateInfoParser.h"
+#include "gamcs/DotViewer.h"
+#include "gamcs/Agent.h"
+#include "gamcs/Storage.h"
+#include "gamcs/StateInfoParser.h"
 
-namespace gimcs
+namespace gamcs
 {
 
 DotViewer::DotViewer() :
@@ -326,4 +326,4 @@ printf("}\n");    // digraph
 storage->close();
 }
 
-}    // namespace gimcs
+}    // namespace gamcs

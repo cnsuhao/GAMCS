@@ -7,9 +7,9 @@
 
 #ifndef MESSAGER_H_
 #define MESSAGER_H_
-#include "gimcs/ExManager.h"
+#include "gamcs/ExManager.h"
 
-using namespace gimcs;
+using namespace gamcs;
 
 class Msger: public ExManager
 {

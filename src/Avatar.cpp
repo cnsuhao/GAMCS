@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -14,10 +14,10 @@
 #include <stdlib.h>
 #include <sys/timeb.h>
 #include <unistd.h>
-#include "gimcs/Avatar.h"
-#include "gimcs/Debug.h"
+#include "gamcs/Avatar.h"
+#include "gamcs/Debug.h"
 
-namespace gimcs
+namespace gamcs
 {
 
 Avatar::Avatar() :
@@ -57,7 +57,7 @@ void Avatar::launch()
         dbgmoreprt("Launch():", "%s, State: %ld\n", name.c_str(), cs);
 
         /* Process stage */
-        OSpace acts = actionCandidates(cs);    // get all action candidates of a state
+        OSpace acts = availableActions(cs);    // get all action candidates of a state
 
         Agent::Action act = myagent->process(cs, acts);    // choose an action from candidates
         // check validation
@@ -117,4 +117,4 @@ unsigned long Avatar::getCurrentTime()
     return 1000 * tb.time + tb.millitm;
 }
 
-}    // namespace gimcs
+}    // namespace gamcs

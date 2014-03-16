@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -13,10 +13,10 @@
 #include <stdlib.h>
 #include <random>
 #include <math.h>
-#include "gimcs/Debug.h"
-#include "gimcs/GIOM.h"
+#include "gamcs/Debug.h"
+#include "gamcs/GIOM.h"
 
-namespace gimcs
+namespace gamcs
 {
 
 GIOM::GIOM() :
@@ -53,8 +53,8 @@ GIOM::Output GIOM::process(Input in, OSpace &alpos_outputs)
     if (restricited_outputs.empty())    // no output generated, return an invalid GIOM::Output
         return INVALID_OUTPUT;
 
-    gimcs_uint sz = restricited_outputs.size();    // number of alpos_outputs
-    gimcs_uint index = myRandom() % (sz);    // choose an output value randomly
+    gamcs_uint sz = restricited_outputs.size();    // number of alpos_outputs
+    gamcs_uint index = myRandom() % (sz);    // choose an output value randomly
     GIOM::Output out = restricited_outputs[index];
 
     // record input and output
@@ -74,7 +74,7 @@ float GIOM::singleOutputEntropy(Input in, OSpace &alpos_outputs) const
     OSpace restricted_outputs = constrain(in, alpos_outputs);
     if (restricted_outputs.empty()) return 0.0;
 
-    gimcs_uint sz = restricted_outputs.size();
+    gamcs_uint sz = restricted_outputs.size();
     return log2(sz);    // all the alpos_outputs have the same probability of occurrence
 }
 
@@ -89,12 +89,12 @@ void GIOM::update()
     return;
 }
 
-gimcs_uint GIOM::myRandom() const
+gamcs_uint GIOM::myRandom() const
 {
-    std::uniform_int_distribution<gimcs_uint> dist(0, GIMCS_UINT_MAX);    // act ranges: -2^63+1 ~ 2^63+1, which has a maximun number 2^64
+    std::uniform_int_distribution<gamcs_uint> dist(0, GAMCS_UINT_MAX);    // act ranges: -2^63+1 ~ 2^63+1, which has a maximun number 2^64
     std::random_device rd;    // to get true random on linux, use rand("/dev/random");
 
     return dist(rd);
 }
 
-}    // namespace gimcs
+}    // namespace gamcs

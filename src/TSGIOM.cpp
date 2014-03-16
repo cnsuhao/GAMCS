@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -11,10 +11,10 @@
 // -----------------------------------------------------------------------------
 
 
-#include "gimcs/TSGIOM.h"
-#include "gimcs/Debug.h"
+#include "gamcs/TSGIOM.h"
+#include "gamcs/Debug.h"
 
-namespace gimcs
+namespace gamcs
 {
 
 TSGIOM::TSGIOM() :
@@ -53,4 +53,4 @@ OSpace TSGIOM::constrain(Input in, OSpace &outlist) const
     return outlist;
 }
 
-}    // namespace gimcs
+}    // namespace gamcs

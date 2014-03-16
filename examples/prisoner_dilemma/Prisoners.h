@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -14,9 +14,9 @@
 #include <string>
 #include <unistd.h>
 #include <stdio.h>
-#include "gimcs/CSThreadAvatar.h"
+#include "gamcs/CSThreadAvatar.h"
 
-using namespace gimcs;
+using namespace gamcs;
 
 /**
  * state representation:
@@ -74,7 +74,7 @@ class PrisonerA: public CSThreadAvatar
             actA = true;
         }
 
-        OSpace actionCandidates(Agent::State st)
+        OSpace availableActions(Agent::State st)
         {
             static int count = 0;
             OSpace re;
@@ -163,7 +163,7 @@ class PrisonerB: public CSThreadAvatar
             actB = true;
         }
 
-        OSpace actionCandidates(Agent::State st)
+        OSpace availableActions(Agent::State st)
         {
             OSpace re;
             re.clear();

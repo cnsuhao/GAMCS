@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -19,7 +19,7 @@
 #define EXNET_H_
 #include <stddef.h>
 
-namespace gimcs
+namespace gamcs
 {
 
 /**
@@ -61,5 +61,5 @@ inline int ExNet::numberOfMembers() const
     return getAllMembers().size();
 }
 
-}    // namespace gimcs
+}    // namespace gamcs
 #endif /* EXNET_H_ */

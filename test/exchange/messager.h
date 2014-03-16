@@ -7,9 +7,9 @@
 
 #ifndef MESSAGER_H_
 #define MESSAGER_H_
-#include "gimcs/CSThreadExManager.h"
+#include "gamcs/CSThreadExManager.h"
 
-using namespace gimcs;
+using namespace gamcs;
 
 class Messager: public CSThreadExManager
 {

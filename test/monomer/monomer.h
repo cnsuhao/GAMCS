@@ -1,9 +1,9 @@
 #ifndef MONOMER_H
 #define MONOMER_H
 #include <string>
-#include "gimcs/Avatar.h"
+#include "gamcs/Avatar.h"
 
-using namespace gimcs;
+using namespace gamcs;
 
 class Monomer: public Avatar
 {
@@ -18,7 +18,7 @@ class Monomer: public Avatar
 
         Agent::State percieveState();
         void performAction(Agent::Action);
-        OSpace actionCandidates(Agent::State);
+        OSpace availableActions(Agent::State);
         float originalPayoff(Agent::State);
         void sendStateInfo(Agent::State)
         {

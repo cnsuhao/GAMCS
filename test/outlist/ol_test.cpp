@@ -6,9 +6,9 @@
  */
 
 #include <stdio.h>
-#include "gimcs/GIOM.h"
+#include "gamcs/GIOM.h"
 
-using namespace gimcs;
+using namespace gamcs;
 
 int main(void)
 {
@@ -28,11 +28,11 @@ int main(void)
     }
     printf("\n");
 
-    printf("size: %" GIMCS_UINT_FMT "\n", ol.size());
+    printf("size: %" GAMCS_UINT_FMT "\n", ol.size());
     int i = 7;
     printf("index %d is %" OUT_FMT "\n", i, ol[i]);
-    printf("capacity is %" GIMCS_UINT_FMT "\n", ol.capacity());
+    printf("capacity is %" GAMCS_UINT_FMT "\n", ol.capacity());
 
-    gimcs_uint j = 9999;
-    printf("gimcs_uint size: %d\n", sizeof(j));
+    gamcs_uint j = 9999;
+    printf("gamcs_uint size: %d\n", sizeof(j));
 }

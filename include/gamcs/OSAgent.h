@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -17,10 +17,10 @@
 #ifndef OSAGENT_H_
 #define OSAGENT_H_
 
-#include "gimcs/Agent.h"
-#include "gimcs/Storage.h"
+#include "gamcs/Agent.h"
+#include "gamcs/Storage.h"
 
-namespace gimcs
+namespace gamcs
 {
 
 /**
@@ -51,6 +51,6 @@ class OSAgent: public Agent, public Storage
         virtual void updatePayoff(State) = 0; /**< update payoff beginning from a specified state */
 };
 
-}    // namespace gimcs
+}    // namespace gamcs
 
 #endif /* OSAGENT_H_ */

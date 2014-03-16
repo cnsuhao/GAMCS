@@ -1,14 +1,14 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
-PROJECT(GIMCS CXX)   # Generalized Intelligence Model and Computer Simulation
+PROJECT(GAMCS CXX)   # Generalized Intelligence Model and Computer Simulation
 
 # version
-SET(GIMCS_MAJOR 1)
-SET(GIMCS_MINOR 0)
-SET(GIMCS_BUILD 0)
+SET(GAMCS_MAJOR 1)
+SET(GAMCS_MINOR 0)
+SET(GAMCS_BUILD 0)
 
-SET(GIMCS_NAME gimcs)   
-SET(GIMCS_STATIC_NAME gimcs_static)
-SET(GIMCS_VERSION ${GIMCS_MAJOR}.${GIMCS_MINOR}.${GIMCS_BUILD})
+SET(GAMCS_NAME gamcs)   
+SET(GAMCS_STATIC_NAME gamcs_static)
+SET(GAMCS_VERSION ${GAMCS_MAJOR}.${GAMCS_MINOR}.${GAMCS_BUILD})
 
 # configuration options
 OPTION(DEBUG "Build with debug output" NO)
@@ -87,57 +87,57 @@ MESSAGE(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
 
 # public headers
-SET(GIMCS_GIM_HDRS 
-    ${PROJECT_SOURCE_DIR}/include/gimcs/GIOM.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/TSGIOM.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/Agent.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/StateInfoParser.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/OSAgent.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/Avatar.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/ExNet.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/ExManager.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/Storage.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/MemoryViewer.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/config.h
+SET(GAMCS_GIM_HDRS 
+    ${PROJECT_SOURCE_DIR}/include/gamcs/GIOM.h
+    ${PROJECT_SOURCE_DIR}/include/gamcs/TSGIOM.h
+    ${PROJECT_SOURCE_DIR}/include/gamcs/Agent.h
+    ${PROJECT_SOURCE_DIR}/include/gamcs/StateInfoParser.h
+    ${PROJECT_SOURCE_DIR}/include/gamcs/OSAgent.h
+    ${PROJECT_SOURCE_DIR}/include/gamcs/Avatar.h
+    ${PROJECT_SOURCE_DIR}/include/gamcs/ExNet.h
+    ${PROJECT_SOURCE_DIR}/include/gamcs/ExManager.h
+    ${PROJECT_SOURCE_DIR}/include/gamcs/Storage.h
+    ${PROJECT_SOURCE_DIR}/include/gamcs/MemoryViewer.h
+    ${PROJECT_SOURCE_DIR}/include/gamcs/config.h
     )
 
-SET(GIMCS_CS_HDRS
-    ${PROJECT_SOURCE_DIR}/include/gimcs/CSOSAgent.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/CSThreadAvatar.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/CSThreadExNet.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/CSThreadExManager.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/PrintViewer.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/DotViewer.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/CDotViewer.h
-    ${PROJECT_SOURCE_DIR}/include/gimcs/Debug.h
+SET(GAMCS_CS_HDRS
+    ${PROJECT_SOURCE_DIR}/include/gamcs/CSOSAgent.h
+    ${PROJECT_SOURCE_DIR}/include/gamcs/CSThreadAvatar.h
+    ${PROJECT_SOURCE_DIR}/include/gamcs/CSThreadExNet.h
+    ${PROJECT_SOURCE_DIR}/include/gamcs/CSThreadExManager.h
+    ${PROJECT_SOURCE_DIR}/include/gamcs/PrintViewer.h
+    ${PROJECT_SOURCE_DIR}/include/gamcs/DotViewer.h
+    ${PROJECT_SOURCE_DIR}/include/gamcs/CDotViewer.h
+    ${PROJECT_SOURCE_DIR}/include/gamcs/Debug.h
     )
 
-SET(GIMCS_MYSQL_HDRS
-    ${PROJECT_SOURCE_DIR}/include/gimcs/Mysql.h
+SET(GAMCS_MYSQL_HDRS
+    ${PROJECT_SOURCE_DIR}/include/gamcs/Mysql.h
     )
 
 IF (WITH_MYSQL)
-    SET(GIMCS_PUBLIC_HDRS
-        ${GIMCS_GIM_HDRS}
-        ${GIMCS_CS_HDRS}
-        ${GIMCS_MYSQL_HDRS}
+    SET(GAMCS_PUBLIC_HDRS
+        ${GAMCS_GIM_HDRS}
+        ${GAMCS_CS_HDRS}
+        ${GAMCS_MYSQL_HDRS}
         )
 ELSE (WITH_MYSQL)
-    SET(GIMCS_PUBLIC_HDRS
-        ${GIMCS_GIM_HDRS}
-        ${GIMCS_CS_HDRS}
+    SET(GAMCS_PUBLIC_HDRS
+        ${GAMCS_GIM_HDRS}
+        ${GAMCS_CS_HDRS}
         )
 ENDIF()
 
 # configuration file
-CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/config.h.in ${PROJECT_SOURCE_DIR}/include/gimcs/config.h)
+CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/config.h.in ${PROJECT_SOURCE_DIR}/include/gamcs/config.h)
 
 # install prefix
 SET(PREFIX  ${CMAKE_INSTALL_PREFIX})
 
 # install header files
-SET(INCLUDEDIR  ${CMAKE_INSTALL_PREFIX}/include/gimcs)
-INSTALL(FILES ${GIMCS_PUBLIC_HDRS} DESTINATION ${INCLUDEDIR})
+SET(INCLUDEDIR  ${CMAKE_INSTALL_PREFIX}/include/gamcs)
+INSTALL(FILES ${GAMCS_PUBLIC_HDRS} DESTINATION ${INCLUDEDIR})
 
 # sub directories
 ADD_SUBDIRECTORY(src)

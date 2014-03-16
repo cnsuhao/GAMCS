@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 ## -----------------------------------------------------------------------------
 ##
-## GIMCS -- Generalized Intelligence Model and Computer Simulation
+## GAMCS -- Generalized Intelligence Model and Computer Simulation
 ##
 ## Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 ##

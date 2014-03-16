@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -11,10 +11,10 @@
 // -----------------------------------------------------------------------------
 
 #include <stdio.h>
-#include "gimcs/Agent.h"
-#include "gimcs/Debug.h"
+#include "gamcs/Agent.h"
+#include "gamcs/Debug.h"
 
-namespace gimcs
+namespace gamcs
 {
 
 Agent::Agent() :
@@ -66,4 +66,4 @@ void Agent::update(float oripayoff)
     return;
 }
 
-}    // namespace gimcs
+}    // namespace gamcs

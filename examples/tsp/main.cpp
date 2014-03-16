@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -13,8 +13,8 @@
 
 #include <pthread.h>
 #include <stdio.h>
-#include "gimcs/CSOSAgent.h"
-#include "gimcs/Mysql.h"
+#include "gamcs/CSOSAgent.h"
+#include "gamcs/Mysql.h"
 #include "Saleman.h"
 
 int main(void)

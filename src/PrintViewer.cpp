@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GIMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Intelligence Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -10,11 +10,11 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "gimcs/PrintViewer.h"
-#include "gimcs/Storage.h"
-#include "gimcs/StateInfoParser.h"
+#include "gamcs/PrintViewer.h"
+#include "gamcs/Storage.h"
+#include "gamcs/StateInfoParser.h"
 
-namespace gimcs
+namespace gamcs
 {
 
 PrintViewer::PrintViewer() :
@@ -140,4 +140,4 @@ void PrintViewer::showState(Agent::State st)
     storage->close();
 }
 
-}    // namespace gimcs
+}    // namespace gamcs
