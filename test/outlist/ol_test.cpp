@@ -16,7 +16,7 @@ int main(void)
     ol.add(1);
     ol.add(2);
     ol.add(3);
-    ol.add(10, 14, 2);
+    ol.add(0, 80, 1);
     ol.add(20, 10, -1);
 
     printf("Outputs: ");
