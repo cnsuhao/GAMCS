@@ -10,7 +10,6 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #include <stdlib.h>
 #include <sys/timeb.h>
 #include <unistd.h>
@@ -27,8 +26,7 @@ Avatar::Avatar() :
 }
 
 Avatar::Avatar(std::string n) :
-        name(n), sps(-1), ava_loop_count(0), myagent(NULL), control_step_time(
-                0)
+        name(n), sps(-1), ava_loop_count(0), myagent(NULL), control_step_time(0)
 {
 }
 
@@ -36,40 +34,51 @@ Avatar::~Avatar()
 {
 }
 
+int Avatar::step()
+{
+    ava_loop_count++;    // inc count
+
+    /* Perceive the outside world */
+    Agent::State cs = percieveState();    // get current state
+    dbgmoreprt("Launch():", "%s, State: %ld\n", name.c_str(), cs);
+
+    /* Process stage */
+    OSpace acts = availableActions(cs);    // get all action candidates of a state
+
+    Agent::Action act = myagent->process(cs, acts);    // choose an action from candidates
+    // check validation
+    if (act == Agent::INVALID_ACTION)    // no valid actions available, reach a dead end, quit. !!!: be sure to check this before update stage
+        return -1;
+
+    /* update stage */
+    float oripayoff = originalPayoff(cs);    // get original payoff of a state
+    myagent->update(oripayoff);    // agent update inner states
+
+    /* Perform action to the outside world */
+    performAction(act);    // otherwise, perform the action
+
+    return 0;
+}
+
 /**
- * \brief launch a avatar continuously.
+ * \brief stepLoop a avatar continuously.
  */
-void Avatar::launch()
+void Avatar::stepLoop()
 {
     // check if agent is connected
     if (myagent == NULL)
-        ERROR("launch(): Avatar is not connected to any agent!\n");
+    ERROR("launch(): Avatar is not connected to any agent!\n");
+
+    unsigned long start_time = 0;
 
     while (true)
     {
-        ava_loop_count++;    // inc count
         dbgmoreprt("Enter Launch Loop ", "------------------------------ count == %ld\n", ava_loop_count);
+        if (sps > 0) start_time = getCurrentTime();
 
-        unsigned long start_time = getCurrentTime();
-
-        /* Perceive the outside world */
-        Agent::State cs = percieveState();    // get current state
-        dbgmoreprt("Launch():", "%s, State: %ld\n", name.c_str(), cs);
-
-        /* Process stage */
-        OSpace acts = availableActions(cs);    // get all action candidates of a state
-
-        Agent::Action act = myagent->process(cs, acts);    // choose an action from candidates
-        // check validation
-        if (act == Agent::INVALID_ACTION)    // no valid actions available, reach a dead end, quit. !!!: be sure to check this before update stage
-            break;// exit point here
-
-        /* update stage */
-        float oripayoff = originalPayoff(cs);    // get original payoff of a state
-        myagent->update(oripayoff);    // agent update inner states
-
-        /* Perform action to the outside world */
-        performAction(act);    // otherwise, perform the action
+        int re = step();
+        if (re == -1)    // break if no actions available
+            break;
 
         // handle time related job
         if (sps > 0)    // no control when sps <= 0

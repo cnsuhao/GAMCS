@@ -35,7 +35,8 @@ class Avatar
         Avatar(std::string);
         virtual ~Avatar();
 
-        void launch(); /**< launch this avatar */
+        int step();
+        void stepLoop(); /**< stepLoop this avatar */
 
         void connectAgent(Agent *); /**< connect to an agent */
         void setSps(int);

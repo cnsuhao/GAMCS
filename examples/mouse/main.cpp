@@ -27,7 +27,7 @@ int main(void)
 
     Mouse mouse("Mouse");
     mouse.connectAgent(&ma);
-    mouse.launch();
+    mouse.stepLoop();
 
 #ifdef _WITH_MYSQL_
     ma.dumpMemoryToStorage(&mysql);

@@ -45,10 +45,10 @@ void ExManager::run()
 {
     while (!quit)
     {
-        // launch or relaunch
-        launch();
+        // stepLoop or relaunch
+        stepLoop();
 
-        // launch stopped, time to exchange memory
+        // stepLoop stopped, time to exchange memory
         exchange();
     }
 }

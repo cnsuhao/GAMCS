@@ -34,12 +34,12 @@ class CSThreadAvatar: public Avatar
         CSThreadAvatar(std::string);
         virtual ~CSThreadAvatar();
 
-        pthread_t threadLaunch(); /**< if it's a group, launch each of its  members in a thread */
+        pthread_t threadStepLoop(); /**< if it's a group, stepLoop each of its  members in a thread */
 
     private:
         static void* hook(void* args)
-        { /**< hook to run a class function(launch() here) in a thread */
-            reinterpret_cast<Avatar *>(args)->launch();
+        { /**< hook to run a class function(stepLoop() here) in a thread */
+            reinterpret_cast<Avatar *>(args)->stepLoop();
             return NULL;
         }
 };

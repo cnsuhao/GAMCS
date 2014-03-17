@@ -42,8 +42,8 @@ int main(void)
 
     // launch
     pthread_t tids[2];
-    tids[0] = pA.threadLaunch();
-    tids[1] = pB.threadLaunch();
+    tids[0] = pA.threadStepLoop();
+    tids[1] = pB.threadStepLoop();
 
     // wait
     pthread_join(tids[0], NULL);

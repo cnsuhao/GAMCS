@@ -24,7 +24,7 @@ int main(void)
     Escapee escapee("Escapee", 2, 1000);
     escapee.connectAgent(&agent);
 
-    escapee.launch();
+    escapee.stepLoop();
 
     // show states
     DotViewer dv;
@@ -35,7 +35,7 @@ int main(void)
     Escapee escapee2("Escapee2", 1, 10);
     escapee2.setSps(2);
     escapee2.connectAgent(&agent);
-    escapee2.launch();
+    escapee2.stepLoop();
 
     return 0;
 }
