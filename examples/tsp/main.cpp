@@ -25,7 +25,7 @@ int main(void)
     saleman->setSps(-1);
     saleman->connectAgent(agent);
 
-    pthread_t tid = saleman->threadLaunch();
+    pthread_t tid = saleman->threadStepLoop();
 
     pthread_join(tid, NULL);
 

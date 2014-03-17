@@ -13,7 +13,7 @@ int main(void)
 
     Monomer mono("Monomer");
     mono.connectAgent(&ma);
-    mono.launch();
+    mono.stepLoop();
 
     //ma.deleteState(9);
     CDotViewer cdotv;

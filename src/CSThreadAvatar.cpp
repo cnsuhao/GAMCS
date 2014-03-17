@@ -33,7 +33,7 @@ CSThreadAvatar::~CSThreadAvatar()
 /**
  * \brief Launch Launch() function in a thread.
  */
-pthread_t CSThreadAvatar::threadLaunch()
+pthread_t CSThreadAvatar::threadStepLoop()
 {
     pthread_t tid;
     pthread_create(&tid, NULL, hook, this);    // create a thread, and call the hook

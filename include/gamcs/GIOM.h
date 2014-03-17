@@ -134,7 +134,7 @@ class OSpace
             operator=(other);
         }
 
-        virtual ~OSpace()
+        ~OSpace()
         {
             delete[] outputs;
         }
