@@ -9,7 +9,7 @@ class Monomer: public Avatar
 {
     public:
         /** Default constructor */
-        Monomer(std::string);
+        Monomer();
         /** Default destructor */
         ~Monomer();
 

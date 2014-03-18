@@ -20,7 +20,7 @@ int main(void)
 {
     CSOSAgent agent(1, 0.9, 0.01);
 
-    Escapee escapee("Escapee", 2);
+    Escapee escapee(2);
     escapee.connectAgent(&agent);
 
     int count = 0;
@@ -37,7 +37,7 @@ int main(void)
     dv.show();
 
     printf("spawn a new escapee with the learned agent.\n");
-    Escapee escapee2("Escapee2", 1);
+    Escapee escapee2(1);
     escapee2.setSps(2);
     escapee2.connectAgent(&agent);
 

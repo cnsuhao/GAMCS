@@ -9,8 +9,7 @@
 #include <string>
 #include "monomer.h"
 
-Monomer::Monomer(std::string n) :
-        Avatar(n)
+Monomer::Monomer()
 {
     position = 5;
 }
@@ -22,7 +21,7 @@ Monomer::~Monomer()
 
 Agent::State Monomer::percieveState()
 {
-    printf("%s, %" ST_FMT "\n", name.c_str(), position);
+    printf("Monomer, %" ST_FMT "\n", position);
     return position;
 }
 

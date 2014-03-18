@@ -19,7 +19,7 @@ int main(void)
 {
     CSOSAgent *agent = new CSOSAgent(1, 0.8, 0.01);
 
-    Saleman *saleman = new Saleman("Saleman");
+    Saleman *saleman = new Saleman();
     saleman->setSps(-1);
     saleman->connectAgent(agent);
 

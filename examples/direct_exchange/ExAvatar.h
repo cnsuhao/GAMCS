@@ -51,9 +51,6 @@ class ExAvatar: public Avatar
         std::set<int> getMyNeighbours() const;
         bool checkNeighbourShip(int) const;
 
-    protected:
-        int id;
-
     private:
         OSAgent *magent;
         ExNetwork *exnet;
