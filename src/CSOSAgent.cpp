@@ -20,7 +20,7 @@
 #include "gamcs/CSOSAgent.h"
 #include "gamcs/Storage.h"
 #include "gamcs/StateInfoParser.h"
-#include "gamcs/Debug.h"
+#include "gamcs/debug.h"
 
 namespace gamcs
 {

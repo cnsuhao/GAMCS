@@ -17,7 +17,7 @@
 #ifndef AGENT_H
 #define AGENT_H
 #include "gamcs/TSGIOM.h"
-#include "gamcs/Debug.h"
+#include "gamcs/debug.h"
 
 namespace gamcs
 {

@@ -17,7 +17,7 @@
 
 #ifndef MEMORYVIEWER_H_
 #define MEMORYVIEWER_H_
-#include "gamcs/Debug.h"
+#include "gamcs/debug.h"
 #include "gamcs/Agent.h"
 
 namespace gamcs

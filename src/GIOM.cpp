@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <random>
 #include <math.h>
-#include "gamcs/Debug.h"
+#include "gamcs/debug.h"
 #include "gamcs/GIOM.h"
 
 namespace gamcs

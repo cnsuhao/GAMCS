@@ -12,7 +12,7 @@ SET(GAMCS_CS_SRCS
     ./PrintViewer.cpp
     ./DotViewer.cpp
     ./CDotViewer.cpp
-    ./Debug.cpp
+    ./debug.cpp
     )
 
 SET(GAMCS_MYSQL_SRCS

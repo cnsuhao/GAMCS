@@ -18,7 +18,7 @@
 #include <string.h>
 #include <pthread.h>
 #include "gamcs/Agent.h"
-#include "gamcs/Debug.h"
+#include "gamcs/debug.h"
 #include "ThreadExNet.h"
 
 using namespace gamcs;

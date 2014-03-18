@@ -103,7 +103,7 @@ SET(GAMCS_CS_HDRS
     ${PROJECT_SOURCE_DIR}/include/gamcs/PrintViewer.h
     ${PROJECT_SOURCE_DIR}/include/gamcs/DotViewer.h
     ${PROJECT_SOURCE_DIR}/include/gamcs/CDotViewer.h
-    ${PROJECT_SOURCE_DIR}/include/gamcs/Debug.h
+    ${PROJECT_SOURCE_DIR}/include/gamcs/debug.h
     )
 
 SET(GAMCS_MYSQL_HDRS
