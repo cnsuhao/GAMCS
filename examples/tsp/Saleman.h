@@ -10,7 +10,6 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #ifndef SALEMAN_H_
 #define SALEMAN_H_
 #include <string>
@@ -69,7 +68,7 @@ class Saleman: public Avatar
 {
     public:
         Saleman(std::string n) :
-                Avatar(n), count(0), current_state(Agent::INVALID_STATE)
+                Avatar(n), current_state(Agent::INVALID_STATE)
         {
             for (int i = 0; i < CITY_NUM; i++)
             {
@@ -95,37 +94,34 @@ class Saleman: public Avatar
         {
             OSpace re;
 
-            if (count < 50000)
+            int tmp_path[CITY_NUM];
+            decodeState(st, tmp_path);
+
+            int acts[CITY_NUM];
+            Agent::Action act;
+
+            // actions that swap any two cities
+            for (int delta = 1; delta < CITY_NUM; delta++)
             {
-                int tmp_path[CITY_NUM];
-                decodeState(st, tmp_path);
-
-                int acts[CITY_NUM];
-                Agent::Action act;
-
-                // actions that swap any two cities
-                for (int delta = 1; delta < CITY_NUM; delta++)
+                for (int i = 0; i < CITY_NUM; i++)
                 {
-                    for (int i = 0; i < CITY_NUM; i++)
-                    {
-                        for (int k = 0; k < CITY_NUM; k++)    // clear
-                            acts[k] = 0;
+                    for (int k = 0; k < CITY_NUM; k++)    // clear
+                        acts[k] = 0;
 
-                        for (int j = 0; j < CITY_NUM; j++)
+                    for (int j = 0; j < CITY_NUM; j++)
+                    {
+                        if (tmp_path[j] - tmp_path[i] == delta)
                         {
-                            if (tmp_path[j] - tmp_path[i] == delta)
-                            {
-                                acts[i] = delta;
-                                acts[j] = -delta;
-                                encodeAction(acts, act);
-                                re.add(act);
-                                break;
-                            }
+                            acts[i] = delta;
+                            acts[j] = -delta;
+                            encodeAction(acts, act);
+                            re.add(act);
+                            break;
                         }
                     }
                 }
-                count++;
             }
+
             return re;
         }
 
