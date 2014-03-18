@@ -61,7 +61,7 @@ typedef int64_t gamcs_int;
 
 #endif
 
-#define IN_FMT GAMCS_UINT_FMT       // usage: printf("%" IN_FMT "\n", intput);
+#define IN_FMT GAMCS_INT_FMT       // usage: printf("%" IN_FMT "\n", intput);
 #define OUT_FMT GAMCS_INT_FMT       // usage: printf("%" OUT_FMT "\n", output);
 
 class OSpace;
@@ -72,8 +72,8 @@ class OSpace;
 class GIOM
 {
     public:
-        typedef gamcs_uint Input; /**< input value, valid inputs are 0 ~ 2^63-1 (yes, it's 63bit, not 64!) */
-        typedef gamcs_int Output; /**< output value, output is the difference of two inputs, so it can be negetive, range: - max(Input) ~ +max(Input)*/
+        typedef gamcs_int Input; /**< input type, signed integer */
+        typedef gamcs_int Output; /**< output type, signed integer */
 
         /** Default constructor */
         GIOM();
@@ -83,8 +83,8 @@ class GIOM
         float singleOutputEntropy(Input, OSpace &) const; /**< calculate entropy of a specified input */
         virtual void update(); /**< update inner states of GIOM, derived classes may have their own inner states to update */
 
-        static const Input INVALID_INPUT = GAMCS_UINT_MAX; /**< the maximun value is used to indicate invalid input */
-        static const Output INVALID_OUTPUT = GAMCS_INT_MAX; /**< the maximun value is used to indicate an invalid output, be careful! */
+        static const Input INVALID_INPUT = GAMCS_INT_MAX; /**< the maximun value is used to indicate invalid input */
+        static const Output INVALID_OUTPUT = GAMCS_INT_MAX; /**< the maximun value is used to indicate an invalid output */
 
     protected:
         virtual OSpace constrain(Input, OSpace &) const; /**< constrain the output space to a subspace */
@@ -93,7 +93,7 @@ class GIOM
         unsigned long process_count; /**< count of processing */
 
     private:
-        gamcs_uint myRandom() const; /**< generate a random number in range 0 to LONG_MAX. It's where all possibilities and miracles come from! */
+        gamcs_uint myRandom(gamcs_uint) const; /**< generate a random number in range 0 to LONG_MAX. It's where all possibilities and miracles come from! */
 };
 
 /**
