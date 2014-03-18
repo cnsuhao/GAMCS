@@ -17,8 +17,6 @@ OPTION(INT_BITS "Bitwise of integer" 64)    # 8, 16, 32, 64
 MESSAGE(STATUS "Input/Output bitwise " ${INT_BITS})
 OPTION(WITH_MYSQL "Build with Mysql support" YES)   # Mysql is a kind of storage to save memories of agent
 MESSAGE(STATUS "Mysql support: " ${WITH_MYSQL})
-OPTION(WITH_CGRAPH "Build with CGraph support" NO)  # CGraph supports reading topo structure from .dot file directly
-MESSAGE(STATUS "CGraph support: " ${WITH_CGRAPH})
 
 # find dependencies
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
@@ -27,12 +25,6 @@ IF (WITH_MYSQL)
     FIND_PACKAGE(MYSQL REQUIRED)
     INCLUDE_DIRECTORIES(${MYSQL_INCLUDE_DIRS})
     SET(LIBS ${LIBS} ${MYSQL_LIBRARIES})
-ENDIF ()
-
-IF (WITH_CGRAPH)
-    FIND_PACKAGE(CGraph REQUIRED)
-    INCLUDE_DIRECTORIES(${CGRAPH_INCLUDE_DIRS})
-    SET(LIBS ${LIBS} ${CGRAPH_LIBRARIES})
 ENDIF ()
 
 # macro definitions
