@@ -20,8 +20,8 @@ using namespace gamcs;
 class Escapee: public Avatar
 {
     public:
-        Escapee(std::string name, int room = 2) :
-                Avatar(name), current_room(room)
+        Escapee(int room = 2) :
+                current_room(room)
         {
         }
 

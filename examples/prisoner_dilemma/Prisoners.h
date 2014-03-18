@@ -42,8 +42,7 @@ int current_state = 1;    // start from state 1
 class PrisonerA: public Avatar
 {
     public:
-        PrisonerA(std::string n) :
-                Avatar(n)
+        PrisonerA()
         {
         }
         ~PrisonerA()
@@ -53,7 +52,7 @@ class PrisonerA: public Avatar
     private:
         Agent::State percieveState()
         {
-            printf("%s, State: %d\n", name.c_str(), current_state);
+            printf("PrisonerA State: %d\n", current_state);
             return current_state;
         }
 
@@ -119,8 +118,7 @@ class PrisonerA: public Avatar
 class PrisonerB: public Avatar
 {
     public:
-        PrisonerB(std::string n) :
-                Avatar(n)
+        PrisonerB()
         {
         }
         ~PrisonerB()
@@ -130,7 +128,7 @@ class PrisonerB: public Avatar
     private:
         Agent::State percieveState()
         {
-            printf("%s, State: %d\n", name.c_str(), current_state);
+            printf("PrisonerB State: %d\n", current_state);
             return current_state;
         }
 

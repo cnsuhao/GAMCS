@@ -12,10 +12,8 @@
 
 #include "Mouse.h"
 
-Mouse::Mouse(std::string n) :
-        Avatar(n)
+Mouse::Mouse() : position(3)
 {
-    position = 3;
 }
 
 Mouse::~Mouse()
@@ -25,7 +23,7 @@ Mouse::~Mouse()
 
 Agent::State Mouse::percieveState()
 {
-    printf("%s, State %d\n", name.c_str(), position);
+    printf("Mouse, State %d\n", position);
     return position;
 }
 

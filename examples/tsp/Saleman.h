@@ -67,8 +67,8 @@ int distance_table[10][10] = {
 class Saleman: public Avatar
 {
     public:
-        Saleman(std::string n) :
-                Avatar(n), current_state(Agent::INVALID_STATE)
+        Saleman() :
+                current_state(Agent::INVALID_STATE)
         {
             for (int i = 0; i < CITY_NUM; i++)
             {
@@ -84,7 +84,7 @@ class Saleman: public Avatar
         {
             // encode state
             encodeState(path, current_state);
-            printf("Saleman: %s State: <%" ST_FMT ">,\t", name.c_str(), current_state);
+            printf("Saleman State: <%" ST_FMT ">,\t", current_state);
             printPath(path);
 
             return current_state;

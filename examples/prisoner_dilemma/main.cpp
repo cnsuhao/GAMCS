@@ -32,8 +32,8 @@ int main(void)
     agentB.loadMemoryFromStorage(&mysqlB);
 #endif
 
-    PrisonerA pA("prisonerA");
-    PrisonerB pB("prisonerB");
+    PrisonerA pA;
+    PrisonerB pB;
     pA.connectAgent(&agentA);
     pB.connectAgent(&agentB);
 

@@ -11,7 +11,7 @@ int main(void)
     CSOSAgent ma(1, 0.9, 0.01);
     ma.loadMemoryFromStorage(&mysql);
 
-    Monomer mono("Monomer");
+    Monomer mono;
     mono.connectAgent(&ma);
     mono.stepLoop();
 

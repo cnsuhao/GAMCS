@@ -25,7 +25,7 @@ int main(void)
     ma.loadMemoryFromStorage(&mysql);
 #endif
 
-    Mouse mouse("Mouse");
+    Mouse mouse;
     mouse.connectAgent(&ma);
 
     // run 500 times

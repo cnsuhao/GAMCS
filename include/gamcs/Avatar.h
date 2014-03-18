@@ -33,7 +33,7 @@ class Avatar
 {
     public:
         Avatar();
-        Avatar(std::string);
+        Avatar(int);
         virtual ~Avatar();
 
         int step();
@@ -44,7 +44,7 @@ class Avatar
         void setSps(int);
 
     protected:
-        std::string name; /**< avatar's name */
+        int id; /**< avatar's id */
         int sps; /**< number of steps per second */
         unsigned long ava_loop_count; /**< loop count */
 

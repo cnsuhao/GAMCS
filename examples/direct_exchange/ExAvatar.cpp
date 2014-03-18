@@ -19,12 +19,12 @@
 #include "ExNetwork.h"
 
 ExAvatar::ExAvatar() :
-        id(0), magent(NULL), exnet(NULL), cps(10)
+        magent(NULL), exnet(NULL), cps(10)
 {
 }
 
 ExAvatar::ExAvatar(int i) :
-        id(i), magent(NULL), exnet(NULL), cps(10)
+        Avatar(i), magent(NULL), exnet(NULL), cps(10)
 {
 }
 

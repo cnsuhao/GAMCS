@@ -22,7 +22,7 @@ class Mouse: public Avatar
 {
     public:
         /** Default constructor */
-        Mouse(std::string);
+        Mouse();
         /** Default destructor */
         ~Mouse();
 
