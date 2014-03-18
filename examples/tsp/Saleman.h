@@ -15,7 +15,7 @@
 #define SALEMAN_H_
 #include <string>
 #include <math.h>
-#include "gamcs/CSThreadAvatar.h"
+#include "gamcs/Avatar.h"
 
 using namespace gamcs;
 
@@ -65,11 +65,11 @@ int distance_table[10][10] = {
 /**
  *
  */
-class Saleman: public CSThreadAvatar
+class Saleman: public Avatar
 {
     public:
         Saleman(std::string n) :
-                CSThreadAvatar(n), count(0), current_state(Agent::INVALID_STATE)
+                Avatar(n), count(0), current_state(Agent::INVALID_STATE)
         {
             for (int i = 0; i < CITY_NUM; i++)
             {

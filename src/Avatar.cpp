@@ -107,6 +107,14 @@ void Avatar::stepLoop()
     return;
 }
 
+pthread_t Avatar::threadLoop()
+{
+    pthread_t tid;
+    pthread_create(&tid, NULL, hook, this);
+
+    return tid;
+}
+
 /** \brief Get original payoff of each state.
  *  Return 1 for every state by default.
  * \param st state identity

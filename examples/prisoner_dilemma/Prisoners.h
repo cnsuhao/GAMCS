@@ -10,11 +10,10 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #include <string>
 #include <unistd.h>
 #include <stdio.h>
-#include "gamcs/CSThreadAvatar.h"
+#include "gamcs/Avatar.h"
 
 using namespace gamcs;
 
@@ -47,11 +46,11 @@ bool actB = true;    // let A act first
 int runtimes = 100;    // number of rounds
 bool quit_notification = false;    // notify opponent to quit
 
-class PrisonerA: public CSThreadAvatar
+class PrisonerA: public Avatar
 {
     public:
         PrisonerA(std::string n) :
-                CSThreadAvatar(n)
+                Avatar(n)
         {
         }
         ~PrisonerA()
@@ -137,11 +136,11 @@ class PrisonerA: public CSThreadAvatar
         }
 };
 
-class PrisonerB: public CSThreadAvatar
+class PrisonerB: public Avatar
 {
     public:
         PrisonerB(std::string n) :
-                CSThreadAvatar(n)
+                Avatar(n)
         {
         }
         ~PrisonerB()
