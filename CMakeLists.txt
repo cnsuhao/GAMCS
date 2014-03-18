@@ -9,14 +9,21 @@ SET(GAMCS_BUILD 0)
 SET(GAMCS_NAME gamcs)   
 SET(GAMCS_STATIC_NAME gamcs_static)
 SET(GAMCS_VERSION ${GAMCS_MAJOR}.${GAMCS_MINOR}.${GAMCS_BUILD})
+MESSAGE(STATUS "GAMCS Version: " ${GAMCS_VERSION})
 
 # configuration options
-OPTION(DEBUG "Build with debug output" NO)
-OPTION(DEBUG_MORE "Build with debug output" NO)
-OPTION(INT_BITS "Bitwise of integer" 64)    # 8, 16, 32, 64
-MESSAGE(STATUS "Input/Output bitwise " ${INT_BITS})
-OPTION(WITH_MYSQL "Build with Mysql support" YES)   # Mysql is a kind of storage to save memories of agent
-MESSAGE(STATUS "Mysql support: " ${WITH_MYSQL})
+OPTION(DEBUG "Build with debug output" OFF)
+
+OPTION(DEBUG_MORE "Build with debug output" OFF)
+
+OPTION(INT_BITS "Bitwise of integer" OFF)    # 8, 16, 32, 64
+IF (NOT INT_BITS)   # 64bit by default
+    SET(INT_BITS 64)
+ENDIF()
+MESSAGE(STATUS "INT_BITS: " ${INT_BITS})
+
+OPTION(WITH_MYSQL "Build with Mysql support" ON)   # Mysql is a kind of storage to save memories of agent
+MESSAGE(STATUS "WITH_MYSQL: " ${WITH_MYSQL})
 
 # find dependencies
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
