@@ -10,7 +10,6 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #include <stdio.h>
 #include "gamcs/CSOSAgent.h"
 #include "gamcs/Mysql.h"
@@ -21,10 +20,16 @@ int main(void)
 {
     CSOSAgent agent(1, 0.9, 0.01);
 
-    Escapee escapee("Escapee", 2, 1000);
+    Escapee escapee("Escapee", 2);
     escapee.connectAgent(&agent);
 
-    escapee.stepLoop();
+    int count = 0;
+    while (count < 200)
+    {
+        escapee.step();
+
+        count++;
+    }
 
     // show states
     DotViewer dv;
@@ -32,12 +37,18 @@ int main(void)
     dv.show();
 
     printf("spawn a new escapee with the learned agent.\n");
-    Escapee escapee2("Escapee2", 1, 10);
+    Escapee escapee2("Escapee2", 1);
     escapee2.setSps(2);
     escapee2.connectAgent(&agent);
-    escapee2.stepLoop();
+
+    count = 0;
+    while (count < 10)
+    {
+        escapee2.step();
+
+        count++;
+    }
 
     return 0;
 }
-
 

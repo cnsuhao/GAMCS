@@ -27,7 +27,14 @@ int main(void)
 
     Mouse mouse("Mouse");
     mouse.connectAgent(&ma);
-    mouse.stepLoop();
+
+    // run 500 times
+    int count = 0;
+    while (count < 500)
+    {
+        mouse.step();
+        count++;
+    }
 
 #ifdef _WITH_MYSQL_
     ma.dumpMemoryToStorage(&mysql);

@@ -39,13 +39,6 @@ using namespace gamcs;
 
 int current_state = 1;    // start from state 1
 
-/* take turns to act */
-bool actA = false;
-bool actB = true;    // let A act first
-
-int runtimes = 100;    // number of rounds
-bool quit_notification = false;    // notify opponent to quit
-
 class PrisonerA: public Avatar
 {
     public:
@@ -60,9 +53,6 @@ class PrisonerA: public Avatar
     private:
         Agent::State percieveState()
         {
-            while (actB == false)
-                usleep(10000);    // sleep, wait for B to act
-            actB = false;    // next turn, set actB as false
             printf("%s, State: %d\n", name.c_str(), current_state);
             return current_state;
         }
@@ -70,45 +60,35 @@ class PrisonerA: public Avatar
         void performAction(Agent::Action act)
         {
             current_state += act;
-            actA = true;
         }
 
         OSpace availableActions(Agent::State st)
         {
-            static int count = 0;
             OSpace re;
             re.clear();
-            if (count < runtimes)    // run times
+
+            switch (st)
             {
-                switch (st)
-                {
-                    case 1:
-                        re.add(0);
-                        re.add(1);
-                        break;
-                    case 2:
-                        re.add(0);
-                        re.add(-1);
-                        break;
-                    case 3:
-                        re.add(0);
-                        re.add(1);
-                        break;
-                    case 4:
-                        re.add(0);
-                        re.add(-1);
-                        break;
-                    default:
-                        printf(
-                                "PrisonerA: ActionCandidates() - unknown state!\n");
-                }
-                count++;
+                case 1:
+                    re.add(0);
+                    re.add(1);
+                    break;
+                case 2:
+                    re.add(0);
+                    re.add(-1);
+                    break;
+                case 3:
+                    re.add(0);
+                    re.add(1);
+                    break;
+                case 4:
+                    re.add(0);
+                    re.add(-1);
+                    break;
+                default:
+                    printf("PrisonerA: ActionCandidates() - unknown state!\n");
             }
-            else
-            {
-                actA = true;    //
-                quit_notification = true;    // tell B to quit
-            }
+
             return re;
         }
 
@@ -150,16 +130,13 @@ class PrisonerB: public Avatar
     private:
         Agent::State percieveState()
         {
-            while (actA == false)
-                usleep(10000);    // sleep, wait for A to act
-            actA = false;
+            printf("%s, State: %d\n", name.c_str(), current_state);
             return current_state;
         }
 
         void performAction(Agent::Action act)
         {
             current_state += act;
-            actB = true;
         }
 
         OSpace availableActions(Agent::State st)
@@ -167,31 +144,28 @@ class PrisonerB: public Avatar
             OSpace re;
             re.clear();
 
-            if (!quit_notification)    // check quit
+            switch (st)
             {
-                switch (st)
-                {
-                    case 1:
-                        re.add(0);
-                        re.add(2);
-                        break;
-                    case 2:
-                        re.add(0);
-                        re.add(2);
-                        break;
-                    case 3:
-                        re.add(0);
-                        re.add(-2);
-                        break;
-                    case 4:
-                        re.add(0);
-                        re.add(-2);
-                        break;
-                    default:
-                        printf(
-                                "PrisonerA: ActionCandidates() - unknown state!\n");
-                }
+                case 1:
+                    re.add(0);
+                    re.add(2);
+                    break;
+                case 2:
+                    re.add(0);
+                    re.add(2);
+                    break;
+                case 3:
+                    re.add(0);
+                    re.add(-2);
+                    break;
+                case 4:
+                    re.add(0);
+                    re.add(-2);
+                    break;
+                default:
+                    printf("PrisonerA: ActionCandidates() - unknown state!\n");
             }
+
             return re;
         }
 

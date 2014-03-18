@@ -10,7 +10,6 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #include <stdio.h>
 #include "gamcs/CSOSAgent.h"
 #include "gamcs/Mysql.h"
@@ -24,7 +23,13 @@ int main(void)
     saleman->setSps(-1);
     saleman->connectAgent(agent);
 
-    saleman->stepLoop();
+    int count = 0;
+    while (count < 5000)
+    {
+        saleman->step();
+
+        count++;
+    }
 
     delete saleman;
     delete agent;

@@ -28,7 +28,6 @@ class Mouse: public Avatar
 
     private:
         int position;
-        int count;
 
         Agent::State percieveState();
         void performAction(Agent::Action);

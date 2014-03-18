@@ -20,8 +20,8 @@ using namespace gamcs;
 class Escapee: public Avatar
 {
     public:
-        Escapee(std::string name, int room = 2, int mc = 1000) :
-                Avatar(name), count(0), max_count(mc), current_room(room)
+        Escapee(std::string name, int room = 2) :
+                Avatar(name), current_room(room)
         {
         }
 
@@ -30,8 +30,6 @@ class Escapee: public Avatar
         }
 
     private:
-        int count;
-        int max_count;
         int current_room;
 
         Agent::State percieveState()
@@ -43,37 +41,33 @@ class Escapee: public Avatar
         OSpace availableActions(Agent::State st)
         {
             OSpace acts;
-            if (count < max_count)
+            switch (st)
             {
-                switch (st)
-                {
-                    case 0:
-                        acts.add(4);
-                        break;
-                    case 1:
-                        acts.add(3);
-                        acts.add(5);
-                        break;
-                    case 2:
-                        acts.add(3);
-                        break;
-                    case 3:
-                        acts.add(1);
-                        acts.add(4);
-                        acts.add(2);
-                        break;
-                    case 4:
-                        acts.add(5);
-                        acts.add(0);
-                        acts.add(3);
-                        break;
-                    case 5:
-                        acts.add(1);
-                        acts.add(4);
-                        acts.add(5);
-                        break;
-                }
-                count++;
+                case 0:
+                    acts.add(4);
+                    break;
+                case 1:
+                    acts.add(3);
+                    acts.add(5);
+                    break;
+                case 2:
+                    acts.add(3);
+                    break;
+                case 3:
+                    acts.add(1);
+                    acts.add(4);
+                    acts.add(2);
+                    break;
+                case 4:
+                    acts.add(5);
+                    acts.add(0);
+                    acts.add(3);
+                    break;
+                case 5:
+                    acts.add(1);
+                    acts.add(4);
+                    acts.add(5);
+                    break;
             }
 
             return acts;

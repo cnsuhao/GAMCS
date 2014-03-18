@@ -10,7 +10,6 @@
 //
 // -----------------------------------------------------------------------------
 
-#include <pthread.h>
 #include "gamcs/CSOSAgent.h"
 #include "Prisoners.h"
 #ifdef _WITH_MYSQL_
@@ -37,17 +36,16 @@ int main(void)
     PrisonerB pB("prisonerB");
     pA.connectAgent(&agentA);
     pB.connectAgent(&agentB);
-    pA.setSps(50);
-    pB.setSps(50);
 
     // launch
-    pthread_t tids[2];
-    tids[0] = pA.threadLoop();
-    tids[1] = pB.threadLoop();
+    int count = 0;
+    while (count < 100)
+    {
+        pA.step();
+        pB.step();
 
-    // wait
-    pthread_join(tids[0], NULL);
-    pthread_join(tids[1], NULL);
+        count++;
+    }
 
 #ifdef _WITH_MYSQL_
     agentA.dumpMemoryToStorage(&mysqlA);

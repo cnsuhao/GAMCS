@@ -10,11 +10,10 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #include "Mouse.h"
 
 Mouse::Mouse(std::string n) :
-        Avatar(n), count(0)
+        Avatar(n)
 {
     position = 3;
 }
@@ -50,17 +49,12 @@ void Mouse::performAction(Agent::Action act)
 OSpace Mouse::availableActions(Agent::State st)
 {
 //    UNUSED(st);
-    if (count < 500)
-    {
-        OSpace acts;
-        acts.clear();
-        acts.add(1);
-        acts.add(-1);
-        count++;
-        return acts;
-    }
-    else
-        return OSpace();    // return an empty list
+    OSpace acts;
+    acts.clear();
+    acts.add(1);
+    acts.add(-1);
+
+    return acts;
 }
 
 float Mouse::originalPayoff(Agent::State st)
