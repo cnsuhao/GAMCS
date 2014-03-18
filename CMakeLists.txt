@@ -3,7 +3,7 @@ PROJECT(GAMCS CXX)   # Generalized Intelligence Model and Computer Simulation
 
 # version
 SET(GAMCS_MAJOR 1)
-SET(GAMCS_MINOR 0)
+SET(GAMCS_MINOR 1)
 SET(GAMCS_BUILD 0)
 
 SET(GAMCS_NAME gamcs)   
@@ -94,8 +94,6 @@ SET(GAMCS_GIM_HDRS
     ${PROJECT_SOURCE_DIR}/include/gamcs/StateInfoParser.h
     ${PROJECT_SOURCE_DIR}/include/gamcs/OSAgent.h
     ${PROJECT_SOURCE_DIR}/include/gamcs/Avatar.h
-    ${PROJECT_SOURCE_DIR}/include/gamcs/ExNet.h
-    ${PROJECT_SOURCE_DIR}/include/gamcs/ExManager.h
     ${PROJECT_SOURCE_DIR}/include/gamcs/Storage.h
     ${PROJECT_SOURCE_DIR}/include/gamcs/MemoryViewer.h
     ${PROJECT_SOURCE_DIR}/include/gamcs/config.h
@@ -103,9 +101,6 @@ SET(GAMCS_GIM_HDRS
 
 SET(GAMCS_CS_HDRS
     ${PROJECT_SOURCE_DIR}/include/gamcs/CSOSAgent.h
-    ${PROJECT_SOURCE_DIR}/include/gamcs/CSThreadAvatar.h
-    ${PROJECT_SOURCE_DIR}/include/gamcs/CSThreadExNet.h
-    ${PROJECT_SOURCE_DIR}/include/gamcs/CSThreadExManager.h
     ${PROJECT_SOURCE_DIR}/include/gamcs/PrintViewer.h
     ${PROJECT_SOURCE_DIR}/include/gamcs/DotViewer.h
     ${PROJECT_SOURCE_DIR}/include/gamcs/CDotViewer.h

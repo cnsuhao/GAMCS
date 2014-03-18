@@ -4,16 +4,11 @@ SET(GAMCS_GIM_SRCS
     ./StateInfoParser.cpp
     ./Agent.cpp
     ./Avatar.cpp
-    ./ExNet.cpp
-    ./ExManager.cpp
     ./MemoryViewer.cpp
     )
 
 SET(GAMCS_CS_SRCS
     ./CSOSAgent.cpp
-    ./CSThreadAvatar.cpp
-    ./CSThreadExNet.cpp
-    ./CSThreadExManager.cpp
     ./PrintViewer.cpp
     ./DotViewer.cpp
     ./CDotViewer.cpp

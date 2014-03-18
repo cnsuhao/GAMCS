@@ -11,7 +11,6 @@
 // -----------------------------------------------------------------------------
 
 
-#include <pthread.h>
 #include <stdio.h>
 #include "gamcs/CSOSAgent.h"
 #include "gamcs/Mysql.h"
@@ -25,9 +24,7 @@ int main(void)
     saleman->setSps(-1);
     saleman->connectAgent(agent);
 
-    pthread_t tid = saleman->threadStepLoop();
-
-    pthread_join(tid, NULL);
+    saleman->stepLoop();
 
     delete saleman;
     delete agent;
