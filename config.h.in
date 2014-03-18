@@ -20,4 +20,9 @@
 #define INT_BITS @INT_BITS@
 #define VERSION @GAMCS_VERSION@
 
+namespace gamcs
+{
+    const char version[16] = "@GAMCS_VERSION@";
+}   // namespace gamcs
+
 #endif
