@@ -14,7 +14,7 @@
 #include <sys/timeb.h>
 #include <unistd.h>
 #include "gamcs/Avatar.h"
-#include "gamcs/Debug.h"
+#include "gamcs/debug.h"
 
 namespace gamcs
 {

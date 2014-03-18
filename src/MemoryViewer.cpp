@@ -14,7 +14,7 @@
 #include <stddef.h>
 #include "gamcs/MemoryViewer.h"
 #include "gamcs/Storage.h"
-#include "gamcs/Debug.h"
+#include "gamcs/debug.h"
 
 namespace gamcs
 {

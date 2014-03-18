@@ -10,7 +10,7 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "gamcs/Debug.h"
+#include "gamcs/debug.h"
 #include "gamcs/Agent.h"
 
 namespace gamcs

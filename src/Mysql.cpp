@@ -15,7 +15,7 @@
 #include <string.h>
 #include <assert.h>
 #include "gamcs/Mysql.h"
-#include "gamcs/Debug.h"
+#include "gamcs/debug.h"
 
 namespace gamcs
 {

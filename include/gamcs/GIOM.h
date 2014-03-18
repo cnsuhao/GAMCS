@@ -22,7 +22,7 @@
 #define __STDC_FORMAT_MACROS    // PRIu64
 #include <inttypes.h>
 #include "gamcs/config.h"
-#include "gamcs/Debug.h"
+#include "gamcs/debug.h"
 
 namespace gamcs
 {
