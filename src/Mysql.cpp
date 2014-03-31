@@ -97,23 +97,6 @@ void Mysql::close()
     }
 }
 
-/**
- * \brief Set arguments for connecting database.
- * \param srv database server location
- * \param usr username of database
- * \param passwd password of username
- * \param name of the database
- */
-void Mysql::setDBArgs(std::string srv, std::string usr, std::string passwd,
-        std::string db)
-{
-    db_server = srv;
-    db_user = usr;
-    db_password = passwd;
-    db_name = db;
-    return;
-}
-
 Agent::State Mysql::firstState() const
 {
     current_index = 0;

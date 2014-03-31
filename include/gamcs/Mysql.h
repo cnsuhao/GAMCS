@@ -14,7 +14,6 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #ifndef MYSQL_H_
 #define MYSQL_H_
 #include <mysql/mysql.h>
@@ -30,9 +29,10 @@ namespace gamcs
 class Mysql: public Storage
 {
     public:
-        Mysql() :
-                db_con(NULL), db_server(""), db_user(""), db_password(""), db_name(
-                        ""), db_t_stateinfo("StateInfo"), db_t_meminfo(
+        Mysql(std::string server, std::string user, std::string password,
+                std::string dbname) :
+                db_con(NULL), db_server(server), db_user(user), db_password(
+                        password), db_name(dbname), db_t_stateinfo("StateInfo"), db_t_meminfo(
                         "MemoryInfo"), current_index(0)
         {
         }
@@ -43,7 +43,6 @@ class Mysql: public Storage
 
         int connect();
         void close();
-        void setDBArgs(std::string, std::string, std::string, std::string);
 
         Agent::State firstState() const;
         Agent::State nextState() const;
