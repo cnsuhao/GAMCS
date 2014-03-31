@@ -23,10 +23,8 @@ int main(void)
     CSOSAgent agentB(2, discount_rate, 0.01);
 
 #ifdef _WITH_MYSQL_
-    Mysql mysqlA;
-    mysqlA.setDBArgs("localhost", "root", "huangk", "PrisonerA");
-    Mysql mysqlB;
-    mysqlB.setDBArgs("localhost", "root", "huangk", "PrisonerB");
+    Mysql mysqlA("localhost", "root", "huangk", "PrisonerA");
+    Mysql mysqlB("localhost", "root", "huangk", "PrisonerB");
 
     agentA.loadMemoryFromStorage(&mysqlA);
     agentB.loadMemoryFromStorage(&mysqlB);

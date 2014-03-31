@@ -42,12 +42,6 @@ class Agent: public TSGIOM
 
         void update(float); /**< update memory, this function will call updateMemory() to do the real update */
 
-        /* set and get functions */
-        void setDiscountRate(float);
-        float getDiscountRate() const;
-        void setThreshold(float);
-        float getThreshold() const;
-
         static const State INVALID_STATE = INVALID_INPUT;
         static const Action INVALID_ACTION = INVALID_OUTPUT;
 
@@ -62,34 +56,6 @@ class Agent: public TSGIOM
         virtual OSpace maxPayoffRule(State, OSpace &) const = 0; /**< implementation of maximun payoff rule */
         virtual void updateMemory(float) = 0; /**<  update states in memory given current state's original payoff*/
 };
-
-inline void Agent::setDiscountRate(float dr)
-{
-    // check validity
-    if (dr >= 1.0 || dr < 0)    // discount rate range [0, 1)
-        ERROR(
-                "Agent - discount rate must be bigger than 0 and smaller than 1.0!\n");
-
-    discount_rate = dr;
-}
-
-inline float Agent::getDiscountRate() const
-{
-    return discount_rate;
-}
-
-inline void Agent::setThreshold(float th)
-{
-    if (th < 0)
-    ERROR("Agent - threshold must be bigger than 0!\n");
-
-    threshold = th;
-}
-
-inline float Agent::getThreshold() const
-{
-    return threshold;
-}
 
 /** action information */
 struct Action_Info_Header

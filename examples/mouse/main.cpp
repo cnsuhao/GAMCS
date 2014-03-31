@@ -20,8 +20,7 @@ int main(void)
 {
     CSOSAgent ma(1, 0.9, 0.01);
 #ifdef _WITH_MYSQL_
-    Mysql mysql;
-    mysql.setDBArgs("localhost", "root", "huangk", "Mouse");
+    Mysql mysql("localhost", "root", "huangk", "Mouse");
     ma.loadMemoryFromStorage(&mysql);
 #endif
 

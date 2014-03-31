@@ -6,8 +6,7 @@
 
 int main(void)
 {
-    Mysql mysql;
-    mysql.setDBArgs("localhost", "root", "huangk", "Monomer");
+    Mysql mysql("localhost", "root", "huangk", "Monomer");
     CSOSAgent ma(1, 0.9, 0.01);
     ma.loadMemoryFromStorage(&mysql);
 

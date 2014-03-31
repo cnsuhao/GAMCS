@@ -33,9 +33,8 @@ int main(int argc, char *argv[])
     {
         // storage
         char db_name[16];
-        Mysql *ml = new Mysql();
         sprintf(db_name, "Member_%d", i);
-        ml->setDBArgs("localhost", "root", "huangk", db_name);
+        Mysql *ml = new Mysql("localhost", "root", "huangk", db_name);
 
         // agent
         CSOSAgent *agent = new CSOSAgent(i + 1, 0.8, 0.01);    // agent id start from 1
