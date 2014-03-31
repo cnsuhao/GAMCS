@@ -14,7 +14,6 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #ifndef DOTVIEWER_H_
 #define DOTVIEWER_H_
 #include <string>
@@ -32,15 +31,15 @@ class Storage;
 class DotViewer: public MemoryViewer
 {
     public:
-        DotViewer();
-        DotViewer(Storage *);
+        DotViewer(Storage *storage = NULL);
         virtual ~DotViewer();
 
         void show();
-        void showState(Agent::State);
+        void showState(Agent::State state);
     private:
-        void dotStateInfo(const struct State_Info_Header *) const;
-        const std::string act2String(Agent::Action) const;
+        void dotStateInfo(
+                const struct State_Info_Header *state_information_header) const;
+        const std::string act2String(Agent::Action action) const;
 
         Agent::State last_state;
         Agent::Action last_action;

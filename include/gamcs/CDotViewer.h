@@ -21,14 +21,14 @@ namespace gamcs
 class CDotViewer: public DotViewer
 {
     public:
-        CDotViewer();
-        CDotViewer(Storage *);
+        CDotViewer(Storage *storage = NULL);
         virtual ~CDotViewer();
 
         void show(); /**< show agent memory cleanly */
 
     private:
-        void cleanDotStateInfo(const struct State_Info_Header *) const; /**< show state info cleanly */
+        void cleanDotStateInfo(
+                const struct State_Info_Header * state_information_header) const; /**< show state info cleanly */
 
         Agent::State last_state;
         Agent::Action last_action;

@@ -20,6 +20,35 @@
 namespace gamcs
 {
 
+Mysql::Mysql(std::string server, std::string user, std::string password,
+        std::string dbname) :
+        db_con(NULL), db_server(server), db_user(user), db_password(password), db_name(
+                dbname), db_t_stateinfo("StateInfo"), db_t_meminfo(
+                "MemoryInfo"), current_index(0)
+{
+}
+
+Mysql::~Mysql()
+{
+}
+
+/**
+ * \brief Set arguments for connecting database.
+ * \param srv database server location
+ * \param usr username of database
+ * \param passwd password of username
+ * \param name of the database
+ */
+void Mysql::setDBArgs(std::string srv, std::string usr, std::string passwd,
+        std::string db)
+{
+    db_server = srv;
+    db_user = usr;
+    db_password = passwd;
+    db_name = db;
+    return;
+}
+
 /**
  * \brief Connect to database.
  * \return -1 for error, 0 for success

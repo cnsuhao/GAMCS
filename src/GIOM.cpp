@@ -54,7 +54,7 @@ GIOM::Output GIOM::process(Input in, OSpace &alpos_outputs)
         return INVALID_OUTPUT;
 
     gamcs_uint sz = restricited_outputs.size();    // number of alpos_outputs
-    gamcs_uint index = myRandom(sz) % (sz);    // choose an output value randomly
+    gamcs_uint index = randomGenerator(sz) % (sz);    // choose an output value randomly
     GIOM::Output out = restricited_outputs[index];
 
     // record input and output
@@ -89,7 +89,7 @@ void GIOM::update()
     return;
 }
 
-gamcs_uint GIOM::myRandom(gamcs_uint sz) const
+gamcs_uint GIOM::randomGenerator(gamcs_uint sz) const
 {
     std::uniform_int_distribution<gamcs_uint> dist(0, sz - 1);  // random number range: 0 ~ sz-1
     std::random_device rd;    // to get true random on linux, use rand("/dev/random");

@@ -17,11 +17,6 @@
 namespace gamcs
 {
 
-PrintViewer::PrintViewer() :
-        MemoryViewer()
-{
-}
-
 PrintViewer::PrintViewer(Storage *sg) :
         MemoryViewer(sg)
 {
@@ -135,9 +130,9 @@ void PrintViewer::showState(Agent::State st)
     }
     else
     {
-        printf("state %" ST_FMT " not found in memory!\n", st);
-    }
-    storage->close();
+    printf("state %" ST_FMT " not found in memory!\n", st);
+}
+storage->close();
 }
 
 }    // namespace gamcs

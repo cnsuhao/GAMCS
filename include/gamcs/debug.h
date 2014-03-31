@@ -14,7 +14,6 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #ifndef DEBUG_H
 #define DEBUG_H
 #include <stdio.h>
@@ -41,7 +40,7 @@ namespace gamcs
 
 #define UNUSED(expr) do { (void)(expr); } while (0)
 
-void printStateInfo(const struct State_Info_Header *);
+void printStateInfo(const struct State_Info_Header *state_information_header);
 
 }
 #endif // DEBUG_H

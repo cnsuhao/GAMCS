@@ -32,16 +32,15 @@ class DENet;
 class Avatar
 {
     public:
-        Avatar();
-        Avatar(int);
+        Avatar(int id = 0);
         virtual ~Avatar();
 
         int step();
         void stepLoop(); /**< stepLoop this avatar */
-        pthread_t threadLoop();  /**< loop in a new thread */
+        pthread_t threadLoop(); /**< loop in a new thread */
 
-        void connectAgent(Agent *); /**< connect to an agent */
-        void setSps(int);
+        void connectAgent(Agent *agent); /**< connect to an agent */
+        void setSps(int step_per_second);
 
     protected:
         int id; /**< avatar's id */
@@ -51,9 +50,9 @@ class Avatar
         Agent *myagent; /**< connected agent */
 
         virtual Agent::State percieveState() = 0; /**< get current state */
-        virtual void performAction(Agent::Action) = 0; /**< perform an real action */
-        virtual OSpace availableActions(Agent::State) = 0; /**< return a list of all action candidates of a Agent::State */
-        virtual float originalPayoff(Agent::State); /**< original payoff of a state */
+        virtual void performAction(Agent::Action action) = 0; /**< perform an real action */
+        virtual OSpace availableActions(Agent::State state) = 0; /**< return a list of all action candidates of a Agent::State */
+        virtual float originalPayoff(Agent::State state); /**< original payoff of a state */
 
     private:
         unsigned long getCurrentTime(); /**< current time in millisecond */

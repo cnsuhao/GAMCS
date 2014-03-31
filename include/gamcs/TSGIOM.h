@@ -14,7 +14,6 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #ifndef TSGIOM_H
 #define TSGIOM_H
 #include "gamcs/GIOM.h"
@@ -33,7 +32,7 @@ class TSGIOM: public GIOM
         virtual void update();    // reimplement update, add time sequence
 
     protected:
-        virtual OSpace constrain(Input, OSpace &) const;    // reimplement constrain
+        virtual OSpace constrain(Input input, OSpace &available_outputs) const;    // reimplement constrain
         /* bring in the time sequence feature */
         Input pre_in; /**< previous input value */
         Output pre_out; /**< previous output value */

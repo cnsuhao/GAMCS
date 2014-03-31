@@ -14,7 +14,6 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #ifndef MEMORYVIEWER_H_
 #define MEMORYVIEWER_H_
 #include "gamcs/debug.h"
@@ -31,13 +30,12 @@ class Storage;
 class MemoryViewer
 {
     public:
-        MemoryViewer();
-        MemoryViewer(Storage *);
+        MemoryViewer(Storage *storage = NULL);
         virtual ~MemoryViewer();
 
-        void attachStorage(Storage *); /**< set storage in which memory is stored */
+        void attachStorage(Storage *specific_storage); /**< set storage in which memory is stored */
         virtual void show() = 0; /**< show the whole memory */
-        virtual void showState(Agent::State) = 0; /**< show a specified state */
+        virtual void showState(Agent::State state) = 0; /**< show a specified state */
 
     protected:
         Storage *storage;

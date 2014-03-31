@@ -25,23 +25,9 @@
 namespace gamcs
 {
 
-CSOSAgent::CSOSAgent() :
-        state_num(0), lk_num(0), head(NULL), cur_mst(NULL), current_st_index(
-        NULL)
-{
-    states_map.clear();
-}
-
-CSOSAgent::CSOSAgent(int i) :
-        OSAgent(i), state_num(0), lk_num(0), head(NULL), cur_mst(NULL), current_st_index(
-        NULL)
-{
-    states_map.clear();
-}
-
 CSOSAgent::CSOSAgent(int i, float dr, float th) :
         OSAgent(i, dr, th), state_num(0), lk_num(0), head(NULL), cur_mst(NULL), current_st_index(
-        NULL)
+                NULL)
 {
     states_map.clear();
 }
@@ -88,7 +74,7 @@ void CSOSAgent::loadMemoryFromStorage(Storage *storage)
     {
         char label[10] = "Loading: ";
         printf("Loading Memory from Storage... \n");
-        fflush(stdout);
+        fflush (stdout);
 
         /* load memory information */
         unsigned long saved_state_num = 0, saved_lk_num = 0;
@@ -409,7 +395,7 @@ void CSOSAgent::deleteAct(Agent::Action act, struct cs_State *mst)
                     lk_num--;    // every link from this act will be deleted
                     nmeat = meat->next;
                 }
-                freeAct(tmp);   // then free itself
+                freeAct(tmp);    // then free itself
                 return;
             }
             else

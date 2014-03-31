@@ -19,13 +19,9 @@
 namespace gamcs
 {
 
-DotViewer::DotViewer() :
-        last_state(Agent::INVALID_STATE), last_action(Agent::INVALID_ACTION)
-{
-}
-
 DotViewer::DotViewer(Storage *sg) :
-        MemoryViewer(sg), last_state(Agent::INVALID_STATE), last_action(Agent::INVALID_ACTION)
+        MemoryViewer(sg), last_state(Agent::INVALID_STATE), last_action(
+                Agent::INVALID_ACTION)
 {
 }
 

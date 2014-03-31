@@ -27,7 +27,6 @@ namespace gamcs
 class StateInfoParser
 {
     public:
-        StateInfoParser();
         StateInfoParser(const State_Info_Header *);
         virtual ~StateInfoParser();
 
