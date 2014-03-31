@@ -10,7 +10,6 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #include <stddef.h>
 #include "gamcs/MemoryViewer.h"
 #include "gamcs/Storage.h"
@@ -18,11 +17,6 @@
 
 namespace gamcs
 {
-
-MemoryViewer::MemoryViewer() :
-        storage(NULL)
-{
-}
 
 MemoryViewer::MemoryViewer(Storage *sg) :
         storage(sg)

@@ -19,11 +19,6 @@
 namespace gamcs
 {
 
-Avatar::Avatar() :
-        id(0), sps(-1), ava_loop_count(0), myagent(NULL), control_step_time(0)
-{
-}
-
 Avatar::Avatar(int i) :
         id(i), sps(-1), ava_loop_count(0), myagent(NULL), control_step_time(0)
 {

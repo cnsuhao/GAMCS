@@ -30,30 +30,27 @@ class Mysql: public Storage
 {
     public:
         Mysql(std::string server, std::string user, std::string password,
-                std::string dbname) :
-                db_con(NULL), db_server(server), db_user(user), db_password(
-                        password), db_name(dbname), db_t_stateinfo("StateInfo"), db_t_meminfo(
-                        "MemoryInfo"), current_index(0)
-        {
-        }
+                std::string database);
+        ~Mysql();
 
-        ~Mysql()
-        {
-        }
+        void setDBArgs(std::string server, std::string user,
+                std::string password, std::string database);
 
         int connect();
         void close();
 
         Agent::State firstState() const;
         Agent::State nextState() const;
-        bool hasState(Agent::State) const;
+        bool hasState(Agent::State state) const;
 
-        struct State_Info_Header *getStateInfo(Agent::State) const;
-        void addStateInfo(const struct State_Info_Header *);
-        void updateStateInfo(const struct State_Info_Header *);
-        void deleteState(Agent::State);
+        struct State_Info_Header *getStateInfo(Agent::State state) const;
+        void addStateInfo(
+                const struct State_Info_Header *state_information_header);
+        void updateStateInfo(
+                const struct State_Info_Header *state_information_header);
+        void deleteState(Agent::State state);
 
-        void addMemoryInfo(const struct Memory_Info *);
+        void addMemoryInfo(const struct Memory_Info *memory_information_header);
         struct Memory_Info *getMemoryInfo() const;
         std::string getMemoryName() const;
 
@@ -67,7 +64,7 @@ class Mysql: public Storage
         std::string db_t_meminfo; /**< table name for storing memory information */
         mutable gamcs_uint current_index;
 
-        Agent::State stateByIndex(unsigned long) const;
+        Agent::State stateByIndex(unsigned long index) const;
 };
 
 inline std::string Mysql::getMemoryName() const

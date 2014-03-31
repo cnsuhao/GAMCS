@@ -35,12 +35,10 @@ class Agent: public TSGIOM
         typedef GIOM::Output Action; /**< action as output */
         typedef GIOM::Output EnvAction; /**< environment action */
 
-        Agent();
-        Agent(int);
-        Agent(int, float, float);
+        Agent(int id = 0, float discount_rate = 0.9, float threshold = 0.01);
         virtual ~Agent();
 
-        void update(float); /**< update memory, this function will call updateMemory() to do the real update */
+        void update(float original_payoff); /**< update memory, this function will call updateMemory() to do the real update */
 
         static const State INVALID_STATE = INVALID_INPUT;
         static const Action INVALID_ACTION = INVALID_OUTPUT;
@@ -50,11 +48,12 @@ class Agent: public TSGIOM
         float discount_rate; /**< discount rate (0<,<1)when calculate state payoff */
         float threshold; /**< threshold used in payoff updating */
 
-        OSpace constrain(State, OSpace &) const; /**< reimplement restrict using maximun payoff rule  */
+        OSpace constrain(State state, OSpace &avaliable_actions) const; /**< reimplement restrict using maximun payoff rule  */
 
         /** These two functions are implementation dependant, declared as pure virtual functions */
-        virtual OSpace maxPayoffRule(State, OSpace &) const = 0; /**< implementation of maximun payoff rule */
-        virtual void updateMemory(float) = 0; /**<  update states in memory given current state's original payoff*/
+        virtual OSpace maxPayoffRule(State state,
+                OSpace &available_actions) const = 0; /**< implementation of maximun payoff rule */
+        virtual void updateMemory(float original_payoff) = 0; /**<  update states in memory given current state's original payoff*/
 };
 
 /** action information */

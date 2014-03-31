@@ -30,17 +30,8 @@ namespace gamcs
 class OSAgent: public Agent, public Storage
 {
     public:
-        OSAgent()
-        {
-        }
-
-        OSAgent(int i) :
-                Agent(i)
-        {
-        }
-
-        OSAgent(int i, float dr, float th) :
-                Agent(i, dr, th)
+        OSAgent(int id = 0, float discount_rate = 0.9, float threshold = 0.01) :
+                Agent(id, discount_rate, threshold)
         {
         }
 
@@ -48,7 +39,7 @@ class OSAgent: public Agent, public Storage
         {
         }
 
-        virtual void updatePayoff(State) = 0; /**< update payoff beginning from a specified state */
+        virtual void updatePayoff(State state) = 0; /**< update payoff beginning from a specified state */
 };
 
 }    // namespace gamcs

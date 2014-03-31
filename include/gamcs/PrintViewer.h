@@ -14,7 +14,6 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #ifndef PRINTVEWER_H_
 #define PRINTVEWER_H_
 #include "gamcs/MemoryViewer.h"
@@ -31,14 +30,15 @@ class Storage;
 class PrintViewer: public MemoryViewer
 {
     public:
-        PrintViewer();
-        PrintViewer(Storage *);
+        PrintViewer(Storage *storage = NULL);
         virtual ~PrintViewer();
 
         void show();
-        void showState(Agent::State);
+        void showState(Agent::State state);
+
     private:
-        void printStateInfo(const struct State_Info_Header *) const;
+        void printStateInfo(
+                const struct State_Info_Header *state_information_header) const;
 };
 
 }    // namespace gamcs

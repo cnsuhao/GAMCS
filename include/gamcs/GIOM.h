@@ -79,21 +79,21 @@ class GIOM
         GIOM();
         /** Default destructor */
         virtual ~GIOM();
-        Output process(Input, OSpace &); /**< choose an output value in an output space under a specified input value */
-        float singleOutputEntropy(Input, OSpace &) const; /**< calculate entropy of a specified input */
+        Output process(Input input, OSpace &available_outputs); /**< choose an output value in an output space under a specified input value */
+        float singleOutputEntropy(Input input, OSpace &available_outputs) const; /**< calculate entropy of a specified input */
         virtual void update(); /**< update inner states of GIOM, derived classes may have their own inner states to update */
 
         static const Input INVALID_INPUT = GAMCS_INT_MAX; /**< the maximun value is used to indicate invalid input */
         static const Output INVALID_OUTPUT = GAMCS_INT_MAX; /**< the maximun value is used to indicate an invalid output */
 
     protected:
-        virtual OSpace constrain(Input, OSpace &) const; /**< constrain the output space to a subspace */
+        virtual OSpace constrain(Input input, OSpace &available_outputs) const; /**< constrain the output space to a subspace */
         Input cur_in; /**< input value */
         Output cur_out; /**< output value corresponding to cur_in */
         unsigned long process_count; /**< count of processing */
 
     private:
-        gamcs_uint myRandom(gamcs_uint) const; /**< generate a random number in range 0 to LONG_MAX. It's where all possibilities and miracles come from! */
+        gamcs_uint randomGenerator(gamcs_uint size) const; /**< generate a random number in range 0 to LONG_MAX. It's where all possibilities and miracles come from! */
 };
 
 /**

@@ -13,13 +13,9 @@
 namespace gamcs
 {
 
-CDotViewer::CDotViewer() :
-        last_state(Agent::INVALID_STATE), last_action(Agent::INVALID_ACTION)
-{
-}
-
 CDotViewer::CDotViewer(Storage *sg) :
-        DotViewer(sg), last_state(Agent::INVALID_STATE), last_action(Agent::INVALID_ACTION)
+        DotViewer(sg), last_state(Agent::INVALID_STATE), last_action(
+                Agent::INVALID_ACTION)
 {
 }
 

@@ -19,11 +19,6 @@
 namespace gamcs
 {
 
-StateInfoParser::StateInfoParser() :
-        my_sthd(NULL), atp(NULL), act_index(0), eap(NULL), eat_index(0)
-{
-}
-
 StateInfoParser::StateInfoParser(const State_Info_Header *sthd) :
         my_sthd(sthd), atp(NULL), act_index(0), eap(NULL), eat_index(0)
 {
