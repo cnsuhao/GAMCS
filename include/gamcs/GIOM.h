@@ -118,21 +118,21 @@ class OSpace
     public:
         enum
         {
-            SPARE_CAPACITY = 16
+            SPARE_CAPACITY = 5
         };
 
         typedef gamcs_uint olsize_t;    // actions have the maximun number of 2^64
 
         explicit OSpace(olsize_t initfn = 0) :
-                frag_num(initfn), the_capacity(initfn + SPARE_CAPACITY), current_index(
-                        0), outputs(NULL)
+                frag_num(initfn), the_capacity(initfn + SPARE_CAPACITY), act_num(
+                        0), current_index(0), outputs(NULL)
         {
             outputs = new OFragment[the_capacity];
         }
 
         OSpace(const OSpace &other) :
-                frag_num(0), the_capacity(SPARE_CAPACITY), current_index(0), outputs(
-                        NULL)
+                frag_num(0), the_capacity(SPARE_CAPACITY), act_num(0), current_index(
+                        0), outputs(NULL)
         {
             operator=(other);
         }
@@ -157,15 +157,7 @@ class OSpace
          */
         olsize_t size() const
         {
-            olsize_t total_size = 0;
-            // traverse each frament and collect the total size
-            for (olsize_t i = 0; i < frag_num; i++)
-            {
-                OFragment *frag = outputs + i;
-                total_size += (frag->end - frag->start) / frag->step + 1;
-            }
-
-            return total_size;
+            return act_num;
         }
 
         /**
@@ -231,6 +223,7 @@ class OSpace
                 // copy data
                 frag_num = other.frag_num;
                 the_capacity = other.the_capacity;
+                act_num = other.act_num;
 
                 outputs = new OFragment[the_capacity];
                 // copy each fragment
@@ -257,6 +250,7 @@ class OSpace
             new_frag.end = output;
             new_frag.step = 1;
             outputs[frag_num++] = new_frag;    // copy fragment and increase num
+            ++act_num;
         }
 
         /**
@@ -280,6 +274,7 @@ class OSpace
             new_frag.end = end;
             new_frag.step = step;
             outputs[frag_num++] = new_frag;
+            act_num += (end - start) / step + 1;
         }
 
         /**
@@ -310,6 +305,8 @@ class OSpace
         void clear()
         {
             frag_num = 0;
+            act_num = 0;
+            current_index = 0;
         }
 
         /**
@@ -328,7 +325,7 @@ class OSpace
          */
         GIOM::Output last() const
         {
-            return operator[](size());
+            return operator[](size() - 1);
         }
 
         /**
@@ -344,6 +341,7 @@ class OSpace
     private:
         olsize_t frag_num;    // number of fragments
         olsize_t the_capacity;    // space capacity
+        olsize_t act_num;
         mutable olsize_t current_index;    // used by iterator
         OFragment *outputs;
 };

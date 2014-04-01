@@ -63,7 +63,7 @@ GIOM::Output GIOM::process(Input in, OSpace &alpos_outputs)
     // record input and output
     cur_in = in;
     cur_out = out;
-    process_count++;    // inc count
+    ++process_count;    // inc count
     return out;
 }
 
