@@ -32,7 +32,7 @@ int main(void)
     int i = 7;
     printf("index %d is %" OUT_FMT "\n", i, ol[i]);
     printf("capacity is %" GAMCS_UINT_FMT "\n", ol.capacity());
+    printf("the first one is %" OUT_FMT "\n", ol.first());
+    printf("the last one is %" OUT_FMT "\n", ol.last());
 
-    gamcs_uint j = 9999;
-    printf("gamcs_uint size: %d\n", sizeof(j));
 }
