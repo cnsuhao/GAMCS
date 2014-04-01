@@ -30,13 +30,13 @@ Avatar::~Avatar()
 
 int Avatar::step()
 {
-    ava_loop_count++;    // inc count
+    ++ava_loop_count;    // inc count
 
-    /* Perceive the outside world */
+    /* Perceive state */
     Agent::State cs = percieveState();    // get current state
-    dbgmoreprt("Launch():", "%s, State: %ld\n", name.c_str(), cs);
+    dbgmoreprt("Launch():", "Avatar %d, State: %" ST_FMT "\n", id, cs);
 
-    /* Process stage */
+    /* Process */
     OSpace acts = availableActions(cs);    // get all action candidates of a state
 
     Agent::Action act = myagent->process(cs, acts);    // choose an action from candidates
@@ -44,11 +44,10 @@ int Avatar::step()
     if (act == Agent::INVALID_ACTION)    // no valid actions available, reach a dead end, quit. !!!: be sure to check this before update stage
         return -1;
 
-    /* update stage */
-    float oripayoff = originalPayoff(cs);    // get original payoff of a state
-    myagent->update(oripayoff);    // agent update inner states
+    /* update memory */
+    myagent->update(originalPayoff(cs));    // agent update inner states
 
-    /* Perform action to the outside world */
+    /* Perform action */
     performAction(act);    // otherwise, perform the action
 
     return 0;
@@ -77,8 +76,7 @@ void Avatar::stepLoop()
         // handle time related job
         if (sps > 0)    // no control when sps <= 0
         {
-            unsigned long end_time = getCurrentTime();
-            unsigned long consumed_time = end_time - start_time;
+            unsigned long consumed_time = getCurrentTime() - start_time;
             long time_remaining = control_step_time - consumed_time;
             if (time_remaining > 0)    // remaining time
             {
