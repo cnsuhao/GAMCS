@@ -16,7 +16,9 @@
 
 #ifndef CSOSAGENT_H_
 #define CSOSAGENT_H_
+#include <deque>
 #include <unordered_map>
+#include <unordered_set>
 #include "gamcs/OSAgent.h"
 
 namespace gamcs
@@ -65,6 +67,9 @@ class CSOSAgent: public OSAgent
         StatesMap states_map; /**< hash map from state values to state  */
         mutable struct cs_State *cur_mst; /**< state  for current state */
         mutable struct cs_State *current_st_index; /**< current state point used by iterator */
+
+        std::deque<cs_State *> update_queue;
+        std::unordered_set<cs_State *> visited_states;
 
         float prob(const struct cs_EnvAction *env_action,
                 const struct cs_Action *action) const; /**< probability of a exact */

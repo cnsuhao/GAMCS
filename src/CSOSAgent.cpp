@@ -15,8 +15,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <queue>
-#include <set>
 #include "gamcs/CSOSAgent.h"
 #include "gamcs/Storage.h"
 #include "gamcs/StateInfoParser.h"
@@ -30,6 +28,8 @@ CSOSAgent::CSOSAgent(int i, float dr, float th) :
                 NULL)
 {
     states_map.clear();
+    update_queue.clear();
+    visited_states.clear();
 }
 
 CSOSAgent::~CSOSAgent()
@@ -74,7 +74,7 @@ void CSOSAgent::loadMemoryFromStorage(Storage *storage)
     {
         char label[10] = "Loading: ";
         printf("Loading Memory from Storage... \n");
-        fflush (stdout);
+        fflush(stdout);
 
         /* load memory information */
         unsigned long saved_state_num = 0, saved_lk_num = 0;
@@ -531,7 +531,7 @@ void CSOSAgent::linkStates(struct cs_State *mst, EnvAction eat,
     dbgmoreprt("Enter LinkStates()", "------------------- Make Link: %" ST_FMT " == %" ACT_FMT " + %" ACT_FMT " => %" ST_FMT "\n", mst->st, eat, act, nmst->st);
 
     // mst->st + eat + act == nmst->st!
-    assert(mst->st + eat + act == nmst->st);
+//    assert(mst->st + eat + act == nmst->st);
 
     struct cs_Action *mac;
     struct cs_EnvAction *meat;
@@ -645,10 +645,11 @@ float CSOSAgent::calStatePayoff(const struct cs_State *mst) const
  */
 void CSOSAgent::updateStatePayoff(cs_State *mst)
 {
-    std::queue<cs_State *> update_queue;    // states to be updated
-    std::set<cs_State *> visited_states;    // states that has been updated
+    // clear update_queue and visited_states first every time
+    update_queue.clear();
+    visited_states.clear();
 
-    update_queue.push(mst);    // add the starting state
+    update_queue.push_back(mst);    // add the starting state
     cs_State *cmst = NULL;
     while (!update_queue.empty())
     {
@@ -667,7 +668,7 @@ void CSOSAgent::updateStatePayoff(cs_State *mst)
                 // visited state will not be pushed
                 if (visited_states.find(bas->pstate) == visited_states.end())    // not found
                 {
-                    update_queue.push(bas->pstate);
+                    update_queue.push_back(bas->pstate);
                 }
                 nbas = bas->next;
             }
@@ -678,7 +679,7 @@ void CSOSAgent::updateStatePayoff(cs_State *mst)
         }
 
         visited_states.insert(cmst);    // save visited state
-        update_queue.pop();    // remove the state at front
+        update_queue.pop_front();    // remove the state at front
     }
 }
 
@@ -725,9 +726,9 @@ OSpace CSOSAgent::bestActions(const struct cs_State *mst, OSpace &acts) const
 {
     float max_payoff = -FLT_MAX;
     float payoff;
-    OSpace max_acts;
+    OSpace best_acts;
 
-    max_acts.clear();
+    best_acts.clear();
     // walk through every action in list
     Agent::Action act = acts.first();
     while (act != INVALID_OUTPUT)    // until out of bound
@@ -736,16 +737,16 @@ OSpace CSOSAgent::bestActions(const struct cs_State *mst, OSpace &acts) const
 
         if (payoff > max_payoff)    // find a bigger one, refill the max payoff action list
         {
-            max_acts.clear();
-            max_acts.add(act);
+            best_acts.clear();
+            best_acts.add(act);
             max_payoff = payoff;
         }
         else if (payoff == max_payoff)    // find an equal one, Add it to the list
-            max_acts.add(act);
+            best_acts.add(act);
 
         act = acts.next();
     }
-    return max_acts;
+    return best_acts;
 }
 
 /**
@@ -905,19 +906,16 @@ OSpace CSOSAgent::maxPayoffRule(Agent::State st, OSpace &acts) const
 {
     dbgmoreprt("Enter MaxPayoffRule() ", "---------------------- State: %" ST_FMT "\n", st);
     cur_mst = searchState(st);    // get the state struct from state value
-    OSpace re;
 
     if (cur_mst == NULL)    // first time to encounter this state, we know nothing about it, so no restriction applied, return the whole list
     {
         dbgmoreprt("MaxPayoffRule()", "State not found in memory.\n");
-        re = acts;
+        return acts;
     }
     else    // we have memories about this state, find the best action of it
     {
-        re = bestActions(cur_mst, acts);
+        return bestActions(cur_mst, acts);
     }
-
-    return re;
 }
 
 int CSOSAgent::connect()
