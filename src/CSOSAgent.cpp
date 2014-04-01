@@ -620,8 +620,7 @@ float CSOSAgent::calStatePayoff(const struct cs_State *mst) const
 
     // find the maximun action payoff
     float payoff = 0;
-    float max_pf = -FLT_MAX;
-    float action_payoff = 0;
+    register float max_pf = -FLT_MAX, action_payoff = 0;
     struct cs_Action *mac, *nmac;
     for (mac = mst->actlist; mac != NULL; mac = nmac)
     {
@@ -650,11 +649,15 @@ void CSOSAgent::updateStatePayoff(cs_State *mst)
     visited_states.clear();
 
     update_queue.push_back(mst);    // add the starting state
+
     cs_State *cmst = NULL;
+    register float payoff = 0.0;
+    struct cs_BackwardLink *bas, *nbas;
+
     while (!update_queue.empty())
     {
         cmst = update_queue.front();    // get the state at front
-        float payoff = calStatePayoff(cmst);
+        payoff = calStatePayoff(cmst);
 
         if (fabsf(cmst->payoff - payoff) >= threshold)    // states are updated only when diff exceeds threshold
         {
@@ -662,7 +665,6 @@ void CSOSAgent::updateStatePayoff(cs_State *mst)
             dbgmoreprt("UpdateState()", "State: %" ST_FMT " change to payoff: %.3f\n", cmst->st, payoff);
 
             // push previous states to queue
-            struct cs_BackwardLink *bas, *nbas;
             for (bas = cmst->blist; bas != NULL; bas = nbas)
             {
                 // visited state will not be pushed
@@ -704,7 +706,7 @@ float CSOSAgent::calActPayoff(Agent::Action act,
  **/
 float CSOSAgent::_calActPayoff(const cs_Action *mac) const
 {
-    float payoff = 0;
+    register float payoff = 0;
 
     struct cs_EnvAction *ea, *nea;
     for (ea = mac->ealist; ea != NULL; ea = nea)
@@ -724,14 +726,13 @@ float CSOSAgent::_calActPayoff(const cs_Action *mac) const
  */
 OSpace CSOSAgent::bestActions(const struct cs_State *mst, OSpace &acts) const
 {
-    float max_payoff = -FLT_MAX;
-    float payoff;
+    register float max_payoff = -FLT_MAX, payoff = 0;
     OSpace best_acts;
 
     best_acts.clear();
     // walk through every action in list
-    Agent::Action act = acts.first();
-    while (act != INVALID_OUTPUT)    // until out of bound
+    register Agent::Action act = acts.first();
+    while (act != INVALID_ACTION)    // until out of bound
     {
         payoff = calActPayoff(act, mst);
 
@@ -824,7 +825,10 @@ void CSOSAgent::freeMemory()
         nmst = mst->next;
         freeState(mst);
     }
+
     states_map.clear();
+    update_queue.clear();
+    visited_states.clear();
 }
 
 /**
@@ -970,6 +974,7 @@ struct State_Info_Header *CSOSAgent::getStateInfo(Agent::State st) const
     }
 
     State_Info_Header *sthd = (State_Info_Header *) malloc(sthd_size);
+    assert(sthd != NULL);
     // fill the header
     sthd->st = st;
     sthd->original_payoff = mst->original_payoff;

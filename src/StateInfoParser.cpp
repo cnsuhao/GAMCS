@@ -48,7 +48,7 @@ Action_Info_Header *StateInfoParser::firstAct()
 
 Action_Info_Header *StateInfoParser::nextAct()
 {
-    act_index++;
+    ++act_index;
     if (act_index >= my_sthd->act_num)    // no more acts
         return NULL;
 
@@ -92,7 +92,7 @@ EnvAction_Info *StateInfoParser::nextEat()
 {
     Action_Info_Header *athd = (Action_Info_Header *) atp;
 
-    eat_index++;
+    ++eat_index;
     if (eat_index >= athd->eat_num)    // no more eats
         return NULL;
 
