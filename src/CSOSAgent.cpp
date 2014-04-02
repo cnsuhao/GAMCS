@@ -1226,7 +1226,7 @@ void CSOSAgent::printProcess(unsigned long current, unsigned long total,
     FILE *fp;
     prcnt = 1.0 * current / total;
     fp = popen("stty size | cut -d\" \" -f2", "r");
-    fgets(buffer, sizeof(buffer), fp);
+    if (fgets(buffer, sizeof(buffer), fp) == NULL) return;
     pclose(fp);
     width = atoi(buffer);
 
