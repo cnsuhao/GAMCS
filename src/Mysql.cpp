@@ -276,6 +276,8 @@ bool Mysql::hasState(Agent::State st) const
 
 /**
  * \brief Add state information to database.
+ * When you add new states or links to the memory, make sure to update the memory information correspondingly.
+ * Or the memory will stay unconsistent, and the loading will fail.
  * \param stif header pointed to state information
  */
 void Mysql::addStateInfo(const struct State_Info_Header *sthd)
@@ -307,6 +309,8 @@ void Mysql::addStateInfo(const struct State_Info_Header *sthd)
 
 /**
  * \brief Update information of a state already exists in database.
+ * When you add new states or links to the memory, make sure to update the memory information correspondingly.
+ * Or the memory will stay unconsistent, and the loading will fail.
  * \param stif header pointed to the modified state information
  */
 void Mysql::updateStateInfo(const struct State_Info_Header *sthd)
@@ -363,7 +367,7 @@ void Mysql::deleteState(Agent::State st)
  */
 void Mysql::addMemoryInfo(const struct Memory_Info *memif)
 {
-    char query_str[256];
+    char query_str[1024];
 
     sprintf(query_str,
             "INSERT INTO %s(TimeStamp, DiscountRate, Threshold, NumStates, NumLinks, LastState, LastAction) VALUES(NULL, %f, %f, %ld, %ld, %" ST_FMT ", %" ACT_FMT ")",
@@ -372,6 +376,29 @@ void Mysql::addMemoryInfo(const struct Memory_Info *memif)
 
     int len = strlen(query_str);
     if (mysql_real_query(db_con, query_str, len))    // perform query
+    {
+        fprintf(stderr, "%s\n", mysql_error(db_con));
+        return;
+    }
+    return;
+}
+
+/**
+ * Update the lastest memory info.
+ * @param memif
+ */
+void Mysql::updateMemoryInfo(const struct Memory_Info *memif)
+{
+    char query_str[1024];
+
+    sprintf(query_str,
+            "UPDATE %s SET TimeStamp=NULL, DiscountRate=%f, Threshold=%f, NumStates=%ld, NumLinks=%ld, LastState=%" ST_FMT ", LastAction=%" ACT_FMT " ORDER BY TimeStamp DESC LIMIT 1",
+            db_t_meminfo.c_str(), memif->discount_rate, memif->threshold, memif->state_num, memif->lk_num, memif->last_st, memif->last_act);
+
+    printf("query_str: %s\n", query_str);
+
+    int len = strlen(query_str);
+    if (mysql_real_query(db_con, query_str, len))
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
         return;
@@ -417,7 +444,7 @@ struct Memory_Info *Mysql::getMemoryInfo() const
             sizeof(struct Memory_Info));
     dbgmoreprt("Mysql FetchMemoryInfo()", "%s, Memory TimeStamp: %s\n",
             db_name.c_str(), row[0]);
-    // fill in the memory struct
+// fill in the memory struct
     memif->discount_rate = atof(row[1]);
     memif->threshold = atof(row[2]);
     memif->state_num = atol(row[3]);
