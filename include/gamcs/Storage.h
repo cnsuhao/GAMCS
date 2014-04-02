@@ -47,9 +47,11 @@ class Storage
                 const struct State_Info_Header *state_information_header) = 0; /**< update information of a state existing in storage */
         virtual void deleteState(Agent::State state) = 0; /**< delete a state from storage */
 
+        virtual struct Memory_Info *getMemoryInfo() const = 0; /**< fetch memory information from storage */
         virtual void addMemoryInfo(
                 const struct Memory_Info *memory_information_header) = 0; /**< add memory informaiton to storage */
-        virtual struct Memory_Info *getMemoryInfo() const = 0; /**< fetch memory information from storage */
+        virtual void updateMemoryInfo(
+                const struct Memory_Info *memory_information_header) = 0;
         virtual std::string getMemoryName() const = 0; /**< memory name */
 
         /* iterate all states */

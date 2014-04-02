@@ -47,8 +47,9 @@ class CSOSAgent: public OSAgent
         void deleteState(State state);
         void updatePayoff(State state);
 
-        void addMemoryInfo(const struct Memory_Info *memory_info_header);
         struct Memory_Info *getMemoryInfo() const;
+        void addMemoryInfo(const struct Memory_Info *memory_info_header);
+        void updateMemoryInfo(const struct Memory_Info *memory_info_header);
         std::string getMemoryName() const;
 
         // iterate

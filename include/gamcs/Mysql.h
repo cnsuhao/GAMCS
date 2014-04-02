@@ -50,8 +50,10 @@ class Mysql: public Storage
                 const struct State_Info_Header *state_information_header);
         void deleteState(Agent::State state);
 
-        void addMemoryInfo(const struct Memory_Info *memory_information_header);
         struct Memory_Info *getMemoryInfo() const;
+        void addMemoryInfo(const struct Memory_Info *memory_information_header);
+        void updateMemoryInfo(
+                const struct Memory_Info *memory_information_header);
         std::string getMemoryName() const;
 
     private:
