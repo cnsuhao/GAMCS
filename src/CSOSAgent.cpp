@@ -13,19 +13,19 @@
 #include <math.h>
 #include <float.h>
 #include <string.h>
-#include <stdlib.h>
 #include <assert.h>
 #include "gamcs/CSOSAgent.h"
 #include "gamcs/Storage.h"
 #include "gamcs/StateInfoParser.h"
 #include "gamcs/debug.h"
+#include "gamcs/platforms.h"
 
 namespace gamcs
 {
 
 CSOSAgent::CSOSAgent(int i, float dr, float th) :
         OSAgent(i, dr, th), state_num(0), lk_num(0), head(NULL), cur_mst(NULL), current_st_index(
-        NULL)
+                NULL)
 {
     states_map.clear();
     update_queue.clear();
@@ -74,7 +74,7 @@ void CSOSAgent::loadMemoryFromStorage(Storage *storage)
     {
         char label[10] = "Loading: ";
         printf("Loading Memory from Storage... \n");
-        fflush(stdout);
+        fflush (stdout);
 
         /* load memory information */
         unsigned long saved_state_num = 0, saved_lk_num = 0;
@@ -92,19 +92,15 @@ void CSOSAgent::loadMemoryFromStorage(Storage *storage)
 
         /* load states information */
         Agent::State st = storage->firstState();
-#ifdef _UNIX_
-        unsigned long progress = 0;
-#endif
+        unsigned long index = 0;
         while (st != INVALID_STATE)
         {
             dbgmoreprt("LoadMemory()", "LoadState: %ld\n", st);
             loadState(storage, st);
 
             st = storage->nextState();
-#ifdef _UNIX_
-            progress++;
-            printProcess(progress, saved_state_num, label);
-#endif
+            index++;
+            pi_progressBar(index, saved_state_num, label);
         }
 
         // do some check of numbers
@@ -161,9 +157,7 @@ void CSOSAgent::dumpMemoryToStorage(Storage *storage) const
         /* save states information */
         struct State_Info_Header *stif = NULL;
         struct cs_State *mst, *nmst;
-#ifdef _UNIX_
         unsigned long index = 0;
-#endif
         // walk through all state structs
         for (mst = head; mst != NULL; mst = nmst)
         {
@@ -184,10 +178,8 @@ void CSOSAgent::dumpMemoryToStorage(Storage *storage) const
                 free(stif);    // free
             }
 
-#ifdef _UNIX_
             index++;
-            printProcess(index, state_num, label);
-#endif
+            pi_progressBar(index, state_num, label);
             nmst = mst->next;
         }
     }
@@ -1216,50 +1208,5 @@ bool CSOSAgent::hasState(State st) const
     else
         return true;
 }
-
-#ifdef _UNIX_
-/**
- * \brief Pretty print process of load or save memory to database.
- * \param current current progress
- * \param total total amount
- * \param label indicator label
- */
-void CSOSAgent::printProcess(unsigned long current, unsigned long total,
-        char *label) const
-{
-    double prcnt;
-    int num_of_dots;
-    char buffer[80] = { 0 };
-    int width;
-    /* get term width */
-    FILE *fp;
-    prcnt = 1.0 * current / total;
-    fp = popen("stty size | cut -d\" \" -f2", "r");
-    if (fgets(buffer, sizeof(buffer), fp) == NULL) return;
-    pclose(fp);
-    width = atoi(buffer);
-
-    if (width < 32)
-    {
-        printf("\e[1A%3d%% completed.\n", (int) (prcnt * 100));
-    }
-    else
-    {
-        num_of_dots = width - 20;
-
-        char *pline_to_print = (char *) malloc(sizeof(char) * width);
-        int dots = (int) (num_of_dots * prcnt);
-
-        memset(pline_to_print, 0, width);
-        memset(pline_to_print, '>', dots);
-        memset(pline_to_print + dots, ' ', num_of_dots - dots);
-        printf("\e[1A%s[%s] %3d%% \n", label, pline_to_print,
-                (int) (prcnt * 100));
-        free(pline_to_print);
-    }
-    return;
-}
-
-#endif
 
 }    // namespace gamcs

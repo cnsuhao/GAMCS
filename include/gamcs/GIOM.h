@@ -26,6 +26,7 @@
 #endif
 #include "gamcs/config.h"
 #include "gamcs/debug.h"
+#include "gamcs/platforms.h"
 
 namespace gamcs
 {
@@ -33,32 +34,32 @@ namespace gamcs
 #if INT_BITS == 8
 typedef uint8_t gamcs_uint;
 typedef int8_t gamcs_int;
-#define GAMCS_UINT_FMT PRIu8
-#define GAMCS_INT_FMT PRId8
+#define GAMCS_UINT_FMT UINT8_FMT
+#define GAMCS_INT_FMT INT8_FMT
 #define GAMCS_UINT_MAX UINT8_MAX
 #define GAMCS_INT_MAX INT8_MAX
 
 #elif INT_BITS == 16
 typedef uint16_t gamcs_uint;
 typedef int16_t gamcs_int;
-#define GAMCS_UINT_FMT PRIu16
-#define GAMCS_INT_FMT PRId16
+#define GAMCS_UINT_FMT UINT16_FMT
+#define GAMCS_INT_FMT INT16_FMT
 #define GAMCS_UINT_MAX UINT16_MAX
 #define GAMCS_INT_MAX INT16_MAX
 
 #elif INT_BITS == 32
 typedef uint32_t gamcs_uint;
 typedef int32_t gamcs_int;
-#define GAMCS_UINT_FMT PRIu32
-#define GAMCS_INT_FMT PRId32
+#define GAMCS_UINT_FMT UINT32_FMT
+#define GAMCS_INT_FMT INT32_FMT
 #define GAMCS_UINT_MAX UINT32_MAX
 #define GAMCS_INT_MAX INT32_MAX
 
 #else       // 64bit by default
 typedef uint64_t gamcs_uint;
 typedef int64_t gamcs_int;
-#define GAMCS_UINT_FMT PRIu64
-#define GAMCS_INT_FMT PRId64
+#define GAMCS_UINT_FMT UINT64_FMT
+#define GAMCS_INT_FMT INT64_FMT
 #define GAMCS_UINT_MAX UINT64_MAX
 #define GAMCS_INT_MAX INT64_MAX
 
@@ -66,17 +67,6 @@ typedef int64_t gamcs_int;
 
 #define IN_FMT GAMCS_INT_FMT       // usage: printf("%" IN_FMT "\n", intput);
 #define OUT_FMT GAMCS_INT_FMT       // usage: printf("%" OUT_FMT "\n", output);
-
-#ifdef _WIN32_
-#define PRIu8       "u"
-#define PRId8       "d"
-#define PRIu16      "hu"
-#define PRId16      "hd"
-#define PRIu32      "I32u"
-#define PRId32      "I32d"
-#define PRIu64      "I64u"
-#define PRId64      "I64d"
-#endif
 
 class OSpace;
 
