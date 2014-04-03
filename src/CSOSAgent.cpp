@@ -25,7 +25,7 @@ namespace gamcs
 
 CSOSAgent::CSOSAgent(int i, float dr, float th) :
         OSAgent(i, dr, th), state_num(0), lk_num(0), head(NULL), cur_mst(NULL), current_st_index(
-                NULL)
+        NULL)
 {
     states_map.clear();
     update_queue.clear();
@@ -74,7 +74,7 @@ void CSOSAgent::loadMemoryFromStorage(Storage *storage)
     {
         char label[10] = "Loading: ";
         printf("Loading Memory from Storage... \n");
-        fflush (stdout);
+        fflush(stdout);
 
         /* load memory information */
         unsigned long saved_state_num = 0, saved_lk_num = 0;
@@ -92,15 +92,19 @@ void CSOSAgent::loadMemoryFromStorage(Storage *storage)
 
         /* load states information */
         Agent::State st = storage->firstState();
+#ifdef _UNIX_
         unsigned long progress = 0;
+#endif
         while (st != INVALID_STATE)
         {
             dbgmoreprt("LoadMemory()", "LoadState: %ld\n", st);
             loadState(storage, st);
 
             st = storage->nextState();
+#ifdef _UNIX_
             progress++;
             printProcess(progress, saved_state_num, label);
+#endif
         }
 
         // do some check of numbers
@@ -157,7 +161,9 @@ void CSOSAgent::dumpMemoryToStorage(Storage *storage) const
         /* save states information */
         struct State_Info_Header *stif = NULL;
         struct cs_State *mst, *nmst;
+#ifdef _UNIX_
         unsigned long index = 0;
+#endif
         // walk through all state structs
         for (mst = head; mst != NULL; mst = nmst)
         {
@@ -178,8 +184,10 @@ void CSOSAgent::dumpMemoryToStorage(Storage *storage) const
                 free(stif);    // free
             }
 
+#ifdef _UNIX_
             index++;
             printProcess(index, state_num, label);
+#endif
             nmst = mst->next;
         }
     }
@@ -1209,6 +1217,7 @@ bool CSOSAgent::hasState(State st) const
         return true;
 }
 
+#ifdef _UNIX_
 /**
  * \brief Pretty print process of load or save memory to database.
  * \param current current progress
@@ -1250,5 +1259,7 @@ void CSOSAgent::printProcess(unsigned long current, unsigned long total,
     }
     return;
 }
+
+#endif
 
 }    // namespace gamcs

@@ -11,7 +11,7 @@
 // -----------------------------------------------------------------------------
 
 #include <stdlib.h>
-#include <math.h>
+#include <cmath>
 #include "gamcs/debug.h"
 #include "gamcs/GIOM.h"
 
@@ -20,7 +20,7 @@ namespace gamcs
 
 GIOM::GIOM() :
         cur_in(INVALID_INPUT), cur_out(INVALID_OUTPUT), process_count(0), rand_device(
-                NULL), max_rand_value(0)
+        NULL), max_rand_value(0)
 {
     rand_device = new std::random_device();    // to get true random on linux, use rand("/dev/random");
     max_rand_value = rand_device->max();    // save maximun value
@@ -78,7 +78,11 @@ float GIOM::singleOutputEntropy(Input in, OSpace &alpos_outputs) const
     if (restricted_outputs.empty()) return 0.0;
 
     gamcs_uint sz = restricted_outputs.size();
+#ifdef _WIN32_
+    return log((double) sz) / log(2.0);
+#else
     return log2(sz);    // all the alpos_outputs have the same probability of occurrence
+#endif
 }
 
 /** \brief update inner states and prepare for the next process.

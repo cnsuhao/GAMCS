@@ -19,9 +19,11 @@
 #include <random>
 #include <stddef.h>     // NULL
 #define __STDC_LIMIT_MACROS     // UINT64_MAX
-#include <stdint.h>
+#include <cstdint>
 #define __STDC_FORMAT_MACROS    // PRIu64
+#ifdef _UNIX_
 #include <inttypes.h>
+#endif
 #include "gamcs/config.h"
 #include "gamcs/debug.h"
 
@@ -64,6 +66,17 @@ typedef int64_t gamcs_int;
 
 #define IN_FMT GAMCS_INT_FMT       // usage: printf("%" IN_FMT "\n", intput);
 #define OUT_FMT GAMCS_INT_FMT       // usage: printf("%" OUT_FMT "\n", output);
+
+#ifdef _WIN32_
+#define PRIu8       "u"
+#define PRId8       "d"
+#define PRIu16      "hu"
+#define PRId16      "hd"
+#define PRIu32      "I32u"
+#define PRId32      "I32d"
+#define PRIu64      "I64u"
+#define PRId64      "I64d"
+#endif
 
 class OSpace;
 
