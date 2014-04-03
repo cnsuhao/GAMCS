@@ -81,9 +81,6 @@ class CSOSAgent: public OSAgent
         void updateStatePayoff(struct cs_State *state); /**< update state payoff backward recursively */
         void updateMemory(float original_payoff); /**< implementing updateMemory of Agent */
 
-        void printProcess(unsigned long progress, unsigned long total,
-                char *label) const;
-
         void loadState(Storage *storage, Agent::State state); /**< load a state from storage to memory */
 
         void linkStates(struct cs_State *state, Agent::EnvAction env_action,

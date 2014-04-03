@@ -12,13 +12,9 @@
 
 #include <stdlib.h>
 #include <sys/timeb.h>
-#ifdef _WIN32_
-#include <windows.h>
-#else
-#include <unistd.h>
-#endif
 #include "gamcs/Avatar.h"
 #include "gamcs/debug.h"
+#include "gamcs/platforms.h"
 
 namespace gamcs
 {
@@ -88,11 +84,7 @@ void Avatar::stepLoop()
                         "You got %ld milliseconds remaining to do other things.\n",
                         time_remaining);
                 // do some useful things here if you don't want to sleep
-#ifdef _WIN32_
-                Sleep(time_remaining);
-#else
-                usleep(time_remaining * 1000);
-#endif
+                pi_msleep(time_remaining);
             }
             else
             {

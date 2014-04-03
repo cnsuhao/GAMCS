@@ -4,7 +4,7 @@ PROJECT(GAMCS CXX)   # Generalized Intelligence Model and Computer Simulation
 # version
 SET(GAMCS_MAJOR 1)
 SET(GAMCS_MINOR 1)
-SET(GAMCS_BUILD 7)
+SET(GAMCS_BUILD 9)
 
 SET(GAMCS_NAME gamcs)   
 SET(GAMCS_STATIC_NAME gamcs_static)
@@ -86,7 +86,7 @@ MESSAGE(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
 
 # public headers
-SET(GAMCS_GIM_HDRS 
+SET(GAMCS_GAM_HDRS 
     ${PROJECT_SOURCE_DIR}/include/gamcs/GIOM.h
     ${PROJECT_SOURCE_DIR}/include/gamcs/TSGIOM.h
     ${PROJECT_SOURCE_DIR}/include/gamcs/Agent.h
@@ -104,6 +104,7 @@ SET(GAMCS_CS_HDRS
     ${PROJECT_SOURCE_DIR}/include/gamcs/DotViewer.h
     ${PROJECT_SOURCE_DIR}/include/gamcs/CDotViewer.h
     ${PROJECT_SOURCE_DIR}/include/gamcs/debug.h
+    ${PROJECT_SOURCE_DIR}/include/gamcs/platforms.h
     )
 
 SET(GAMCS_MYSQL_HDRS
@@ -112,13 +113,13 @@ SET(GAMCS_MYSQL_HDRS
 
 IF (WITH_MYSQL)
     SET(GAMCS_PUBLIC_HDRS
-        ${GAMCS_GIM_HDRS}
+        ${GAMCS_GAM_HDRS}
         ${GAMCS_CS_HDRS}
         ${GAMCS_MYSQL_HDRS}
         )
 ELSE (WITH_MYSQL)
     SET(GAMCS_PUBLIC_HDRS
-        ${GAMCS_GIM_HDRS}
+        ${GAMCS_GAM_HDRS}
         ${GAMCS_CS_HDRS}
         )
 ENDIF()

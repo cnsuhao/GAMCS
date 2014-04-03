@@ -1,4 +1,4 @@
-SET(GAMCS_GIM_SRCS
+SET(GAMCS_GAM_SRCS
     ./GIOM.cpp
     ./TSGIOM.cpp
     ./StateInfoParser.cpp
@@ -13,6 +13,7 @@ SET(GAMCS_CS_SRCS
     ./DotViewer.cpp
     ./CDotViewer.cpp
     ./debug.cpp
+    ./platforms.cpp
     )
 
 SET(GAMCS_MYSQL_SRCS
@@ -21,13 +22,13 @@ SET(GAMCS_MYSQL_SRCS
 
 IF (WITH_MYSQL)
     SET(GAMCS_LIB_SRCS
-        ${GAMCS_GIM_SRCS}
+        ${GAMCS_GAM_SRCS}
         ${GAMCS_CS_SRCS}
         ${GAMCS_MYSQL_SRCS}
         )
 ELSE (WITH_MYSQL)
     SET(GAMCS_LIB_SRCS
-        ${GAMCS_GIM_SRCS}
+        ${GAMCS_GAM_SRCS}
         ${GAMCS_CS_SRCS}
         )
 ENDIF()
