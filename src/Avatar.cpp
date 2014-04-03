@@ -12,7 +12,11 @@
 
 #include <stdlib.h>
 #include <sys/timeb.h>
+#ifdef _WIN32_
+#include <windows.h>
+#else
 #include <unistd.h>
+#endif
 #include "gamcs/Avatar.h"
 #include "gamcs/debug.h"
 
@@ -84,7 +88,11 @@ void Avatar::stepLoop()
                         "You got %ld milliseconds remaining to do other things.\n",
                         time_remaining);
                 // do some useful things here if you don't want to sleep
+#ifdef _WIN32_
+                Sleep(time_remaining);
+#else
                 usleep(time_remaining * 1000);
+#endif
             }
             else
             {
@@ -98,14 +106,14 @@ void Avatar::stepLoop()
     dbgmoreprt("Exit Launch Loop", "----------------------------------------------------------- %s Exit!\n", name.c_str());
     return;
 }
-
-pthread_t Avatar::threadLoop()
-{
-    pthread_t tid;
-    pthread_create(&tid, NULL, hook, this);
-
-    return tid;
-}
+//
+//pthread_t Avatar::threadLoop()
+//{
+//    pthread_t tid;
+//    pthread_create(&tid, NULL, hook, this);
+//
+//    return tid;
+//}
 
 /** \brief Get original payoff of each state.
  *  Return 1 for every state by default.

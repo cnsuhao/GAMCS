@@ -11,6 +11,7 @@
 // -----------------------------------------------------------------------------
 
 #include <string>
+#include <vector>
 #include "gamcs/DotViewer.h"
 #include "gamcs/Agent.h"
 #include "gamcs/Storage.h"
@@ -118,7 +119,7 @@ void DotViewer::dotStateInfo(const struct State_Info_Header *sthd) const
     else
         st_color = "black";
 
-    Agent::Action acts[sthd->act_num];
+    std::vector<Agent::Action> acts(sthd->act_num);
 
     printf("\nsubgraph state%" ST_FMT "\n{\n", sthd->st);
     printf("rank=\"same\"\n");
@@ -162,6 +163,7 @@ void DotViewer::dotStateInfo(const struct State_Info_Header *sthd) const
             sthd->st, act2String(acts[i]).c_str(), sthd->st, acts[i]);
 
 }
+
 printf("}\n");    // end of subgraph state
 
 EnvAction_Info *eaif = NULL;
@@ -244,7 +246,7 @@ printf("label=\"infoset of state %" ST_FMT " in memory %s\"\n", st,
 struct State_Info_Header *sthd = storage->getStateInfo(st);
 if (sthd != NULL)
 {
-    Agent::Action acts[sthd->act_num];
+    std::vector<Agent::Action> acts(sthd->act_num);
 
     printf("rank=\"same\"\n");
     printf("st%" ST_FMT " [label=\"%" ST_FMT "\\n(%.2f)\"]\n", sthd->st, sthd->st,

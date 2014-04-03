@@ -1,4 +1,5 @@
 LINK_DIRECTORIES(${LIBDIR}) # library search path
+
 ADD_EXECUTABLE(sgviewer sgviewer.cpp)
 TARGET_LINK_LIBRARIES(sgviewer ${GAMCS_NAME}) 
 

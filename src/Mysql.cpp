@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <vector>
 #include "gamcs/Mysql.h"
 #include "gamcs/debug.h"
 
@@ -193,7 +194,7 @@ struct State_Info_Header *Mysql::getStateInfo(Agent::State st) const
 
     // do mysql query
     char query_string[256];
-    sprintf(query_string, "SELECT * FROM %s WHERE State=%" ST_FMT ,
+    sprintf(query_string, "SELECT * FROM %s WHERE State=%" ST_FMT,
             db_t_stateinfo.c_str(), st);    // build mysql query
 
     if (mysql_query(db_con, query_string))
@@ -294,12 +295,13 @@ void Mysql::addStateInfo(const struct State_Info_Header *sthd)
 
     unsigned char *stp = (unsigned char *) sthd;
     stp += sizeof(struct State_Info_Header);    // point to the first act
-    char acif_chunk[2 * act_len + 1];    // temporary buffer to put envir action info
-    mysql_real_escape_string(db_con, acif_chunk, (char *) stp, act_len);
+    std::vector<char> acif_chunk(2 * act_len + 1);    // temporary buffer to put envir action info
+    mysql_real_escape_string(db_con, acif_chunk.data(), (char *) stp, act_len);
 
-    char query[str_len + 2 * act_len + 1];
-    int len = snprintf(query, str_len + 2 * act_len + 1, str, acif_chunk);    // final stage of building insert query
-    if (mysql_real_query(db_con, query, len))    // perform the query, and insert st to database
+    std::vector<char> query(str_len + 2 * act_len + 1);
+    int len = snprintf(query.data(), str_len + 2 * act_len + 1, str,
+            acif_chunk.data());    // final stage of building insert query
+    if (mysql_real_query(db_con, query.data(), len))    // perform the query, and insert st to database
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
     }
@@ -327,12 +329,12 @@ void Mysql::updateStateInfo(const struct State_Info_Header *sthd)
 
     unsigned char *stp = (unsigned char *) sthd;
     stp += sizeof(struct State_Info_Header);    // point to the first act
-    char acif_chunk[2 * act_len + 1];    // temporary buffer to put envir action info
-    mysql_real_escape_string(db_con, acif_chunk, (char *) stp, act_len);
+    std::vector<char> acif_chunk(2 * act_len + 1);    // temporary buffer to put envir action info
+    mysql_real_escape_string(db_con, acif_chunk.data(), (char *) stp, act_len);
 
-    char query[str_len + 2 * act_len + 1];
-    int len = snprintf(query, str_len + 2 * act_len + 1, str, acif_chunk);    // final stage of building insert query
-    if (mysql_real_query(db_con, query, len))    // perform the query, and insert st to database
+    std::vector<char> query(str_len + 2 * act_len + 1);
+    int len = snprintf(query.data(), str_len + 2 * act_len + 1, str, acif_chunk.data());    // final stage of building insert query
+    if (mysql_real_query(db_con, query.data(), len))    // perform the query, and insert st to database
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
     }
@@ -393,7 +395,8 @@ void Mysql::updateMemoryInfo(const struct Memory_Info *memif)
 
     sprintf(query_str,
             "UPDATE %s SET TimeStamp=NULL, DiscountRate=%f, Threshold=%f, NumStates=%ld, NumLinks=%ld, LastState=%" ST_FMT ", LastAction=%" ACT_FMT " ORDER BY TimeStamp DESC LIMIT 1",
-            db_t_meminfo.c_str(), memif->discount_rate, memif->threshold, memif->state_num, memif->lk_num, memif->last_st, memif->last_act);
+            db_t_meminfo.c_str(), memif->discount_rate, memif->threshold,
+            memif->state_num, memif->lk_num, memif->last_st, memif->last_act);
 
     printf("query_str: %s\n", query_str);
 

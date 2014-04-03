@@ -16,7 +16,11 @@
 
 #ifndef MYSQL_H_
 #define MYSQL_H_
+#ifdef  _WIN32_
+#include <mysql.h>
+#else
 #include <mysql/mysql.h>
+#endif
 #include <string>
 #include "gamcs/Storage.h"
 
