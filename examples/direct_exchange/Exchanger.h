@@ -15,11 +15,11 @@ class Exchanger: public ExAvatar
 {
     public:
         Exchanger() :
-                position(5), count(0)
+                position(5)
         {
         }
         Exchanger(int i) :
-                ExAvatar(i), position(5), count(0)
+                ExAvatar(i), position(5)
         {
         }
         ~Exchanger()
@@ -28,7 +28,6 @@ class Exchanger: public ExAvatar
 
     private:
         Agent::State position;
-        int count;
 
         Agent::State percieveState()
         {
@@ -47,24 +46,17 @@ class Exchanger: public ExAvatar
 
         OSpace availableActions(Agent::State st)
         {
-            if (count < 1000)
+            OSpace acts;
+            acts.clear();
+            if (st == 1)    // position 1
             {
-                OSpace acts;
-                acts.clear();
-                if (st == 1)    // position 1
-                {
-                    acts.add(1);
-                    count++;
-                    return acts;
-                }
-
                 acts.add(1);
-                acts.add(-1);
-                count++;
                 return acts;
             }
-            else
-                return OSpace();    // return an empty list
+
+            acts.add(1);
+            acts.add(-1);
+            return acts;
         }
 
         float originalPayoff(Agent::State st)
