@@ -16,7 +16,6 @@
 
 #include <cmath>
 #include <stdio.h>
-#include <stdarg.h>
 
 #ifdef _WIN32_
 #include <windows.h>    // Sleep
@@ -52,6 +51,7 @@ void pi_msleep(unsigned long ms)
 void pi_progressBar(unsigned long index, unsigned long total, char *label)
 {
 #ifdef _WIN32_
+    printf("%3d %%\n", (int) (1.0 * index / total));
     return;
 #else
     double prcnt;
@@ -86,23 +86,6 @@ void pi_progressBar(unsigned long index, unsigned long total, char *label)
     }
     return;
 #endif
-}
-
-int pi_snprintf(char *str, int size, const char *format, ...)
-{
-    int ret = 0;
-
-    va_list args;
-    va_start(args, format);
-#ifdef _WIN32_
-    ret = _snprintf(str, size, format, args);
-    str[size-1] = '\0';
-#else
-    ret = snprintf(str, size, format, args);
-#endif
-    va_end(args);
-
-    return ret;
 }
 
 }    // namespace gamcs
