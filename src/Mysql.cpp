@@ -14,7 +14,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include <vector>
 #include "gamcs/Mysql.h"
 #include "gamcs/debug.h"
 
@@ -283,29 +282,30 @@ bool Mysql::hasState(Agent::State st) const
  */
 void Mysql::addStateInfo(const struct State_Info_Header *sthd)
 {
-    char str[256];
-    sprintf(str,
-            "INSERT INTO %s(State, OriPayoff, Payoff, Count, ActNum, Size, ActInfos) VALUES(%" ST_FMT ", %f, %f, %ld, %ld, %d,'%%s')",
-            db_t_stateinfo.c_str(), sthd->st, sthd->original_payoff,
-            sthd->payoff, sthd->count, sthd->act_num, sthd->size);    // first stag of building mysql insert query, actlist, eactlist and links are build below
-    size_t str_len = strlen(str);
-
-    // get length of actinfos
     unsigned long act_len = sthd->size - sizeof(State_Info_Header);
 
-    unsigned char *stp = (unsigned char *) sthd;
-    stp += sizeof(struct State_Info_Header);    // point to the first act
-    std::vector<char> acif_chunk(2 * act_len + 1);    // temporary buffer to put envir action info
-    mysql_real_escape_string(db_con, acif_chunk.data(), (char *) stp, act_len);
+    char *stmt_buf = (char *) malloc(512 + 2 * act_len + 3);
+    char *ptr;
+    sprintf(stmt_buf,
+            "INSERT INTO %s(State, OriPayoff, Payoff, Count, ActNum, Size, ActInfos) VALUES(%" ST_FMT ", %f, %f, %ld, %ld, %d,'",
+            db_t_stateinfo.c_str(), sthd->st, sthd->original_payoff,
+            sthd->payoff, sthd->count, sthd->act_num, sthd->size);
+    ptr = stmt_buf + strlen(stmt_buf);
 
-    std::vector<char> query(str_len + 2 * act_len + 1);
-    int len = snprintf(query.data(), str_len + 2 * act_len + 1, str,
-            acif_chunk.data());    // final stage of building insert query
-    if (mysql_real_query(db_con, query.data(), len))    // perform the query, and insert st to database
+    char *stp = (char *) sthd;
+    stp += sizeof(struct State_Info_Header);    // point to the first act
+
+    ptr += mysql_real_escape_string(db_con, ptr, stp, act_len);
+    *ptr++ = '\'';
+    *ptr++ = ')';
+
+    if (mysql_real_query(db_con, (const char *) stmt_buf,
+            (unsigned long) (ptr - stmt_buf)))
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
     }
 
+    free(stmt_buf);
     return;
 }
 
@@ -317,28 +317,33 @@ void Mysql::addStateInfo(const struct State_Info_Header *sthd)
  */
 void Mysql::updateStateInfo(const struct State_Info_Header *sthd)
 {
-    char str[256];
-    sprintf(str,
-            "UPDATE %s SET OriPayoff=%f, Payoff=%f, Count=%ld, ActNum=%ld, Size=%d, ActInfos='%%s' WHERE State=%" ST_FMT,
-            db_t_stateinfo.c_str(), sthd->original_payoff, sthd->payoff,
-            sthd->count, sthd->act_num, sthd->size, sthd->st);    // first stage of building the update query
-    size_t str_len = strlen(str);
-
-    // get length of actinfos
     unsigned long act_len = sthd->size - sizeof(State_Info_Header);
 
-    unsigned char *stp = (unsigned char *) sthd;
-    stp += sizeof(struct State_Info_Header);    // point to the first act
-    std::vector<char> acif_chunk(2 * act_len + 1);    // temporary buffer to put envir action info
-    mysql_real_escape_string(db_con, acif_chunk.data(), (char *) stp, act_len);
+    char *stmt_buf = (char *) malloc(512 + 2 * act_len + 3);
+    char *ptr;
 
-    std::vector<char> query(str_len + 2 * act_len + 1);
-    int len = snprintf(query.data(), str_len + 2 * act_len + 1, str, acif_chunk.data());    // final stage of building insert query
-    if (mysql_real_query(db_con, query.data(), len))    // perform the query, and insert st to database
+    sprintf(stmt_buf,
+            "UPDATE %s SET OriPayoff=%f, Payoff=%f, Count=%ld, ActNum=%ld, Size=%d, ActInfos='",
+            db_t_stateinfo.c_str(), sthd->original_payoff, sthd->payoff,
+            sthd->count, sthd->act_num, sthd->size);
+    ptr = stmt_buf + strlen(stmt_buf);
+
+    char *stp = (char *) sthd;
+    stp += sizeof(struct State_Info_Header);    // point to the first act
+
+    ptr += mysql_real_escape_string(db_con, ptr, stp, act_len);
+    *ptr++ = '\'';
+
+    int where_len = sprintf(ptr, " WHERE State=%" ST_FMT, sthd->st);
+    ptr += where_len;
+
+    if (mysql_real_query(db_con, (const char *) stmt_buf,
+            (unsigned long) (ptr - stmt_buf)))
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
     }
 
+    free(stmt_buf);
     return;
 }
 
