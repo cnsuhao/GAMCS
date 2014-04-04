@@ -4,7 +4,7 @@ PROJECT(GAMCS CXX)   # Generalized Intelligence Model and Computer Simulation
 # version
 SET(GAMCS_MAJOR 1)
 SET(GAMCS_MINOR 1)
-SET(GAMCS_BUILD 10)
+SET(GAMCS_BUILD 11)
 
 SET(GAMCS_NAME gamcs)   
 SET(GAMCS_STATIC_NAME gamcs_static)

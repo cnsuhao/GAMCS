@@ -19,12 +19,12 @@
 #include "ExNetwork.h"
 
 ExAvatar::ExAvatar() :
-        magent(NULL), exnet(NULL), cps(10)
+        osagent(NULL), exnet(NULL), cps(10)
 {
 }
 
 ExAvatar::ExAvatar(int i) :
-        Avatar(i), magent(NULL), exnet(NULL), cps(10)
+        Avatar(i), osagent(NULL), exnet(NULL), cps(10)
 {
 }
 
@@ -32,31 +32,18 @@ ExAvatar::~ExAvatar()
 {
 }
 
-void ExAvatar::connectMAgent(OSAgent *agent)
+void ExAvatar::connectOSAgent(OSAgent *osa)
 {
-    connectAgent(dynamic_cast<Agent *>(agent));
-    magent = agent;
+    connectAgent(dynamic_cast<Agent *>(osa));
+    osagent = osa;
 }
 
-void ExAvatar::exLoop()
+int ExAvatar::exStep()
 {
-    while (true)
-    {
-        // step avatar
-        int re = step();
-        if (re == -1) break;
+    if (ava_loop_count % cps == 0)    // time to stop avatar and exchange memory
+        exchange();
 
-        if (ava_loop_count % cps == 0)    // time to stop avatar and exchange memory
-            exchange();
-    }
-}
-
-pthread_t ExAvatar::threadExLoop()
-{
-    pthread_t tid;
-    pthread_create(&tid, NULL, hook, this);
-
-    return tid;
+    return step();
 }
 
 void ExAvatar::exchange()
@@ -69,8 +56,8 @@ void ExAvatar::exchange()
     for (std::set<int>::iterator nit = my_neighbours.begin();
             nit != my_neighbours.end(); ++nit)
     {
-        Agent::State st_send = magent->nextState();
-        if (st_send == Agent::INVALID_STATE) st_send = magent->firstState();
+        Agent::State st_send = osagent->nextState();
+        if (st_send == Agent::INVALID_STATE) st_send = osagent->firstState();
 
         if (st_send != Agent::INVALID_STATE) sendStateInfo(*nit, st_send);
     }
@@ -157,24 +144,25 @@ void ExAvatar::recvStateInfo()
 
         struct State_Info_Header *re_state = (struct State_Info_Header *) re_buf;
 
-        magent->connect();    // connect to agent for get/add state info
-        struct State_Info_Header *my_state = magent->getStateInfo(re_state->st);
+        osagent->connect();    // connect to agent for get/add state info
+        struct State_Info_Header *my_state = osagent->getStateInfo(
+                re_state->st);
         if (my_state != NULL)
         {
             struct State_Info_Header *merged_state = mergeStateInfo(my_state,
                     re_state);
-            magent->updateStateInfo(merged_state);    // merge the recieved state information to memory
-            magent->updatePayoff(merged_state->st);    // update payoff
+            osagent->updateStateInfo(merged_state);    // merge the recieved state information to memory
+            osagent->updatePayoff(merged_state->st);    // update payoff
             free(my_state);
             free(merged_state);
         }
         else
         {
-            magent->addStateInfo(re_state);
-            magent->updatePayoff(re_state->st);    // update payoff
+            osagent->addStateInfo(re_state);
+            osagent->updatePayoff(re_state->st);    // update payoff
         }
 
-        magent->close();    // close connection
+        osagent->close();    // close connection
     }
     return;
 }
@@ -359,9 +347,9 @@ struct State_Info_Header *ExAvatar::mergeStateInfo(
 void ExAvatar::sendStateInfo(int toneb, Agent::State st) const
 {
     struct State_Info_Header *stif = NULL;
-    magent->connect();
-    stif = magent->getStateInfo(st);    // the st may not exist
-    magent->close();
+    osagent->connect();
+    stif = osagent->getStateInfo(st);    // the st may not exist
+    osagent->close();
     if (stif == NULL)
     {
         return;

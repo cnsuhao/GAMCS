@@ -17,7 +17,6 @@
 #ifndef AVATAR_H_
 #define AVATAR_H_
 #include <string>
-//#include <pthread.h>
 #include "gamcs/Agent.h"
 
 namespace gamcs
@@ -37,7 +36,6 @@ class Avatar
 
         int step();
         void stepLoop(); /**< stepLoop this avatar */
-//        pthread_t threadLoop(); /**< loop in a new thread */
 
         void connectAgent(Agent *agent); /**< connect to an agent */
         void setSps(int step_per_second);
@@ -57,12 +55,6 @@ class Avatar
     private:
         unsigned long getCurrentTime(); /**< current time in millisecond */
         unsigned long control_step_time; /**< delta time in millisecond requested bewteen two steps */
-
-//        static void* hook(void* args)
-//        { /**< hook to run a class function(stepLoop() here) in a thread */
-//            reinterpret_cast<Avatar *>(args)->stepLoop();
-//            return NULL;
-//        }
 };
 
 inline void Avatar::setSps(int s)

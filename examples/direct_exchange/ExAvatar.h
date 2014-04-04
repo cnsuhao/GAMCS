@@ -17,7 +17,6 @@
 #ifndef EXMANAGER_H
 #define EXMANAGER_H
 #include <set>
-#include <pthread.h>
 #include "gamcs/Avatar.h"
 #include "gamcs/OSAgent.h"
 
@@ -35,14 +34,12 @@ class ExAvatar: public Avatar
         ExAvatar(int);
         virtual ~ExAvatar();
 
-        void exLoop();
-        pthread_t threadExLoop();
+        int exStep();
 
         void exchange();
 
-        void connectMAgent(OSAgent *);
+        void connectOSAgent(OSAgent *);
         void setCps(int);
-        void ava_setSps(int);
 
         void joinExNet(ExNetwork *);
         void leaveExNet();
@@ -52,7 +49,7 @@ class ExAvatar: public Avatar
         bool checkNeighbourShip(int) const;
 
     private:
-        OSAgent *magent;
+        OSAgent *osagent;
         ExNetwork *exnet;
         int cps; /**< count per sending */
 
@@ -61,22 +58,11 @@ class ExAvatar: public Avatar
                 const struct State_Info_Header *) const;
         void recvStateInfo();
         void sendStateInfo(int, Agent::State) const;
-
-        static void* hook(void* args)
-        { /**< hook to exLoop a class function(Launch() here) in a thread */
-            reinterpret_cast<ExAvatar *>(args)->exLoop();
-            return NULL;
-        }
 };
 
 inline void ExAvatar::setCps(int c)
 {
     cps = c;
-}
-
-inline void ExAvatar::ava_setSps(int s)
-{
-    setSps(s);
 }
 
 #endif /* EXMANAGER_H */
