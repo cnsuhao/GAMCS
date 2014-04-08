@@ -17,7 +17,7 @@
 #include <cmath>
 #include <stdio.h>
 
-#ifdef _WIN32_
+#if defined(_WIN32) 
 #include <windows.h>    // Sleep
 #else
 #include <unistd.h>     // usleep
@@ -32,7 +32,7 @@ namespace gamcs
 
 double pi_log2(double value)
 {
-#ifdef _WIN32_
+#if defined(_WIN32) 
     return log(value) / log(2.0);
 #else
     return log2(value);
@@ -41,7 +41,7 @@ double pi_log2(double value)
 
 void pi_msleep(unsigned long ms)
 {
-#ifdef _WIN32_
+#if defined(_WIN32) 
     Sleep(ms);
 #else
     usleep(ms * 1000);
@@ -50,7 +50,7 @@ void pi_msleep(unsigned long ms)
 
 void pi_progressBar(unsigned long index, unsigned long total, char *label)
 {
-#ifdef _WIN32_
+#if defined(_WIN32) 
     printf("%3d %%\n", (int) (1.0 * index / total));
     return;
 #else

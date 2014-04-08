@@ -4,7 +4,7 @@ PROJECT(GAMCS CXX)   # Generalized Intelligence Model and Computer Simulation
 # version
 SET(GAMCS_MAJOR 1)
 SET(GAMCS_MINOR 1)
-SET(GAMCS_BUILD 11)
+SET(GAMCS_BUILD 14)
 
 SET(GAMCS_NAME gamcs)   
 SET(GAMCS_STATIC_NAME gamcs_static)
@@ -51,13 +51,6 @@ ENDIF()
 
 IF (WITH_CGRAPH)
     ADD_DEFINITIONS("-D_WITH_CGRAPH_")
-ENDIF()
-
-# detect platforms
-IF (WIN32)
-    ADD_DEFINITIONS("-D_WIN32_")
-ELSE (UNIX)
-    ADD_DEFINITIONS("-D_UNIX_")
 ENDIF()
 
 # detect compilers and set particular options
