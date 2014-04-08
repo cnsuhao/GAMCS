@@ -33,8 +33,8 @@ namespace gamcs
 class Mysql: public Storage
 {
     public:
-        Mysql(std::string server, std::string user, std::string password,
-                std::string database);
+        Mysql(std::string server = "", std::string user = "",
+                std::string password = "", std::string database = "");
         ~Mysql();
 
         void setDBArgs(std::string server, std::string user,

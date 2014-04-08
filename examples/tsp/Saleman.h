@@ -12,7 +12,6 @@
 
 #ifndef SALEMAN_H_
 #define SALEMAN_H_
-#include <string>
 #include <math.h>
 #include "gamcs/Avatar.h"
 

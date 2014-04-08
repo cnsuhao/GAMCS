@@ -12,7 +12,6 @@
 
 #ifndef ESCAPEE_H_
 #define ESCAPEE_H_
-#include <string>
 #include "gamcs/Avatar.h"
 
 using namespace gamcs;

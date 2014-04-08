@@ -40,7 +40,6 @@ int main(void)
 
     printf("spawn a new escapee with the learned agent.\n");
     Escapee escapee2(1);
-    escapee2.setSps(2);
     escapee2.connectAgent(&agent);
 
     count = 0;
