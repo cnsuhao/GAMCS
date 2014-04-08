@@ -21,7 +21,7 @@
 #define __STDC_LIMIT_MACROS     // UINT64_MAX
 #include <cstdint>
 #define __STDC_FORMAT_MACROS    // PRIu64
-#ifdef _UNIX_
+#if defined( __GNUC__) || defined(__linux)
 #include <inttypes.h>
 #endif
 #include "gamcs/config.h"

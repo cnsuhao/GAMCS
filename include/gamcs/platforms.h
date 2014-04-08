@@ -20,7 +20,7 @@
 namespace gamcs
 {
 
-#ifdef _WIN32_
+#if defined( _WIN32)
 #define UINT8_FMT   "u"
 #define INT8_FMT    "d"
 #define UINT16_FMT  "hu"

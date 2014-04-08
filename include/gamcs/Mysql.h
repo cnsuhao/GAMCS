@@ -16,7 +16,7 @@
 
 #ifndef MYSQL_H_
 #define MYSQL_H_
-#ifdef  _WIN32_
+#if defined( _WIN32)
 #include <mysql.h>
 #else
 #include <mysql/mysql.h>
