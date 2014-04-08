@@ -20,7 +20,7 @@ namespace gamcs
 {
 
 Avatar::Avatar(int i) :
-        id(i), sps(-1), ava_loop_count(0), myagent(NULL), control_step_time(0)
+        id(i), ava_loop_count(0), myagent(NULL)
 {
 }
 
@@ -56,11 +56,14 @@ int Avatar::step()
 /**
  * \brief stepLoop a avatar continuously.
  */
-void Avatar::stepLoop()
+void Avatar::stepLoop(int sps)
 {
     // check if agent is connected
     if (myagent == NULL)
     ERROR("launch(): Avatar is not connected to any agent!\n");
+
+    unsigned long control_step_time = 0; /**< delta time in millisecond requested bewteen two steps */
+    if (sps > 0) control_step_time = 1000 / sps;    // (1 / sps) * 1000
 
     unsigned long start_time = 0;
 

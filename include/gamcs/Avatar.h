@@ -35,14 +35,11 @@ class Avatar
         virtual ~Avatar();
 
         int step();
-        void stepLoop(); /**< stepLoop this avatar */
-
+        void stepLoop(int steps_per_second = -1); /**< stepLoop this avatar */
         void connectAgent(Agent *agent); /**< connect to an agent */
-        void setSps(int step_per_second);
 
     protected:
         int id; /**< avatar's id */
-        int sps; /**< number of steps per second */
         unsigned long ava_loop_count; /**< loop count */
 
         Agent *myagent; /**< connected agent */
@@ -54,17 +51,7 @@ class Avatar
 
     private:
         unsigned long getCurrentTime(); /**< current time in millisecond */
-        unsigned long control_step_time; /**< delta time in millisecond requested bewteen two steps */
 };
-
-inline void Avatar::setSps(int s)
-{
-    sps = s;
-    if (sps <= 0)    // no control
-        control_step_time = 0;
-    else
-        control_step_time = 1000 / sps;    // (1 / sps) * 1000
-}
 
 /**
  * \brief Connect to an agent.
