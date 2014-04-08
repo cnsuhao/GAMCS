@@ -163,7 +163,7 @@ class Saleman: public Avatar
             encoded_st = 0;
             for (int i = 0; i < CITY_NUM; i++)
             {
-                encoded_st += path[i] * pow(CITY_NUM, (CITY_NUM - 1 - i));    // path[CN-1]*CN^0 + path[CN-2]*CN^1 + ... + path[1]*CN^(CN-2) + path[0]*CN^(CN-1)
+                encoded_st += path[i] * pow((float) CITY_NUM, (CITY_NUM - 1 - i));    // path[CN-1]*CN^0 + path[CN-2]*CN^1 + ... + path[1]*CN^(CN-2) + path[0]*CN^(CN-1)
             }
         }
 
@@ -186,7 +186,7 @@ class Saleman: public Avatar
             encoded_act = 0;
             for (int i = 0; i < CITY_NUM; i++)
             {
-                encoded_act += act[i] * pow(CITY_NUM, (CITY_NUM - 1 - i));
+                encoded_act += act[i] * pow((float) CITY_NUM, (CITY_NUM - 1 - i));
             }
         }
 

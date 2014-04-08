@@ -12,7 +12,9 @@
 #endif
 #include <stdio.h>
 #include "gamcs/CSOSAgent.h"
+#ifdef _WITH_MYSQL_
 #include "gamcs/Mysql.h"
+#endif
 #include "Exchanger.h"
 #include "ThreadExNet.h"
 
@@ -66,10 +68,13 @@ int main(int argc, char *argv[])
             member_num * sizeof(Exchanger *));
     CSOSAgent **agents = (CSOSAgent **) malloc(
             member_num * sizeof(CSOSAgent *));
+
+#ifdef _WITH_MYSQL_
     Mysql **mysql = (Mysql **) malloc(member_num * sizeof(Mysql *));
+#endif
 
 #ifdef _WIN32_
-    HANDLE hThreadArray[member_num];
+    HANDLE *hThreadArray = (HANDLE *)malloc(member_num * sizeof(HANDLE));
 #else
     pthread_t tids[member_num];
 #endif
@@ -80,8 +85,10 @@ int main(int argc, char *argv[])
         // storage
         char db_name[16];
         sprintf(db_name, "Member_%d", i);
-        Mysql *ml = new Mysql("localhost", "root", "huangk", db_name);
 
+#ifdef _WITH_MYSQL_
+        Mysql *ml = new Mysql("localhost", "root", "huangk", db_name);
+#endif
         // agent
         CSOSAgent *agent = new CSOSAgent(i + 1, 0.8, 0.01);    // agent id start from 1
         // agent->LoadMemoryFromStorage(ml);
@@ -91,7 +98,10 @@ int main(int argc, char *argv[])
         messager->connectOSAgent(agent);
         messager->joinExNet(&network);
 
+#ifdef _WITH_MYSQL_
         mysql[i] = ml;
+#endif
+
         messagers[i] = messager;
         agents[i] = agent;
     }
@@ -133,14 +143,21 @@ int main(int argc, char *argv[])
 
         delete messagers[i];
         delete agents[i];
+
+#ifdef _WITH_MYSQL_
         delete mysql[i];
+#endif
     }
     // save topo structure
     network.dumpTopoToFile("dump.exnet");
 
     free(messagers);
     free(agents);
+
+#ifdef _WITH_MYSQL_
     free(mysql);
+	free(hThreadArray);
+#endif
     printf("*** done!\n");
 
     return 0;

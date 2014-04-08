@@ -16,7 +16,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <pthread.h>
 #include "gamcs/Agent.h"
 #include "gamcs/debug.h"
 #include "ThreadExNet.h"
@@ -58,7 +57,11 @@ ThreadExNet::~ThreadExNet()
         }
 
         /* destroy mutex */
+#ifdef _WIN32_
+		CloseHandle(channels[*it].ghMutex);
+#else
         pthread_mutex_destroy(&(channels[*it].mutex));
+#endif
 
         /* free messages in channels */
         free(channels[*it].msg);
@@ -92,13 +95,23 @@ int ThreadExNet::send(int fromid, int toid, void *buffer, size_t buf_size)
 #endif // _DEBUG_
 
     struct Channel *chan = getChannel(toid);    // get its channel
+#ifdef _WIN32_
+	WaitForSingleObject( 
+            chan->ghMutex,    // handle to mutex
+            INFINITE);  // no time-out interval
+#else
     pthread_mutex_lock(&chan->mutex);    // lock before write message to it
+#endif
 
     // check if msg buffer is not NULL, this may happen when a member has a neighbour that has been removed from net.
     if (chan->msg == NULL)    // neighbour has been removed from network
     {
+#ifdef _WIN32_
+		ReleaseMutex(chan->ghMutex);
+#else
         pthread_mutex_unlock(&chan->mutex);    // unlock
-        removeNeighbour(fromid, toid);    // break up with removed member
+#endif
+		removeNeighbour(fromid, toid);    // break up with removed member
         return 0;    // no msg is sent
     }
 
@@ -111,7 +124,11 @@ int ThreadExNet::send(int fromid, int toid, void *buffer, size_t buf_size)
     // increase count
     if (chan->msg_num < MSG_POOL_SIZE) chan->msg_num++;    // maximum num is MSG_POOL_SIZE
 
+#ifdef _WIN32_
+	ReleaseMutex(chan->ghMutex);
+#else
     pthread_mutex_unlock(&chan->mutex);    // unlock
+#endif
 
     return buf_size;
 }
@@ -132,7 +149,13 @@ int ThreadExNet::recv(int toid, int fromid, void *buffer, size_t buf_size)
 
     struct Channel *chan = getChannel(toid);    // get my channel
     size_t re = 0;
+#ifdef _WIN32_
+	WaitForSingleObject( 
+            chan->ghMutex,    // handle to mutex
+            INFINITE);  // no time-out interval
+#else
     pthread_mutex_lock(&chan->mutex);    // lock it before reading, prevent concurrent writtings
+#endif
 
     if (chan->msg_num == 0)    // no new messages
     {
@@ -221,8 +244,12 @@ int ThreadExNet::recv(int toid, int fromid, void *buffer, size_t buf_size)
 
     }
 
+#ifdef _WIN32_
+	ReleaseMutex(chan->ghMutex);
+#else
     pthread_mutex_unlock(&chan->mutex);    // unlock
-    return re;
+#endif
+	return re;
 }
 
 /**
@@ -260,8 +287,15 @@ void ThreadExNet::addMember(int mem)
     channels[mem].msg = (struct Msg *) malloc(    // allocate buffer for msgs
             sizeof(struct Msg) * MSG_POOL_SIZE);
     assert(channels[mem].msg != NULL);
+#ifdef _WIN32_
+	channels[mem].ghMutex = CreateMutex( 
+        NULL,              // default security attributes
+        FALSE,             // initially not owned
+        NULL);             // unnamed mutex
+#else
     pthread_mutex_init(&(channels[mem].mutex), NULL);
-    channels[mem].msg_num = 0;
+#endif
+	channels[mem].msg_num = 0;
     channels[mem].ptr = 0;
 }
 
@@ -333,7 +367,11 @@ void ThreadExNet::removeMember(int mem)
     neighlist[mem] = NULL;    //don't forget to set to NULL
 
     /* destroy mutex */
+#ifdef _WIN32_
+	CloseHandle(channels[mem].ghMutex);
+#else
     pthread_mutex_destroy(&(channels[mem].mutex));
+#endif
 
     /* free messages in channels */
     free(channels[mem].msg);

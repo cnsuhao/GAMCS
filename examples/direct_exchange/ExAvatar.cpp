@@ -188,15 +188,15 @@ struct State_Info_Header *ExAvatar::mergeStateInfo(
 #endif
 
     // make copy, ensure the incoming arguments will not be changed
-    char *origsthd_buf[origsthd->size];
+    char *origsthd_buf = (char *) malloc(origsthd->size);
     memcpy(origsthd_buf, origsthd, origsthd->size);
     State_Info_Header *tmp_origsthd = (State_Info_Header *) origsthd_buf;
-    char *recvsthd_buf[recvsthd->size];
+    char *recvsthd_buf = (char *) malloc(recvsthd->size);
     memcpy(recvsthd_buf, recvsthd, recvsthd->size);
     State_Info_Header *tmp_recvsthd = (State_Info_Header *) recvsthd_buf;
 
-    char act_buffer[tmp_origsthd->act_num + tmp_recvsthd->act_num][tmp_origsthd->size
-            + tmp_recvsthd->size];    // buffer for manipulating act info, make sure it's big enough
+    char **act_buffer = (char **) malloc((tmp_origsthd->act_num + tmp_recvsthd->act_num) * (tmp_origsthd->size
+            + tmp_recvsthd->size));    // buffer for manipulating act info, make sure it's big enough
     int act_num = 0;    // total number of acts
 
     /********* halve eat count first **********/
@@ -210,8 +210,12 @@ struct State_Info_Header *ExAvatar::mergeStateInfo(
         eaif = oparser.firstEat();
         while (eaif != NULL)
         {
+#ifdef _WIN32_
+			eaif->count = int (eaif->count / 2.0 + 0.5);
+#else
             eaif->count = round(eaif->count / 2.0);
-            eaif = oparser.nextEat();
+#endif
+			eaif = oparser.nextEat();
         }
 
         achd = oparser.nextAct();
@@ -224,12 +228,24 @@ struct State_Info_Header *ExAvatar::mergeStateInfo(
         eaif = rparser.firstEat();
         while (eaif != NULL)
         {
+#ifdef _WIN32_
+			eaif->count = int (eaif->count / 2.0 + 0.5);
+#else
             eaif->count = round(eaif->count / 2.0);
-            eaif = rparser.nextEat();
+#endif
+			eaif = rparser.nextEat();
         }
+#ifdef _WIN32_
+		memcpy(act_buffer + act_num * (tmp_origsthd->size
+            + tmp_recvsthd->size), achd,
+                sizeof(Action_Info_Header)
+                        + achd->eat_num * sizeof(EnvAction_Info));
+		
+#else
         memcpy(act_buffer[act_num], achd,
                 sizeof(Action_Info_Header)
                         + achd->eat_num * sizeof(EnvAction_Info));
+#endif
 
         act_num++;    // increase act count
         achd = rparser.nextAct();
@@ -316,8 +332,12 @@ struct State_Info_Header *ExAvatar::mergeStateInfo(
     // fill the header
     sthd->st = tmp_recvsthd->st;
     sthd->act_num = act_num;
-    sthd->count = round((tmp_origsthd->count + tmp_recvsthd->count) / 2.0);
-    sthd->payoff = tmp_recvsthd->payoff;
+#ifdef _WIN32_
+	sthd->count = int ((tmp_origsthd->count + tmp_recvsthd->count) / 2.0 + 0.5);
+#else
+	sthd->count = round((tmp_origsthd->count + tmp_recvsthd->count) / 2.0);
+#endif
+	sthd->payoff = tmp_recvsthd->payoff;
     sthd->original_payoff = tmp_recvsthd->original_payoff;
     sthd->size = sthd_size;
 
@@ -341,6 +361,11 @@ struct State_Info_Header *ExAvatar::mergeStateInfo(
     printf(
             "****************************** merge end **********************************\n\n");
 #endif
+	
+	// cleanup
+	free(origsthd_buf);
+	free(recvsthd_buf);
+
     return sthd;
 }
 

@@ -18,6 +18,11 @@
 #ifndef THREADEXNET_H_
 #define THREADEXNET_H_
 #include <set>
+#ifdef _WIN32_
+#include <windows.h>
+#else
+#include <pthread.h>
+#endif
 #include "ExNetwork.h"
 
 
@@ -26,8 +31,12 @@
  */
 struct Channel
 {
+#ifdef _WIN32_
+		HANDLE ghMutex;
+#else
         pthread_mutex_t mutex;    // lock the channel when use it
-        int ptr;    // point of current message in message pool
+#endif
+		int ptr;    // point of current message in message pool
         int msg_num;    // number of messages in this channel
         struct Msg *msg;    // message pool
 };
