@@ -21,7 +21,8 @@ int main(void)
     //ma.deleteState(9);
     DotViewer dotv;
     dotv.attachStorage(&ma);
-    dotv.show();
+    dotv.showState(1);
+    dotv.showState(5);
 
 #ifdef _WITH_MYSQL_
     ma.dumpMemoryToStorage(&mysql);

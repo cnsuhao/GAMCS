@@ -25,7 +25,7 @@ namespace gamcs
 
 CSOSAgent::CSOSAgent(int i, float dr, float th) :
         OSAgent(i, dr, th), state_num(0), lk_num(0), head(NULL), cur_mst(NULL), current_st_index(
-                NULL)
+        NULL)
 {
     states_map.clear();
     update_queue.clear();
@@ -74,7 +74,7 @@ void CSOSAgent::loadMemoryFromStorage(Storage *storage)
     {
         char label[10] = "Loading: ";
         printf("Loading Memory from Storage... \n");
-        fflush (stdout);
+        fflush(stdout);
 
         /* load memory information */
         unsigned long saved_state_num = 0, saved_lk_num = 0;
@@ -214,7 +214,7 @@ struct cs_State *CSOSAgent::newState(Agent::State st)
     // fill in default values
     mst->st = st;
     mst->original_payoff = 0.0;    // any value, doesn't master, it'll be set when used. Note: this value is also used for unseen previous state recieved in links from others.
-    mst->payoff = 0;
+    mst->payoff = 0.0;
     mst->count = 1;    // it's created when we first encounter it
     mst->actlist = NULL;
     mst->blist = NULL;
@@ -791,7 +791,6 @@ void CSOSAgent::updateMemory(float oripayoff)
         dbgmoreprt("", "current state not exists, create it and build the link\n");
         cur_mst = newState(cur_in);
         cur_mst->original_payoff = oripayoff;
-        cur_mst->payoff = oripayoff;
 
         // build the link
         EnvAction peat = cur_in - pre_in - pre_out;    // calcuate previous environment action. This formula is important!!!
@@ -809,7 +808,17 @@ void CSOSAgent::updateMemory(float oripayoff)
         linkStates(pmst, peat, pre_out, cur_mst);
     }
 
-    updateStatePayoff(cur_mst);    // update states recursively
+    // update payoff starting from previous states recursively
+    // DO NOT start from current state, the previous states need to
+    // be updated because of the new created link to current state!
+    struct cs_BackwardLink *blk, *nblk;
+    for (blk = cur_mst->blist; blk != NULL; blk = nblk)
+    {
+        updateStatePayoff(blk->pstate);
+
+        nblk = blk->next;
+    }
+
     return;
 }
 

@@ -74,7 +74,7 @@ float Monomer::originalPayoff(Agent::State st)
     if (st == 5)
         return -100;
     else if (st == 1)
-        return 0;
+        return -100;
     else
         return 0;
 }
