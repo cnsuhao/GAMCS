@@ -11,7 +11,7 @@
 
 Monomer::Monomer()
 {
-    position = 5;
+    position = 3;
 }
 
 Monomer::~Monomer()
@@ -32,7 +32,7 @@ void Monomer::performAction(Agent::Action act)
     else
         position -= 1;
 
-    if (position > 15) position = 15;
+    if (position > 5) position = 5;
     if (position < 1) position = 1;
     return;
 }
@@ -55,7 +55,7 @@ OSpace Monomer::availableActions(Agent::State st)
         acts.clear();
         if (st == 1)
             acts.add(2);
-        else if (st == 15)
+        else if (st == 5)
             acts.add(1);
         else
         {
@@ -71,10 +71,10 @@ OSpace Monomer::availableActions(Agent::State st)
 
 float Monomer::originalPayoff(Agent::State st)
 {
-    if (st == 9)
-        return 1;
-    else if (st == 13)
-        return 2;
+    if (st == 5)
+        return -100;
+    else if (st == 1)
+        return 0;
     else
         return 0;
 }
