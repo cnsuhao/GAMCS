@@ -1,28 +1,26 @@
 # [GAMCS](https://github.com/andyspider/gamcs)
 
-GAM stands for "_Generalized Agent Model_", which is a new, generalized (machine) learning algorithm. GAMCS stands for "_Generalized Agent Model and Computer Simulation_", which contains a whole computer description and implementation of GAM.
-
+**GAM** stands for *Generalized Agent Model*, which is a new, generalized (machine) learning algorithm. **GAMCS** stands for *Generalized Agent Model and Computer Simulation*, which contains a whole description and implementation of GAM using computer.
 
 ## Features
 
-GAM is a very powerful and flexible learning algorithm, which features
+GAM is a very powerful and flexible learning algorithm, which is
 
-- online learning
-- ultimately flexible
-- model free
+- unsupervised, completely autonomous 
+- model free, ultimately flexible
+- online learning, what it has to learn to do, it learns by doing
 
+GAMCS is complete description and implementation of GAM using the C++ language, which is
 
-GAMCS is complete computer description and implementation of GAM using C++ language, which features
-
-- high speed iteration
-- easy to use
-- edit and visualizing supported
+- very fast and stable
+- very easy to use
+- with support of direct edit and query of model's inner information
 
 ## Get Started
 
 ### Requirements
 
-GAMCS is implemented in full complaince with the C++11 standard, both Unix-like and Windows are supported. Dependencies of other external libraries are optional and can be configured when building, which is elaborated below.
+GAMCS is implemented in full complaince with the _C++11_ standard, which makes it runnable on almost all the platforms. Dependencies of other external libraries are optional and can be configured when building, this will be talked about in detial below.
 
 ### Build and Install
 
@@ -37,62 +35,64 @@ For _Unix-like_ platforms, run the following commands in your shell sequentially
     make
     sudo make install
 
-For _Windows_, make sure you have at least Visual Studio 2010 installed. Then open the "Visual Studio Command Line" located under the menu "Microsoft Visual Studio 20xx --> Visual Studio Tools". In the command line, run the following commands sequentially.
+For _Windows_, make sure you have at least Visual Studio 2010 installed. Then open the "Visual Studio Command Line" located under the menu "Microsoft Visual Studio 201x --> Visual Studio Tools". In the command line, run the following commands sequentially.
 
     cd GAMCS_src_dir
     mkdir build
     cd build
     cmake ../
 
-After cmake, the corresponding Visual Studio project files should be generated in the build directory. Open the project using Visual Studio, view and compile as usual.
+After cmake, the corresponding Visual Studio project files should be generated in the build directory. Open the project using Visual Studio, view and compile it as usual.
 
-Note that, the default compiling will only build GAMCS libraries (both dynamic and static), to build the examples accompanying, do `cd examples` and run `make`, or open the project files using Visual Studio under each example if on Windows.
+Note that, the default compiling will only build GAMCS libraries (both dynamic and static), to build the examples accompanied, do `cd examples` and run `make`, or open the project files using Visual Studio under each example if on Windows.
 
 Several options can be configed with cmake before building. 
 
-- INT_BITS = 8|16|32|64(default), specify the bits of integer which represents Input, Output values in gamcs.
+- INT_BITS = 8|16|32|64(default), specify the bits of integer which represents Input, Output values in gamcs. The bigger the size, the more states it can represents, while the more memory it will consume. Choose the right size according to your specific situation.
 - DEBUG = ON|OFF(default), compile gamcs with or without debug information.
-- WITH_MYSQL = ON(default)|OFF, turn on and off the support of Mysql database for saving and loading agent memory.
+- WITH_MYSQL = ON(default)|OFF, turn on and off the support of Mysql database for saving and loading Agent memory.
 - Other build-in options provided by cmake, see the cmake document for detail.
 
 To change an option, run cmake as `cmake ../ -Dname=value`. 
 
 ### Usage
 
-With well-designed and clean interfaces, developping your appliction using GAMCS is quite easy. But before that some knowledge of Generialized Agent Model is a prerequisite. It's recommended to read the related documents in advance.
+With well-designed and clean interfaces, developping your appliction using GAMCS is quite easy. But before that some knowledge of GAM is needed. It's recommended to read the related documents in advance.
 
-Here is a brief guide:
+Here is a brief guide for the end-user:
 
-The two core concepts in GAMCS are *Agent* and *Avatar*. An Agent is a kind of Generialized I/O processing Model (GIOM), which accepts an State (an alias to Input) one time and produces an corresponding Action (an alias to Ouput) according to the so-called *Maximun Payoff Rule (MPP)*. To an Agent, the states and actions are all abstract and meaningless integers (whose bits is specified by option INT_BITS), here comes the Avatar. An Avatar is an agent embodied in flesh, that is to say, it gives the states and actions of agent the "meanings". To a concrete Avatar, if it's a real robot, the states may be the combined values collected from its multiple physical sensors like light, position sensor etc and the actions may correspond to light a LED or move a step forward/backward/left/right. While if the Avatar is a charactor image-recognition program, the states may be the feature distributions generated by some image processing algorithms, and the actions may correspond to indications of the recognizied charactors in the image.
+The two core concepts in GAMCS are **Agent** and **Avatar**. An Agent is one kind of _Generialized I/O Model_(**GIOM**), which accepts an State (an alias to Input) a time and produces a corresponding Action (an alias to Output) according to the so-called _Maximun Payoff Rule_(**MPP**). To an Agent, the states and actions are all abstract and meaningless integers (whose bits is specified by option INT_BITS), which can be encoded to represent anything, from a location in space to a path in travelling. An Avatar is an Agent embodied in flesh, that is to say, it gives the states and actions of an Agent the "meanings". To a concrete Avatar, for example, if it's a real robot, the states may be the combined values collected from its multiple physical sensors like light sensor, position sensor and the actions may correspond to light a LED or move a step forward/backward/left/right. If the Avatar is a charactor image-recognition program, the states may be the feature distributions generated by some image processing algorithms, and the actions may correspond to speak out the charactors recognizied in the image.
 
-GAMCS contains both Agent and Avatar interfaces, following which the developers can implement their own Agent and Avatar. As mentioned above, the Agent does not deal with any application-related stuff, all states and actions are abstract integers. Therefore, an implemented Agent was already included in GAMCS, it's fast and stable, you can use it directly.
+GAMCS contains both Agent and Avatar interfaces, following which the developers can implement their own Agent and Avatar. As mentioned above, the Agent does not deal with any application-related stuff, all states and actions are abstract integers. Therefore, an implemented Agent was already included in GAMCS, it's fast and stable, which can be used directly.
 
-As to Avatar, however, the states and actions are application-related as mentioned above, it's the user's job to implement his own Avatar according to the problem he wants to solve. Fortunately, this is very easy to be done in GAMCS which only involves implementing 4 virtual functions of the Avatar interface.
+As to Avatar, however, the states and actions are application-related as mentioned above, it's the user's job to implement his own Avatar according to the problem he wants to solve. Fortunately, this is very easy to be done in GAMCS which only involves in implementing 4 virtual functions of the Avatar interface.
 
 As a summary, a typical usage of GAMCS includes: create your own agent (let's call it YourAvatar) inherited from `class Avatar`, implement the 4 virtual functions, which are:
 
-1. `State percieveState();`, use the "sensors" of YourAvatar to percieve the surrounding, get the concept state currently in, construct it to an integer and return it to Agent.
+1. `State percieveState();`, use the "sensors" of YourAvatar to percieve the surrounding, get the concept state it's currently in, encode it to an integer and return it to Agent.
 2. `void performAction(Action act);`, when an action was produced by Agent, YourAvatar recieves and recognizes the action integer, and do the real action.
-3. `OSpace avaliableActions(State st);`, what are the actions YourAvatar can do in every state.
-4. `float originalPayoff(State st);`, for every state, a payoff is associated with it, which represents the like and dislike degree of YourAvatar to this state.
+3. `OSpace avaliableActions(State st);`, what are the actions YourAvatar can do in each state?
+4. `float originalPayoff(State st);`, for each state, a payoff is associated with it, which controls the like and dislike degree of YourAvatar to that state.
 
-Then, create instances of Agent and YourAvatar respectively, connect YourAvatar with Agent, and finially step YourAvatar.
+Then, create instances of Agent and YourAvatar respectively, connect YourAvatar with Agent, finally step YourAvatar and make it alive.
 
-For examples of usage, check the examples directory accompanied with GAMCS.
+For sample codes of usage, check the examples directory accompanied with GAMCS.
 
 ### How To Contribute
 
+At least in these ways you can help,
+
 - implement a more efficient Agent in computer
-- port GAM to other medias rather than computer
-- use GAM/GAMCS to solve various problems to explore the true power of GAM/GAMCS
+- port GAM to other medias rather than computer (GAM is an abstract model, computer is not the only/best way to implement it)
+- use GAM/GAMCS to solve various practical problems to explore the true power of GAM/GAMCS
 - promote GAM/GAMCS and write documents for it
 - give your ingenious ideas about GAM/GAMCS
 
 ### Contributors
 
-- Andy Huang <i@andy87.com>: GAM introducer, GAMCS creator & maintainer
+- Andy Huang <andyspider@126.com>: GAM introducer, GAMCS creator & maintainer
 
 ### Website
 
-http://gamcs.andy87.com
+http://gamcs.andy87.com (_under construction_)
 
