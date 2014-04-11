@@ -1,4 +1,4 @@
-# [GAMCS](https://github.com/andyspider/gamcs)
+# [GAMCS](http://gamcs.andy87.com)
 
 **GAM** stands for *Generalized Agent Model*, which is a new, generalized (machine) learning algorithm. **GAMCS** stands for *Generalized Agent Model and Computer Simulation*, which contains a whole description and implementation of GAM using computer.
 
@@ -92,7 +92,4 @@ At least in these ways you can help,
 
 - Andy Huang <andyspider@126.com>: GAM introducer, GAMCS creator & maintainer
 
-### Website
-
-http://gamcs.andy87.com (_under construction_)
 
