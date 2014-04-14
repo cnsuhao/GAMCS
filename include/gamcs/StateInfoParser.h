@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GAMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Agent Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -22,7 +22,7 @@ namespace gamcs
 {
 
 /**
- *
+ * A help class to parse the state information
  */
 class StateInfoParser
 {

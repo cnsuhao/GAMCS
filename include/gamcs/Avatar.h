@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GAMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Agent Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -25,7 +25,7 @@ namespace gamcs
 class DENet;
 
 /**
- * Avatar of Agent.
+ * Avatar of an Agent.
  * An Avatar is an agent embodied in flesh.
  */
 class Avatar
@@ -35,7 +35,7 @@ class Avatar
         virtual ~Avatar();
 
         int step();
-        void stepLoop(int steps_per_second = -1); /**< stepLoop this avatar */
+        void stepLoop(int steps_per_second = -1); /**< step avatar in a continuous loop */
         void connectAgent(Agent *agent); /**< connect to an agent */
 
     protected:

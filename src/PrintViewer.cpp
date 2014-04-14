@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GAMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Agent Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -26,6 +26,9 @@ PrintViewer::~PrintViewer()
 {
 }
 
+/** \brief Show the whole storage in pretty print style
+ *
+ */
 void PrintViewer::show()
 {
     int re = storage->connect();
@@ -113,6 +116,9 @@ void PrintViewer::printStateInfo(const struct State_Info_Header *sthd) const
     return;
 }
 
+/** \brief Show a specified state in pretty print style
+ * \param st the state to be viewed
+ */
 void PrintViewer::showState(Agent::State st)
 {
     int re = storage->connect();

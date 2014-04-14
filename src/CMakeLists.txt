@@ -4,7 +4,6 @@ SET(GAMCS_GAM_SRCS
     ./StateInfoParser.cpp
     ./Agent.cpp
     ./Avatar.cpp
-    ./MemoryViewer.cpp
     )
 
 SET(GAMCS_CS_SRCS

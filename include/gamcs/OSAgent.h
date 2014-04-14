@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GAMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Agent Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -39,7 +39,7 @@ class OSAgent: public Agent, public Storage
         {
         }
 
-        virtual void updatePayoff(State state) = 0; /**< update payoff beginning from a specified state */
+        virtual void updatePayoff(State state) = 0; /**< update payoff from a specified state */
 };
 
 }    // namespace gamcs

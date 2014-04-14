@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GAMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Agent Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -22,20 +22,20 @@ namespace gamcs
 {
 
 /**
- * Time-Sequential Generalized Input Output Model
+ * Time-Sequential Generalized Input/Output Model
  */
 class TSGIOM: public GIOM
 {
     public:
         TSGIOM();
         virtual ~TSGIOM();
-        virtual void update();    // reimplement update, add time sequence
+        virtual void update();    // reimplement update function, add time sequence
 
     protected:
-        virtual OSpace constrain(Input input, OSpace &available_outputs) const;    // reimplement constrain
+        virtual OSpace constrain(Input input, OSpace &available_outputs) const;    // reimplement constrain function
         /* bring in the time sequence feature */
-        Input pre_in; /**< previous input value */
-        Output pre_out; /**< previous output value */
+        Input pre_in; /**< previous input */
+        Output pre_out; /**< previous output */
     private:
 };
 

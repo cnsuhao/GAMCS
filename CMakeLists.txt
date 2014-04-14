@@ -1,5 +1,5 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
-PROJECT(GAMCS CXX)   # Generalized Intelligence Model and Computer Simulation
+PROJECT(GAMCS CXX)   # Generalized Agent Model and Computer Simulation
 
 # version
 SET(GAMCS_MAJOR 1)
