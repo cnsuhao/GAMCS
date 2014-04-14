@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GAMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Agent Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -25,19 +25,19 @@ namespace gamcs
 {
 
 /**
- * Computer Simulation OSAgent, where computer was used to implement an agent.
+ * Computer Simulation of OSAgent.
  */
 class CSOSAgent: public OSAgent
 {
     public:
-        typedef std::unordered_map<Agent::State, void *> StatesMap; /**< hash map from state value to state  */
+        typedef std::unordered_map<Agent::State, void *> StatesMap; /**< hash map from state value to state point */
 
         CSOSAgent(int id = 0, float discount_rate = 0.9,
                 float threshold = 0.01);
         ~CSOSAgent();
 
-        int connect();    // connect to agent memory
-        void close();    // close connection to agent memory
+        int connect();    // connect to me
+        void close();    // close connection to me
 
         State_Info_Header *getStateInfo(State state) const; /**< implementing GetStateInfo function */
         void addStateInfo(
@@ -65,7 +65,7 @@ class CSOSAgent: public OSAgent
         unsigned long lk_num; /**< total number of links between states in memory */
 
         struct cs_State *head; /**< memory head*/
-        StatesMap states_map; /**< hash map from state values to state  */
+        StatesMap states_map; /**< hash map from state values to state point */
         mutable struct cs_State *cur_mst; /**< state  for current state */
         mutable struct cs_State *current_st_index; /**< current state point used by iterator */
 
@@ -77,14 +77,14 @@ class CSOSAgent: public OSAgent
         OSpace bestActions(const struct cs_State *state,
                 OSpace &available_actions) const; /**< find the best action of a state */
         OSpace maxPayoffRule(Agent::State state,
-                OSpace &available_actions) const; /**< implementing maximun payoff rule */
+                OSpace &available_actions) const; /**< implementing maximum payoff rule */
         void updateStatePayoff(struct cs_State *state); /**< update state payoff backward recursively */
         void updateMemory(float original_payoff); /**< implementing updateMemory of Agent */
 
         void loadState(Storage *storage, Agent::State state); /**< load a state from storage to memory */
 
         void linkStates(struct cs_State *state, Agent::EnvAction env_action,
-                Agent::Action action, struct cs_State *following_state); /**< link two states in memory with specfic exact and action */
+                Agent::Action action, struct cs_State *following_state); /**< link two states in memory with specific exact and action */
 
         struct cs_State *newState(Agent::State state); /**< create a new state  in memory */
         struct cs_Action *newAct(Agent::Action action, struct cs_State *state);
@@ -123,7 +123,7 @@ class CSOSAgent: public OSAgent
         float _calActPayoff(const struct cs_Action *action) const;
 };
 
-/** state information */
+/** practical state structure used to represent a state */
 struct cs_State
 {
         Agent::State st; /**< state value */
@@ -137,7 +137,7 @@ struct cs_State
         struct cs_State *next;
 };
 
-/** implementation of action information */
+/** practical action structure used to represent an action */
 struct cs_Action
 {
         Agent::Action act; /**< action value */
@@ -146,7 +146,7 @@ struct cs_Action
         struct cs_Action *next;
 };
 
-/** implementation of forward link information */
+/** practical structure to represent an environment action and the link to the following state */
 struct cs_EnvAction
 {
         Agent::EnvAction eat;
@@ -156,7 +156,7 @@ struct cs_EnvAction
         struct cs_EnvAction *next;
 };
 
-/** implementation of backward link information */
+/** structure to connect a state with its previous states */
 struct cs_BackwardLink
 {
         struct cs_State *pstate; /**< previous state */

@@ -1,6 +1,7 @@
 # [GAMCS](http://gamcs.andy87.com)
 
-**GAM** stands for *Generalized Agent Model*, which is a new, generalized (machine) learning algorithm. **GAMCS** stands for *Generalized Agent Model and Computer Simulation*, which contains a whole description and implementation of GAM using computer.
+*Generalized Agent Model* (**GAM**) is a newly developed, generalized (machine) learning algorithm.    
+*Generalized Agent Model and Computer Simulation* (**GAMCS**) is a whole description and implementation of GAM using computer.
 
 ## Features
 
@@ -10,7 +11,7 @@ GAM is a very powerful and flexible learning algorithm, which is
 - model free, ultimately flexible
 - online learning, what it has to learn to do, it learns by doing
 
-GAMCS is complete description and implementation of GAM using the C++ language, which is
+GAMCS is a complete description and implementation of GAM using the C++ language, which is
 
 - very fast and stable
 - very easy to use
@@ -82,14 +83,18 @@ For sample codes of usage, check the examples directory accompanied with GAMCS.
 
 At least in these ways you can help,
 
-- implement a more efficient Agent in computer
-- port GAM to other medias rather than computer (GAM is an abstract model, computer is not the only/best way to implement it)
-- use GAM/GAMCS to solve various practical problems to explore the true power of GAM/GAMCS
 - promote GAM/GAMCS and write documents for it
-- give your ingenious ideas about GAM/GAMCS
+- use GAM/GAMCS to solve various practical problems to explore the true power of GAM/GAMCS
+- implement a more efficient Agent in computer
+- help varify GAM and prove the unproved assumptions and conclusions.
+- port GAM to other medias rather than computer (GAM is an abstract model, computer is not the only/best way to implement it)
+- give your other ingenious ideas about GAM/GAMCS
 
 ### Contributors
 
 - Andy Huang <andyspider@126.com>: GAM introducer, GAMCS creator & maintainer
 
+### Website
+
+http://gamcs.andy87.com
 

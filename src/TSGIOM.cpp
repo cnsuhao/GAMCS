@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GAMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Agent Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -26,8 +26,7 @@ TSGIOM::~TSGIOM()
 {
 }
 
-/** \brief update inner states
- *
+/** \brief Update inner states
  *
  */
 void TSGIOM::update()
@@ -40,11 +39,11 @@ void TSGIOM::update()
     return;
 }
 
-/** \brief Reimplement Restrict function.
+/** \brief Reimplement constrain function.
  * Return all possible outputs by default.
  * \param in input value
  * \param outlist all possible outputs for in
- * \return outputs distribution after restricting
+ * \return the output space after constraint
  *
  */
 OSpace TSGIOM::constrain(Input in, OSpace &outlist) const

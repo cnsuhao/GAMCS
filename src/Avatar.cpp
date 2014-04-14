@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GAMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Agent Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -30,7 +30,7 @@ Avatar::~Avatar()
 
 int Avatar::step()
 {
-    ++ava_loop_count;    // inc count
+    ++ava_loop_count;    // increase count
 
     /* Perceive state */
     Agent::State cs = percieveState();    // get current state
@@ -54,7 +54,8 @@ int Avatar::step()
 }
 
 /**
- * \brief stepLoop a avatar continuously.
+ * \brief Step avatar in a continuous loop.
+ * \param sps steps/loops per second, < 0 if not control
  */
 void Avatar::stepLoop(int sps)
 {
@@ -102,10 +103,10 @@ void Avatar::stepLoop(int sps)
     return;
 }
 
-/** \brief Get original payoff of each state.
- *  Return 1 for every state by default.
- * \param st state identity
- * \return original payoff of st
+/** \brief Get the original payoff of a state.
+ *  Return 1.0 for every state by default.
+ * \param st the state
+ * \return original payoff of the state
  *
  */
 float Avatar::originalPayoff(Agent::State st)
@@ -114,6 +115,10 @@ float Avatar::originalPayoff(Agent::State st)
     return 1.0;    // original payoff of states is 1.0 by default
 }
 
+/**\brief Get current time in millisecond
+ *
+ *\return the time
+ */
 unsigned long Avatar::getCurrentTime()
 {
     struct timeb tb;

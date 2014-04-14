@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GAMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Agent Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -30,6 +30,9 @@ DotViewer::~DotViewer()
 {
 }
 
+/** \brief Show the whole storage in graphviz dot style
+ *
+ */
 void DotViewer::show()
 {
     int re = storage->connect();
@@ -202,6 +205,10 @@ else    // eat < 0, since dot doesn't support minus sign, so we convert '-' to '
 }
 }
 
+/** \brief Show a specified state in graphviz dot style
+ * \param st the state to be viewed
+ *
+ */
 void DotViewer::showState(Agent::State st)
 {
 int re = storage->connect();

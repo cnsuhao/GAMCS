@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GAMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Agent Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -33,11 +33,11 @@ Agent::~Agent()
 {
 }
 
-/** \brief constrain capacity of an agent.
- *  Comply with maximun payoff rule.
- * \param st state identity
+/** \brief Constraint capacity of an agent.
+ *  Comply with the maximum payoff rule.
+ * \param st state value
  * \param acts all possible actions of st
- * \return action distribution after appling maximun payoff restrict
+ * \return action distribution after applying maximum payoff restrict
  *
  */
 OSpace Agent::constrain(Agent::State st, OSpace &acts) const
@@ -45,10 +45,9 @@ OSpace Agent::constrain(Agent::State st, OSpace &acts) const
     return maxPayoffRule(st, acts);
 }
 
-/** \brief update inner states.
+/** \brief Update inner states.
  *
  */
-
 void Agent::update(float oripayoff)
 {
     updateMemory(oripayoff);    // update memory

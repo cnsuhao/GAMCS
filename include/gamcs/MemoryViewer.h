@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// GAMCS -- Generalized Intelligence Model and Computer Simulation
+// GAMCS -- Generalized Agent Model and Computer Simulation
 //
 // Copyright (C) 2013-2014, Andy Huang  <andyspider@126.com>
 //
@@ -25,25 +25,35 @@ namespace gamcs
 class Storage;
 
 /**
- * Interface for visualizing stored memory.
+ * Interface for visualizing storage.
  */
 class MemoryViewer
 {
-    public:
-        MemoryViewer(Storage *storage = NULL);
-        virtual ~MemoryViewer();
+public:
+	MemoryViewer(Storage *sg = NULL) :
+			storage(sg)
+	{
+	}
 
-        void attachStorage(Storage *specific_storage); /**< set storage in which memory is stored */
-        virtual void show() = 0; /**< show the whole memory */
-        virtual void showState(Agent::State state) = 0; /**< show a specified state */
+	virtual ~MemoryViewer()
+	{
+	}
 
-    protected:
-        Storage *storage;
+	void attachStorage(Storage *specific_storage); /**< set storage in which memory is stored */
+	virtual void show() = 0; /**< show the whole memory */
+	virtual void showState(Agent::State state) = 0; /**< show a specified state */
+
+protected:
+	Storage *storage;
 };
 
+/** \brief Attach memory viewer to a storage, so that it can visualizing the storage.
+ *
+ * \param sg the storage to be visualized
+ */
 inline void MemoryViewer::attachStorage(Storage *sg)
 {
-    storage = sg;
+	storage = sg;
 }
 
 }    // namespace gamcs
