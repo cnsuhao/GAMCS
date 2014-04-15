@@ -13,19 +13,21 @@
 #include "Mouse.h"
 #include "gamcs/CSOSAgent.h"
 #ifdef _WITH_MYSQL_
-#include "gamcs/Mysql.h"
+//#include "gamcs/Mysql.h"
 #endif
+#include "gamcs/DotViewer.h"
 
 int main(void)
 {
-    CSOSAgent ma(1, 0.9, 0.01);
+    CSOSAgent agent(1, 0.9, 0.01);
+
 #ifdef _WITH_MYSQL_
-    Mysql mysql("localhost", "root", "huangk", "Mouse");
-    ma.loadMemoryFromStorage(&mysql);
+//    Mysql mysql("localhost", "root", "huangk", "Mouse");
+//    agent.loadMemoryFromStorage(&mysql);
 #endif
 
     Mouse mouse;
-    mouse.connectAgent(&ma);
+    mouse.connectAgent(&agent);
 
     // run 500 times
     int count = 0;
@@ -35,7 +37,24 @@ int main(void)
         count++;
     }
 
+//    DotViewer dv;
+//    dv.attachStorage(&agent);
+//    dv.show();
+    printf("New mouse created\n");
+    // create a new mouse with the memory
+    Mouse new_mouse;
+    new_mouse.connectAgent(&agent);
+
+    count = 0;
+    while (count < 500)
+    {
+        new_mouse.step();
+        count++;
+    }
+
 #ifdef _WITH_MYSQL_
-    ma.dumpMemoryToStorage(&mysql);
+//    agent.dumpMemoryToStorage(&mysql);
 #endif
+
+    return 0;
 }

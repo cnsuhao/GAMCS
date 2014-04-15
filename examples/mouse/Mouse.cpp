@@ -12,53 +12,45 @@
 
 #include "Mouse.h"
 
-Mouse::Mouse() : position(3)
+Mouse::Mouse() :
+        position(0)
 {
 }
 
 Mouse::~Mouse()
 {
-    //dtor
 }
 
 Agent::State Mouse::percieveState()
 {
     printf("Mouse, State %d\n", position);
-    return position;
+    return position;    // just return current position
 }
 
 void Mouse::performAction(Agent::Action act)
 {
     position += act;
 
-    if (position > 8) position = 8;
-    if (position < 1) position = 1;
+    if (position > 10) position = 10;    // reach the right end
+    if (position < -10) position = -10;    // reach the left end
     return;
 }
 
-/** \brief Get all outputs of each possible input.
- * By default, for a "I:N/O:M" it will return outputs with values from 1 to M for each input.
- *
- * \param in input identity
- * \return all possible outputs for the input
- *
- */
-
 OSpace Mouse::availableActions(Agent::State st)
 {
-//    UNUSED(st);
     OSpace acts;
-    acts.clear();
-    acts.add(1);
-    acts.add(-1);
+
+    acts.add(1);    // moving 1 meter right
+    acts.add(0);    // staying still
+    acts.add(-1);    // moving 1 meter left
 
     return acts;
 }
 
 float Mouse::originalPayoff(Agent::State st)
 {
-    if (st == 6)
-        return 1;
+    if (st == 5)
+        return 1;    // cheese was put here
     else
         return 0;
 }

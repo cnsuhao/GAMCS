@@ -10,7 +10,6 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #ifndef MOUSE_H_
 #define MOUSE_H_
 #include <string>
@@ -27,7 +26,7 @@ class Mouse: public Avatar
         ~Mouse();
 
     private:
-        int position;
+        int position;    // current position of the mouse in tunnel
 
         Agent::State percieveState();
         void performAction(Agent::Action);
