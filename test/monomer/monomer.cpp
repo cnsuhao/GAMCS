@@ -11,30 +11,32 @@
 
 Monomer::Monomer()
 {
-    position = 3;
+	position = 3;
 }
 
 Monomer::~Monomer()
 {
-    //dtor
+	//dtor
 }
 
 Agent::State Monomer::percieveState()
 {
-    printf("Monomer, %" ST_FMT "\n", position);
-    return position;
+	printf("Monomer, %" ST_FMT "\n", position);
+	return position;
 }
 
 void Monomer::performAction(Agent::Action act)
 {
-    if (act == 2)
-        position += 1;
-    else
-        position -= 1;
+	if (act == 2)
+		position += 1;
+	else
+		position -= 1;
 
-    if (position > 5) position = 5;
-    if (position < 1) position = 1;
-    return;
+	if (position > 10)
+		position = 10;
+	if (position < -10)
+		position = -10;
+	return;
 }
 
 /** \brief Get all outputs of each possible input.
@@ -47,34 +49,27 @@ void Monomer::performAction(Agent::Action act)
 OSpace Monomer::availableActions(Agent::State st)
 {
 //    UNUSED(st);
-    static int count;
+	static int count;
 //    UNUSED(st);
-    if (count < 200)
-    {
-        OSpace acts;
-        acts.clear();
-        if (st == 1)
-            acts.add(2);
-        else if (st == 5)
-            acts.add(1);
-        else
-        {
-            acts.add(2);
-            acts.add(1);
-        }
-        count++;
-        return acts;
-    }
-    else
-        return OSpace();    // return an empty list
+	if (count < 500)
+	{
+		OSpace acts;
+		acts.clear();
+		acts.add(2);
+		acts.add(1);
+		count++;
+		return acts;
+	}
+	else
+		return OSpace();    // return an empty list
 }
 
 float Monomer::originalPayoff(Agent::State st)
 {
-    if (st == 5)
-        return -100;
-    else if (st == 1)
-        return -100;
-    else
-        return 0;
+	if (st == 5)
+		return 0;
+	else if (st == 1)
+		return 0;
+	else
+		return 0;
 }

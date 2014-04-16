@@ -3,7 +3,7 @@
 #ifdef _WITH_MYSQL_
 #include "gamcs/Mysql.h"
 #endif
-#include "gamcs/DotViewer.h"
+#include "gamcs/CDotViewer.h"
 
 
 int main(void)
@@ -19,10 +19,9 @@ int main(void)
     mono.stepLoop();
 
     //ma.deleteState(9);
-    DotViewer dotv;
+    CDotViewer dotv;
     dotv.attachStorage(&ma);
-    dotv.showState(1);
-    dotv.showState(5);
+    dotv.show();
 
 #ifdef _WITH_MYSQL_
     ma.dumpMemoryToStorage(&mysql);
