@@ -36,10 +36,13 @@ class DotViewer: public MemoryViewer
 
         void show();
         void showState(Agent::State state);
+
+    protected:
+        const std::string int2String(gamcs_int value) const;
+
     private:
         void dotStateInfo(
                 const struct State_Info_Header *state_information_header) const;
-        const std::string act2String(Agent::Action action) const;
 
         Agent::State last_state;
         Agent::Action last_action;
