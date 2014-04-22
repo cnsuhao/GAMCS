@@ -35,9 +35,16 @@ class Agent: public TSGIOM
         typedef GIOM::Output Action; /**< for an agent we call an action an output */
         typedef GIOM::Output EnvAction; /**< environment action */
 
+        enum Mode
+        {
+            ONLINE = 0, /**< in this mode, an agent will learn as it does, and uses what it has learned */
+            EXPLORE /**< in this mode, an agent will learn as it does, but not use what it has learned, instead it will act randomly */
+        };
+
         Agent(int id = 0, float discount_rate = 0.9, float threshold = 0.01);
         virtual ~Agent();
 
+        void setMode(Mode mode); /**< set the learning mode of agent */
         void update(float original_payoff); /**< update memory, this function will call updateMemory() to do the real update */
 
         static const State INVALID_STATE = INVALID_INPUT;
@@ -47,6 +54,7 @@ class Agent: public TSGIOM
         int id; /**< agent Id */
         float discount_rate; /**< discount rate (0<,<1) when calculate state payoff */
         float threshold; /**< threshold used in payoff updating */
+        Mode learning_mode; /**< learning mode, ONLINE by default */
 
         OSpace constrain(State state, OSpace &avaliable_actions) const; /**< reimplement restrict using maximum payoff rule  */
 

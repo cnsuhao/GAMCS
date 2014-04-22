@@ -18,7 +18,7 @@ namespace gamcs
 {
 
 Agent::Agent(int i, float dr, float th) :
-        id(i), discount_rate(dr), threshold(th)
+        id(i), discount_rate(dr), threshold(th), learning_mode(ONLINE)
 {
     // check validity
     if (discount_rate >= 1.0 || discount_rate < 0)    // discount rate range [0, 1)
@@ -33,6 +33,11 @@ Agent::~Agent()
 {
 }
 
+void Agent::setMode(Mode mode)
+{
+    learning_mode = mode;
+}
+
 /** \brief Constraint capacity of an agent.
  *  Comply with the maximum payoff rule.
  * \param st state value
@@ -42,7 +47,15 @@ Agent::~Agent()
  */
 OSpace Agent::constrain(Agent::State st, OSpace &acts) const
 {
-    return maxPayoffRule(st, acts);
+    if (learning_mode == ONLINE)    // using maxPayoffRule in ONLINE mode
+        return maxPayoffRule(st, acts);
+    else if (learning_mode == EXPLORE)    // no constraint at all in EXPLORE mode
+        return acts;
+    else
+    {
+        ERROR("Unknown learning mode: %d!\n", learning_mode);
+        return OSpace();
+    }
 }
 
 /** \brief Update inner states.
