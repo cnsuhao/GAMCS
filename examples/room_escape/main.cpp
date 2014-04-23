@@ -12,7 +12,7 @@
 
 #include <stdio.h>
 #include "gamcs/CSOSAgent.h"
-#ifdef _WITH_MYSQL_
+#ifdef _MYSQL_FOUND_
 #include "gamcs/Mysql.h"
 #endif
 #include "Escapee.h"

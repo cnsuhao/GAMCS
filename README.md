@@ -51,7 +51,6 @@ Several options can be configed with cmake before building.
 
 - INT_BITS = 8|16|32|64(default), specify the bits of integer which represents Input, Output values in gamcs. The bigger the size, the more states it can represents, while the more memory it will consume. Choose the right size according to your specific situation.
 - DEBUG = ON|OFF(default), compile gamcs with or without debug information.
-- WITH_MYSQL = ON(default)|OFF, turn on and off the support of Mysql database for saving and loading Agent memory.
 - Other build-in options provided by cmake, see the cmake document for detail.
 
 To change an option, run cmake as `cmake ../ -Dname=value`. 

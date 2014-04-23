@@ -19,13 +19,13 @@ SET(GAMCS_MYSQL_SRCS
     ./Mysql.cpp
     )
 
-IF (WITH_MYSQL)
+IF (MYSQL_FOUND)
     SET(GAMCS_LIB_SRCS
         ${GAMCS_GAM_SRCS}
         ${GAMCS_CS_SRCS}
         ${GAMCS_MYSQL_SRCS}
         )
-ELSE (WITH_MYSQL)
+ELSE (MYSQL_FOUND)
     SET(GAMCS_LIB_SRCS
         ${GAMCS_GAM_SRCS}
         ${GAMCS_CS_SRCS}

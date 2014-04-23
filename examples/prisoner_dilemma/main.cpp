@@ -12,7 +12,7 @@
 
 #include "gamcs/CSOSAgent.h"
 #include "Prisoners.h"
-#ifdef _WITH_MYSQL_
+#ifdef _MYSQL_FOUND_
 #include "gamcs/Mysql.h"
 #endif
 
@@ -22,7 +22,7 @@ int main(void)
     CSOSAgent agentA(1, discount_rate, 0.01);
     CSOSAgent agentB(2, discount_rate, 0.01);
 
-#ifdef _WITH_MYSQL_
+#ifdef _MYSQL_FOUND_
     Mysql mysqlA("localhost", "root", "huangk", "PrisonerA");
     Mysql mysqlB("localhost", "root", "huangk", "PrisonerB");
 
@@ -45,7 +45,7 @@ int main(void)
         count++;
     }
 
-#ifdef _WITH_MYSQL_
+#ifdef _MYSQL_FOUND_
     agentA.dumpMemoryToStorage(&mysqlA);
     agentB.dumpMemoryToStorage(&mysqlB);
 #endif

@@ -4,12 +4,11 @@ PROJECT(GAMCS CXX)   # Generalized Agent Model and Computer Simulation
 # version
 SET(GAMCS_MAJOR 1)
 SET(GAMCS_MINOR 1)
-SET(GAMCS_BUILD 18)
+SET(GAMCS_BUILD 19)
 
 SET(GAMCS_NAME gamcs)   
 SET(GAMCS_STATIC_NAME gamcs_static)
 SET(GAMCS_VERSION ${GAMCS_MAJOR}.${GAMCS_MINOR}.${GAMCS_BUILD})
-MESSAGE(STATUS "GAMCS Version: " ${GAMCS_VERSION})
 
 # configuration options
 OPTION(DEBUG "Build with debug output" OFF)
@@ -20,19 +19,18 @@ OPTION(INT_BITS "Bitwise of integer" OFF)    # 8, 16, 32, 64
 IF (NOT INT_BITS)   # 64bit by default
     SET(INT_BITS 64)
 ENDIF()
-MESSAGE(STATUS "INT_BITS: " ${INT_BITS})
-
-OPTION(WITH_MYSQL "Build with Mysql support" ON)   # Mysql is a kind of storage to save memories of agent
-MESSAGE(STATUS "WITH_MYSQL: " ${WITH_MYSQL})
 
 # find dependencies
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
-IF (WITH_MYSQL)
-    FIND_PACKAGE(MYSQL REQUIRED)
+# find Mysql
+FIND_PACKAGE(MYSQL)
+IF (MYSQL_FOUND)
     INCLUDE_DIRECTORIES(${MYSQL_INCLUDE_DIRS})
     SET(LIBS ${LIBS} ${MYSQL_LIBRARIES})
 ENDIF ()
+
+# other components come here
 
 # macro definitions
 IF (DEBUG)
@@ -45,12 +43,8 @@ IF (DEBUG_MORE)
     SET(CMAKE_BUILD_TYPE Debug)
 ENDIF()
 
-IF (WITH_MYSQL)
-    ADD_DEFINITIONS("-D_WITH_MYSQL_")
-ENDIF()
-
-IF (WITH_CGRAPH)
-    ADD_DEFINITIONS("-D_WITH_CGRAPH_")
+IF (MYSQL_FOUND)
+    ADD_DEFINITIONS("-D_MYSQL_FOUND_")
 ENDIF()
 
 # detect compilers and set particular options
@@ -72,8 +66,6 @@ ENDIF()
 IF (NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE Release)
 ENDIF()
-
-MESSAGE(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 
 # include directory
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
@@ -104,13 +96,13 @@ SET(GAMCS_MYSQL_HDRS
     ${PROJECT_SOURCE_DIR}/include/gamcs/Mysql.h
     )
 
-IF (WITH_MYSQL)
+IF (MYSQL_FOUND)
     SET(GAMCS_PUBLIC_HDRS
         ${GAMCS_GAM_HDRS}
         ${GAMCS_CS_HDRS}
         ${GAMCS_MYSQL_HDRS}
         )
-ELSE (WITH_MYSQL)
+ELSE (MYSQL_FOUND)
     SET(GAMCS_PUBLIC_HDRS
         ${GAMCS_GAM_HDRS}
         ${GAMCS_CS_HDRS}
@@ -133,3 +125,8 @@ ADD_SUBDIRECTORY(examples)
 ADD_SUBDIRECTORY(tools)
 ADD_SUBDIRECTORY(test)
 
+# print out configuration
+MESSAGE(STATUS "GAMCS Version: " ${GAMCS_VERSION})
+MESSAGE(STATUS "INT_BITS: " ${INT_BITS})
+MESSAGE(STATUS "Build Type: " ${CMAKE_BUILD_TYPE})
+MESSAGE(STATUS "Mysql: " ${MYSQL_FOUND})

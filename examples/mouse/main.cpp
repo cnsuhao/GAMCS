@@ -12,7 +12,7 @@
 
 #include "Mouse.h"
 #include "gamcs/CSOSAgent.h"
-#ifdef _WITH_MYSQL_
+#ifdef _MYSQL_FOUND_
 //#include "gamcs/Mysql.h"
 #endif
 #include "gamcs/DotViewer.h"
@@ -21,7 +21,7 @@ int main(void)
 {
     CSOSAgent agent(1, 0.9, 0.01);
 
-#ifdef _WITH_MYSQL_
+#ifdef _MYSQL_FOUND_
 //    Mysql mysql("localhost", "root", "huangk", "Mouse");
 //    agent.loadMemoryFromStorage(&mysql);
 #endif
@@ -52,7 +52,7 @@ int main(void)
         count++;
     }
 
-#ifdef _WITH_MYSQL_
+#ifdef _MYSQL_FOUND_
 //    agent.dumpMemoryToStorage(&mysql);
 #endif
 

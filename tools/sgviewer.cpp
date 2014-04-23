@@ -23,7 +23,7 @@
 #include "gamcs/DotViewer.h"
 #include "gamcs/CDotViewer.h"
 #include "gamcs/PrintViewer.h"
-#ifdef _WITH_MYSQL_
+#ifdef _MYSQL_FOUND_
 #include "gamcs/Mysql.h"
 #endif
 
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
     // check storage names
     if (storage_name.compare("mysql") == 0)    // storage is mysql
     {
-#ifdef _WITH_MYSQL_
+#ifdef _MYSQL_FOUND_
         int remain_arg = argc - optind;
         if (remain_arg != 4 && remain_arg != 3)    // args: server username passwd database, in which server can be ommit
         {
@@ -110,7 +110,6 @@ int main(int argc, char *argv[])
         storage = mysql;
 #else
         std::cout << "GAMCS is built without support of Mysql!" << std::endl;
-        std::cout << "Configure with option \"-DWITH_MYSQL=YES\"" << std::endl
         << std::endl;
         display_usage();
 #endif
