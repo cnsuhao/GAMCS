@@ -38,7 +38,7 @@ SET(MYSQL_INCLUDE_DIRS ${MYSQL_INCLUDE_DIR})
 SET(MYSQL_LIBRARIES ${MYSQL_LIBRARY} )
 
 INCLUDE(FindPackageHandleStandardArgs)
-# handle the QUIETLY and REQUIRED arguments and set EINA_FOUND to TRUE
+# handle the QUIETLY and REQUIRED arguments and set MYSQL_FOUND to TRUE
 # if all listed variables are TRUE
 find_package_handle_standard_args(mysql DEFAULT_MSG
     MYSQL_INCLUDE_DIR MYSQL_LIBRARY)
