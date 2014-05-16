@@ -15,20 +15,27 @@ SET(GAMCS_CS_SRCS
     ./platforms.cpp
     )
 
+SET(GAMCS_LIB_SRCS ${GAMCS_GAM_SRCS} ${GAMCS_CS_SRCS})
+
 SET(GAMCS_MYSQL_SRCS
     ./Mysql.cpp
     )
 
 IF (MYSQL_FOUND)
     SET(GAMCS_LIB_SRCS
-        ${GAMCS_GAM_SRCS}
-        ${GAMCS_CS_SRCS}
+        ${GAMCS_LIB_SRCS}
         ${GAMCS_MYSQL_SRCS}
         )
-ELSE (MYSQL_FOUND)
+ENDIF()
+
+SET(GAMCS_SQLITE_SRCS
+    ./Sqlite.cpp
+    )
+
+IF (SQLITE3_FOUND)
     SET(GAMCS_LIB_SRCS
-        ${GAMCS_GAM_SRCS}
-        ${GAMCS_CS_SRCS}
+        ${GAMCS_LIB_SRCS}
+        ${GAMCS_SQLITE_SRCS}
         )
 ENDIF()
 

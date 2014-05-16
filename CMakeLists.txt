@@ -30,6 +30,13 @@ IF (MYSQL_FOUND)
     SET(LIBS ${LIBS} ${MYSQL_LIBRARIES})
 ENDIF ()
 
+# find Sqlite3
+FIND_PACKAGE(SQLITE3)
+IF (SQLITE3_FOUND)
+    INCLUDE_DIRECTORIES(${SQLITE3_INCLUDE_DIRS})
+    SET(LIBS ${LIBS} ${SQLITE3_LIBRARIES})
+ENDIF ()
+
 # other components come here
 
 # macro definitions
@@ -45,6 +52,10 @@ ENDIF()
 
 IF (MYSQL_FOUND)
     ADD_DEFINITIONS("-D_MYSQL_FOUND_")
+ENDIF()
+
+IF (SQLITE3_FOUND)
+    ADD_DEFINITIONS("-D_SQLITE_FOUND_")
 ENDIF()
 
 # detect compilers and set particular options
@@ -92,20 +103,27 @@ SET(GAMCS_CS_HDRS
     ${PROJECT_SOURCE_DIR}/include/gamcs/platforms.h
     )
 
+SET(GAMCS_PUBLIC_HDRS ${GAMCS_GAM_HDRS} ${GAMCS_CS_HDRS})
+
 SET(GAMCS_MYSQL_HDRS
     ${PROJECT_SOURCE_DIR}/include/gamcs/Mysql.h
     )
 
 IF (MYSQL_FOUND)
     SET(GAMCS_PUBLIC_HDRS
-        ${GAMCS_GAM_HDRS}
-        ${GAMCS_CS_HDRS}
+        ${GAMCS_PUBLIC_HDRS}
         ${GAMCS_MYSQL_HDRS}
         )
-ELSE (MYSQL_FOUND)
+ENDIF()
+
+SET(GAMCS_SQLITE_HDRS
+    ${PROJECT_SOURCE_DIR}/include/gamcs/Sqlite.h
+    )
+
+IF (SQLITE3_FOUND)
     SET(GAMCS_PUBLIC_HDRS
-        ${GAMCS_GAM_HDRS}
-        ${GAMCS_CS_HDRS}
+        ${GAMCS_PUBLIC_HDRS}
+        ${GAMCS_SQLITE_HDRS}
         )
 ENDIF()
 
@@ -130,3 +148,4 @@ MESSAGE(STATUS "GAMCS Version: " ${GAMCS_VERSION})
 MESSAGE(STATUS "INT_BITS: " ${INT_BITS})
 MESSAGE(STATUS "Build Type: " ${CMAKE_BUILD_TYPE})
 MESSAGE(STATUS "Mysql: " ${MYSQL_FOUND})
+MESSAGE(STATUS "Sqlite3: " ${SQLITE3_FOUND})
