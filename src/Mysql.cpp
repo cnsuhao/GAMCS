@@ -73,6 +73,7 @@ int Mysql::connect()
             db_password.c_str(), NULL, 0, NULL, 0) == NULL)
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
+        mysql_close(db_con);
         return -1;
     }
 
@@ -82,6 +83,7 @@ int Mysql::connect()
     if (mysql_query(db_con, db_string))
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
+        mysql_close(db_con);
         return -1;
     }
 
@@ -95,6 +97,7 @@ int Mysql::connect()
     if (mysql_query(db_con, tb_string))
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
+        mysql_close(db_con);
         return -1;
     }
 
@@ -105,6 +108,7 @@ int Mysql::connect()
     if (mysql_query(db_con, tb_string))
     {
         fprintf(stderr, "%s\n", mysql_error(db_con));
+        mysql_close(db_con);
         return -1;
     }
 
@@ -134,7 +138,7 @@ Agent::State Mysql::firstState() const
 
 Agent::State Mysql::nextState() const
 {
-    current_index++;
+    ++current_index;
     return stateByIndex(current_index);
 }
 
@@ -402,8 +406,6 @@ void Mysql::updateMemoryInfo(const struct Memory_Info *memif)
             "UPDATE %s SET TimeStamp=NULL, DiscountRate=%f, Threshold=%f, NumStates=%ld, NumLinks=%ld, LastState=%" ST_FMT ", LastAction=%" ACT_FMT " ORDER BY TimeStamp DESC LIMIT 1",
             db_t_meminfo.c_str(), memif->discount_rate, memif->threshold,
             memif->state_num, memif->lk_num, memif->last_st, memif->last_act);
-
-    printf("query_str: %s\n", query_str);
 
     int len = strlen(query_str);
     if (mysql_real_query(db_con, query_str, len))

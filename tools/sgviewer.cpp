@@ -102,15 +102,15 @@ int main(int argc, char *argv[])
 
         Mysql *mysql = NULL;
         if (remain_arg == 4)
-            mysql = new Mysql(argv[optind], argv[optind + 1], argv[optind + 2],
-                    argv[optind + 3]);
+        mysql = new Mysql(argv[optind], argv[optind + 1], argv[optind + 2],
+                argv[optind + 3]);
         else if (remain_arg == 3)
-            mysql = new Mysql("localhost", argv[optind], argv[optind + 1],
-                    argv[optind + 2]);
+        mysql = new Mysql("localhost", argv[optind], argv[optind + 1],
+                argv[optind + 2]);
         storage = mysql;
 #else
-        std::cout << "GAMCS is built without support of Mysql!" << std::endl;
-        << std::endl;
+        std::cout << "GAMCS is built without support of Mysql!" << std::endl
+                << std::endl;
         display_usage();
 #endif
     }    // other storages come here
