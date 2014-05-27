@@ -47,8 +47,9 @@ class Agent: public TSGIOM
         void setMode(Mode mode); /**< set the learning mode of agent */
         void update(float original_payoff); /**< update memory, this function will call updateMemory() to do the real update */
 
-        static const State INVALID_STATE = INVALID_INPUT;
-        static const Action INVALID_ACTION = INVALID_OUTPUT;
+        static const State INVALID_STATE;
+        static const Action INVALID_ACTION;
+        static const float INVALID_PAYOFF; /**< use the maximum value to represent the invalid payoff */
 
     protected:
         int id; /**< agent Id */

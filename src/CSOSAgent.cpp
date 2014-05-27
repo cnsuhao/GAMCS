@@ -212,7 +212,7 @@ struct cs_State *CSOSAgent::newState(Agent::State st)
     assert(mst != NULL);
     // fill in default values
     mst->st = st;
-    mst->original_payoff = 0.0;    // any value, doesn't master, it'll be set when used. Note: this value is also used for unseen previous state recieved in links from others.
+    mst->original_payoff = 0.0;    // use 0 as default
     mst->payoff = 0.0;
     mst->count = 1;    // it's created when we first encounter it
     mst->actlist = NULL;
@@ -768,14 +768,16 @@ void CSOSAgent::updateMemory(float oripayoff)
         if (cur_mst == NULL)    // create current state in memory
         {
             cur_mst = newState(cur_in);
-            cur_mst->original_payoff = oripayoff;    // set original payoff as given
+            if (oripayoff != INVALID_PAYOFF) cur_mst->original_payoff =
+                    oripayoff;    // set original payoff as given if it's valid, else no changes
         }
         else    // state found, this could happen if others send state information to me before the first time I'm running
         {
             dbgmoreprt("", "Previous state not exists, but I recieved some information of this state from others.\n");
             // update current state
             cur_mst->count++;    // inc state count
-            cur_mst->original_payoff = oripayoff;    // reset original payoff
+            if (oripayoff != INVALID_PAYOFF) cur_mst->original_payoff =
+                    oripayoff;    // reset original payoff
             // no previous state, so no link involved
         }
 
@@ -795,7 +797,7 @@ void CSOSAgent::updateMemory(float oripayoff)
     {
         dbgmoreprt("", "current state not exists, create it and build the link\n");
         cur_mst = newState(cur_in);
-        cur_mst->original_payoff = oripayoff;
+        if (oripayoff != INVALID_PAYOFF) cur_mst->original_payoff = oripayoff;
 
         // build the link
         EnvAction peat = cur_in - pre_in - pre_out;    // calcuate previous environment action. This formula is important!!!
@@ -806,7 +808,7 @@ void CSOSAgent::updateMemory(float oripayoff)
         dbgmoreprt("", "current state is %" ST_FMT ", increase count and build the link\n", cur_mst->st);
         // update current state
         cur_mst->count++;    // inc state count
-        cur_mst->original_payoff = oripayoff;    // reset original payoff
+        if (oripayoff != INVALID_PAYOFF) cur_mst->original_payoff = oripayoff;    // reset original payoff
 
         // build the link
         EnvAction peat = cur_in - pre_in - pre_out;
