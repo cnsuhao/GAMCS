@@ -33,8 +33,8 @@ class PrintViewer: public MemoryViewer
         PrintViewer(Storage *storage = NULL);
         virtual ~PrintViewer();
 
-        void show();
-        void showState(Agent::State state);
+        void dump(const char *file);
+        void dumpState(Agent::State state, const char *file);
 
     private:
         void printStateInfo(
