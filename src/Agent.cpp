@@ -11,11 +11,16 @@
 // -----------------------------------------------------------------------------
 
 #include <stdio.h>
+#include <cfloat>
 #include "gamcs/Agent.h"
 #include "gamcs/debug.h"
 
 namespace gamcs
 {
+
+const Agent::State Agent::INVALID_STATE = INVALID_INPUT;
+const Agent::Action Agent::INVALID_ACTION = INVALID_OUTPUT;
+const float Agent::INVALID_PAYOFF = FLT_MAX; /**< use the maximum value to represent the invalid payoff */
 
 Agent::Agent(int i, float dr, float th) :
         id(i), discount_rate(dr), threshold(th), learning_mode(ONLINE)
