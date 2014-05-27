@@ -34,8 +34,8 @@ class DotViewer: public MemoryViewer
         DotViewer(Storage *storage = NULL);
         virtual ~DotViewer();
 
-        void show();
-        void showState(Agent::State state);
+        void dump(const char *file);
+        void dumpState(Agent::State state, const char *file);
 
     protected:
         const std::string int2String(gamcs_int value) const;

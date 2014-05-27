@@ -35,7 +35,7 @@ class Avatar
         virtual ~Avatar();
 
         int step();
-        void stepLoop(int steps_per_second = -1); /**< step avatar in a continuous loop */
+        void loop(int steps_per_second = -1); /**< step avatar in a continuous loop */
         void connectAgent(Agent *agent); /**< connect to an agent */
 
     protected:

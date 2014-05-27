@@ -18,12 +18,12 @@ int main(void)
 
 	Monomer mono;
 	mono.connectAgent(&ma);
-	mono.stepLoop();
+	mono.loop();
 
 	//ma.deleteState(9);
 	CDotViewer dotv;
 	dotv.attachStorage(&ma);
-	dotv.show();
+	dotv.dump();
 
 	ma.dumpMemoryToStorage(&sqlite);
 //#ifdef _MYSQL_FOUND_

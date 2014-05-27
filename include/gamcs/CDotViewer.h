@@ -33,7 +33,7 @@ class CDotViewer: public DotViewer
         CDotViewer(Storage *storage = NULL);
         virtual ~CDotViewer();
 
-        void show(); /**< show agent memory cleanly */
+        void dump(const char *file); /**< show agent memory cleanly */
 
     private:
         void cleanDotStateInfo(

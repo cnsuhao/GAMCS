@@ -36,7 +36,7 @@ int main(void)
     // show states
     DotViewer dv;
     dv.attachStorage(&agent);
-    dv.show();
+    dv.dump();
 
     printf("spawn a new escapee with the learned agent.\n");
     Escapee escapee2(1);

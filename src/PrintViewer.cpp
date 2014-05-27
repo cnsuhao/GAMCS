@@ -29,7 +29,7 @@ PrintViewer::~PrintViewer()
 /** \brief Show the whole storage in pretty print style
  *
  */
-void PrintViewer::show()
+void PrintViewer::dump(const char *file = NULL)
 {
     int re = storage->connect();
     if (re != 0)    // connect failed
@@ -119,7 +119,7 @@ void PrintViewer::printStateInfo(const struct State_Info_Header *sthd) const
 /** \brief Show a specified state in pretty print style
  * \param st the state to be viewed
  */
-void PrintViewer::showState(Agent::State st)
+void PrintViewer::dumpState(Agent::State st, const char *file = NULL)
 {
     int re = storage->connect();
     if (re != 0)    // connect failed

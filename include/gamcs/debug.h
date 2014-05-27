@@ -37,6 +37,7 @@ namespace gamcs
 
 #define ERROR(fmt, ...) do{printf("ERROR:");printf(fmt, ##__VA_ARGS__);exit(-1);}while(0)
 #define WARNNING(fmt, ...) do{printf("WARNNING:");printf(fmt, ##__VA_ARGS__);}while(0)
+#define INFO(fmt, ...) do{printf("INFO:");printf(fmt, ##__VA_ARGS__);}while(0)
 
 #define UNUSED(expr) do { (void)(expr); } while (0)
 
