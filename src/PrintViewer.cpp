@@ -32,15 +32,15 @@ PrintViewer::~PrintViewer()
  */
 void PrintViewer::view(const char *file)
 {
-	int re = storage->connect();
+	int re = storage->open(Storage::O_READ);
 	if (re != 0)    // connect failed
 	{
-		WARNNING("PrintViewer Show(): connect to storage failed!\n");
+		WARNNING("PrintViewer Show(): open storage failed!\n");
 		return;
 	}
 
 	FILE *output = NULL;
-	if (file == NULL)	// output to standard output
+	if (file == NULL)    // output to standard output
 		output = stdout;
 	else
 		// output to the requested file
@@ -59,7 +59,7 @@ void PrintViewer::view(const char *file)
 		fprintf(output, "number of links: \t%ld\n", memif->lk_num);
 		fprintf(output, "last state: \t%" ST_FMT "\n", memif->last_st);
 		fprintf(output, "last action: \t%" ACT_FMT "\n", memif->last_act);
-		free(memif); // free it, the memory struct are not a substaintial struct for running, it's just used to store meta-memory information
+		free(memif);    // free it, the memory struct are not a substaintial struct for running, it's just used to store meta-memory information
 		fprintf(output,
 				"===========================================================\n\n");
 	}
@@ -135,15 +135,15 @@ void PrintViewer::printStateInfo(const struct State_Info_Header *sthd,
  */
 void PrintViewer::viewState(Agent::State st, const char *file)
 {
-	int re = storage->connect();
+	int re = storage->open(Storage::O_READ);
 	if (re != 0)    // connect failed
 	{
-		WARNNING("PrintViewer ShowState(): connect to storage failed!\n");
+		WARNNING("PrintViewer ShowState(): open storage failed!\n");
 		return;
 	}
 
 	FILE *output = NULL;
-	if (file == NULL)	// output to standard output
+	if (file == NULL)    // output to standard output
 		output = stdout;
 	else
 		// output to the requested file

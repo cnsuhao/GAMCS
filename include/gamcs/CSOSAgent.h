@@ -36,7 +36,7 @@ class CSOSAgent: public OSAgent
                 float threshold = 0.01);
         ~CSOSAgent();
 
-        int connect();    // connect to me
+        int open(Flag flag);    // connect to me
         void close();    // close connection to me
 
         State_Info_Header *getStateInfo(State state) const; /**< implementing GetStateInfo function */
