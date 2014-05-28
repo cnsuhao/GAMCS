@@ -9,12 +9,12 @@
 int main(void)
 {
 	CSOSAgent ma(1, 0.9, 0.01);
-//#ifdef _MYSQL_FOUND_
-//    Mysql mysql("localhost", "root", "huangk", "Monomer");
-//    ma.loadMemoryFromStorage(&mysql);
-//#endif
-	Sqlite sqlite("./monomer.db");
-	ma.loadMemoryFromStorage(&sqlite);
+#ifdef _MYSQL_FOUND_
+	Mysql mysql("localhost", "root", "huangk", "Monomer");
+	ma.loadMemoryFromStorage(&mysql);
+#endif
+//	Sqlite sqlite("./monomer.db");
+//	ma.loadMemoryFromStorage(&sqlite);
 
 	Monomer mono;
 	mono.connectAgent(&ma);
@@ -23,10 +23,10 @@ int main(void)
 	//ma.deleteState(9);
 	CDotViewer dotv;
 	dotv.attachStorage(&ma);
-	dotv.dump();
+	dotv.view();
 
-	ma.dumpMemoryToStorage(&sqlite);
-//#ifdef _MYSQL_FOUND_
-//    ma.dumpMemoryToStorage(&mysql);
-//#endif
+//	ma.dumpMemoryToStorage(&sqlite);
+#ifdef _MYSQL_FOUND_
+	ma.dumpMemoryToStorage(&mysql);
+#endif
 }

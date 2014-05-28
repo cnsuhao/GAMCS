@@ -34,7 +34,7 @@ public:
 
 	void setDBArgs(std::string database);
 
-	int connect();
+	int open(Flag flag);
 	void close();
 
 	Agent::State firstState() const;
@@ -58,6 +58,7 @@ private:
 	std::string db_t_stateinfo;
 	std::string db_t_meminfo;
 	mutable gamcs_uint current_index;
+	Flag o_flag;
 
 	Agent::State stateByIndex(unsigned long index) const;
 };

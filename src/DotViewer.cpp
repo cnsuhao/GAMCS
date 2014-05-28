@@ -36,15 +36,15 @@ DotViewer::~DotViewer()
  */
 void DotViewer::view(const char *file)
 {
-	int re = storage->connect();
+	int re = storage->open(Storage::O_READ);
 	if (re != 0)    // connect failed
 	{
-		WARNNING("DotViewer Show(): connect to storage failed!\n");
+		WARNNING("DotViewer Show(): open storage failed!\n");
 		return;
 	}
 
 	FILE *output = NULL;
-	if (file == NULL)	// output to standard ouput
+	if (file == NULL)    // output to standard ouput
 		output = stdout;
 	else
 		output = fopen(file, "w");
@@ -66,7 +66,7 @@ void DotViewer::view(const char *file)
 		// store last status
 		last_state = memif->last_st;
 		last_action = memif->last_act;
-		free(memif); // free it, the memory struct are not a substaintial struct for running, it's just used to store meta-memory information
+		free(memif);    // free it, the memory struct are not a substaintial struct for running, it's just used to store meta-memory information
 	}
 	else
 	{
@@ -139,7 +139,7 @@ void DotViewer::dotStateInfo(const struct State_Info_Header *sthd,
 			sthd->payoff, st_color.c_str());
 	// action nodes and action ---> action
 	fprintf(output, "subgraph \n{\n");
-	fprintf(output, "rank=\"sink\"\n"); // env nodes should be drawing under state node
+	fprintf(output, "rank=\"sink\"\n");    // env nodes should be drawing under state node
 	fprintf(output, "node [shape=\"point\"]\n");
 
 	Action_Info_Header *achd, *pre_achd = NULL;
@@ -166,7 +166,7 @@ void DotViewer::dotStateInfo(const struct State_Info_Header *sthd,
 	// state ---> actions
 	for (unsigned long i = 0; i < sthd->act_num; i++)
 	{
-	if (sthd->st == last_state && acts[i] == last_action) // highlight last action edge
+	if (sthd->st == last_state && acts[i] == last_action)    // highlight last action edge
 	fprintf(output,
 			"st%s -> act%sin%s [label=<<font color=\"#D3D300\">%" ACT_FMT "</font>>, color=\"#D3D300\", weight=2.]\n",
 			int2String(sthd->st).c_str(), int2String(acts[i]).c_str(), int2String(sthd->st).c_str(), acts[i]);
@@ -207,7 +207,7 @@ if (value >= 0)
 	std::string str(tmp);
 	return str;
 }
-else  // eat < 0, since dot doesn't support minus sign, so we convert '-' to '_'
+else    // eat < 0, since dot doesn't support minus sign, so we convert '-' to '_'
 {
 	sprintf(tmp, "_%" GAMCS_INT_FMT, -value);
 	std::string str(tmp);
@@ -221,10 +221,10 @@ else  // eat < 0, since dot doesn't support minus sign, so we convert '-' to '_'
  */
 void DotViewer::viewState(Agent::State st, const char *file)
 {
-int re = storage->connect();
+int re = storage->open(Storage::O_READ);
 if (re != 0)    // connect failed
 {
-	WARNNING("DotViewer ShowState(): connect to storage failed!\n");
+	WARNNING("DotViewer ShowState(): open storage failed!\n");
 	return;
 }
 
@@ -277,7 +277,7 @@ if (sthd != NULL)
 			sthd->payoff);
 	// action nodes and action ---> action
 	fprintf(output, "subgraph \n{\n");
-	fprintf(output, "rank=\"same\"\n"); // env nodes should be drawing under state node
+	fprintf(output, "rank=\"same\"\n");    // env nodes should be drawing under state node
 	fprintf(output, "node [shape=\"point\"]\n");
 
 	StateInfoParser sparser(sthd);

@@ -35,10 +35,10 @@ CDotViewer::~CDotViewer()
 
 void CDotViewer::view(const char *file)
 {
-	int re = storage->connect();
+	int re = storage->open(Storage::O_READ);
 	if (re != 0)    // connect failed
 	{
-		WARNNING("DotViewer CleanShow(): connect to storage failed!\n");
+		WARNNING("DotViewer CleanShow(): open storage failed!\n");
 		return;
 	}
 
@@ -65,7 +65,7 @@ void CDotViewer::view(const char *file)
 		// store last status
 		last_state = memif->last_st;
 		last_action = memif->last_act;
-		free(memif); // free it, the memory struct are not a substaintial struct for running, it's just used to store meta-memory information
+		free(memif);    // free it, the memory struct are not a substaintial struct for running, it's just used to store meta-memory information
 	}
 	else
 	{
@@ -96,7 +96,8 @@ void CDotViewer::view(const char *file)
 	storage->close();
 }
 
-void CDotViewer::cleanDotStateInfo(const struct State_Info_Header *sthd, FILE *output) const
+void CDotViewer::cleanDotStateInfo(const struct State_Info_Header *sthd,
+		FILE *output) const
 {
 	/* generated state example:
 	 *
