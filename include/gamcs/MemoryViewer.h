@@ -40,8 +40,8 @@ class MemoryViewer
         }
 
         void attachStorage(Storage *specific_storage); /**< set storage in which memory is stored */
-        virtual void dump(const char *file = NULL) = 0; /**< show the whole memory */
-        virtual void dumpState(Agent::State state, const char *file = NULL) = 0; /**< show a specified state */
+        virtual void view(const char *file = NULL) = 0; /**< show the whole memory */
+        virtual void viewState(Agent::State state, const char *file = NULL) = 0; /**< show a specified state */
 
     protected:
         Storage *storage;
