@@ -60,7 +60,7 @@ void DotViewer::view(const char *file)
 	if (memif != NULL)
 	{
 		fprintf(output,
-				"label=\"memory %s\\ndiscount rate: %.2f, threshold: %.2f, #states: %ld, #links: %ld\"\n",
+				"label=\"memory %s\\ndiscount rate: %.2f, threshold: %.2f, #states: %" UINT32_FMT ", #links: %" UINT32_FMT "\"\n",
 				storage->getMemoryName().c_str(), memif->discount_rate,
 				memif->threshold, memif->state_num, memif->lk_num);
 		// store last status
@@ -187,7 +187,7 @@ while (achd != NULL)
 	while (eaif != NULL)
 	{
 		fprintf(output,
-				"act%sin%s -> st%s [label=<<font color=\"red\">%" ACT_FMT " (%ld)</font>>, color=\"red\", weight=1.]\n",
+				"act%sin%s -> st%s [label=<<font color=\"red\">%" ACT_FMT " (%" UINT32_FMT ")</font>>, color=\"red\", weight=1.]\n",
 				int2String(achd->act).c_str(), int2String(sthd->st).c_str(), int2String(eaif->nst).c_str(),
 				eaif->eat, eaif->count);
 
@@ -317,7 +317,7 @@ while (achd != NULL)
 	while (eaif != NULL)
 	{
 		fprintf(output,
-				"act%sin%s -> st%s [label=<<font color=\"red\">%" ACT_FMT " (%ld)</font>>, color=\"red\", weight=1.]\n",
+				"act%sin%s -> st%s [label=<<font color=\"red\">%" ACT_FMT " (%" UINT32_FMT ")</font>>, color=\"red\", weight=1.]\n",
 				int2String(achd->act).c_str(), int2String(sthd->st).c_str(), int2String(eaif->nst).c_str(),
 				eaif->eat, eaif->count);
 		// get the payoff of the next state, exclude self
