@@ -59,7 +59,7 @@ void CDotViewer::view(const char *file)
 	if (memif != NULL)
 	{
 		fprintf(output,
-				"label=\"memory %s\\ndiscount rate: %.2f, threshold: %.2f, #states: %ld, #links: %ld\"\n",
+				"label=\"memory %s\\ndiscount rate: %.2f, threshold: %.2f, #states: %" UINT32_FMT ", #links: %" UINT32_FMT "\"\n",
 				storage->getMemoryName().c_str(), memif->discount_rate,
 				memif->threshold, memif->state_num, memif->lk_num);
 		// store last status

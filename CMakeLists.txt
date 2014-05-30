@@ -3,8 +3,8 @@ PROJECT(GAMCS CXX)   # Generalized Agent Model and Computer Simulation
 
 # version
 SET(GAMCS_MAJOR 1)
-SET(GAMCS_MINOR 2)
-SET(GAMCS_BUILD 1)
+SET(GAMCS_MINOR 3)
+SET(GAMCS_BUILD 0)
 
 SET(GAMCS_NAME gamcs)   
 SET(GAMCS_STATIC_NAME gamcs_static)

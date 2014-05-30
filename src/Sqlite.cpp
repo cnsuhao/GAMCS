@@ -252,7 +252,7 @@ void Sqlite::addStateInfo(const struct State_Info_Header *sthd)
 
 	char *stmt_buf = (char *) malloc(512 + 2 * act_len + 3);
 	sprintf(stmt_buf,
-			"INSERT INTO %s(State, OriPayoff, Payoff, Count, ActNum, Size, ActInfos) VALUES(%" ST_FMT ", %f, %f, %ld, %ld, %d, ?)",
+			"INSERT INTO %s(State, OriPayoff, Payoff, Count, ActNum, Size, ActInfos) VALUES(%" ST_FMT ", %f, %f, %" UINT32_FMT ", %" UINT32_FMT ", %" UINT16_FMT ", ?)",
 			db_t_stateinfo.c_str(), sthd->st, sthd->original_payoff,
 			sthd->payoff, sthd->count, sthd->act_num, sthd->size);
 
@@ -295,7 +295,7 @@ void Sqlite::updateStateInfo(const struct State_Info_Header *sthd)
 	char *stmt_buf = (char *) malloc(512 + 2 * act_len + 3);
 
 	sprintf(stmt_buf,
-			"UPDATE %s SET OriPayoff=%f, Payoff=%f, Count=%ld, ActNum=%ld, Size=%d, ActInfos=? WHERE State=%" ST_FMT,
+			"UPDATE %s SET OriPayoff=%f, Payoff=%f, Count=%" UINT32_FMT ", ActNum=%" UINT32_FMT ", Size=%" UINT16_FMT ", ActInfos=? WHERE State=%" ST_FMT,
 			db_t_stateinfo.c_str(), sthd->original_payoff, sthd->payoff,
 			sthd->count, sthd->act_num, sthd->size, sthd->st);
 
@@ -357,11 +357,9 @@ void Sqlite::addMemoryInfo(const struct Memory_Info *memif)
 	char query_str[1024];
 
 	sprintf(query_str,
-			"INSERT INTO %s(TimeStamp, DiscountRate, Threshold, NumStates, NumLinks, LastState, LastAction) VALUES(datetime(\'now\'), %f, %f, %ld, %ld, %" ST_FMT ", %" ACT_FMT ")",
+			"INSERT INTO %s(TimeStamp, DiscountRate, Threshold, NumStates, NumLinks, LastState, LastAction) VALUES(datetime(\'now\'), %f, %f, %" UINT32_FMT ", %" UINT32_FMT ", %" ST_FMT ", %" ACT_FMT ")",
 			db_t_meminfo.c_str(), memif->discount_rate, memif->threshold,
 			memif->state_num, memif->lk_num, memif->last_st, memif->last_act);    // build insert query
-
-	printf("query string: %s\n", query_str);
 
 	sqlite3_stmt *stmt;
 	int ret = sqlite3_prepare_v2(db_con, query_str, -1, &stmt, 0);
@@ -387,7 +385,7 @@ void Sqlite::updateMemoryInfo(const struct Memory_Info *memif)
 	char query_str[1024];
 
 	sprintf(query_str,
-			"UPDATE %s SET TimeStamp=datetime(\'now\'), DiscountRate=%f, Threshold=%f, NumStates=%ld, NumLinks=%ld, LastState=%" ST_FMT ", LastAction=%" ACT_FMT " ORDER BY TimeStamp DESC LIMIT 1",
+			"UPDATE %s SET TimeStamp=datetime(\'now\'), DiscountRate=%f, Threshold=%f, NumStates=%" UINT32_FMT ", NumLinks=%" UINT32_FMT ", LastState=%" ST_FMT ", LastAction=%" ACT_FMT " ORDER BY TimeStamp DESC LIMIT 1",
 			db_t_meminfo.c_str(), memif->discount_rate, memif->threshold,
 			memif->state_num, memif->lk_num, memif->last_st, memif->last_act);
 

@@ -55,8 +55,8 @@ void PrintViewer::view(const char *file)
 				"=================== Memory Information ====================\n");
 		fprintf(output, "discount rate: \t%.2f\n", memif->discount_rate);
 		fprintf(output, "threshold: \t%.2f\n", memif->threshold);
-		fprintf(output, "number of states: \t%ld\n", memif->state_num);
-		fprintf(output, "number of links: \t%ld\n", memif->lk_num);
+		fprintf(output, "number of states: \t%" UINT32_FMT "\n", memif->state_num);
+		fprintf(output, "number of links: \t%" UINT32_FMT "\n", memif->lk_num);
 		fprintf(output, "last state: \t%" ST_FMT "\n", memif->last_st);
 		fprintf(output, "last action: \t%" ACT_FMT "\n", memif->last_act);
 		free(memif);    // free it, the memory struct are not a substaintial struct for running, it's just used to store meta-memory information
@@ -100,7 +100,7 @@ void PrintViewer::printStateInfo(const struct State_Info_Header *sthd,
 	fprintf(output, "++++++++++++++++++++++++ State: %" ST_FMT " ++++++++++++++++++++++++++\n",
 			sthd->st);
 	fprintf(output,
-			"Original payoff: %.2f,\t Payoff: %.2f,\t Count: %ld, ActNum: %ld\n",
+			"Original payoff: %.2f,\t Payoff: %.2f,\t Count: %" UINT32_FMT ", ActNum: %" UINT32_FMT "\n",
 			sthd->original_payoff, sthd->payoff, sthd->count, sthd->act_num);
 
 	fprintf(output,
@@ -116,7 +116,7 @@ void PrintViewer::printStateInfo(const struct State_Info_Header *sthd,
 		eaif = sparser.firstEat();
 		while (eaif != NULL)
 		{
-			fprintf(output, "\t  .|+++ %" ACT_FMT " +++ %" ACT_FMT " ++> %" ST_FMT " \t Count: %ld\n", athd->act,
+			fprintf(output, "\t  .|+++ %" ACT_FMT " +++ %" ACT_FMT " ++> %" ST_FMT " \t Count: %" UINT32_FMT "\n", athd->act,
 					eaif->eat, eaif->nst, eaif->count);
 
 			eaif = sparser.nextEat();

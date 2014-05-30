@@ -317,7 +317,7 @@ void Mysql::addStateInfo(const struct State_Info_Header *sthd)
 	char *stmt_buf = (char *) malloc(512 + 2 * act_len + 3);
 	char *ptr;
 	sprintf(stmt_buf,
-			"INSERT INTO %s(State, OriPayoff, Payoff, Count, ActNum, Size, ActInfos) VALUES(%" ST_FMT ", %f, %f, %ld, %ld, %d,'",
+			"INSERT INTO %s(State, OriPayoff, Payoff, Count, ActNum, Size, ActInfos) VALUES(%" ST_FMT ", %f, %f, %" UINT32_FMT ", %" UINT32_FMT ", %" UINT16_FMT ",'",
 			db_t_stateinfo.c_str(), sthd->st, sthd->original_payoff,
 			sthd->payoff, sthd->count, sthd->act_num, sthd->size);
 	ptr = stmt_buf + strlen(stmt_buf);
@@ -353,7 +353,7 @@ void Mysql::updateStateInfo(const struct State_Info_Header *sthd)
 	char *ptr;
 
 	sprintf(stmt_buf,
-			"UPDATE %s SET OriPayoff=%f, Payoff=%f, Count=%ld, ActNum=%ld, Size=%d, ActInfos='",
+			"UPDATE %s SET OriPayoff=%f, Payoff=%f, Count=%" UINT32_FMT ", ActNum=%" UINT32_FMT ", Size=%" UINT16_FMT ", ActInfos='",
 			db_t_stateinfo.c_str(), sthd->original_payoff, sthd->payoff,
 			sthd->count, sthd->act_num, sthd->size);
 	ptr = stmt_buf + strlen(stmt_buf);
@@ -407,7 +407,7 @@ void Mysql::addMemoryInfo(const struct Memory_Info *memif)
 	char query_str[1024];
 
 	sprintf(query_str,
-			"INSERT INTO %s(TimeStamp, DiscountRate, Threshold, NumStates, NumLinks, LastState, LastAction) VALUES(NULL, %f, %f, %ld, %ld, %" ST_FMT ", %" ACT_FMT ")",
+			"INSERT INTO %s(TimeStamp, DiscountRate, Threshold, NumStates, NumLinks, LastState, LastAction) VALUES(NULL, %f, %f, %" UINT32_FMT ", %" UINT32_FMT ", %" ST_FMT ", %" ACT_FMT ")",
 			db_t_meminfo.c_str(), memif->discount_rate, memif->threshold,
 			memif->state_num, memif->lk_num, memif->last_st, memif->last_act);    // build insert query
 
@@ -429,7 +429,7 @@ void Mysql::updateMemoryInfo(const struct Memory_Info *memif)
 	char query_str[1024];
 
 	sprintf(query_str,
-			"UPDATE %s SET TimeStamp=NULL, DiscountRate=%f, Threshold=%f, NumStates=%ld, NumLinks=%ld, LastState=%" ST_FMT ", LastAction=%" ACT_FMT " ORDER BY TimeStamp DESC LIMIT 1",
+			"UPDATE %s SET TimeStamp=NULL, DiscountRate=%f, Threshold=%f, NumStates=%" UINT32_FMT ", NumLinks=%" UINT32_FMT ", LastState=%" ST_FMT ", LastAction=%" ACT_FMT " ORDER BY TimeStamp DESC LIMIT 1",
 			db_t_meminfo.c_str(), memif->discount_rate, memif->threshold,
 			memif->state_num, memif->lk_num, memif->last_st, memif->last_act);
 
