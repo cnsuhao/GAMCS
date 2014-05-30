@@ -40,7 +40,7 @@ class Mysql: public Storage
         void setDBArgs(std::string server, std::string user,
                 std::string password, std::string database);
 
-        int connect();
+        int open(Flag flag);
         void close();
 
         Agent::State firstState() const;

@@ -33,12 +33,12 @@ class PrintViewer: public MemoryViewer
         PrintViewer(Storage *storage = NULL);
         virtual ~PrintViewer();
 
-        void show();
-        void showState(Agent::State state);
+        void view(const char *file = NULL);
+        void viewState(Agent::State state, const char *file = NULL);
 
     private:
         void printStateInfo(
-                const struct State_Info_Header *state_information_header) const;
+                const struct State_Info_Header *state_information_header, FILE *output) const;
 };
 
 }    // namespace gamcs

@@ -57,7 +57,7 @@ int Avatar::step()
  * \brief Step avatar in a continuous loop.
  * \param sps steps/loops per second, < 0 if not control
  */
-void Avatar::stepLoop(int sps)
+void Avatar::loop(int sps)
 {
     // check if agent is connected
     if (myagent == NULL)
