@@ -29,22 +29,22 @@ class Storage;
  */
 class MemoryViewer
 {
-public:
-	MemoryViewer(Storage *sg = NULL) :
-			storage(sg)
-	{
-	}
+    public:
+        MemoryViewer(Storage *sg = NULL) :
+                storage(sg)
+        {
+        }
 
-	virtual ~MemoryViewer()
-	{
-	}
+        virtual ~MemoryViewer()
+        {
+        }
 
-	void attachStorage(Storage *specific_storage); /**< set storage in which memory is stored */
-	virtual void show() = 0; /**< show the whole memory */
-	virtual void showState(Agent::State state) = 0; /**< show a specified state */
+        void attachStorage(Storage *specific_storage); /**< set storage in which memory is stored */
+        virtual void view(const char *file = NULL) = 0; /**< show the whole memory */
+        virtual void viewState(Agent::State state, const char *file = NULL) = 0; /**< show a specified state */
 
-protected:
-	Storage *storage;
+    protected:
+        Storage *storage;
 };
 
 /** \brief Attach memory viewer to a storage, so that it can visualizing the storage.
@@ -53,7 +53,7 @@ protected:
  */
 inline void MemoryViewer::attachStorage(Storage *sg)
 {
-	storage = sg;
+    storage = sg;
 }
 
 }    // namespace gamcs

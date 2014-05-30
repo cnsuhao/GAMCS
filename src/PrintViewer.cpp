@@ -10,6 +10,7 @@
 //
 // -----------------------------------------------------------------------------
 
+#include <stdio.h>
 #include "gamcs/PrintViewer.h"
 #include "gamcs/Storage.h"
 #include "gamcs/StateInfoParser.h"
@@ -18,7 +19,7 @@ namespace gamcs
 {
 
 PrintViewer::PrintViewer(Storage *sg) :
-        MemoryViewer(sg)
+		MemoryViewer(sg)
 {
 }
 
@@ -29,114 +30,134 @@ PrintViewer::~PrintViewer()
 /** \brief Show the whole storage in pretty print style
  *
  */
-void PrintViewer::show()
+void PrintViewer::view(const char *file)
 {
-    int re = storage->connect();
-    if (re != 0)    // connect failed
-    {
-        WARNNING("PrintViewer Show(): connect to storage failed!\n");
-        return;
-    }
+	int re = storage->open(Storage::O_READ);
+	if (re != 0)    // connect failed
+	{
+		WARNNING("PrintViewer Show(): open storage failed!\n");
+		return;
+	}
 
-    // print memory info
-    struct Memory_Info *memif = storage->getMemoryInfo();
-    if (memif != NULL)
-    {
-        printf("\n");
-        printf("=================== Memory Information ====================\n");
-        printf("discount rate: \t%.2f\n", memif->discount_rate);
-        printf("threshold: \t%.2f\n", memif->threshold);
-        printf("number of states: \t%ld\n", memif->state_num);
-        printf("number of links: \t%ld\n", memif->lk_num);
-        printf("last state: \t%" ST_FMT "\n", memif->last_st);
-        printf("last action: \t%" ACT_FMT "\n", memif->last_act);
-        free(memif);    // free it, the memory struct are not a substaintial struct for running, it's just used to store meta-memory information
-        printf(
-                "===========================================================\n\n");
-    }
-    else
-    {
-        printf("Memory not found in storage!\n");
-        storage->close();
-        return;
-    }
+	FILE *output = NULL;
+	if (file == NULL)    // output to standard output
+		output = stdout;
+	else
+		// output to the requested file
+		output = fopen(file, "w");
 
-    // print states info
-    Agent::State st = storage->firstState();
-    while (st != Agent::INVALID_STATE)    // get state value
-    {
-        struct State_Info_Header *stif = storage->getStateInfo(st);
-        if (stif != NULL)
-        {
-            printStateInfo(stif);
-            free(stif);
-            st = storage->nextState();
-        }
-        else
-            ERROR("Show(): state: %" ST_FMT " information is NULL!\n", st);
-    }
-    storage->close();
+	// print memory info
+	struct Memory_Info *memif = storage->getMemoryInfo();
+	if (memif != NULL)
+	{
+		fprintf(output, "\n");
+		fprintf(output,
+				"=================== Memory Information ====================\n");
+		fprintf(output, "discount rate: \t%.2f\n", memif->discount_rate);
+		fprintf(output, "threshold: \t%.2f\n", memif->threshold);
+		fprintf(output, "number of states: \t%" UINT32_FMT "\n", memif->state_num);
+		fprintf(output, "number of links: \t%" UINT32_FMT "\n", memif->lk_num);
+		fprintf(output, "last state: \t%" ST_FMT "\n", memif->last_st);
+		fprintf(output, "last action: \t%" ACT_FMT "\n", memif->last_act);
+		free(memif);    // free it, the memory struct are not a substaintial struct for running, it's just used to store meta-memory information
+		fprintf(output,
+				"===========================================================\n\n");
+	}
+	else
+	{
+		fprintf(output, "Memory not found in storage!\n");
+		storage->close();
+		return;
+	}
+
+	// print states info
+	Agent::State st = storage->firstState();
+	while (st != Agent::INVALID_STATE)    // get state value
+	{
+		struct State_Info_Header *stif = storage->getStateInfo(st);
+		if (stif != NULL)
+		{
+			printStateInfo(stif, output);
+			free(stif);
+			st = storage->nextState();
+		}
+		else
+			ERROR("Show(): state: %" ST_FMT " information is NULL!\n", st);
+	}
+	storage->close();
 }
 
 /**
  * \brief Pretty print State information
  * \param specified State information header
  */
-void PrintViewer::printStateInfo(const struct State_Info_Header *sthd) const
+void PrintViewer::printStateInfo(const struct State_Info_Header *sthd,
+		FILE *output) const
 {
-    if (sthd == NULL) return;
+	if (sthd == NULL)
+		return;
 
-    printf("++++++++++++++++++++++++ State: %" ST_FMT " ++++++++++++++++++++++++++\n",
-            sthd->st);
-    printf("Original payoff: %.2f,\t Payoff: %.2f,\t Count: %ld, ActNum: %ld\n",
-            sthd->original_payoff, sthd->payoff, sthd->count, sthd->act_num);
+	fprintf(output, "++++++++++++++++++++++++ State: %" ST_FMT " ++++++++++++++++++++++++++\n",
+			sthd->st);
+	fprintf(output,
+			"Original payoff: %.2f,\t Payoff: %.2f,\t Count: %" UINT32_FMT ", ActNum: %" UINT32_FMT "\n",
+			sthd->original_payoff, sthd->payoff, sthd->count, sthd->act_num);
 
-    printf("------------------------------------------------------------\n");
+	fprintf(output,
+			"------------------------------------------------------------\n");
 
-    StateInfoParser sparser(sthd);
-    Action_Info_Header *athd = NULL;
-    EnvAction_Info *eaif = NULL;
+	StateInfoParser sparser(sthd);
+	Action_Info_Header *athd = NULL;
+	EnvAction_Info *eaif = NULL;
 
-    athd = sparser.firstAct();
-    while (athd != NULL)
-    {
-        eaif = sparser.firstEat();
-        while (eaif != NULL)
-        {
-            printf("\t  .|+++ %" ACT_FMT " +++ %" ACT_FMT " ++> %" ST_FMT " \t Count: %ld\n", athd->act,
-                    eaif->eat, eaif->nst, eaif->count);
+	athd = sparser.firstAct();
+	while (athd != NULL)
+	{
+		eaif = sparser.firstEat();
+		while (eaif != NULL)
+		{
+			fprintf(output, "\t  .|+++ %" ACT_FMT " +++ %" ACT_FMT " ++> %" ST_FMT " \t Count: %" UINT32_FMT "\n", athd->act,
+					eaif->eat, eaif->nst, eaif->count);
 
-            eaif = sparser.nextEat();
-        }
+			eaif = sparser.nextEat();
+		}
 
-        athd = sparser.nextAct();
-    }
-    printf("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n");
+		athd = sparser.nextAct();
+	}
+	fprintf(output,
+			"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n");
 
-    return;
+	return;
 }
 
 /** \brief Show a specified state in pretty print style
  * \param st the state to be viewed
  */
-void PrintViewer::showState(Agent::State st)
+void PrintViewer::viewState(Agent::State st, const char *file)
 {
-    int re = storage->connect();
-    if (re != 0)    // connect failed
-    {
-        WARNNING("PrintViewer ShowState(): connect to storage failed!\n");
-        return;
-    }
+	int re = storage->open(Storage::O_READ);
+	if (re != 0)    // connect failed
+	{
+		WARNNING("PrintViewer ShowState(): open storage failed!\n");
+		return;
+	}
 
-    struct State_Info_Header *stif = storage->getStateInfo(st);
-    if (stif != NULL)
-    {
-        printStateInfo(stif);
-        free(stif);
-    }
-    else
-    {
-    printf("state %" ST_FMT " not found in memory!\n", st);
+	FILE *output = NULL;
+	if (file == NULL)    // output to standard output
+		output = stdout;
+	else
+		// output to the requested file
+		output = fopen(file, "w");
+
+	struct State_Info_Header *stif = storage->getStateInfo(st);
+	if (stif != NULL)
+	{
+		printStateInfo(stif, output);
+		free(stif);
+	}
+	else
+	{
+	fprintf(output, "state %" ST_FMT " not found in memory!\n", st);
 }
 storage->close();
 }

@@ -1,29 +1,28 @@
 #include "monomer.h"
 #include "gamcs/CSOSAgent.h"
-#ifdef _MYSQL_FOUND_
 #include "gamcs/Mysql.h"
-#endif
 #include "gamcs/CDotViewer.h"
-
+#include "gamcs/PrintViewer.h"
+#include "gamcs/Sqlite.h"
 
 int main(void)
 {
-    CSOSAgent ma(1, 0.9, 0.01);
-#ifdef _MYSQL_FOUND_
-    Mysql mysql("localhost", "root", "huangk", "Monomer");
-    ma.loadMemoryFromStorage(&mysql);
-#endif
+	CSOSAgent ma(1, 0.9, 0.01);
+	Mysql db("localhost", "root", "huangk", "Monomer");
+//	Sqlite db("./test.db");
+	ma.loadMemoryFromStorage(&db);
 
-    Monomer mono;
-    mono.connectAgent(&ma);
-    mono.stepLoop();
+	Monomer mono;
+	mono.connectAgent(&ma);
+	mono.loop();
 
-    //ma.deleteState(9);
-    CDotViewer dotv;
-    dotv.attachStorage(&ma);
-    dotv.show();
+	//ma.deleteState(9);
+	PrintViewer dotv;
+	dotv.attachStorage(&ma);
+	dotv.view();
 
-#ifdef _MYSQL_FOUND_
-    ma.dumpMemoryToStorage(&mysql);
-#endif
+	ma.dumpMemoryToStorage(&db);
+//#ifdef _MYSQL_FOUND_
+//	ma.dumpMemoryToStorage(&mysql);
+//#endif
 }
