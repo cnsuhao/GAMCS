@@ -389,8 +389,6 @@ void Sqlite::updateMemoryInfo(const struct Memory_Info *memif)
 			db_t_meminfo.c_str(), memif->discount_rate, memif->threshold,
 			memif->state_num, memif->lk_num, memif->last_st, memif->last_act);
 
-	printf("query string: %s\n", query_str);
-
 	sqlite3_stmt *stmt;
 	int ret = sqlite3_prepare_v2(db_con, query_str, -1, &stmt, 0);
 
@@ -431,7 +429,7 @@ struct Memory_Info *Sqlite::getMemoryInfo() const
 		if (sqlite3_step(stmt) == SQLITE_ROW)
 		{
 			memif = (struct Memory_Info *) malloc(sizeof(struct Memory_Info));
-			memif->discount_rate = sqlite3_column_double(stmt, 2);
+			memif->discount_rate = sqlite3_column_double(stmt, 2);  // row 1 is Id
 			memif->threshold = sqlite3_column_double(stmt, 3);
 			memif->state_num = sqlite3_column_int(stmt, 4);
 			memif->lk_num = sqlite3_column_int(stmt, 5);
