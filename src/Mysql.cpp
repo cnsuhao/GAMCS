@@ -122,7 +122,7 @@ int Mysql::open(Flag flag)
 		}
 
 		sprintf(tb_string,
-				"CREATE TABLE IF NOT EXISTS %s.%s(TimeStamp TIMESTAMP PRIMARY KEY, DiscountRate FLOAT, Threshold FLOAT, NumStates BIGINT, NumLinks BIGINT, LastState BIGINT, LastAction BIGINT) \
+				"CREATE TABLE IF NOT EXISTS %s.%s(Id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, TimeStamp TIMESTAMP, DiscountRate FLOAT, Threshold FLOAT, NumStates BIGINT, NumLinks BIGINT, LastState BIGINT, LastAction BIGINT) \
             ENGINE MyISAM ",
 				db_name.c_str(), db_t_meminfo.c_str());
 		if (mysql_query(db_con, tb_string))
@@ -429,7 +429,7 @@ void Mysql::updateMemoryInfo(const struct Memory_Info *memif)
 	char query_str[1024];
 
 	sprintf(query_str,
-			"UPDATE %s SET TimeStamp=NULL, DiscountRate=%f, Threshold=%f, NumStates=%" UINT32_FMT ", NumLinks=%" UINT32_FMT ", LastState=%" ST_FMT ", LastAction=%" ACT_FMT " ORDER BY TimeStamp DESC LIMIT 1",
+			"UPDATE %s SET TimeStamp=NULL, DiscountRate=%f, Threshold=%f, NumStates=%" UINT32_FMT ", NumLinks=%" UINT32_FMT ", LastState=%" ST_FMT ", LastAction=%" ACT_FMT " ORDER BY Id DESC LIMIT 1",
 			db_t_meminfo.c_str(), memif->discount_rate, memif->threshold,
 			memif->state_num, memif->lk_num, memif->last_st, memif->last_act);
 
@@ -451,7 +451,7 @@ void Mysql::updateMemoryInfo(const struct Memory_Info *memif)
 struct Memory_Info *Mysql::getMemoryInfo() const
 {
 	char query_str[256];
-	sprintf(query_str, "SELECT * FROM %s ORDER BY TimeStamp DESC LIMIT 1",
+	sprintf(query_str, "SELECT * FROM %s ORDER BY Id DESC LIMIT 1",
 			db_t_meminfo.c_str());    // select the lastest one
 
 	if (mysql_query(db_con, query_str))
@@ -482,13 +482,13 @@ struct Memory_Info *Mysql::getMemoryInfo() const
 			sizeof(struct Memory_Info));
 	dbgmoreprt("Mysql FetchMemoryInfo()", "%s, Memory TimeStamp: %s\n",
 			db_name.c_str(), row[0]);
-// fill in the memory struct
-	memif->discount_rate = atof(row[1]);
-	memif->threshold = atof(row[2]);
-	memif->state_num = atol(row[3]);
-	memif->lk_num = atol(row[4]);
-	memif->last_st = atol(row[5]);
-	memif->last_act = atol(row[6]);
+// fill in the memory struct, row[1] is Id
+	memif->discount_rate = atof(row[2]);
+	memif->threshold = atof(row[3]);
+	memif->state_num = atol(row[4]);
+	memif->lk_num = atol(row[5]);
+	memif->last_st = atol(row[6]);
+	memif->last_act = atol(row[7]);
 
 	mysql_free_result(result);    // free result
 
