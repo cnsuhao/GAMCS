@@ -94,7 +94,7 @@ int Sqlite::open(Flag flag)
 
 		// create memory info table
 		sprintf(tb_string,
-				"CREATE TABLE IF NOT EXISTS %s(TimeStamp DATETIME DEFAULT CURRENT_TIMESTAMP, DiscountRate REAL, Threshold REAL, NumStates INTEGER, NumLinks INTEGER, LastState INTEGER, LastAction INTEGER)",
+				"CREATE TABLE IF NOT EXISTS %s(Id INTEGER PRIMARY KEY AUTOINCREMENT, TimeStamp DATETIME DEFAULT CURRENT_TIMESTAMP, DiscountRate REAL, Threshold REAL, NumStates INTEGER, NumLinks INTEGER, LastState INTEGER, LastAction INTEGER)",
 				db_t_meminfo.c_str());
 		ret = sqlite3_exec(db_con, tb_string, NULL, 0, &err_msg);
 		if (ret != SQLITE_OK)
@@ -385,7 +385,7 @@ void Sqlite::updateMemoryInfo(const struct Memory_Info *memif)
 	char query_str[1024];
 
 	sprintf(query_str,
-			"UPDATE %s SET TimeStamp=datetime(\'now\'), DiscountRate=%f, Threshold=%f, NumStates=%" UINT32_FMT ", NumLinks=%" UINT32_FMT ", LastState=%" ST_FMT ", LastAction=%" ACT_FMT " ORDER BY TimeStamp DESC LIMIT 1",
+			"UPDATE %s SET TimeStamp=datetime(\'now\'), DiscountRate=%f, Threshold=%f, NumStates=%" UINT32_FMT ", NumLinks=%" UINT32_FMT ", LastState=%" ST_FMT ", LastAction=%" ACT_FMT " ORDER BY Id DESC LIMIT 1",
 			db_t_meminfo.c_str(), memif->discount_rate, memif->threshold,
 			memif->state_num, memif->lk_num, memif->last_st, memif->last_act);
 
@@ -416,7 +416,7 @@ struct Memory_Info *Sqlite::getMemoryInfo() const
 	struct Memory_Info *memif = NULL;
 
 	char query_str[256];
-	sprintf(query_str, "SELECT * FROM %s ORDER BY TimeStamp DESC LIMIT 1",
+	sprintf(query_str, "SELECT * FROM %s ORDER BY Id DESC LIMIT 1",
 			db_t_meminfo.c_str());    // select the lastest one
 
 	sqlite3_stmt *stmt;
@@ -431,12 +431,12 @@ struct Memory_Info *Sqlite::getMemoryInfo() const
 		if (sqlite3_step(stmt) == SQLITE_ROW)
 		{
 			memif = (struct Memory_Info *) malloc(sizeof(struct Memory_Info));
-			memif->discount_rate = sqlite3_column_double(stmt, 1);
-			memif->threshold = sqlite3_column_double(stmt, 2);
-			memif->state_num = sqlite3_column_int(stmt, 3);
-			memif->lk_num = sqlite3_column_int(stmt, 4);
-			memif->last_st = sqlite3_column_int(stmt, 5);
-			memif->last_act = sqlite3_column_int(stmt, 6);
+			memif->discount_rate = sqlite3_column_double(stmt, 2);
+			memif->threshold = sqlite3_column_double(stmt, 3);
+			memif->state_num = sqlite3_column_int(stmt, 4);
+			memif->lk_num = sqlite3_column_int(stmt, 5);
+			memif->last_st = sqlite3_column_int(stmt, 6);
+			memif->last_act = sqlite3_column_int(stmt, 7);
 		}
 	}
 
