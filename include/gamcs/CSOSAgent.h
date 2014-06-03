@@ -44,6 +44,7 @@ class CSOSAgent: public OSAgent
                 const struct State_Info_Header * state_information_header);
         void updateStateInfo(
                 const struct State_Info_Header *state_information_header);
+        DEPRECATED("Be careful when used with a storage, currently states will not be deleted from storage, and this will lead to the storage inconsistent!\n")
         void deleteState(State state);
         void updatePayoff(State state);
 
