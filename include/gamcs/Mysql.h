@@ -52,6 +52,7 @@ class Mysql: public Storage
                 const struct State_Info_Header *state_information_header);
         void updateStateInfo(
                 const struct State_Info_Header *state_information_header);
+        DEPRECATED("This function is not completely supported yet and will easily lead to storage inconsistent!\n")
         void deleteState(Agent::State state);
 
         struct Memory_Info *getMemoryInfo() const;

@@ -384,9 +384,6 @@ void Mysql::updateStateInfo(const struct State_Info_Header *sthd)
  */
 void Mysql::deleteState(Agent::State st)
 {
-	WARNNING(
-			"DeleteState() is not completely implemented yet, it's buggy and will not work as expected, DON'T use it!\n");
-
 	char query_string[256];
 	sprintf(query_string, "DELETE  FROM %s WHERE State=%" ST_FMT,
 			db_t_stateinfo.c_str(), st);    // build delete query
