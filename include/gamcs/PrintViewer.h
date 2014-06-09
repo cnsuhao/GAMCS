@@ -25,20 +25,21 @@ namespace gamcs
 class Storage;
 
 /**
- * Visualizing storage in print format.
+ * View memory in print style.
  */
 class PrintViewer: public MemoryViewer
 {
-    public:
-        PrintViewer(Storage *storage = NULL);
-        virtual ~PrintViewer();
+	public:
+		PrintViewer(Storage *storage = NULL);
+		virtual ~PrintViewer();
 
-        void view(const char *file = NULL);
-        void viewState(Agent::State state, const char *file = NULL);
+		void view(const char *file = NULL);
+		void viewState(Agent::State state, const char *file = NULL);
 
-    private:
-        void printStateInfo(
-                const struct State_Info_Header *state_information_header, FILE *output) const;
+	private:
+		void printStateInfo(
+				const struct State_Info_Header *state_information_header,
+				FILE *output) const;
 };
 
 }    // namespace gamcs

@@ -33,11 +33,11 @@ Mysql::~Mysql()
 }
 
 /**
- * \brief Set arguments for connecting database.
- * \param srv database server location
- * \param usr username of database
- * \param passwd password of username
- * \param name of the database
+ * @brief Set mysql arguments
+ * @param srv the mysql server address
+ * @param usr the mysql user name
+ * @param passwd the mysql password
+ * @param db the database name
  */
 void Mysql::setDBArgs(std::string srv, std::string usr, std::string passwd,
 		std::string db)
@@ -50,8 +50,9 @@ void Mysql::setDBArgs(std::string srv, std::string usr, std::string passwd,
 }
 
 /**
- * \brief Connect to database.
- * \return -1 for error, 0 for success
+ * @brief Open the storage for read or write
+ * @param flag the open flag
+ * @return 0 on successfully opened, or -1 if error occurs
  */
 int Mysql::open(Flag flag)
 {
@@ -142,7 +143,7 @@ int Mysql::open(Flag flag)
 }
 
 /**
- * \brief Close database.
+ * @brief Close the storage
  */
 void Mysql::close()
 {
@@ -156,12 +157,20 @@ void Mysql::close()
 	}
 }
 
+/**
+ * @brief Get the first state in storage
+ * @return the first state
+ */
 Agent::State Mysql::firstState() const
 {
 	current_index = 0;
 	return stateByIndex(current_index);
 }
 
+/**
+ * @brief Get the next state in storage
+ * @return the next state
+ */
 Agent::State Mysql::nextState() const
 {
 	current_index++;
@@ -169,9 +178,9 @@ Agent::State Mysql::nextState() const
 }
 
 /**
- * \brief Get state value from database by specified index.
- * \param index index
- * \return state value of that index, INVALID_STATE for error or not found
+ * @brief Get a state by its index in storage
+ * @param index the index in storage
+ * @return the state at that index, or INVALID_STATE if out of boundary
  */
 Agent::State Mysql::stateByIndex(unsigned long index) const
 {
@@ -209,9 +218,9 @@ Agent::State Mysql::stateByIndex(unsigned long index) const
 }
 
 /**
- * \brief Fetch state information from database.
- * \param st state value
- * \return fetched state information, NULL if error
+ * @brief Get information of a specified state from storage
+ * @param st the requested state
+ * @return address point of the state information
  */
 struct State_Info_Header *Mysql::getStateInfo(Agent::State st) const
 {
@@ -276,9 +285,9 @@ struct State_Info_Header *Mysql::getStateInfo(Agent::State st) const
 }
 
 /**
- * \brief Search for specified state in database.
- * \param state value
- * \return 1 if found, 0 if not
+ * @brief Check if a state exists in storage
+ * @param st the request state
+ * @return true|false
  */
 bool Mysql::hasState(Agent::State st) const
 {
@@ -305,10 +314,10 @@ bool Mysql::hasState(Agent::State st) const
 }
 
 /**
- * \brief Add state information to database.
+ * @brief Add a state to storage from the given information.
  * When you add new states or links to the memory, make sure to update the memory information correspondingly.
- * Or the memory will stay unconsistent, and the loading will fail.
- * \param stif header pointed to state information
+ * Or the memory will stay inconsistent, and the loading will fail.
+ * @param sthd the state information
  */
 void Mysql::addStateInfo(const struct State_Info_Header *sthd)
 {
@@ -340,10 +349,10 @@ void Mysql::addStateInfo(const struct State_Info_Header *sthd)
 }
 
 /**
- * \brief Update information of a state already exists in database.
+ * @brief Update a state in storage from the given information
  * When you add new states or links to the memory, make sure to update the memory information correspondingly.
  * Or the memory will stay unconsistent, and the loading will fail.
- * \param stif header pointed to the modified state information
+ * @param sthd the state information
  */
 void Mysql::updateStateInfo(const struct State_Info_Header *sthd)
 {
@@ -378,8 +387,8 @@ void Mysql::updateStateInfo(const struct State_Info_Header *sthd)
 }
 
 /**
- * \brief Delete a state from database by its value
- * \param st state value to be delete
+ * @brief Delete a state from storage
+ * @param st the state to be deleted
  * FIXME: need to handle the links with other states!
  */
 void Mysql::deleteState(Agent::State st)
@@ -397,7 +406,8 @@ void Mysql::deleteState(Agent::State st)
 }
 
 /**
- * \brief Add memory statistics to database.
+ * @brief Add the memory information to storage
+ * @param memif the memory information
  */
 void Mysql::addMemoryInfo(const struct Memory_Info *memif)
 {
@@ -418,8 +428,8 @@ void Mysql::addMemoryInfo(const struct Memory_Info *memif)
 }
 
 /**
- * Update the lastest memory info.
- * @param memif
+ * @brief Update the memory information in storage
+ * @param memif the memory information
  */
 void Mysql::updateMemoryInfo(const struct Memory_Info *memif)
 {
@@ -442,8 +452,8 @@ void Mysql::updateMemoryInfo(const struct Memory_Info *memif)
 }
 
 /**
- * \brief Fetch memory statistics from database.
- * \return memory info struct, NULL if error
+ * @brief Get the memory information from storage
+ * @return address point of the memory information
  */
 struct Memory_Info *Mysql::getMemoryInfo() const
 {
@@ -490,6 +500,15 @@ struct Memory_Info *Mysql::getMemoryInfo() const
 	mysql_free_result(result);    // free result
 
 	return memif;
+}
+
+/**
+ * @brief Get the memory name
+ * @return the memory name
+ */
+std::string Mysql::getMemoryName() const
+{
+	return db_name;
 }
 
 }    // namespace gamcs

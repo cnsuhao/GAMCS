@@ -22,21 +22,22 @@ namespace gamcs
 {
 
 /**
- * Time-Sequential Generalized Input/Output Model
+ * Time-Sequential Generalized Input/Output Model.
+ * TSGIOM is a kind of GIOM which has the capability to record time sequence.
  */
 class TSGIOM: public GIOM
 {
-    public:
-        TSGIOM();
-        virtual ~TSGIOM();
-        virtual void update();    // reimplement update function, add time sequence
+	public:
+		TSGIOM();
+		virtual ~TSGIOM();
+		virtual void update();
 
-    protected:
-        virtual OSpace constrain(Input input, OSpace &available_outputs) const;    // reimplement constrain function
-        /* bring in the time sequence feature */
-        Input pre_in; /**< previous input */
-        Output pre_out; /**< previous output */
-    private:
+	protected:
+		virtual OSpace constrain(Input input, OSpace &available_outputs) const;
+		/* bring in the time sequence feature */
+		Input pre_in; /**< the recorded previous input */
+		Output pre_out; /**< the recorded previous output */
+	private:
 };
 
 }    // namespace gamcs

@@ -31,8 +31,9 @@ DotViewer::~DotViewer()
 {
 }
 
-/** \brief Show the whole storage in graphviz dot style
- *
+/**
+ * @brief View the whole memory in graphviz dot style
+ * @param file where to output the view, NULL for standard output
  */
 void DotViewer::view(const char *file)
 {
@@ -97,6 +98,11 @@ void DotViewer::view(const char *file)
 	storage->close();
 }
 
+/**
+ * @brief View a state information in dot style
+ * @param sthd the state information
+ * @param output stream to output the view, NULL for standard output
+ */
 void DotViewer::dotStateInfo(const struct State_Info_Header *sthd,
 		FILE *output) const
 {
@@ -198,6 +204,12 @@ while (achd != NULL)
 }
 }
 
+/**
+ * @brief Convert from a integer value to string.
+ * This is due to graphviz dot doesn't support minus symbol in node names
+ * @param value the integer value
+ * @return the converted string
+ */
 const std::string DotViewer::int2String(gamcs_int value) const
 {
 char tmp[28];
@@ -215,9 +227,10 @@ else    // eat < 0, since dot doesn't support minus sign, so we convert '-' to '
 }
 }
 
-/** \brief Show a specified state in graphviz dot style
- * \param st the state to be viewed
- *
+/**
+ * @brief View a specified state in graphviz dot style
+ * @param st the state to be viewed
+ * @param file where to output the view, NULL for standard output
  */
 void DotViewer::viewState(Agent::State st, const char *file)
 {

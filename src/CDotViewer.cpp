@@ -33,6 +33,10 @@ CDotViewer::~CDotViewer()
 {
 }
 
+/**
+ * @brief View the whole memory in graphviz dot style cleanly
+ * @param file where to output the view, NULL for standard output
+ */
 void CDotViewer::view(const char *file)
 {
 	int re = storage->open(Storage::O_READ);
@@ -96,6 +100,11 @@ void CDotViewer::view(const char *file)
 	storage->close();
 }
 
+/**
+ * @brief View a state information in dot style cleanly
+ * @param sthd the state information
+ * @param output the stream to output the view, NULL for standard output
+ */
 void CDotViewer::cleanDotStateInfo(const struct State_Info_Header *sthd,
 		FILE *output) const
 {

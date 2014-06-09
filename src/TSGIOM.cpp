@@ -10,7 +10,6 @@
 //
 // -----------------------------------------------------------------------------
 
-
 #include "gamcs/TSGIOM.h"
 #include "gamcs/debug.h"
 
@@ -18,7 +17,7 @@ namespace gamcs
 {
 
 TSGIOM::TSGIOM() :
-        pre_in(INVALID_INPUT), pre_out(INVALID_OUTPUT)
+		pre_in(INVALID_INPUT), pre_out(INVALID_OUTPUT)
 {
 }
 
@@ -26,30 +25,30 @@ TSGIOM::~TSGIOM()
 {
 }
 
-/** \brief Update inner states
- *
+/**
+ * @brief Update the inner data of TSGIOM
  */
 void TSGIOM::update()
 {
-    /* update time sequence */
-    pre_in = cur_in;
-    pre_out = cur_out;
+	/* update time sequence */
+	pre_in = cur_in;
+	pre_out = cur_out;
 
-    GIOM::update();
-    return;
+	GIOM::update();    // as a GIOM, invoke the basic update function
+	return;
 }
 
-/** \brief Reimplement constrain function.
- * Return all possible outputs by default.
- * \param in input value
- * \param outlist all possible outputs for in
- * \return the output space after constraint
- *
+/**
+ * @brief Reimplement the constrain function.
+ * No constraint at not by default just like GIOM.
+ * @param input the input value
+ * @param outputs the output space for the input
+ * @return the sub output space after constraining
  */
-OSpace TSGIOM::constrain(Input in, OSpace &outlist) const
+OSpace TSGIOM::constrain(Input input, OSpace &outputs) const
 {
-    UNUSED(in);
-    return outlist;
+	UNUSED(input);
+	return outputs;
 }
 
 }    // namespace gamcs

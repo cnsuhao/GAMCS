@@ -22,45 +22,35 @@
 namespace gamcs
 {
 
-class DENet;
-
 /**
- * Avatar of an Agent.
- * An Avatar is an agent embodied in flesh.
+ * Avatar is an agent embodied in flesh.
+ *
+ * Each avatar has to be connected to an agent before activated, which is the soul and mind of that avatar.
  */
 class Avatar
 {
-    public:
-        Avatar(int id = 0);
-        virtual ~Avatar();
+	public:
+		Avatar(int id = 0);
+		virtual ~Avatar();
 
-        int step();
-        void loop(int steps_per_second = -1); /**< step avatar in a continuous loop */
-        void connectAgent(Agent *agent); /**< connect to an agent */
+		int step();
+		void loop(int steps_per_second = -1);
+		void connectAgent(Agent *agent);
 
-    protected:
-        int id; /**< avatar's id */
-        unsigned long ava_loop_count; /**< loop count */
+	protected:
+		int id; /**< avatar id */
+		unsigned long ava_loop_count; /**< loop count */
 
-        Agent *myagent; /**< connected agent */
+		Agent *myagent; /**< the connected agent */
 
-        virtual Agent::State percieveState() = 0; /**< get current state */
-        virtual void performAction(Agent::Action action) = 0; /**< perform an real action */
-        virtual OSpace availableActions(Agent::State state) = 0; /**< return a list of all action candidates of a Agent::State */
-        virtual float originalPayoff(Agent::State state); /**< original payoff of a state */
+		virtual Agent::State percieveState() = 0; /**< perceive the environment and get the current state */
+		virtual void performAction(Agent::Action action) = 0; /**< perform an specified action */
+		virtual OSpace availableActions(Agent::State state) = 0; /**< get the action space of a specified state */
+		virtual float originalPayoff(Agent::State state);
 
-    private:
-        unsigned long getCurrentTime(); /**< current time in millisecond */
+	private:
+		unsigned long getCurrentTime();
 };
-
-/**
- * \brief Connect to an agent.
- * \param agt agent to be connected
- */
-inline void Avatar::connectAgent(Agent *agt)
-{
-    myagent = agt;
-}
 
 }    // namespace gamcs
 #endif // AVATAR_H_
