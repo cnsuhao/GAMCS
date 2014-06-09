@@ -25,7 +25,7 @@ namespace gamcs
 class Storage;
 
 /**
- * Interface for visualizing storage.
+ * Interface for visualizing memory.
  */
 class MemoryViewer
 {
@@ -39,17 +39,17 @@ class MemoryViewer
         {
         }
 
-        void attachStorage(Storage *specific_storage); /**< set storage in which memory is stored */
+        void attachStorage(Storage *specific_storage); /**< set the storage in which memory is stored */
         virtual void view(const char *file = NULL) = 0; /**< show the whole memory */
         virtual void viewState(Agent::State state, const char *file = NULL) = 0; /**< show a specified state */
 
     protected:
-        Storage *storage;
+        Storage *storage;	/**< the storage where memory is stored */
 };
 
-/** \brief Attach memory viewer to a storage, so that it can visualizing the storage.
- *
- * \param sg the storage to be visualized
+/**
+ * @brief Attach memory viewer to a storage, the viewer will show the memory stored in it.
+ * @param sg the storage to be visualized
  */
 inline void MemoryViewer::attachStorage(Storage *sg)
 {

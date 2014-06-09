@@ -22,7 +22,7 @@
 
 namespace gamcs
 {
-    const char version[16] = "@GAMCS_VERSION@";
+    const char version[16] = "@GAMCS_VERSION@";		/**< the version string */
 }   // namespace gamcs
 
 #endif

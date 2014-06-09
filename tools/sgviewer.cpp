@@ -32,6 +32,9 @@
 
 using namespace gamcs;
 
+/**
+ * @brief Display usage information
+ */
 void display_usage(void)
 {
 	std::cout

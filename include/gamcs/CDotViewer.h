@@ -25,22 +25,23 @@ namespace gamcs
 {
 
 /**
- * Clean Dot Viewer
+ * View memory in graphviz dot style cleanly
  */
 class CDotViewer: public DotViewer
 {
-    public:
-        CDotViewer(Storage *storage = NULL);
-        virtual ~CDotViewer();
+	public:
+		CDotViewer(Storage *storage = NULL);
+		virtual ~CDotViewer();
 
-        void view(const char *file = NULL); /**< show agent memory cleanly */
+		void view(const char *file = NULL);
 
-    private:
-        void cleanDotStateInfo(
-                const struct State_Info_Header * state_information_header, FILE *output) const; /**< show state info cleanly */
+	private:
+		void cleanDotStateInfo(
+				const struct State_Info_Header * state_information_header,
+				FILE *output) const;
 
-        Agent::State last_state;
-        Agent::Action last_action;
+		Agent::State last_state; /**< the last state when memory was dumped */
+		Agent::Action last_action; /**< the last action when memory was dumped */
 };
 
 } /* namespace gamcs */

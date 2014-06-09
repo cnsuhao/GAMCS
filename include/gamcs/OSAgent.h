@@ -24,8 +24,7 @@ namespace gamcs
 {
 
 /**
- *  Open Storage Agent.
- *  Agent with storage interface.
+ *  The Open Storage Agent is a kind of agent with storage interfaces that support manipulating the memory directly.
  */
 class OSAgent: public Agent, public Storage
 {
@@ -39,7 +38,7 @@ class OSAgent: public Agent, public Storage
         {
         }
 
-        virtual void updatePayoff(State state) = 0; /**< update payoff from a specified state */
+        virtual void updatePayoff(State state) = 0; /**< update payoffs starting from a specified state */
 };
 
 }    // namespace gamcs

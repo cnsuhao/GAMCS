@@ -27,8 +27,9 @@ PrintViewer::~PrintViewer()
 {
 }
 
-/** \brief Show the whole storage in pretty print style
- *
+/**
+ * @brief View the whole memory in pretty print style
+ * @param file where to output the view, NULL for standard output
  */
 void PrintViewer::view(const char *file)
 {
@@ -88,8 +89,9 @@ void PrintViewer::view(const char *file)
 }
 
 /**
- * \brief Pretty print State information
- * \param specified State information header
+ * @brief View a state information in pretty print style
+ * @param sthd the state information
+ * @param output stream to output the view, NULL for standard output
  */
 void PrintViewer::printStateInfo(const struct State_Info_Header *sthd,
 		FILE *output) const
@@ -130,8 +132,10 @@ void PrintViewer::printStateInfo(const struct State_Info_Header *sthd,
 	return;
 }
 
-/** \brief Show a specified state in pretty print style
- * \param st the state to be viewed
+/**
+ * @brief View a specified state in graphviz dot style
+ * @param st the state to be viewed
+ * @param file where to output the view, NULL for standard output
  */
 void PrintViewer::viewState(Agent::State st, const char *file)
 {
