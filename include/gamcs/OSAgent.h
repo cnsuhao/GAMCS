@@ -28,17 +28,32 @@ namespace gamcs
  */
 class OSAgent: public Agent, public Storage
 {
-    public:
-        OSAgent(int id = 0, float discount_rate = 0.9, float threshold = 0.01) :
-                Agent(id, discount_rate, threshold)
-        {
-        }
+	public:
+		/**
+		 * @brief The default constructor.
+		 *
+		 * @param [in] id the agent id
+		 * @param [in] discount_rate the discount rate
+		 * @param [in] threshold the threshold
+		 */
+		OSAgent(int id = 0, float discount_rate = 0.9, float threshold = 0.01) :
+				Agent(id, discount_rate, threshold)
+		{
+		}
 
-        virtual ~OSAgent()
-        {
-        }
+		/**
+		 * @brief The default destructor.
+		 */
+		virtual ~OSAgent()
+		{
+		}
 
-        virtual void updatePayoff(State state) = 0; /**< update payoffs starting from a specified state */
+		/**
+		 * @brief Update payoffs starting from a specified state.
+		 *
+		 * @param [in] state the state where to start from
+		 */
+		virtual void updatePayoff(State state) = 0;
 };
 
 }    // namespace gamcs

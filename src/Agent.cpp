@@ -22,6 +22,13 @@ const Agent::State Agent::INVALID_STATE = INVALID_INPUT; /**< the same as input,
 const Agent::Action Agent::INVALID_ACTION = INVALID_OUTPUT; /**< the same as output, since it's just an alias to output */
 const float Agent::INVALID_PAYOFF = FLT_MAX; /**< use the maximum value to represent the invalid payoff */
 
+/**
+ * @brief The default constructor.
+ *
+ * @param [in] i the agent id
+ * @param [in] dr the discount rate
+ * @param [in] th the threshold
+ */
 Agent::Agent(int i, float dr, float th) :
 		id(i), discount_rate(dr), threshold(th), learning_mode(ONLINE)
 {
@@ -34,13 +41,17 @@ Agent::Agent(int i, float dr, float th) :
 		ERROR("Agent - threshold must be bigger than 0!\n");
 }
 
+/**
+ * @brief The default destructor.
+ */
 Agent::~Agent()
 {
 }
 
 /**
  * @brief Set the learning mode of an agent.
- * @param mode the learning mode
+ *
+ * @param [in] mode the learning mode
  */
 void Agent::setMode(Mode mode)
 {
@@ -49,9 +60,10 @@ void Agent::setMode(Mode mode)
 
 /**
  * @brief The constraining capacity of an agent.
+ *
  * Use the Maximum Payoff Rule to do the constraining.
- * @param st the state value
- * @param acts the action space of current state
+ * @param [in] st the state value
+ * @param [in] acts the action space of current state
  * @return the sub action space after constraining
  */
 OSpace Agent::constrain(Agent::State st, OSpace &acts) const
@@ -69,6 +81,8 @@ OSpace Agent::constrain(Agent::State st, OSpace &acts) const
 
 /**
  * @brief Update the inner data of an agent.
+ *
+ * @see updateMemory()
  */
 void Agent::update(float oripayoff)
 {

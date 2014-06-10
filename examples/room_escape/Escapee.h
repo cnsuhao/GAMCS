@@ -31,7 +31,7 @@ class Escapee: public Avatar
     private:
         int current_room;
 
-        Agent::State percieveState()
+        Agent::State perceiveState()
         {
             printf("Current Room: %d\n", current_room);
             return current_room;

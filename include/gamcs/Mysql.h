@@ -29,6 +29,8 @@ namespace gamcs
 
 /**
  * Mysql storage.
+ *
+ * Use a mysql database as storage to dump/load agent memory.
  */
 class Mysql: public Storage
 {
@@ -51,7 +53,8 @@ class Mysql: public Storage
 		void addStateInfo(
 				const struct State_Info_Header *state_information_header);
 		void updateStateInfo(
-				const struct State_Info_Header *state_information_header);DEPRECATED("This function is not completely supported yet and will easily lead to storage inconsistent!\n")
+				const struct State_Info_Header *state_information_header);
+		DEPRECATED("This function is not completely supported yet and will easily lead to storage inconsistent!\n")
 		void deleteState(Agent::State state);
 
 		struct Memory_Info *getMemoryInfo() const;

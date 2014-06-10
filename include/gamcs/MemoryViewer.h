@@ -29,31 +29,53 @@ class Storage;
  */
 class MemoryViewer
 {
-    public:
-        MemoryViewer(Storage *sg = NULL) :
-                storage(sg)
-        {
-        }
+	public:
+		/**
+		 * @brief The default constructor.
+		 *
+		 * @param [in] sg the storage to attach to
+		 */
+		MemoryViewer(Storage *sg = NULL) :
+				storage(sg)
+		{
+		}
 
-        virtual ~MemoryViewer()
-        {
-        }
+		/**
+		 * @brief The default destructor.
+		 */
+		virtual ~MemoryViewer()
+		{
+		}
 
-        void attachStorage(Storage *specific_storage); /**< set the storage in which memory is stored */
-        virtual void view(const char *file = NULL) = 0; /**< show the whole memory */
-        virtual void viewState(Agent::State state, const char *file = NULL) = 0; /**< show a specified state */
+		void attachStorage(Storage *specific_storage);
 
-    protected:
-        Storage *storage;	/**< the storage where memory is stored */
+		/**
+		 * @brief View the whole memory.
+		 *
+		 * @param [in] file where to output the view
+		 */
+		virtual void view(const char *file = NULL) = 0;
+
+		/**
+		 * @brief View a specified state.
+		 *
+		 * @param [in] state the state to view
+		 * @param [in] file where to output the view
+		 */
+		virtual void viewState(Agent::State state, const char *file = NULL) = 0;
+
+	protected:
+		Storage *storage; /**< the storage where memory is stored */
 };
 
 /**
  * @brief Attach memory viewer to a storage, the viewer will show the memory stored in it.
- * @param sg the storage to be visualized
+ *
+ * @param [in] sg the storage to be visualized
  */
 inline void MemoryViewer::attachStorage(Storage *sg)
 {
-    storage = sg;
+	storage = sg;
 }
 
 }    // namespace gamcs

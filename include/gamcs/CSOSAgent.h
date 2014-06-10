@@ -124,7 +124,9 @@ class CSOSAgent: public OSAgent
 		float _calActPayoff(const struct cs_Action *action) const;
 };
 
-/** The structure used to represent a state in computer memory */
+/**
+ * The structure used to represent a state in computer memory
+ */
 struct cs_State
 {
 		Agent::State st; /**< the state value */
@@ -138,7 +140,9 @@ struct cs_State
 		struct cs_State *next; /**< the next state */
 };
 
-/** The structure used to represent an action in computer memory */
+/**
+ * The structure used to represent an action in computer memory
+ */
 struct cs_Action
 {
 		Agent::Action act; /**< the action value */
@@ -147,7 +151,9 @@ struct cs_Action
 		struct cs_Action *next; /**< the next action */
 };
 
-/** The structure used to represent an environment action in computer memory */
+/**
+ * The structure used to represent an environment action in computer memory
+ */
 struct cs_EnvAction
 {
 		Agent::EnvAction eat; /**< the action value */
@@ -157,7 +163,9 @@ struct cs_EnvAction
 		struct cs_EnvAction *next; /**< next environment action */
 };
 
-/** The structure used to represent a link between a state and its up-streaming states */
+/**
+ * The structure used to represent a link between a state and its up-streaming states
+ */
 struct cs_BackwardLink
 {
 		struct cs_State *pstate; /**< the up-streaming state */

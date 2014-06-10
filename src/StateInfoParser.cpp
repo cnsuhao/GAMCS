@@ -19,6 +19,11 @@
 namespace gamcs
 {
 
+/**
+ * @brief The default constructor.
+ *
+ * @param [in] sthd address pointer of the state information
+ */
 StateInfoParser::StateInfoParser(const State_Info_Header *sthd) :
 		my_sthd(sthd), atp(NULL), act_index(0), eap(NULL), eat_index(0)
 {
@@ -27,12 +32,16 @@ StateInfoParser::StateInfoParser(const State_Info_Header *sthd) :
 	eap = atp + sizeof(EnvAction_Info);    // point to the first eat
 }
 
+/**
+ * @brief The default destructor.
+ */
 StateInfoParser::~StateInfoParser()
 {
 }
 
 /**
- * @brief Get the first action in current state
+ * @brief Get the first action in current state.
+ *
  * @return address pointer of the action information, or NULL if no any action
  */
 Action_Info_Header *StateInfoParser::firstAct()
@@ -51,7 +60,8 @@ Action_Info_Header *StateInfoParser::firstAct()
 }
 
 /**
- * @brief Get the next action in current state
+ * @brief Get the next action in current state.
+ *
  * @return address pointer of the action information, or NULL if no more actions
  */
 Action_Info_Header *StateInfoParser::nextAct()
@@ -70,8 +80,9 @@ Action_Info_Header *StateInfoParser::nextAct()
 }
 
 /**
- * @brief Move the pointer to a specified action
- * @param act the requested action
+ * @brief Move the pointer to a specified action.
+ *
+ * @param [in] act the requested action
  * @return address pointer of the action information after moving, or NULL if not found
  */
 Action_Info_Header *StateInfoParser::move2Act(Agent::Action act)
@@ -91,7 +102,8 @@ Action_Info_Header *StateInfoParser::move2Act(Agent::Action act)
 }
 
 /**
- * @brief Get the first environment action in current action
+ * @brief Get the first environment action in current action.
+ *
  * @return address pointer of the environment action information, or NULL if no any environment action
  */
 EnvAction_Info *StateInfoParser::firstEat()
@@ -107,7 +119,8 @@ EnvAction_Info *StateInfoParser::firstEat()
 }
 
 /**
- * @brief Get the next environment action in current action
+ * @brief Get the next environment action in current action.
+ *
  * @return address pointer of the environment action information, or NULL if no more environment actions
  */
 EnvAction_Info *StateInfoParser::nextEat()
@@ -124,8 +137,9 @@ EnvAction_Info *StateInfoParser::nextEat()
 }
 
 /**
- * @brief Move the pointer to a specified environment action
- * @param eat the requested environment action
+ * @brief Move the pointer to a specified environment action.
+ *
+ * @param [in] eat the requested environment action
  * @return address pointer of the environment action information after moving, or NULL if not found
  */
 EnvAction_Info *StateInfoParser::move2Eat(Agent::EnvAction eat)

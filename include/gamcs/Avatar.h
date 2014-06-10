@@ -43,9 +43,27 @@ class Avatar
 
 		Agent *myagent; /**< the connected agent */
 
-		virtual Agent::State percieveState() = 0; /**< perceive the environment and get the current state */
-		virtual void performAction(Agent::Action action) = 0; /**< perform an specified action */
-		virtual OSpace availableActions(Agent::State state) = 0; /**< get the action space of a specified state */
+		/**
+		 * @brief Perceive the environment and get the current state.
+		 *
+		 * @return the perceived state
+		 */
+		virtual Agent::State perceiveState() = 0;
+
+		/**
+		 * @brief Perform an specified action.
+		 *
+		 * @param [in] action the action to be performed
+		 */
+		virtual void performAction(Agent::Action action) = 0;
+
+		/**
+		 * @brief Get the action space of a specified state.
+		 *
+		 * @param [in] state the specified state
+		 * @return the action space of that state
+		 */
+		virtual OSpace availableActions(Agent::State state) = 0;
 		virtual float originalPayoff(Agent::State state);
 
 	private:

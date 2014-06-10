@@ -18,18 +18,27 @@
 namespace gamcs
 {
 
+/**
+ * @brief The default constructor.
+ *
+ * @param [in] sg the storage to be viewed
+ */
 PrintViewer::PrintViewer(Storage *sg) :
 		MemoryViewer(sg)
 {
 }
 
+/**
+ * @brief The default destructor.
+ */
 PrintViewer::~PrintViewer()
 {
 }
 
 /**
- * @brief View the whole memory in pretty print style
- * @param file where to output the view, NULL for standard output
+ * @brief View the whole memory in pretty print style.
+ *
+ * @param [in] file where to output the view, NULL for standard output
  */
 void PrintViewer::view(const char *file)
 {
@@ -89,9 +98,10 @@ void PrintViewer::view(const char *file)
 }
 
 /**
- * @brief View a state information in pretty print style
- * @param sthd the state information
- * @param output stream to output the view, NULL for standard output
+ * @brief View a state information in pretty print style.
+ *
+ * @param [in] sthd the state information
+ * @param [in] output stream to output the view, NULL for standard output
  */
 void PrintViewer::printStateInfo(const struct State_Info_Header *sthd,
 		FILE *output) const
@@ -133,9 +143,10 @@ void PrintViewer::printStateInfo(const struct State_Info_Header *sthd,
 }
 
 /**
- * @brief View a specified state in graphviz dot style
- * @param st the state to be viewed
- * @param file where to output the view, NULL for standard output
+ * @brief View a specified state in graphviz dot style.
+ *
+ * @param [in] st the state to be viewed
+ * @param [in] file where to output the view, NULL for standard output
  */
 void PrintViewer::viewState(Agent::State st, const char *file)
 {

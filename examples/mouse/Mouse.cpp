@@ -21,7 +21,7 @@ Mouse::~Mouse()
 {
 }
 
-Agent::State Mouse::percieveState()
+Agent::State Mouse::perceiveState()
 {
     printf("Mouse, State %d\n", position);
     return position;    // just return current position

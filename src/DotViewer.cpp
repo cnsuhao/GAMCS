@@ -21,19 +21,150 @@
 namespace gamcs
 {
 
+/**
+ * @brief The default constructor.
+ *
+ * @param [in] sg the storage to be viewed
+ */
 DotViewer::DotViewer(Storage *sg) :
 		MemoryViewer(sg), last_state(Agent::INVALID_STATE), last_action(
 				Agent::INVALID_ACTION)
 {
 }
 
+/**
+ * @brief The default destructor.
+ */
 DotViewer::~DotViewer()
 {
 }
 
 /**
- * @brief View the whole memory in graphviz dot style
- * @param file where to output the view, NULL for standard output
+ * @brief View the whole memory in graphviz dot style.
+ *
+ * @param [in] file where to output the view, NULL for standard output
+ * @dot
+ * digraph Example
+ * {
+ * label="memory Example\ndiscount rate: 0.90, threshold: 0.01, #states: 7, #links: 11"
+ * node [color=black,shape=circle]
+ * rank="same"
+ *
+ * subgraph state8
+ * {
+ * rank="same"
+ * st8 [label="8\n(3.79)", color="black"]
+ * subgraph
+ * {
+ * rank="sink"
+ * node [shape="point"]
+ * act1in8 [label="", height=0.3]
+ * }
+ * st8 -> act1in8 [label=<<font color="blue">1</font>>, color="blue", weight=2.]
+ * }
+ * act1in8 -> st7 [label=<<font color="red">-2 (2)</font>>, color="red", weight=1.]
+ *
+ * subgraph state7
+ * {
+ * rank="same"
+ * st7 [label="7\n(4.21)", color="black"]
+ * subgraph
+ * {
+ * rank="sink"
+ * node [shape="point"]
+ * act1in7 [label="", height=0.3]
+ * act2in7 [label="", height=0.3]
+ * act1in7 -> act2in7 [style=dashed, dir=none]
+ * }
+ * st7 -> act1in7 [label=<<font color="blue">1</font>>, color="blue", weight=2.]
+ * st7 -> act2in7 [label=<<font color="blue">2</font>>, color="blue", weight=2.]
+ * }
+ * act1in7 -> st6 [label=<<font color="red">-2 (1)</font>>, color="red", weight=1.]
+ * act2in7 -> st8 [label=<<font color="red">-1 (2)</font>>, color="red", weight=1.]
+ *
+ * subgraph state6
+ * {
+ * rank="same"
+ * st6 [label="6\n(4.69)", color="#D3D300"]
+ * subgraph
+ * {
+ * rank="sink"
+ * node [shape="point"]
+ * act1in6 [label="", height=0.3]
+ * act2in6 [label="", height=0.3]
+ * act1in6 -> act2in6 [style=dashed, dir=none]
+ * }
+ * st6 -> act1in6 [label=<<font color="#D3D300">1</font>>, color="#D3D300", weight=2.]
+ * st6 -> act2in6 [label=<<font color="blue">2</font>>, color="blue", weight=2.]
+ * }
+ * act1in6 -> st5 [label=<<font color="red">-2 (242)</font>>, color="red", weight=1.]
+ * act2in6 -> st7 [label=<<font color="red">-1 (1)</font>>, color="red", weight=1.]
+ *
+ * subgraph state5
+ * {
+ * rank="same"
+ * st5 [label="5\n(5.21)", color="black"]
+ * subgraph
+ * {
+ * rank="sink"
+ * node [shape="point"]
+ * act2in5 [label="", height=0.3]
+ * }
+ * st5 -> act2in5 [label=<<font color="blue">2</font>>, color="blue", weight=2.]
+ * }
+ * act2in5 -> st6 [label=<<font color="red">-1 (243)</font>>, color="red", weight=1.]
+ *
+ * subgraph state4
+ * {
+ * rank="same"
+ * st4 [label="4\n(4.69)", color="black"]
+ * subgraph
+ * {
+ * rank="sink"
+ * node [shape="point"]
+ * act2in4 [label="", height=0.3]
+ * act1in4 [label="", height=0.3]
+ * act2in4 -> act1in4 [style=dashed, dir=none]
+ * }
+ * st4 -> act2in4 [label=<<font color="blue">2</font>>, color="blue", weight=2.]
+ * st4 -> act1in4 [label=<<font color="blue">1</font>>, color="blue", weight=2.]
+ * }
+ * act2in4 -> st5 [label=<<font color="red">-1 (1)</font>>, color="red", weight=1.]
+ * act1in4 -> st3 [label=<<font color="red">-2 (1)</font>>, color="red", weight=1.]
+ *
+ * subgraph state2
+ * {
+ * rank="same"
+ * st2 [label="2\n(3.79)", color="black"]
+ * subgraph
+ * {
+ * rank="sink"
+ * node [shape="point"]
+ * act2in2 [label="", height=0.3]
+ * }
+ * st2 -> act2in2 [label=<<font color="blue">2</font>>, color="blue", weight=2.]
+ * }
+ * act2in2 -> st3 [label=<<font color="red">-1 (2)</font>>, color="red", weight=1.]
+ *
+ * subgraph state3
+ * {
+ * rank="same"
+ * st3 [label="3\n(4.21)", color="black"]
+ * subgraph
+ * {
+ * rank="sink"
+ * node [shape="point"]
+ * act2in3 [label="", height=0.3]
+ * act1in3 [label="", height=0.3]
+ * act2in3 -> act1in3 [style=dashed, dir=none]
+ * }
+ * st3 -> act2in3 [label=<<font color="blue">2</font>>, color="blue", weight=2.]
+ * st3 -> act1in3 [label=<<font color="blue">1</font>>, color="blue", weight=2.]
+ * }
+ * act2in3 -> st4 [label=<<font color="red">-1 (2)</font>>, color="red", weight=1.]
+ * act1in3 -> st2 [label=<<font color="red">-2 (2)</font>>, color="red", weight=1.]
+ * }
+ * @enddot
  */
 void DotViewer::view(const char *file)
 {
@@ -99,9 +230,10 @@ void DotViewer::view(const char *file)
 }
 
 /**
- * @brief View a state information in dot style
- * @param sthd the state information
- * @param output stream to output the view, NULL for standard output
+ * @brief View a state information in dot style.
+ *
+ * @param [in] sthd the state information
+ * @param [in] output stream to output the view, NULL for standard output
  */
 void DotViewer::dotStateInfo(const struct State_Info_Header *sthd,
 		FILE *output) const
@@ -206,8 +338,9 @@ while (achd != NULL)
 
 /**
  * @brief Convert from a integer value to string.
+ *
  * This is due to graphviz dot doesn't support minus symbol in node names
- * @param value the integer value
+ * @param [in] value the integer value
  * @return the converted string
  */
 const std::string DotViewer::int2String(gamcs_int value) const
@@ -228,9 +361,34 @@ else    // eat < 0, since dot doesn't support minus sign, so we convert '-' to '
 }
 
 /**
- * @brief View a specified state in graphviz dot style
- * @param st the state to be viewed
- * @param file where to output the view, NULL for standard output
+ * @brief View a specified state in graphviz dot style.
+ *
+ * @param [in] st the state to be viewed
+ * @param [in] file where to output the view, NULL for standard output
+ * @dot
+ * digraph State7
+ * {
+ * node [color=black,shape=circle]
+ * rank="same"
+ * label="infoset of state 7 in memory Example"
+ * rank="same"
+ * st7 [label="7\n(4.21)"]
+ * subgraph
+ * {
+ * rank="same"
+ * node [shape="point"]
+ * act1in7 [label="", height=0.3]
+ * act2in7 [label="", height=0.3]
+ * act1in7 -> act2in7 [style=dashed, dir=none]
+ * }
+ * st7 -> act1in7 [label=<<font color="blue">1</font>>, color="blue", weight=2.]
+ * st7 -> act2in7 [label=<<font color="blue">2</font>>, color="blue", weight=2.]
+ * act1in7 -> st6 [label=<<font color="red">-2 (1)</font>>, color="red", weight=1.]
+ * st6 [label="6\n(4.69)"]
+ * act2in7 -> st8 [label=<<font color="red">-1 (2)</font>>, color="red", weight=1.]
+ * st8 [label="8\n(3.79)"]
+ * }
+ * @enddot
  */
 void DotViewer::viewState(Agent::State st, const char *file)
 {

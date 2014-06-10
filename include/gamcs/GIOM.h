@@ -73,8 +73,8 @@ typedef int64_t gamcs_int;
 /**
  * Format strings used for printing Input and Output values regardless of platforms or INT_BITS
  */
-#define IN_FMT GAMCS_INT_FMT       /**< usage: printf("%" IN_FMT "\n", input); */
-#define OUT_FMT GAMCS_INT_FMT       /**< usage: printf("%" OUT_FMT "\n", output); */
+#define IN_FMT GAMCS_INT_FMT       /**< @code{.c} usage: printf("%" IN_FMT "\n", input); @endcode */
+#define OUT_FMT GAMCS_INT_FMT       /**< @code{.c} usage: printf("%" OUT_FMT "\n", output); @endcode */
 
 class OSpace;
 
@@ -111,6 +111,7 @@ class GIOM
 
 /**
  * Fragment is used to store a single output or a range of outputs.
+ *
  * For example: output space {1, 3, 5, 7 ,9} can be represented as [1, 9, 2] by an OFragment.
  */
 struct OFragment
@@ -122,18 +123,27 @@ struct OFragment
 
 /**
  *  Output space which contains a series of outputs.
+ *
  *  A space is different from a set in which outputs can be repeated.
  */
 class OSpace
 {
 	public:
+		/**
+		 * The spare capacity.
+		 */
 		enum
 		{
-			SPARE_CAPACITY = 5
+			SPARE_CAPACITY = 5 /**< SPARE_CAPACITY */
 		};
 
 		typedef gamcs_uint ossize_t; /**< output space size type */
 
+		/**
+		 * @brief The default constructor.
+		 *
+		 * @param [in] initfn the initial number of fragments
+		 */
 		explicit OSpace(ossize_t initfn = 0) :
 				frag_num(initfn), the_capacity(initfn + SPARE_CAPACITY), output_num(
 						0), current_index(0), outputs(NULL)
@@ -141,6 +151,11 @@ class OSpace
 			outputs = new OFragment[the_capacity];
 		}
 
+		/**
+		 * @brief The default copy constructor.
+		 *
+		 * @param [in] other another OSpace object
+		 */
 		OSpace(const OSpace &other) :
 				frag_num(0), the_capacity(SPARE_CAPACITY), output_num(0), current_index(
 						0), outputs(NULL)
@@ -148,13 +163,17 @@ class OSpace
 			operator=(other);
 		}
 
+		/**
+		 * @brief The default destructor.
+		 */
 		~OSpace()
 		{
 			delete[] outputs;
 		}
 
 		/**
-		 * @brief Check if the space is empty
+		 * @brief Check if the space is empty.
+		 *
 		 * @return true or false
 		 */
 		bool empty() const
@@ -163,7 +182,8 @@ class OSpace
 		}
 
 		/**
-		 * @brief Get the total number of outputs in the space
+		 * @brief Get the total number of outputs in the space.
+		 *
 		 * @return  the number
 		 */
 		ossize_t size() const
@@ -172,8 +192,9 @@ class OSpace
 		}
 
 		/**
-		 * @brief Get the current capacity of the space
-		 * @return  the capacity
+		 * @brief Get the current capacity of the space.
+		 *
+		 * @return the capacity
 		 */
 		ossize_t capacity() const
 		{
@@ -181,9 +202,10 @@ class OSpace
 		}
 
 		/**
-		 * @brief Override operator []
+		 * @brief Override operator [].
+		 *
 		 * For index that is out of bound, INVALID_OUTPUT is returned.
-		 * @param index the output index (starting from 0)
+		 * @param [in] index the output index (starting from 0)
 		 * @return the output value at that index
 		 */
 		GIOM::Output operator[](ossize_t index) const
@@ -222,8 +244,9 @@ class OSpace
 		}
 
 		/**
-		 * @brief Override operator=
-		 * @param other another OSpace object
+		 * @brief Override operator=.
+		 *
+		 * @param [in] other another OSpace object
 		 * @return the reassigned object
 		 */
 		const OSpace &operator=(const OSpace &other)
@@ -248,7 +271,8 @@ class OSpace
 		}
 
 		/**
-		 * @brief Add a single output to the space
+		 * @brief Add a single output to the space.
+		 *
 		 * @param output the output
 		 */
 		void add(GIOM::Output output)
@@ -266,9 +290,10 @@ class OSpace
 		}
 
 		/**
-		 * @brief Add an output range to the space
-		 * @param start the starting output
-		 * @param end the ending output
+		 * @brief Add an output range to the space.
+		 *
+		 * @param [in] start the starting output
+		 * @param [in] end the ending output
 		 * @param step the increasing or decreasing step
 		 */
 		void add(GIOM::Output start, GIOM::Output end, GIOM::Output step)
@@ -292,6 +317,7 @@ class OSpace
 
 		/**
 		 * @brief Expand the space capacity.
+		 *
 		 * @param ncap the requested new capacity
 		 */
 		void expand(ossize_t ncap)
@@ -325,6 +351,7 @@ class OSpace
 
 		/**
 		 * @brief Get the first output in space.
+		 *
 		 * @return the first output
 		 */
 		GIOM::Output first() const
@@ -335,6 +362,7 @@ class OSpace
 
 		/**
 		 * @brief Get the last output in space.
+		 *
 		 * @return the last output
 		 */
 		GIOM::Output last() const
@@ -344,6 +372,7 @@ class OSpace
 
 		/**
 		 * @brief Iterate the space and get the next output.
+		 *
 		 * @return the next output
 		 */
 		GIOM::Output next() const

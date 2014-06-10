@@ -17,8 +17,9 @@ namespace gamcs
 {
 
 /**
- * @brief Pretty print state information
- * @param sthd the specified State information header
+ * @brief Pretty print state information.
+ *
+ * @param [in] sthd the specified State information header
  */
 void printStateInfo(const struct State_Info_Header *sthd)
 {

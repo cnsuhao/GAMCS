@@ -18,6 +18,11 @@
 namespace gamcs
 {
 
+/**
+ * @brief The default constructor.
+ *
+ * Initialize the random device.
+ */
 GIOM::GIOM() :
 		cur_in(INVALID_INPUT), cur_out(INVALID_OUTPUT), process_count(0), rand_device(
 		NULL), max_rand_value(0)
@@ -26,6 +31,11 @@ GIOM::GIOM() :
 	max_rand_value = rand_device->max();    // save the maximum value
 }
 
+/**
+ * @brief The default destructor.
+ *
+ * Destroy the random device.
+ */
 GIOM::~GIOM()
 {
 	delete rand_device;
@@ -33,9 +43,10 @@ GIOM::~GIOM()
 
 /**
  * @brief Constraining capacity of the GIOM.
+ *
  * Minimum constrain by default, which means NO constrain at all here.
- * @param input the input value
- * @param outputs the output space for current input
+ * @param [in] input the input value
+ * @param [in] outputs the output space for current input
  * @return the sub output space after constraining
  */
 OSpace GIOM::constrain(Input input, OSpace &outputs) const
@@ -46,9 +57,10 @@ OSpace GIOM::constrain(Input input, OSpace &outputs) const
 
 /**
  * @brief The process function of GIOM.
+ *
  * Return a random item from the output space by default.
- * @param input the input value
- * @param outputs the output space of the input
+ * @param [in] input the input value
+ * @param [in] outputs the output space of the input
  * @return the generated output
  */
 GIOM::Output GIOM::process(Input input, OSpace &outputs)
@@ -69,9 +81,10 @@ GIOM::Output GIOM::process(Input input, OSpace &outputs)
 }
 
 /**
- * @brief Calculate the entropy of a state under constraining
- * @param input the specified input
- * @param outputs the output space of the input
+ * @brief Calculate the entropy of a state under constraining.
+ *
+ * @param [in] input the specified input
+ * @param [in] outputs the output space of the input
  * @return the entropy value
  */
 float GIOM::singleOutputEntropy(Input input, OSpace &outputs) const
@@ -86,7 +99,8 @@ float GIOM::singleOutputEntropy(Input input, OSpace &outputs) const
 
 /**
  * @brief Update inner data of GIOM and prepare for the next processing.
- * Derived classes may have their own stuff to be updated *
+ *
+ * Derived classes may have their own stuff to be updated.
  */
 void GIOM::update()
 {
@@ -98,8 +112,9 @@ void GIOM::update()
 
 /**
  * @brief Generate a random number in the specified range.
- * The random is where all possibilities and miracles come from! *
- * @param sz the specified range
+ *
+ * The random is where all possibilities and miracles come from.
+ * @param [in] sz the specified range
  * @return the generated random number
  */
 gamcs_uint GIOM::randomGenerator(gamcs_uint sz) const

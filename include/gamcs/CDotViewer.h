@@ -25,7 +25,7 @@ namespace gamcs
 {
 
 /**
- * View memory in graphviz dot style cleanly
+ * View memory in graphviz dot style cleanly.
  */
 class CDotViewer: public DotViewer
 {

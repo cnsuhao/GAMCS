@@ -22,7 +22,7 @@ namespace gamcs
 {
 
 /**
- * A helper class to parse the state information
+ * A helper class to parse the state information.
  */
 class StateInfoParser
 {
