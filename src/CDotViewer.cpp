@@ -23,19 +23,61 @@
 namespace gamcs
 {
 
+/**
+ * @brief The default constructor.
+ *
+ * @param [in] sg the storage to be viewed
+ */
 CDotViewer::CDotViewer(Storage *sg) :
 		DotViewer(sg), last_state(Agent::INVALID_STATE), last_action(
 				Agent::INVALID_ACTION)
 {
 }
 
+/**
+ * @brief The default destructor.
+ */
 CDotViewer::~CDotViewer()
 {
 }
 
 /**
- * @brief View the whole memory in graphviz dot style cleanly
- * @param file where to output the view, NULL for standard output
+ * @brief View the whole memory in graphviz dot style cleanly.
+ *
+ * @param [in] file where to output the view, NULL for standard output
+ * @dot
+ * digraph Example
+ * {
+ * label="memory Example\ndiscount rate: 0.90, threshold: 0.01, #states: 7, #links: 11"
+ * node [color=black,shape=circle]
+ * rank="same"
+ *
+ * st8 [label="8"]
+ * st8 -> st7 [label="<1, -2>"]
+ *
+ * st7 [label="7"]
+ * st7 -> st6 [label="<1, -2>"]
+ * st7 -> st8 [label="<2, -1>"]
+ *
+ * st6 [label="6"]
+ * st6 -> st5 [label="<1, -2>"]
+ * st6 -> st7 [label="<2, -1>"]
+ *
+ * st5 [label="5"]
+ * st5 -> st6 [label="<2, -1>"]
+ *
+ * st4 [label="4"]
+ * st4 -> st5 [label="<2, -1>"]
+ * st4 -> st3 [label="<1, -2>"]
+ *
+ * st2 [label="2"]
+ * st2 -> st3 [label="<2, -1>"]
+ *
+ * st3 [label="3"]
+ * st3 -> st4 [label="<2, -1>"]
+ * st3 -> st2 [label="<1, -2>"]
+ * }
+ * @enddot
  */
 void CDotViewer::view(const char *file)
 {
@@ -101,9 +143,10 @@ void CDotViewer::view(const char *file)
 }
 
 /**
- * @brief View a state information in dot style cleanly
- * @param sthd the state information
- * @param output the stream to output the view, NULL for standard output
+ * @brief View a state information in dot style cleanly.
+ *
+ * @param [in] sthd the state information
+ * @param [in] output the stream to output the view, NULL for standard output
  */
 void CDotViewer::cleanDotStateInfo(const struct State_Info_Header *sthd,
 		FILE *output) const

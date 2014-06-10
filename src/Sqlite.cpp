@@ -23,19 +23,28 @@
 namespace gamcs
 {
 
+/**
+ * @brief The default constructor.
+ *
+ * @param [in] dbname the database name
+ */
 Sqlite::Sqlite(std::string dbname) :
 		db_con(NULL), db_name(dbname), db_t_stateinfo("StateInfo"), db_t_meminfo(
 				"MemoryInfo"), current_index(0), o_flag(O_READ)
 {
 }
 
+/**
+ * @brief The default destructor.
+ */
 Sqlite::~Sqlite()
 {
 }
 
 /**
  * @brief Set the database arguments.
- * @param db the database name
+ *
+ * @param [in] db the database name
  */
 void Sqlite::setDBArgs(std::string db)
 {
@@ -43,8 +52,9 @@ void Sqlite::setDBArgs(std::string db)
 }
 
 /**
- * @brief Open the storage for read or write
- * @param flag the open flag
+ * @brief Open the storage for read or write.
+ *
+ * @param [in] flag the open flag
  * @return 0 on successfully opened, or -1 if error occurs
  */
 int Sqlite::open(Flag flag)
@@ -128,7 +138,7 @@ int Sqlite::open(Flag flag)
 }
 
 /**
- * @brief Close the storage
+ * @brief Close the storage.
  */
 void Sqlite::close()
 {
@@ -147,7 +157,8 @@ void Sqlite::close()
 }
 
 /**
- * @brief Get the first state in storage
+ * @brief Get the first state in storage.
+ *
  * @return the first state
  */
 Agent::State Sqlite::firstState() const
@@ -157,7 +168,8 @@ Agent::State Sqlite::firstState() const
 }
 
 /**
- * @brief Get the next state in storage
+ * @brief Get the next state in storage.
+ *
  * @return the next state
  */
 Agent::State Sqlite::nextState() const
@@ -167,8 +179,9 @@ Agent::State Sqlite::nextState() const
 }
 
 /**
- * @brief Get a state by its index in storage
- * @param index the index in storage
+ * @brief Get a state by its index in storage.
+ *
+ * @param [in] index the index in storage
  * @return the state at that index, or INVALID_STATE if out of boundary
  */
 Agent::State Sqlite::stateByIndex(unsigned long index) const
@@ -199,8 +212,9 @@ Agent::State Sqlite::stateByIndex(unsigned long index) const
 }
 
 /**
- * @brief Get information of a specified state from storage
- * @param st the requested state
+ * @brief Get information of a specified state from storage.
+ *
+ * @param [in] st the requested state
  * @return address point of the state information
  */
 struct State_Info_Header *Sqlite::getStateInfo(Agent::State st) const
@@ -251,8 +265,9 @@ struct State_Info_Header *Sqlite::getStateInfo(Agent::State st) const
 }
 
 /**
- * @brief Check if a state exists in storage
- * @param st the request state
+ * @brief Check if a state exists in storage.
+ *
+ * @param [in] st the requested state
  * @return true|false
  */
 bool Sqlite::hasState(Agent::State st) const
@@ -283,9 +298,10 @@ bool Sqlite::hasState(Agent::State st) const
 
 /**
  * @brief Add a state to storage from the given information.
+ *
  * When you add new states or links to the memory, make sure to update the memory information correspondingly.
  * Or the memory will stay inconsistent, and the loading will fail.
- * @param sthd the state information
+ * @param [in] sthd the state information
  */
 void Sqlite::addStateInfo(const struct State_Info_Header *sthd)
 {
@@ -330,10 +346,11 @@ void Sqlite::addStateInfo(const struct State_Info_Header *sthd)
 }
 
 /**
- * @brief Update a state in storage from the given information
+ * @brief Update a state in storage from the given information.
+ *
  * When you add new states or links to the memory, make sure to update the memory information correspondingly.
  * Or the memory will stay unconsistent, and the loading will fail.
- * @param sthd the state information
+ * @param [in] sthd the state information
  */
 void Sqlite::updateStateInfo(const struct State_Info_Header *sthd)
 {
@@ -380,8 +397,9 @@ void Sqlite::updateStateInfo(const struct State_Info_Header *sthd)
 }
 
 /**
- * @brief Delete a state from storage
- * @param st the state to be deleted
+ * @brief Delete a state from storage.
+ *
+ * @param [in] st the state to be deleted
  * FIXME: need to handle the links with other states!
  */
 void Sqlite::deleteState(Agent::State st)
@@ -402,8 +420,9 @@ void Sqlite::deleteState(Agent::State st)
 }
 
 /**
- * @brief Add the memory information to storage
- * @param memif the memory information
+ * @brief Add the memory information to storage.
+ *
+ * @param [in] memif the memory information
  */
 void Sqlite::addMemoryInfo(const struct Memory_Info *memif)
 {
@@ -434,8 +453,9 @@ void Sqlite::addMemoryInfo(const struct Memory_Info *memif)
 }
 
 /**
- * @brief Update the memory information in storage
- * @param memif the memory information
+ * @brief Update the memory information in storage.
+ *
+ * @param [in] memif the memory information
  */
 void Sqlite::updateMemoryInfo(const struct Memory_Info *memif)
 {
@@ -467,7 +487,8 @@ void Sqlite::updateMemoryInfo(const struct Memory_Info *memif)
 }
 
 /**
- * @brief Get the memory information from storage
+ * @brief Get the memory information from storage.
+ *
  * @return address point of the memory information
  */
 struct Memory_Info *Sqlite::getMemoryInfo() const
@@ -504,7 +525,8 @@ struct Memory_Info *Sqlite::getMemoryInfo() const
 }
 
 /**
- * @brief Get the memory name
+ * @brief Get the memory name.
+ *
  * @return the memory name
  */
 std::string Sqlite::getMemoryName() const

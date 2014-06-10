@@ -19,11 +19,19 @@
 namespace gamcs
 {
 
+/**
+ * @brief The default constructor.
+ *
+ * @param id the avatar id
+ */
 Avatar::Avatar(int i) :
 		id(i), ava_loop_count(0), myagent(NULL)
 {
 }
 
+/**
+ * @brief The default destructor.
+ */
 Avatar::~Avatar()
 {
 }
@@ -33,13 +41,14 @@ Avatar::~Avatar()
  *
  * Note: if there are no more actions for an avatar to perform, the step will return -1 which means the end is reached.
  * @return 0 on success, -1 if reach the end
+ * @see loop()
  */
 int Avatar::step()
 {
 	++ava_loop_count;    // increase count
 
 	/* Perceive state */
-	Agent::State cs = percieveState();    // get current state
+	Agent::State cs = perceiveState();    // get current state
 	dbgmoreprt("Launch():", "Avatar %d, State: %" ST_FMT "\n", id, cs);
 
 	/* Process */
@@ -60,8 +69,10 @@ int Avatar::step()
 }
 
 /**
- * @brief Step avatar in loop
- * @param sps steps/loops per second, < 0 if not control
+ * @brief Step avatar in loops.
+ *
+ * @param [in] sps steps/loops per second, < 0 if not control
+ * @see step()
  */
 void Avatar::loop(int sps)
 {
@@ -113,7 +124,8 @@ void Avatar::loop(int sps)
 
 /**
  * @brief Connect avatar to an agent.
- * @param agt the agent to be connected
+ *
+ * @param [in] agt the agent to be connected
  */
 void Avatar::connectAgent(Agent *agt)
 {
@@ -124,7 +136,7 @@ void Avatar::connectAgent(Agent *agt)
  * @brief Get the original payoff of a state.
  *
  * Return 1 for every state by default which means as long as the avatar survives in the next state, the state has payoff as 1.
- * @param st the state
+ * @param [in] st the state
  * @return original payoff of the state
  *
  */
@@ -135,7 +147,8 @@ float Avatar::originalPayoff(Agent::State st)
 }
 
 /**
- * @brief Get current time in milliseconds
+ * @brief Get current time in milliseconds.
+ *
  * @return the current time as milliseconds since the Epoch, 1970-01-01 00:00:00 +0000 (UTC)
  */
 unsigned long Avatar::getCurrentTime()

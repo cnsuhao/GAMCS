@@ -23,6 +23,13 @@
 namespace gamcs
 {
 
+/**
+ * @brief The default constructor.
+ *
+ * @param [in] i the agent id
+ * @param [in] dr the discount rate
+ * @param [in] th the threshold
+ */
 CSOSAgent::CSOSAgent(int i, float dr, float th) :
 		OSAgent(i, dr, th), state_num(0), lk_num(0), head(NULL), cur_mst(NULL), current_st_index(
 		NULL)
@@ -32,6 +39,9 @@ CSOSAgent::CSOSAgent(int i, float dr, float th) :
 	visited_states.clear();
 }
 
+/**
+ * @brief The default destructor.
+ */
 CSOSAgent::~CSOSAgent()
 {
 	freeMemory();    // free computer memory
@@ -39,8 +49,9 @@ CSOSAgent::~CSOSAgent()
 
 /**
  * @brief Load a specified state to computer memory from a previously dumped memory.
- * @param storage the storage where to load the memory
- * @param st the state to be loaded
+ *
+ * @param [in] storage the storage where to load the memory
+ * @param [in] st the state to be loaded
  */
 void CSOSAgent::loadState(Storage *storage, Agent::State st)
 {
@@ -62,7 +73,8 @@ void CSOSAgent::loadState(Storage *storage, Agent::State st)
 
 /**
  * @brief Load and initialize memory from a storage.
- * @param storage the storage where to load the memory
+ *
+ * @param [in] storage the storage where to load the memory
  */
 void CSOSAgent::loadMemoryFromStorage(Storage *storage)
 {
@@ -126,7 +138,8 @@ void CSOSAgent::loadMemoryFromStorage(Storage *storage)
 
 /**
  * @brief Dump agent memory to a storage, including states information and memory-level statistics.
- * @param storage the storage where the memory is dumped to
+ *
+ * @param [in] storage the storage where the memory is dumped to
  */
 void CSOSAgent::dumpMemoryToStorage(Storage *storage) const
 {
@@ -186,8 +199,9 @@ void CSOSAgent::dumpMemoryToStorage(Storage *storage) const
 }
 
 /**
- * @brief Search for a state in memory
- * @param st the state to be searched
+ * @brief Search for a state in memory.
+ *
+ * @param [in] st the state to be searched
  * @return address pointer of the state if found, or NULL for not existing
  */
 struct cs_State *CSOSAgent::searchState(Agent::State st) const
@@ -200,9 +214,12 @@ struct cs_State *CSOSAgent::searchState(Agent::State st) const
 }
 
 /**
- * @brief Create a structure in computer memory to represent a state
- * @param st the state to be created
+ * @brief Create a structure in computer memory to represent a state.
+ *
+ * @param [in] st the state to be created
  * @return address pointer of the new state
+ * @see deleteState()
+ * @see freeState()
  */
 struct cs_State *CSOSAgent::newState(Agent::State st)
 {
@@ -230,8 +247,10 @@ struct cs_State *CSOSAgent::newState(Agent::State st)
 }
 
 /**
- * @brief Free a state structure and retrieve its computer memory
- * @param mst the state to be freed
+ * @brief Free a state structure and retrieve its computer memory.
+ *
+ * @param [in] mst the state to be freed
+ * @see deleteState()
  */
 void CSOSAgent::freeState(struct cs_State *mst)
 {
@@ -260,11 +279,14 @@ void CSOSAgent::freeState(struct cs_State *mst)
 }
 
 /**
- * @brief Create a structure in computer memory to represent an environment action
- * @param eat the environment action to be created
- * @param nst the following state of the environment action
- * @param mac the action which the environment action is belonged to
+ * @brief Create a structure in computer memory to represent an environment action.
+ *
+ * @param [in] eat the environment action to be created
+ * @param [in] nst the following state of the environment action
+ * @param [in] mac the action which the environment action is belonged to
  * @return address pointer of the new environment action
+ * @see deleteEat()
+ * @see freeEat()
  */
 struct cs_EnvAction *CSOSAgent::newEat(EnvAction eat, struct cs_State *nst,
 		struct cs_Action *mac)
@@ -284,8 +306,10 @@ struct cs_EnvAction *CSOSAgent::newEat(EnvAction eat, struct cs_State *nst,
 }
 
 /**
- * @brief Free an environment action structure and retrieve its computer memory
- * @param meat the environment action to be freed
+ * @brief Free an environment action structure and retrieve its computer memory.
+ *
+ * @param [in] meat the environment action to be freed
+ * @see deleteEat()
  */
 void CSOSAgent::freeEat(struct cs_EnvAction *meat)
 {
@@ -293,10 +317,13 @@ void CSOSAgent::freeEat(struct cs_EnvAction *meat)
 }
 
 /**
- * @brief Create a new backward link
- * @param pmst the following state
- * @param mst the state which has pmst as its following state
+ * @brief Create a new backward link.
+ *
+ * @param [in] pmst the following state
+ * @param [in] mst the state which has pmst as its following state
  * @return address pointer of the new backward link
+ * @see deleteBlk()
+ * @see freeBlk()
  */
 struct cs_BackwardLink *CSOSAgent::newBlk(struct cs_State *pmst,
 		struct cs_State *mst)
@@ -317,7 +344,8 @@ struct cs_BackwardLink *CSOSAgent::newBlk(struct cs_State *pmst,
 }
 
 /**
- * @brief Free a backward link
+ * @brief Free a backward link.
+ * @see deleteBlk()
  */
 void CSOSAgent::freeBlk(struct cs_BackwardLink *bas)
 {
@@ -325,9 +353,10 @@ void CSOSAgent::freeBlk(struct cs_BackwardLink *bas)
 }
 
 /**
- * @brief Search for action under a specified state
- * @param act the action to be searched
- * @param mst the state under which the action is searched
+ * @brief Search for action under a specified state.
+ *
+ * @param [in] act the action to be searched
+ * @param [in] mst the state under which the action is searched
  * @return address pointer of the action if found, or NULL if not
  */
 struct cs_Action* CSOSAgent::searchAct(Agent::Action act,
@@ -347,10 +376,11 @@ struct cs_Action* CSOSAgent::searchAct(Agent::Action act,
 }
 
 /**
- * @brief Search for environment action under a specified action
- * @param eat the environment action to be searched
- * @param nmst the following state which the environment action should contain
- * @param mac the actions under which the environment action is searched
+ * @brief Search for environment action under a specified action.
+ *
+ * @param [in] eat the environment action to be searched
+ * @param [in] nmst the following state which the environment action should contain
+ * @param [in] mac the actions under which the environment action is searched
  * @return address pointer of the environment action if found, or NULL if not
  */
 struct cs_EnvAction *CSOSAgent::searchEat(EnvAction eat, struct cs_State *nmst,
@@ -369,9 +399,10 @@ struct cs_EnvAction *CSOSAgent::searchEat(EnvAction eat, struct cs_State *nmst,
 }
 
 /**
- * @brief Search for backward link
- * @param pmst the following state
- * @param mst the state which has pmst as its following state
+ * @brief Search for backward link.
+ *
+ * @param [in] pmst the following state
+ * @param [in] mst the up-streaming state
  * @return address pointer of the backward link if found, or NULL if not
  */
 struct cs_BackwardLink *CSOSAgent::searchBlk(struct cs_State *pmst,
@@ -390,9 +421,12 @@ struct cs_BackwardLink *CSOSAgent::searchBlk(struct cs_State *pmst,
 }
 
 /**
- * @brief Delete an action from a state
- * @param act the action to be deleted
- * @param mst the state which the action is belonged to
+ * @brief Delete an action from a state.
+ *
+ * @param [in] act the action to be deleted
+ * @param [in] mst the state which the action is belonged to
+ * @see newAct()
+ * @see freeAct()
  */
 void CSOSAgent::deleteAct(Agent::Action act, struct cs_State *mst)
 {
@@ -438,10 +472,13 @@ void CSOSAgent::deleteAct(Agent::Action act, struct cs_State *mst)
 }
 
 /**
- * @brief Delete an environment action from an action
- * @param eat the environment action to be deleted
- * @param nst the following state which the environment action should contain
- * @param mac the action which the environment action is belonged to
+ * @brief Delete an environment action from an action.
+ *
+ * @param [in] eat the environment action to be deleted
+ * @param [in] nst the following state which the environment action should contain
+ * @param [in] mac the action which the environment action is belonged to
+ * @see newEat()
+ * @see freeEat()
  */
 void CSOSAgent::deleteEat(Agent::EnvAction eat, const struct cs_State *nst,
 		struct cs_Action *mac)
@@ -478,9 +515,12 @@ void CSOSAgent::deleteEat(Agent::EnvAction eat, const struct cs_State *nst,
 }
 
 /**
- * @brief Delete a backward link between two specified states
- * @param pmst the up-streaming state
- * @param mst the following state
+ * @brief Delete a backward link between two specified states.
+ *
+ * @param [in] pmst the up-streaming state
+ * @param [in] mst the following state
+ * @see newBlk()
+ * @see freeBlk()
  */
 void CSOSAgent::deleteBlk(struct cs_State *pmst, struct cs_State *mst)
 {
@@ -513,10 +553,13 @@ void CSOSAgent::deleteBlk(struct cs_State *pmst, struct cs_State *mst)
 }
 
 /**
- * @brief Create a structure in computer memory to represent an action
- * @param act the action to be created
- * @param mst the state which the action is belonged to
+ * @brief Create a structure in computer memory to represent an action.
+ *
+ * @param [in] act the action to be created
+ * @param [in] mst the state which the action is belonged to
  * @return address pointer of the new action
+ * @see deleteAct()
+ * @see freeAct()
  */
 struct cs_Action *CSOSAgent::newAct(Agent::Action act, struct cs_State *mst)
 {
@@ -533,8 +576,11 @@ struct cs_Action *CSOSAgent::newAct(Agent::Action act, struct cs_State *mst)
 }
 
 /**
- * @brief Free an action structure and retrieve its computer memory
- * @param ac the action to be freed
+ * @brief Free an action structure and retrieve its computer memory.
+ *
+ * @param [in] ac the action to be freed
+ * @see newAct()
+ * @see deleteAct()
  */
 void CSOSAgent::freeAct(struct cs_Action *ac)
 {
@@ -551,11 +597,12 @@ void CSOSAgent::freeAct(struct cs_Action *ac)
 
 /**
  * @brief Create a link between a state and its following state.
+ *
  * mst + eat + act ==> nmst
- * @param mst the state where the link starts
- * @param eat the environment action of this link
- * @param act the action of this link
- * @param nmst the following state of this link
+ * @param [in] mst the state where the link starts
+ * @param [in] eat the environment action of this link
+ * @param [in] act the action of this link
+ * @param [in] nmst the following state of this link
  */
 void CSOSAgent::linkStates(struct cs_State *mst, EnvAction eat,
 		Agent::Action act, struct cs_State *nmst)
@@ -598,9 +645,10 @@ void CSOSAgent::linkStates(struct cs_State *mst, EnvAction eat,
 }
 
 /**
- * @brief Calculate the possibility of encountering an specified environment action
- * @param ea the environment action
- * @param mac the action which the environment action is belonged to
+ * @brief Calculate the possibility of encountering an specified environment action.
+ *
+ * @param [in] ea the environment action
+ * @param [in] mac the action which the environment action is belonged to
  * @return the calculated possibility [0, 1]
  */
 float CSOSAgent::prob(const struct cs_EnvAction *ea,
@@ -635,9 +683,11 @@ float CSOSAgent::prob(const struct cs_EnvAction *ea,
 
 /**
  * @brief Calculate the payoff of the specified state.
- * $$u(I_i) = u_0(I_i) + \eta * MAX_{O^j_i\in \Lambda_i}(\sum_{k=1}^m{P(E^k_i|O^j_i)*u(I^{k,j}_i))$$
- * @param mst the state to be calculated
+ *
+ * $ u(I_i) = u_0(I_i) + \eta * MAX_{O^j_i\in \Lambda_i}(\sum_{k=1}^m{P(E^k_i|O^j_i)*u(I^{k,j}_i)) $
+ * @param [in] mst the state to be calculated
  * @return payoff of the state
+ * @see calActPayoff()
  */
 float CSOSAgent::calStatePayoff(const struct cs_State *mst) const
 {
@@ -669,8 +719,9 @@ float CSOSAgent::calStatePayoff(const struct cs_State *mst) const
 
 /**
  * @brief Update states starting from a specified state backwardly.
+ *
  * Note that: every time a state makes any changes, all its up-streaming states must be updated!
- * @param mst the state where the update starts
+ * @param [in] mst the state where the update starts
  */
 void CSOSAgent::updateStatePayoff(cs_State *mst)
 {
@@ -716,10 +767,12 @@ void CSOSAgent::updateStatePayoff(cs_State *mst)
 }
 
 /**
- * @brief Calculate the payoff of a specified action
- * @param act the action to be calculated
- * @param mst the state which the action is belonged to
+ * @brief Calculate the payoff of a specified action.
+ *
+ * @param [in] act the action to be calculated
+ * @param [in] mst the state which the action is belonged to
  * @return payoff of the action
+ * @see calStatePayoff()
  */
 float CSOSAgent::calActPayoff(Agent::Action act,
 		const struct cs_State *mst) const
@@ -732,10 +785,12 @@ float CSOSAgent::calActPayoff(Agent::Action act,
 }
 
 /**
- * @brief Calculate the payoff of a specified action
- * $$u(O^j_i) = \sum_{k=1}^m{P(E^k_i|O^j_i) * u(I^{k,j}_i)}$$
- * @param mac the address pointer of the action to be calculated
+ * @brief Calculate the payoff of a specified action.
+ *
+ * $ u(O^j_i) = \sum_{k=1}^m{P(E^k_i|O^j_i) * u(I^{k,j}_i)} $
+ * @param [in] mac the address pointer of the action to be calculated
  * @return payoff of the action
+ * @see calStatePayoff()
  **/
 float CSOSAgent::_calActPayoff(const cs_Action *mac) const
 {
@@ -753,8 +808,9 @@ float CSOSAgent::_calActPayoff(const cs_Action *mac) const
 
 /**
  * @brief Find and choose the best actions of a state from the action space.
- * @param mst the state
- * @param acts the action space of the state
+ *
+ * @param [in] mst the state
+ * @param [in] acts the action space of the state
  * @return the best actions
  */
 OSpace CSOSAgent::bestActions(const struct cs_State *mst, OSpace &acts) const
@@ -785,8 +841,9 @@ OSpace CSOSAgent::bestActions(const struct cs_State *mst, OSpace &acts) const
 
 /**
  * @brief Update states in memory.
+ *
  * Note: This function should be called AFTER MaxPayoffRule() in every step!
- * @param oripayoff original payoff of current state
+ * @param [in] oripayoff original payoff of current state
  */
 void CSOSAgent::updateMemory(float oripayoff)
 {
@@ -887,7 +944,8 @@ void CSOSAgent::freeMemory()
 
 /**
  * @brief Delete and free a specified state from memory.
- * @param mst the state to be deleted
+ *
+ * @param [in] mst the state to be deleted
  */
 void CSOSAgent::_deleteState(struct cs_State *mst)
 {
@@ -958,9 +1016,11 @@ void CSOSAgent::_deleteState(struct cs_State *mst)
 
 /**
  * @brief Implementation of the Maximum Payoff Rule (MPR).
- * @param st the state which is concerned
- * @param acts the action space of the state
+ *
+ * @param [in] st the state which is concerned
+ * @param [in] acts the action space of the state
  * @return the actions generated by MPR
+ * @see bestActions()
  */
 OSpace CSOSAgent::maxPayoffRule(Agent::State st, OSpace &acts) const
 {
@@ -979,9 +1039,11 @@ OSpace CSOSAgent::maxPayoffRule(Agent::State st, OSpace &acts) const
 }
 
 /**
- * @brief Open the agent for read or write
- * @param flag the open flag
+ * @brief Open the agent for read or write.
+ *
+ * @param [in] flag the open flag
  * @return 0 for successfully opened, or -1 if error occurs
+ * @see close()
  */
 int CSOSAgent::open(Flag flag)
 {
@@ -1001,7 +1063,8 @@ int CSOSAgent::open(Flag flag)
 }
 
 /**
- * @brief Close the agent
+ * @brief Close the agent.
+ * @see open(Flag)
  */
 void CSOSAgent::close()
 {
@@ -1009,8 +1072,9 @@ void CSOSAgent::close()
 }
 
 /**
- * @brief Get the information of a specified state
- * @param st the state whose information is to get
+ * @brief Get the information of a specified state.
+ *
+ * @param [in] st the state whose information is to get
  * @return address pointer of state information header, or NULL if error occurs
  */
 struct State_Info_Header *CSOSAgent::getStateInfo(Agent::State st) const
@@ -1095,8 +1159,9 @@ struct State_Info_Header *CSOSAgent::getStateInfo(Agent::State st) const
 
 /**
  * @brief Build a state structure in computer memory from a state information.
- * @param sthd the state information header
- * @param mst the state structure to be built in memory
+ *
+ * @param [in] sthd the state information header
+ * @param [in] mst the state structure to be built in memory
  */
 void CSOSAgent::buildStateFromHeader(const State_Info_Header *sthd,
 		cs_State *mst)
@@ -1149,8 +1214,9 @@ void CSOSAgent::buildStateFromHeader(const State_Info_Header *sthd,
 
 /**
  * @brief Add a state from a state information to computer memory.
+ *
  * Make sure the state is not existing in memory before adding, otherwise use updateStateInfo() instead.
- * @param sthd the state information to be added
+ * @param [in] sthd the state information to be added
  */
 void CSOSAgent::addStateInfo(const State_Info_Header *sthd)
 {
@@ -1180,8 +1246,9 @@ void CSOSAgent::addStateInfo(const State_Info_Header *sthd)
 
 /**
  * @brief Update a state from a state information in computer memory.
+ *
  * Make sure the state is already existing in memory before updating, otherwise use addStateInfo() instead.
- * @param sthd the state information to be updated
+ * @param [in] sthd the state information to be updated
  */
 void CSOSAgent::updateStateInfo(const State_Info_Header *sthd)
 {
@@ -1224,7 +1291,8 @@ void CSOSAgent::updateStateInfo(const State_Info_Header *sthd)
 
 /**
  * @brief Delete a state from memory.
- * @param st the state to be deleted
+ *
+ * @param [in] st the state to be deleted
  */
 void CSOSAgent::deleteState(State st)
 {
@@ -1234,7 +1302,8 @@ void CSOSAgent::deleteState(State st)
 
 /**
  * @brief Update payoffs starting from a specified state.
- * @param st the state where the update starts
+ *
+ * @param [in] st the state where the update starts
  */
 void CSOSAgent::updatePayoff(State st)
 {
@@ -1243,8 +1312,9 @@ void CSOSAgent::updatePayoff(State st)
 }
 
 /**
- * @brief Add Memory information to memory
- * @param memif the memory information to be added.
+ * @brief Add Memory information to memory.
+ *
+ * @param [in] memif the memory information to be added.
  */
 void CSOSAgent::addMemoryInfo(const struct Memory_Info *memif)
 {
@@ -1253,8 +1323,9 @@ void CSOSAgent::addMemoryInfo(const struct Memory_Info *memif)
 }
 
 /**
- * @brief Update memory information in memory
- * @param memif the memory information to be updated
+ * @brief Update memory information in memory.
+ *
+ * @param [in] memif the memory information to be updated
  */
 void CSOSAgent::updateMemoryInfo(const struct Memory_Info *memif)
 {
@@ -1263,7 +1334,8 @@ void CSOSAgent::updateMemoryInfo(const struct Memory_Info *memif)
 }
 
 /**
- * @brief Get the memory information from memory
+ * @brief Get the memory information from memory.
+ *
  * @return address pointer of the memory information
  */
 struct Memory_Info *CSOSAgent::getMemoryInfo() const
@@ -1282,7 +1354,8 @@ struct Memory_Info *CSOSAgent::getMemoryInfo() const
 }
 
 /**
- * @brief Get the name of memory
+ * @brief Get the name of memory.
+ *
  * @return the memory name
  */
 std::string CSOSAgent::getMemoryName() const
@@ -1293,8 +1366,10 @@ std::string CSOSAgent::getMemoryName() const
 }
 
 /**
- * @brief Get the first state in memory
+ * @brief Get the first state in memory.
+ *
  * @return the first state value
+ * @see nextState()
  */
 Agent::State CSOSAgent::firstState() const
 {
@@ -1306,8 +1381,10 @@ Agent::State CSOSAgent::firstState() const
 }
 
 /**
- * @brief Get the next state in memory
+ * @brief Get the next state in memory.
+ *
  * @return the state value
+ * @see firstState()
  */
 Agent::State CSOSAgent::nextState() const
 {
@@ -1324,7 +1401,8 @@ Agent::State CSOSAgent::nextState() const
 }
 
 /**
- * @brief Check if a state exists in memory
+ * @brief Check if a state exists in memory.
+ *
  * @return true|false
  */
 bool CSOSAgent::hasState(State st) const

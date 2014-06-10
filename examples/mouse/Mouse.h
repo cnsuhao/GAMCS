@@ -28,7 +28,7 @@ class Mouse: public Avatar
     private:
         int position;    // current position of the mouse in tunnel
 
-        Agent::State percieveState();
+        Agent::State perceiveState();
         void performAction(Agent::Action);
         OSpace availableActions(Agent::State);
         float originalPayoff(Agent::State);

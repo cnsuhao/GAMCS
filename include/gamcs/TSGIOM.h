@@ -22,7 +22,8 @@ namespace gamcs
 {
 
 /**
- * Time-Sequential Generalized Input/Output Model.
+ * @brief Time-Sequential Generalized Input/Output Model.
+ *
  * TSGIOM is a kind of GIOM which has the capability to record time sequence.
  */
 class TSGIOM: public GIOM
