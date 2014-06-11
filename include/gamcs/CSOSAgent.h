@@ -25,7 +25,7 @@ namespace gamcs
 {
 
 /**
- * CSOSAgent is an implementation of OSAgent using computer.
+ * @brief CSOSAgent is an implementation of OSAgent using computer.
  */
 class CSOSAgent: public OSAgent
 {
@@ -125,7 +125,7 @@ class CSOSAgent: public OSAgent
 };
 
 /**
- * The structure used to represent a state in computer memory
+ * @brief The structure used to represent a state in computer memory
  */
 struct cs_State
 {
@@ -141,7 +141,7 @@ struct cs_State
 };
 
 /**
- * The structure used to represent an action in computer memory
+ * @brief The structure used to represent an action in computer memory
  */
 struct cs_Action
 {
@@ -152,7 +152,7 @@ struct cs_Action
 };
 
 /**
- * The structure used to represent an environment action in computer memory
+ * @brief The structure used to represent an environment action in computer memory
  */
 struct cs_EnvAction
 {
@@ -164,7 +164,7 @@ struct cs_EnvAction
 };
 
 /**
- * The structure used to represent a link between a state and its up-streaming states
+ * @brief The structure used to represent a link between a state and its up-streaming states
  */
 struct cs_BackwardLink
 {

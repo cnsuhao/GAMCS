@@ -26,7 +26,7 @@ namespace gamcs
 class Storage;
 
 /**
- * View memory in graphviz dot style.
+ * @brief View memory in graphviz dot style.
  */
 class DotViewer: public MemoryViewer
 {

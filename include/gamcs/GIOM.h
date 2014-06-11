@@ -70,22 +70,24 @@ typedef int64_t gamcs_int;
 
 #endif
 
-/**
+/*
  * Format strings used for printing Input and Output values regardless of platforms or INT_BITS
  */
-#define IN_FMT GAMCS_INT_FMT       /**< @code{.c} usage: printf("%" IN_FMT "\n", input); @endcode */
-#define OUT_FMT GAMCS_INT_FMT       /**< @code{.c} usage: printf("%" OUT_FMT "\n", output); @endcode */
+/**< usage: @code{.cpp} printf("%" IN_FMT "\n", input); @endcode */
+#define IN_FMT GAMCS_INT_FMT
+/**< usage: @code{.cpp} printf("%" OUT_FMT "\n", output); @endcode */
+#define OUT_FMT GAMCS_INT_FMT
 
 class OSpace;
 
 /**
- * Generalized Input Output Model
+ * @brief Generalized Input Output Model
  */
 class GIOM
 {
 	public:
-		typedef gamcs_int Input; /**< Input type (signed integer) */
-		typedef gamcs_int Output; /**< Output type (signed integer) */
+		typedef gamcs_int Input; /**< Input type (signed integer) <br> Print: @code printf("%" IN_FMT "\n", input); @endcode */
+		typedef gamcs_int Output; /**< Output type (signed integer) <br> Print:  @code printf("%" OUT_FMT "\n", output); @endcode */
 
 		GIOM();
 		virtual ~GIOM();
@@ -110,7 +112,7 @@ class GIOM
 };
 
 /**
- * Fragment is used to store a single output or a range of outputs.
+ * @brief Fragment is used to store a single output or a range of outputs.
  *
  * For example: output space {1, 3, 5, 7 ,9} can be represented as [1, 9, 2] by an OFragment.
  */
@@ -122,7 +124,7 @@ struct OFragment
 };
 
 /**
- *  Output space which contains a series of outputs.
+ * @brief Output space which contains a series of outputs.
  *
  *  A space is different from a set in which outputs can be repeated.
  */

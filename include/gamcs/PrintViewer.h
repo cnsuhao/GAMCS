@@ -25,7 +25,7 @@ namespace gamcs
 class Storage;
 
 /**
- * View memory in pretty print style.
+ * @brief View memory in pretty print style.
  */
 class PrintViewer: public MemoryViewer
 {

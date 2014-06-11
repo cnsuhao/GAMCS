@@ -23,7 +23,7 @@ namespace gamcs
 {
 
 /**
- *  Storage Interface
+ *  @brief Storage Interface
  */
 class Storage
 {
