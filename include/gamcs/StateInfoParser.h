@@ -22,27 +22,27 @@ namespace gamcs
 {
 
 /**
- * A help class to parse the state information
+ * @brief A helper class to parse the state information.
  */
 class StateInfoParser
 {
-    public:
-        StateInfoParser(const State_Info_Header *);
-        virtual ~StateInfoParser();
+	public:
+		StateInfoParser(const State_Info_Header *);
+		virtual ~StateInfoParser();
 
-        Action_Info_Header *move2Act(Agent::Action);
-        Action_Info_Header *firstAct();
-        Action_Info_Header *nextAct();
-        EnvAction_Info *move2Eat(Agent::EnvAction);
-        EnvAction_Info *firstEat();
-        EnvAction_Info *nextEat();
+		Action_Info_Header *move2Act(Agent::Action);
+		Action_Info_Header *firstAct();
+		Action_Info_Header *nextAct();
+		EnvAction_Info *move2Eat(Agent::EnvAction);
+		EnvAction_Info *firstEat();
+		EnvAction_Info *nextEat();
 
-    private:
-        const State_Info_Header *my_sthd;
-        unsigned char *atp;
-        unsigned long act_index;
-        unsigned char *eap;
-        unsigned long eat_index;
+	private:
+		const State_Info_Header *my_sthd; /**< the state information */
+		unsigned char *atp; /**< action pointer */
+		unsigned long act_index; /**< action index */
+		unsigned char *eap; /**< environment action pointer */
+		unsigned long eat_index; /**< environment action index */
 };
 
 } /* namespace gamcs */

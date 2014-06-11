@@ -79,7 +79,7 @@ class Saleman: public Avatar
         }
 
     private:
-        Agent::State percieveState()
+        Agent::State perceiveState()
         {
             // encode state
             encodeState(path, current_state);

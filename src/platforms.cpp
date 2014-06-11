@@ -30,6 +30,12 @@
 namespace gamcs
 {
 
+/**
+ * @brief Platform-independent implementation of log2.
+ *
+ * @param [in] value the value to be calculated
+ * @return log2(value)
+ */
 double pi_log2(double value)
 {
 #if defined(_WIN32) 
@@ -39,6 +45,11 @@ double pi_log2(double value)
 #endif
 }
 
+/**
+ * @brief Platform-independent implementation of sleep function.
+ *
+ * @param [in] ms the millisecond to sleep
+ */
 void pi_msleep(unsigned long ms)
 {
 #if defined(_WIN32) 
@@ -48,6 +59,13 @@ void pi_msleep(unsigned long ms)
 #endif
 }
 
+/**
+ * @brief Platform-independent implementation of a progress bar.
+ *
+ * @param [in] index current index
+ * @param [in] total the total amount
+ * @param [in] label the label used to show in progress bar
+ */
 void pi_progressBar(unsigned long index, unsigned long total, char *label)
 {
 #if defined(_WIN32) 

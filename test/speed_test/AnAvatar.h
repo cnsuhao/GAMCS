@@ -26,7 +26,7 @@ class AnAvatar: public Avatar
     private:
         Agent::State current_state;
 
-        Agent::State percieveState()
+        Agent::State perceiveState()
         {
             printf("current state: %" ST_FMT "\n", current_state);
             return current_state;

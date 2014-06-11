@@ -16,7 +16,7 @@ class Monomer: public Avatar
     private:
         Agent::State position;
 
-        Agent::State percieveState();
+        Agent::State perceiveState();
         void performAction(Agent::Action);
         OSpace availableActions(Agent::State);
         float originalPayoff(Agent::State);

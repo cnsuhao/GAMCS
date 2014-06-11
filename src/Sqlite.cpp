@@ -23,21 +23,40 @@
 namespace gamcs
 {
 
+/**
+ * @brief The default constructor.
+ *
+ * @param [in] dbname the database name
+ */
 Sqlite::Sqlite(std::string dbname) :
 		db_con(NULL), db_name(dbname), db_t_stateinfo("StateInfo"), db_t_meminfo(
 				"MemoryInfo"), current_index(0), o_flag(O_READ)
 {
 }
 
+/**
+ * @brief The default destructor.
+ */
 Sqlite::~Sqlite()
 {
 }
 
+/**
+ * @brief Set the database arguments.
+ *
+ * @param [in] db the database name
+ */
 void Sqlite::setDBArgs(std::string db)
 {
 	db_name = db;
 }
 
+/**
+ * @brief Open the storage for read or write.
+ *
+ * @param [in] flag the open flag
+ * @return 0 on successfully opened, or -1 if error occurs
+ */
 int Sqlite::open(Flag flag)
 {
 	o_flag = flag;
@@ -63,7 +82,7 @@ int Sqlite::open(Flag flag)
 	{
 		// connect to database, create if not exists
 		ret = sqlite3_open_v2(db_name.c_str(), &db_con,
-		SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+				SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
 
 		if (ret)	// open error
 		{
@@ -118,6 +137,9 @@ int Sqlite::open(Flag flag)
 	return 0;
 }
 
+/**
+ * @brief Close the storage.
+ */
 void Sqlite::close()
 {
 	if (db_con == NULL)
@@ -134,18 +156,34 @@ void Sqlite::close()
 	}
 }
 
+/**
+ * @brief Get the first state in storage.
+ *
+ * @return the first state
+ */
 Agent::State Sqlite::firstState() const
 {
 	current_index = 0;
 	return stateByIndex(current_index);
 }
 
+/**
+ * @brief Get the next state in storage.
+ *
+ * @return the next state
+ */
 Agent::State Sqlite::nextState() const
 {
 	++current_index;
 	return stateByIndex(current_index);
 }
 
+/**
+ * @brief Get a state by its index in storage.
+ *
+ * @param [in] index the index in storage
+ * @return the state at that index, or INVALID_STATE if out of boundary
+ */
 Agent::State Sqlite::stateByIndex(unsigned long index) const
 {
 	Agent::State st = Agent::INVALID_STATE;
@@ -173,6 +211,12 @@ Agent::State Sqlite::stateByIndex(unsigned long index) const
 	return st;
 }
 
+/**
+ * @brief Get information of a specified state from storage.
+ *
+ * @param [in] st the requested state
+ * @return address point of the state information
+ */
 struct State_Info_Header *Sqlite::getStateInfo(Agent::State st) const
 {
 	if (st == Agent::INVALID_STATE)
@@ -220,6 +264,12 @@ struct State_Info_Header *Sqlite::getStateInfo(Agent::State st) const
 	return sthd;
 }
 
+/**
+ * @brief Check if a state exists in storage.
+ *
+ * @param [in] st the requested state
+ * @return true|false
+ */
 bool Sqlite::hasState(Agent::State st) const
 {
 	bool result = false;
@@ -246,6 +296,13 @@ bool Sqlite::hasState(Agent::State st) const
 	return result;
 }
 
+/**
+ * @brief Add a state to storage from the given information.
+ *
+ * When you add new states or links to the memory, make sure to update the memory information correspondingly.
+ * Or the memory will stay inconsistent, and the loading will fail.
+ * @param [in] sthd the state information
+ */
 void Sqlite::addStateInfo(const struct State_Info_Header *sthd)
 {
 	unsigned long act_len = sthd->size - sizeof(State_Info_Header);
@@ -288,6 +345,13 @@ void Sqlite::addStateInfo(const struct State_Info_Header *sthd)
 	return;
 }
 
+/**
+ * @brief Update a state in storage from the given information.
+ *
+ * When you add new states or links to the memory, make sure to update the memory information correspondingly.
+ * Or the memory will stay unconsistent, and the loading will fail.
+ * @param [in] sthd the state information
+ */
 void Sqlite::updateStateInfo(const struct State_Info_Header *sthd)
 {
 	unsigned long act_len = sthd->size - sizeof(State_Info_Header);
@@ -332,11 +396,14 @@ void Sqlite::updateStateInfo(const struct State_Info_Header *sthd)
 	return;
 }
 
+/**
+ * @brief Delete a state from storage.
+ *
+ * @param [in] st the state to be deleted
+ * FIXME: need to handle the links with other states!
+ */
 void Sqlite::deleteState(Agent::State st)
 {
-	WARNNING(
-			"DeleteState() is not completely implemented yet, it's buggy and will not work as expected, DON'T use it!\n");
-
 	char query_string[256];
 	sprintf(query_string, "DELETE FROM %s WHERE State=%" ST_FMT,
 			db_t_stateinfo.c_str(), st);    // build delete query
@@ -352,6 +419,11 @@ void Sqlite::deleteState(Agent::State st)
 	return;
 }
 
+/**
+ * @brief Add the memory information to storage.
+ *
+ * @param [in] memif the memory information
+ */
 void Sqlite::addMemoryInfo(const struct Memory_Info *memif)
 {
 	char query_str[1024];
@@ -380,6 +452,11 @@ void Sqlite::addMemoryInfo(const struct Memory_Info *memif)
 	sqlite3_finalize(stmt);
 }
 
+/**
+ * @brief Update the memory information in storage.
+ *
+ * @param [in] memif the memory information
+ */
 void Sqlite::updateMemoryInfo(const struct Memory_Info *memif)
 {
 	char query_str[1024];
@@ -409,6 +486,11 @@ void Sqlite::updateMemoryInfo(const struct Memory_Info *memif)
 	sqlite3_finalize(stmt);
 }
 
+/**
+ * @brief Get the memory information from storage.
+ *
+ * @return address point of the memory information
+ */
 struct Memory_Info *Sqlite::getMemoryInfo() const
 {
 	struct Memory_Info *memif = NULL;
@@ -429,7 +511,7 @@ struct Memory_Info *Sqlite::getMemoryInfo() const
 		if (sqlite3_step(stmt) == SQLITE_ROW)
 		{
 			memif = (struct Memory_Info *) malloc(sizeof(struct Memory_Info));
-			memif->discount_rate = sqlite3_column_double(stmt, 2);  // row 1 is Id
+			memif->discount_rate = sqlite3_column_double(stmt, 2);    // row 1 is Id
 			memif->threshold = sqlite3_column_double(stmt, 3);
 			memif->state_num = sqlite3_column_int(stmt, 4);
 			memif->lk_num = sqlite3_column_int(stmt, 5);
@@ -442,6 +524,11 @@ struct Memory_Info *Sqlite::getMemoryInfo() const
 	return memif;
 }
 
+/**
+ * @brief Get the memory name.
+ *
+ * @return the memory name
+ */
 std::string Sqlite::getMemoryName() const
 {
 	return db_name;

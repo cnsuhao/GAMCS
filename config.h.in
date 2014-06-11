@@ -14,6 +14,14 @@
 //
 // -----------------------------------------------------------------------------
 
+/**
+* @mainpage notitle
+* @section GAMCS Documentation
+* This documentation explains the C++ APIs of GAMCS library. For more detailed 
+* explanations abount GAM and GAMCS concepts, please refer to the wiki <a href="http://gamcs.andy87.com">here</a>. 
+*
+*/
+
 #ifndef CONFIG_H
 #define CONFIG_H
 
@@ -22,7 +30,7 @@
 
 namespace gamcs
 {
-    const char version[16] = "@GAMCS_VERSION@";
+    const char version[16] = "@GAMCS_VERSION@";		/**< the version string */
 }   // namespace gamcs
 
 #endif

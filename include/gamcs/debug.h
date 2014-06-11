@@ -43,5 +43,14 @@ namespace gamcs
 
 void printStateInfo(const struct State_Info_Header *state_information_header);
 
+#ifdef __GNUC__
+#define DEPRECATED(MSG) __attribute__ ((deprecated (MSG)))
+#elif defined(_MSC_VER)
+#define DEPRECATED(MSG) __declspec(deprecated (MSG))
+#else
+#pragma message("WARNING: DEPRECATED attribute is missing for this compiler")
+#define DEPRECATED
+#endif
+
 }
 #endif // DEBUG_H

@@ -26,26 +26,27 @@ namespace gamcs
 class Storage;
 
 /**
- * Visualizing memory in graphviz dot format
+ * @brief View memory in graphviz dot style.
  */
 class DotViewer: public MemoryViewer
 {
-    public:
-        DotViewer(Storage *storage = NULL);
-        virtual ~DotViewer();
+	public:
+		DotViewer(Storage *storage = NULL);
+		virtual ~DotViewer();
 
-        void view(const char *file = NULL);
-        void viewState(Agent::State state, const char *file = NULL);
+		void view(const char *file = NULL);
+		void viewState(Agent::State state, const char *file = NULL);
 
-    protected:
-        const std::string int2String(gamcs_int value) const;
+	protected:
+		const std::string int2String(gamcs_int value) const;
 
-    private:
-        void dotStateInfo(
-                const struct State_Info_Header *state_information_header, FILE *output) const;
+	private:
+		void dotStateInfo(
+				const struct State_Info_Header *state_information_header,
+				FILE *output) const;
 
-        Agent::State last_state;
-        Agent::Action last_action;
+		Agent::State last_state; /**< the last state when memory was dumped */
+		Agent::Action last_action; /**< the last action when memory was dumped */
 };
 
 }    // namespace gamcs
