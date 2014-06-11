@@ -18,89 +18,108 @@
 namespace gamcs
 {
 
+/**
+ * @brief The default constructor.
+ *
+ * Initialize the random device.
+ */
 GIOM::GIOM() :
 		cur_in(INVALID_INPUT), cur_out(INVALID_OUTPUT), process_count(0), rand_device(
-				NULL), max_rand_value(0)
+		NULL), max_rand_value(0)
 {
-	rand_device = new std::random_device(); // to get true random on linux, use rand("/dev/random");
-	max_rand_value = rand_device->max();    // save maximum value
+	rand_device = new std::random_device();    // to get true random on linux, use rand("/dev/random") instead;
+	max_rand_value = rand_device->max();    // save the maximum value
 }
 
+/**
+ * @brief The default destructor.
+ *
+ * Destroy the random device.
+ */
 GIOM::~GIOM()
 {
 	delete rand_device;
 }
 
-/** \brief Constraint capacity of GIOM.
- * Minimum constrain by default, which means NO constrain at all here.
- * \param in input value
- * \param outputs all possible outputs for current input
- * \return the output space after constraint
+/**
+ * @brief Constraining capacity of the GIOM.
  *
+ * Minimum constrain by default, which means NO constrain at all here.
+ * @param [in] input the input value
+ * @param [in] outputs the output space for current input
+ * @return the sub output space after constraining
  */
-OSpace GIOM::constrain(Input in, OSpace &outputs) const
+OSpace GIOM::constrain(Input input, OSpace &outputs) const
 {
-	UNUSED(in);
-	return outputs;    // return all outputs
+	UNUSED(input);
+	return outputs;    // no constraint at all
 }
 
-/** \brief Process function of GIOM.
- * Return a random item from the constrained outputs by default.
- * \param in input identity
- * \return the generated output
+/**
+ * @brief The process function of GIOM.
  *
+ * Return a random item from the output space by default.
+ * @param [in] input the input value
+ * @param [in] outputs the output space of the input
+ * @return the generated output
  */
-GIOM::Output GIOM::process(Input in, OSpace &alpos_outputs)
+GIOM::Output GIOM::process(Input input, OSpace &outputs)
 {
-	OSpace restricited_outputs = constrain(in, alpos_outputs); // get restricted output values first
-	if (restricited_outputs.empty()) // no output generated, return an invalid GIOM::Output
+	OSpace restricited_outputs = constrain(input, outputs);    // get the constrained sub output space first
+	if (restricited_outputs.empty())    // if no output generated, return an invalid output
 		return INVALID_OUTPUT;
 
-	gamcs_uint sz = restricited_outputs.size();    // number of alpos_outputs
-	gamcs_uint index = randomGenerator(sz) % (sz); // choose an output value randomly
+	gamcs_uint sz = restricited_outputs.size();    // size of the subspace
+	gamcs_uint index = randomGenerator(sz) % (sz);    // choose an output randomly
 	GIOM::Output out = restricited_outputs[index];
 
-	// record input and output
-	cur_in = in;
+	// record the input and output
+	cur_in = input;
 	cur_out = out;
-	++process_count;    // increase count
+	++process_count;    // increase the count
 	return out;
 }
 
-/** \brief Calculate the entropy of a state under constraint
+/**
+ * @brief Calculate the entropy of a state under constraining.
  *
- * \return the entropy value
- *
+ * @param [in] input the specified input
+ * @param [in] outputs the output space of the input
+ * @return the entropy value
  */
-float GIOM::singleOutputEntropy(Input in, OSpace &alpos_outputs) const
+float GIOM::singleOutputEntropy(Input input, OSpace &outputs) const
 {
-	OSpace restricted_outputs = constrain(in, alpos_outputs);
+	OSpace restricted_outputs = constrain(input, outputs);
 	if (restricted_outputs.empty())
 		return 0.0;
 
 	gamcs_uint sz = restricted_outputs.size();
-	return pi_log2((double) sz); // all the alpos_outputs have the same probability of occurrence
+	return pi_log2((double) sz);    // all the alpos_outputs have the same probability of occurrence
 }
 
-/** \brief Update inner states and prepare for the next processing.
+/**
+ * @brief Update inner data of GIOM and prepare for the next processing.
  *
+ * Derived classes may have their own stuff to be updated.
  */
 void GIOM::update()
 {
-	// clear state and prepare for the next process
+	// clear input and output for the next processing
 	cur_in = INVALID_INPUT;
 	cur_out = INVALID_OUTPUT;
 	return;
 }
 
-/** \brief Generate a random number in the range from 0 to sz.
+/**
+ * @brief Generate a random number in the specified range.
  *
- * \return the generated random number
- *
+ * The random is where all possibilities and miracles come from.
+ * @param [in] sz the specified range
+ * @return the generated random number
  */
 gamcs_uint GIOM::randomGenerator(gamcs_uint sz) const
 {
-	std::uniform_int_distribution<gamcs_uint> dist(0, sz - 1); // random number range: 0 ~ sz-1
+	std::uniform_int_distribution<gamcs_uint> dist(0, sz - 1);    // random number range: 0 ~ sz-1
 
 	// check upper bound
 	if (max_rand_value < sz - 1)

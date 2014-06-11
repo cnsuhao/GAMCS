@@ -50,7 +50,7 @@ class PrisonerA: public Avatar
         }
 
     private:
-        Agent::State percieveState()
+        Agent::State perceiveState()
         {
             printf("PrisonerA State: %d\n", current_state);
             return current_state;
@@ -126,7 +126,7 @@ class PrisonerB: public Avatar
         }
 
     private:
-        Agent::State percieveState()
+        Agent::State perceiveState()
         {
             printf("PrisonerB State: %d\n", current_state);
             return current_state;

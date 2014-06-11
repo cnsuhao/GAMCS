@@ -20,6 +20,9 @@
 namespace gamcs
 {
 
+/**
+ * Platform-independent format strings to print different integer types
+ */
 #if defined( _WIN32)
 #define UINT8_FMT   "u"
 #define INT8_FMT    "d"
