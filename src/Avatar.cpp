@@ -142,7 +142,7 @@ void Avatar::connectAgent(Agent *agt)
  * By default this function returns 1 for every state which means that as long as the avatar can survive in the next state, the avatar should like it.
  * This is how the evolution works.
  * @param [in] st the state
- * @return original payoff of the state
+ * @return original payoff of the state, if you want avatar to use the original payoff of the state set last time, return INVALID_PAYOFF.
  */
 float Avatar::originalPayoff(Agent::State st)
 {
