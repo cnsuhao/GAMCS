@@ -22,23 +22,25 @@
 namespace gamcs
 {
 
-/**
+/*
  * Format strings used for printing State and Action values regardless of platforms or INT_BITS
  */
-#define ST_FMT IN_FMT		/**< usage: \code{.c} printf("%" ST_FMT "\n", state); \endcode */
-#define ACT_FMT OUT_FMT		/**< usage: \code{.c} printf("%" ACT_FMT "\n", action); \endcode */
+/**< usage: \code{.cpp} printf("%" ST_FMT "\n", state); \endcode */
+#define ST_FMT IN_FMT
+/**< usage: \code{.cpp} printf("%" ACT_FMT "\n", action); \endcode */
+#define ACT_FMT OUT_FMT
 
 /**
- * The Intelligent Agent is a kind of TSGIOM which uses the Maximum Payoff Rule for constraining.
+ * @brief The Intelligent Agent is a kind of TSGIOM which uses the Maximum Payoff Rule for constraining.
  *
  * The Payoff is a real type value assigned to each state to indicate the like-dislike degree of that state by an agent.
  */
 class Agent: public TSGIOM
 {
 	public:
-		typedef GIOM::Input State; /**< for an agent we call an input a state */
-		typedef GIOM::Output Action; /**< for an agent we call an output an action*/
-		typedef GIOM::Output EnvAction; /**< the environment action */
+		typedef GIOM::Input State; /**< for an agent we call an input a state <br> Print: @code printf("%" ST_FMT "\n", state); @endcode  */
+		typedef GIOM::Output Action; /**< for an agent we call an output an action <br> Print: @code printf("%" ACT_FMT "\n", action); @endcode */
+		typedef GIOM::Output EnvAction; /**< the environment action <br> Print: @code printf("%" ACT_FMT "\n", eact); @endcode */
 
 		/**
 		 * Learning mode of the agent.
@@ -93,7 +95,7 @@ class Agent: public TSGIOM
 #pragma pack(2)	// set arrangement value to 2
 
 /**
- * Action information header
+ * @brief Action information header
  */
 struct Action_Info_Header
 {
@@ -102,7 +104,7 @@ struct Action_Info_Header
 };
 
 /**
- * Environment Action information
+ * @brief Environment Action information
  */
 struct EnvAction_Info
 {
@@ -111,15 +113,35 @@ struct EnvAction_Info
 		Agent::State nst; /**< the following state value of this environment action */
 };
 
-/** State information header
- *
- * The structure of a state information is like this:
- *
- * ------------------------------------------------------------------------------------------------------------------------------------
+/* ------------------------------------------------------------------------------------------------------------------------------------
  * |				   |					|				 |				  |		|					 |				  |		|	  |
  * | State_Info_Header | Action_Info_Header | EnvAction_Info | EnvAction_Info | ... | Action_Info_Header | EnvAction_Info | ... | ... |
  * |				   |					|				 |				  |		|					 |				  |		|	  |
  * ------------------------------------------------------------------------------------------------------------------------------------
+ */
+/**
+ * @brief State information header
+ *
+ * The structure of a state information is like this:
+ * @dot
+ * digraph stif {
+ *     node [ fontsize = "16" shape = "rectangle"];
+ *     edge [];
+ *
+ *     "pstif" [label = "State_Info_Header *"];
+ *
+ *     "stif" [label = "<st> State_Info_Header|<act> Action_Info_Header|<eat> EnvAction_Info|EnvAction_Info|...|Action_Info_Header|EnvAction_Info|...|Action_Info_Header|...|..." shape = "record"];
+ *
+ *     "st" [label = "{<hd> st|original payoff|payoff|count|act_num|size}" shape = "record"];
+ *     "act" [label = "{<hd> act|eat_num}" shape = "record"];
+ *     "eat" [label = "{<hd> eat|count|nst}" shape = "record"];
+ *
+ *     "pstif" -> "stif":st;
+ *     "stif":st -> "st":hd;
+ *     "stif":act -> "act":hd;
+ *     "stif":eat -> "eat":hd;
+ * }
+ * @enddot
  */
 struct State_Info_Header
 {
@@ -132,7 +154,7 @@ struct State_Info_Header
 };
 
 /**
- * Memory information
+ * @brief Memory information
  */
 struct Memory_Info
 {

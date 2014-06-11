@@ -24,7 +24,7 @@ namespace gamcs
 {
 
 /**
- * Sqlite storage.
+ * @brief Sqlite storage.
  *
  * Use a sqlite3 database as storage to dump/load agent memory.
  */

@@ -125,6 +125,7 @@ void Avatar::loop(int sps)
 /**
  * @brief Connect avatar to an agent.
  *
+ * Every avatar should be connected to an agent before activated. Just like every man should have soul.
  * @param [in] agt the agent to be connected
  */
 void Avatar::connectAgent(Agent *agt)
@@ -135,10 +136,13 @@ void Avatar::connectAgent(Agent *agt)
 /**
  * @brief Get the original payoff of a state.
  *
- * Return 1 for every state by default which means as long as the avatar survives in the next state, the state has payoff as 1.
+ * There is where you can control your avatar, you can train it by telling what it likes and dislikes.
+ * Your avatar will chase after the states that it told to like, and escape from the states told to dislike.
+ *
+ * By default this function returns 1 for every state which means that as long as the avatar can survive in the next state, the avatar should like it.
+ * This is how the evolution works.
  * @param [in] st the state
  * @return original payoff of the state
- *
  */
 float Avatar::originalPayoff(Agent::State st)
 {

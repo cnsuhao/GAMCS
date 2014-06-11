@@ -28,7 +28,7 @@ namespace gamcs
 {
 
 /**
- * Mysql storage.
+ * @brief Mysql storage.
  *
  * Use a mysql database as storage to dump/load agent memory.
  */

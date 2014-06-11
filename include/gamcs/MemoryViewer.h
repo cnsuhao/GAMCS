@@ -25,7 +25,7 @@ namespace gamcs
 class Storage;
 
 /**
- * Interface for visualizing memory.
+ * @brief Interface for visualizing memory.
  */
 class MemoryViewer
 {

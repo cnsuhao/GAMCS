@@ -24,7 +24,7 @@ namespace gamcs
 {
 
 /**
- *  The Open Storage Agent is a kind of agent with storage interfaces that support manipulating the memory directly.
+ * @brief The Open Storage Agent is a kind of agent with storage interfaces that support manipulating the memory directly.
  */
 class OSAgent: public Agent, public Storage
 {
