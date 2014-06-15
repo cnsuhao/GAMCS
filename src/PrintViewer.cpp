@@ -64,7 +64,7 @@ void PrintViewer::view(const char *file)
 		fprintf(output,
 				"=================== Memory Information ====================\n");
 		fprintf(output, "discount rate: \t%.2f\n", memif->discount_rate);
-		fprintf(output, "threshold: \t%.2f\n", memif->threshold);
+		fprintf(output, "accuracy: \t%.2f\n", memif->accuracy);
 		fprintf(output, "number of states: \t%" UINT32_FMT "\n", memif->state_num);
 		fprintf(output, "number of links: \t%" UINT32_FMT "\n", memif->lk_num);
 		fprintf(output, "last state: \t%" ST_FMT "\n", memif->last_st);
