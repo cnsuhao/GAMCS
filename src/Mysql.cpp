@@ -136,7 +136,7 @@ int Mysql::open(Flag flag)
 		}
 
 		sprintf(tb_string,
-				"CREATE TABLE IF NOT EXISTS %s.%s(Id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, TimeStamp TIMESTAMP, DiscountRate FLOAT, Threshold FLOAT, NumStates BIGINT, NumLinks BIGINT, LastState BIGINT, LastAction BIGINT) \
+				"CREATE TABLE IF NOT EXISTS %s.%s(Id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, TimeStamp TIMESTAMP, DiscountRate FLOAT, Accuracy FLOAT, NumStates BIGINT, NumLinks BIGINT, LastState BIGINT, LastAction BIGINT) \
             ENGINE MyISAM ",
 				db_name.c_str(), db_t_meminfo.c_str());
 		if (mysql_query(db_con, tb_string))
@@ -436,8 +436,8 @@ void Mysql::addMemoryInfo(const struct Memory_Info *memif)
 	char query_str[1024];
 
 	sprintf(query_str,
-			"INSERT INTO %s(TimeStamp, DiscountRate, Threshold, NumStates, NumLinks, LastState, LastAction) VALUES(NULL, %f, %f, %" UINT32_FMT ", %" UINT32_FMT ", %" ST_FMT ", %" ACT_FMT ")",
-			db_t_meminfo.c_str(), memif->discount_rate, memif->threshold,
+			"INSERT INTO %s(TimeStamp, DiscountRate, Accuracy, NumStates, NumLinks, LastState, LastAction) VALUES(NULL, %f, %f, %" UINT32_FMT ", %" UINT32_FMT ", %" ST_FMT ", %" ACT_FMT ")",
+			db_t_meminfo.c_str(), memif->discount_rate, memif->accuracy,
 			memif->state_num, memif->lk_num, memif->last_st, memif->last_act);    // build insert query
 
 	int len = strlen(query_str);
@@ -459,8 +459,8 @@ void Mysql::updateMemoryInfo(const struct Memory_Info *memif)
 	char query_str[1024];
 
 	sprintf(query_str,
-			"UPDATE %s SET TimeStamp=NULL, DiscountRate=%f, Threshold=%f, NumStates=%" UINT32_FMT ", NumLinks=%" UINT32_FMT ", LastState=%" ST_FMT ", LastAction=%" ACT_FMT " ORDER BY Id DESC LIMIT 1",
-			db_t_meminfo.c_str(), memif->discount_rate, memif->threshold,
+			"UPDATE %s SET TimeStamp=NULL, DiscountRate=%f, Accuracy=%f, NumStates=%" UINT32_FMT ", NumLinks=%" UINT32_FMT ", LastState=%" ST_FMT ", LastAction=%" ACT_FMT " ORDER BY Id DESC LIMIT 1",
+			db_t_meminfo.c_str(), memif->discount_rate, memif->accuracy,
 			memif->state_num, memif->lk_num, memif->last_st, memif->last_act);
 
 	printf("query_str: %s\n", query_str);
@@ -515,7 +515,7 @@ struct Memory_Info *Mysql::getMemoryInfo() const
 			db_name.c_str(), row[0]);
 // fill in the memory struct, row[1] is Id
 	memif->discount_rate = atof(row[2]);
-	memif->threshold = atof(row[3]);
+	memif->accuracy = atof(row[3]);
 	memif->state_num = atol(row[4]);
 	memif->lk_num = atol(row[5]);
 	memif->last_st = atol(row[6]);

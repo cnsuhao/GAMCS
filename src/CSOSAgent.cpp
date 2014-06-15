@@ -28,10 +28,10 @@ namespace gamcs
  *
  * @param [in] i the agent id
  * @param [in] dr the discount rate
- * @param [in] th the threshold
+ * @param [in] ac the accuracy
  */
-CSOSAgent::CSOSAgent(int i, float dr, float th) :
-		OSAgent(i, dr, th), state_num(0), lk_num(0), head(NULL), cur_mst(NULL), current_st_index(
+CSOSAgent::CSOSAgent(int i, float dr, float ac) :
+		OSAgent(i, dr, ac), state_num(0), lk_num(0), head(NULL), cur_mst(NULL), current_st_index(
 		NULL)
 {
 	states_map.clear();
@@ -94,7 +94,7 @@ void CSOSAgent::loadMemoryFromStorage(Storage *storage)
 		if (memif != NULL)
 		{
 			discount_rate = memif->discount_rate;
-			threshold = memif->threshold;
+			accuracy = memif->accuracy;
 			saved_state_num = memif->state_num;    // don't use state_num directly
 			saved_lk_num = memif->lk_num;    // don't use lk_num directly
 			pre_in = memif->last_st;    // it's continuous
@@ -155,7 +155,7 @@ void CSOSAgent::dumpMemoryToStorage(Storage *storage) const
 		struct Memory_Info *memif = (struct Memory_Info *) malloc(
 				sizeof(struct Memory_Info));
 		memif->discount_rate = discount_rate;
-		memif->threshold = threshold;
+		memif->accuracy = accuracy;
 		memif->lk_num = lk_num;
 		memif->state_num = state_num;
 		memif->last_st = pre_in;
@@ -696,7 +696,7 @@ float CSOSAgent::calStatePayoff(const struct cs_State *mst) const
 	float u0 = mst->original_payoff;
 
 	if (mst->actlist == NULL)    // no any actions, return u0
-		return u0;
+		return trimPayoff(u0);   // trim the payoff
 
 	// find the maximun action payoff
 	float payoff = 0;
@@ -714,7 +714,8 @@ float CSOSAgent::calStatePayoff(const struct cs_State *mst) const
 	}
 
 	payoff = u0 + discount_rate * max_pf;
-	return payoff;
+
+	return trimPayoff(payoff);  // trim the payoff
 }
 
 /**
@@ -740,7 +741,7 @@ void CSOSAgent::updateStatePayoff(cs_State *mst)
 		cmst = update_queue.front();    // get the state at front
 		payoff = calStatePayoff(cmst);
 
-		if (fabsf(cmst->payoff - payoff) >= threshold)    // states are updated only when diff exceeds threshold
+		if (cmst->payoff != payoff)    // the backtrace will stop at where the payoff won't change
 		{
 			cmst->payoff = payoff;
 			dbgmoreprt("UpdateState()", "State: %" ST_FMT " change to payoff: %.3f\n", cmst->st, payoff);
@@ -758,7 +759,7 @@ void CSOSAgent::updateStatePayoff(cs_State *mst)
 		}
 		else
 		{
-			dbgmoreprt("UpdateState()", "State: %" ST_FMT ", payoff no changes, it's smaller than threshold\n", cmst->st);
+			dbgmoreprt("UpdateState()", "State: %" ST_FMT ", payoff no changes, update stopped here.\n", cmst->st);
 		}
 
 		visited_states.insert(cmst);    // save visited state
@@ -779,7 +780,7 @@ float CSOSAgent::calActPayoff(Agent::Action act,
 {
 	cs_Action *mac = searchAct(act, mst);
 	if (mac == NULL)    // this is an unseen action
-		return 0;    // 0 for unseen action
+		return 0.0;    // 0 for unseen action
 
 	return _calActPayoff(mac);
 }
@@ -803,7 +804,26 @@ float CSOSAgent::_calActPayoff(const cs_Action *mac) const
 
 		nea = ea->next;
 	}
-	return payoff;
+
+	return trimPayoff(payoff);  // trim the payoff
+}
+
+/**
+ * @brief Trim payoff value according to the accuracy.
+ *
+ * @param [in] pf the payoff
+ * @return the trimed payoff
+ */
+float CSOSAgent::trimPayoff(float pf) const
+{
+    if (accuracy == 0.0)
+    {
+        return pf;  // no trim when accuracy is 0, the accuracy of payoff is dertermined by the bits of float
+    }
+    else
+    {
+        return  floor(pf / accuracy) * accuracy;
+    }
 }
 
 /**
@@ -1344,7 +1364,7 @@ struct Memory_Info *CSOSAgent::getMemoryInfo() const
 			sizeof(struct Memory_Info));
 
 	memif->discount_rate = discount_rate;
-	memif->threshold = threshold;
+	memif->accuracy = accuracy;
 	memif->state_num = state_num;
 	memif->lk_num = lk_num;
 	memif->last_st = pre_in;
