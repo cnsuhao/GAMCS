@@ -51,7 +51,7 @@ class Agent: public TSGIOM
 			EXPLORE /**< in this mode, an agent will learn as it acts, but not use what it has learned, instead it will act randomly */
 		};
 
-		Agent(int id = 0, float discount_rate = 0.9, float threshold = 0.01);
+		Agent(int id = 0, float discount_rate = 0.9, float accuracy = 0.01);
 		virtual ~Agent();
 
 		void setMode(Mode mode);
@@ -64,7 +64,7 @@ class Agent: public TSGIOM
 	protected:
 		int id; /**< the id of an agent */
 		float discount_rate; /**< the discount rate [0,1) used to calculate state payoff */
-		float threshold; /**< the threshold used to update payoff */
+		float accuracy; /**< the accuracy of payoff, ranging [0, +inf) */
 		Mode learning_mode; /**< the learning mode, ONLINE by default */
 
 		OSpace constrain(State state, OSpace &avaliable_actions) const;
@@ -159,7 +159,7 @@ struct State_Info_Header
 struct Memory_Info
 {
 		float discount_rate; /**< the discount rate */
-		float threshold; /**< the threshold */
+		float accuracy; /**< the accuracy */
 		uint32_t state_num; /**< total number of states in memory */
 		uint32_t lk_num; /**< total number of links between states in memory */
 		Agent::State last_st; /**< the last experienced state when dumping memory */

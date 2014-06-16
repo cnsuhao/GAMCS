@@ -33,7 +33,7 @@ class CSOSAgent: public OSAgent
 		typedef std::unordered_map<Agent::State, void *> StatesMap; /**< hash mapping from state value to the address point stored that state */
 
 		CSOSAgent(int id = 0, float discount_rate = 0.9,
-				float threshold = 0.01);
+				float accuracy = 0.01);
 		~CSOSAgent();
 
 		int open(Flag flag);
@@ -122,6 +122,7 @@ class CSOSAgent: public OSAgent
 		float calActPayoff(Agent::Action action,
 				const struct cs_State *state) const;
 		float _calActPayoff(const struct cs_Action *action) const;
+		float trimPayoff(float payoff) const;
 };
 
 /**

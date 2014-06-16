@@ -27,18 +27,18 @@ const float Agent::INVALID_PAYOFF = FLT_MAX; /**< use the maximum value to repre
  *
  * @param [in] i the agent id
  * @param [in] dr the discount rate
- * @param [in] th the threshold
+ * @param [in] ac the accuracy
  */
-Agent::Agent(int i, float dr, float th) :
-		id(i), discount_rate(dr), threshold(th), learning_mode(ONLINE)
+Agent::Agent(int i, float dr, float ac) :
+		id(i), discount_rate(dr), accuracy(ac), learning_mode(ONLINE)
 {
 	// check validity
-	if (discount_rate >= 1.0 || discount_rate < 0)    // discount rate range [0, 1)
+	if (discount_rate >= 1.0 || discount_rate < 0)    // [0, 1)
 		ERROR(
-				"Agent - discount rate must be bigger than 0 and smaller than 1.0!\n");
+				"Agent - discount rate must be greater than, equal to 0 and less than 1.0!\n");
 
-	if (threshold < 0)
-		ERROR("Agent - threshold must be bigger than 0!\n");
+	if (accuracy < 0)   // [0, +inf)
+		ERROR("Agent - the accuracy must be greater than, equal to 0.0!\n");
 }
 
 /**

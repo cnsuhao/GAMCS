@@ -46,7 +46,7 @@ DotViewer::~DotViewer()
  * @dot
  * digraph Example
  * {
- * label="memory Example\ndiscount rate: 0.90, threshold: 0.01, #states: 7, #links: 11"
+ * label="memory Example\ndiscount rate: 0.90, accuracy: 0.01, #states: 7, #links: 11"
  * node [color=black,shape=circle]
  * rank="same"
  *
@@ -192,9 +192,9 @@ void DotViewer::view(const char *file)
 	if (memif != NULL)
 	{
 		fprintf(output,
-				"label=\"memory %s\\ndiscount rate: %.2f, threshold: %.2f, #states: %" UINT32_FMT ", #links: %" UINT32_FMT "\"\n",
+				"label=\"memory %s\\ndiscount rate: %.2f, accuracy: %.2f, #states: %" UINT32_FMT ", #links: %" UINT32_FMT "\"\n",
 				storage->getMemoryName().c_str(), memif->discount_rate,
-				memif->threshold, memif->state_num, memif->lk_num);
+				memif->accuracy, memif->state_num, memif->lk_num);
 		// store last status
 		last_state = memif->last_st;
 		last_action = memif->last_act;

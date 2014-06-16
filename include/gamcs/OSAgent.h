@@ -34,10 +34,10 @@ class OSAgent: public Agent, public Storage
 		 *
 		 * @param [in] id the agent id
 		 * @param [in] discount_rate the discount rate
-		 * @param [in] threshold the threshold
+		 * @param [in] accuracy the accuracy
 		 */
-		OSAgent(int id = 0, float discount_rate = 0.9, float threshold = 0.01) :
-				Agent(id, discount_rate, threshold)
+		OSAgent(int id = 0, float discount_rate = 0.9, float accuracy = 0.01) :
+				Agent(id, discount_rate, accuracy)
 		{
 		}
 
