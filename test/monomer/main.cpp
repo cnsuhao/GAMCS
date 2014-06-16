@@ -7,9 +7,9 @@
 
 int main(void)
 {
-	CSOSAgent ma(1, 0.9, 0.01);
-	Mysql db("localhost", "root", "huangk", "Monomer");
-//	Sqlite db("./test.db");
+	CSOSAgent ma(1, 0.9, 1);
+//	Mysql db("localhost", "root", "huangk", "Monomer");
+	Sqlite db("./test.db");
 	ma.loadMemoryFromStorage(&db);
 
 	Monomer mono;
