@@ -69,6 +69,23 @@ int Avatar::step()
 }
 
 /**
+ * @brief Step a passive avatar for on circle.
+ *
+ * Note: To use this function, the avatar must be put in PASSIVE mode.
+ */
+void Avatar::pstep()
+{
+	++ava_loop_count;    // increase count
+
+	/* Perceive state */
+	Agent::State cs = perceiveState();    // get current state
+	/* Process */
+	myagent->process(cs, OSpace());
+	/* Update */
+	myagent->update(originalPayoff(cs));
+}
+
+/**
  * @brief Step avatar in loops.
  *
  * @param [in] sps steps/loops per second, < 0 if not control
