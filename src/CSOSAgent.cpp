@@ -868,10 +868,10 @@ OSpace CSOSAgent::bestActions(const struct cs_State *mst, OSpace &acts) const
 void CSOSAgent::updateMemory(float oripayoff)
 {
 	dbgmoreprt("\nEnter UpdateMemory()", "-------------------------------------------------\n");
-	// In EXPLORE/PASSIVE mode, maxPayoffRule() will not run, which leaves cur_mst unset, so we have to set cur_mst here
+	// In EXPLORE/TEACH mode, maxPayoffRule() will not run, which leaves cur_mst unset, so we have to set cur_mst here
 	// otherwise, cur_mst will be set by maxPayoffRule().
 	// FIXME: this reduces time to search but is a bit ugly!
-	if (learning_mode == EXPLORE || learning_mode == PASSIVE)
+	if (learning_mode == EXPLORE || learning_mode == TEACH)
 		cur_mst = searchState(cur_in);
 
 	if (pre_in == INVALID_STATE)    // previous state not exist, it's running for the first time
@@ -906,7 +906,7 @@ void CSOSAgent::updateMemory(float oripayoff)
 				pre_in);
 
 	//NOTE: cur_mst is already set in MaxPayoffRule() function
-	if (cur_mst == NULL)    // currrent state struct not exists in memory, create it in memory, and link it to the previous state
+	if (cur_mst == NULL)    // current state struct not exists in memory, create it in memory, and link it to the previous state
 	{
 		dbgmoreprt("", "current state not exists, create it and build the link\n");
 		cur_mst = newState(cur_in);
