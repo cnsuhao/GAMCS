@@ -42,6 +42,7 @@ Avatar::~Avatar()
  * Note: if there are no more actions for an avatar to perform, the step will return -1 which means the end is reached.
  * @return 0 on success, -1 if reach the end
  * @see loop()
+ * @see teach()
  */
 int Avatar::step()
 {
@@ -63,26 +64,32 @@ int Avatar::step()
 	myagent->update(originalPayoff(cs));    // agent update inner states
 
 	/* Perform action */
-	performAction(act);    // otherwise, perform the action
+	performAction(act);    // perform the action
 
 	return 0;
 }
 
 /**
- * @brief Step a passive avatar for on circle.
+ * @brief Teach avatar the effect of an action.
  *
- * Note: To use this function, the avatar must be put in PASSIVE mode.
+ * @param [in] act the action to be taught
+ * Note: 1. To use this function, the avatar must be put in TEACH mode first.
+ * 2. Any real action performing stuff should be called after this function.
+ * @see step()
  */
-void Avatar::pstep()
+void Avatar::teach(Agent::Action act)
 {
 	++ava_loop_count;    // increase count
 
 	/* Perceive state */
 	Agent::State cs = perceiveState();    // get current state
 	/* Process */
-	myagent->process(cs, OSpace());
+	OSpace acts;
+	acts.add(act);  // act becomes the only action that agent will choose
+	myagent->process(cs, acts);     // myagent has no other action choice but act
 	/* Update */
 	myagent->update(originalPayoff(cs));
+	/* Perform the action outside after this function */
 }
 
 /**
