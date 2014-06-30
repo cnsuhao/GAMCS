@@ -59,6 +59,16 @@ void Agent::setMode(Mode mode)
 }
 
 /**
+ * @brief Get the learning mode of an agent.
+ *
+ * @return current learning mode
+ */
+Agent::Mode Agent::getMode()
+{
+	return learning_mode;
+}
+
+/**
  * @brief The constraining capacity of an agent.
  *
  * Use the Maximum Payoff Rule to do the constraining.
@@ -72,6 +82,12 @@ OSpace Agent::constrain(Agent::State st, OSpace &acts) const
 		return maxPayoffRule(st, acts);
 	else if (learning_mode == EXPLORE)    // no constraint at all in EXPLORE mode
 		return acts;
+	else if (learning_mode == PASSIVE)	// passive mode
+	{
+		OSpace acts;
+		acts.add(st - pre_in);		// on PASSIVE mode, (cur_in - pre_in) is my action
+		return acts;
+	}
 	else
 	{
 		ERROR("Unknown learning mode: %d!\n", learning_mode);
