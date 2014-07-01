@@ -86,7 +86,9 @@ class Avatar
 		/**
 		 * @brief Get the action space of a specified state.
 		 *
-		 * A state with an empty action space will be the dead-end state where your avatar will suspend.
+		 * A state with an empty action space is the dead-end state where your avatar should suspend.
+		 * Note: Once an action is available for a state, NEVER remove it,
+		 * let the avatar itself learn if the action becomes ineffective!
 		 * @param [in] state the specified state
 		 * @return the action space of that state
 		 */

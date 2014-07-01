@@ -19,7 +19,7 @@ int main(void)
     ol.add(0, 80, 1);
     ol.add(20, 10, -1);
 
-    printf("Outputs: ");
+    printf("origin Space Outputs: ");
     GIOM::Output out = ol.first();
     while (out != GIOM::INVALID_OUTPUT)
     {
@@ -35,4 +35,22 @@ int main(void)
     printf("the first one is %" OUT_FMT "\n", ol.first());
     printf("the last one is %" OUT_FMT "\n", ol.last());
 
+    printf("=============================================\n");
+
+    OSpace ol1(ol);
+    printf("copied Space Outputs: ");
+    out = ol1.first();
+    while (out != GIOM::INVALID_OUTPUT)
+    {
+        printf("%" OUT_FMT ", ", out);
+        out = ol1.next();
+    }
+    printf("\n");
+
+    printf("size: %" GAMCS_UINT_FMT "\n", ol1.size());
+    i = 7;
+    printf("index %d is %" OUT_FMT "\n", i, ol1[i]);
+    printf("capacity is %" GAMCS_UINT_FMT "\n", ol1.capacity());
+    printf("the first one is %" OUT_FMT "\n", ol1.first());
+    printf("the last one is %" OUT_FMT "\n", ol1.last());
 }

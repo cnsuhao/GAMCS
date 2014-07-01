@@ -126,7 +126,10 @@ struct OFragment
 /**
  * @brief Output space which contains a series of outputs.
  *
- *  A space is different from a set in which outputs can be repeated.
+ *  The space is different from a set in which outputs can be repeated.
+ *  Repeated outputs will be counted more than once, this can be used
+ *  to mimic the weight of an output.
+ *  The more times it appears, the bigger weight it has.
  */
 class OSpace
 {
