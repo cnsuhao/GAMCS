@@ -60,7 +60,7 @@ int Avatar::step()
 	if (act == Agent::INVALID_ACTION)    // no valid actions available, reach a dead end, quit. !!!: be sure to check this before update stage
 		return -1;
 
-	/* update memory */
+	/* Update memory */
 	myagent->update(originalPayoff(cs));    // agent update inner states
 
 	/* Perform action */
@@ -73,7 +73,7 @@ int Avatar::step()
  * @brief Teach avatar the effect of an action.
  *
  * @param [in] act the action to be taught
- * Note: 1. To use this function, the avatar must be put in TEACH mode first.
+ * Note: 1. Although it also works on ONLINE mode, it's more efficient to put avatar on EXPLORE mode when teaching.
  * 2. Any real action performing stuff should be called after this function.
  * @see step()
  */
@@ -83,13 +83,16 @@ void Avatar::teach(Agent::Action act)
 
 	/* Perceive state */
 	Agent::State cs = perceiveState();    // get current state
+
 	/* Process */
 	OSpace acts;
 	acts.add(act);  // act becomes the only action that agent will choose
 	myagent->process(cs, acts);     // myagent has no other action choice but act
-	/* Update */
+
+	/* Update memory */
 	myagent->update(originalPayoff(cs));
-	/* Perform the action outside after this function */
+
+	/* Action is performed by external forces after this function */
 }
 
 /**

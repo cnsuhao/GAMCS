@@ -80,6 +80,7 @@ void pi_progressBar(unsigned long index, unsigned long total, char *label)
     FILE *fp;
     prcnt = 1.0 * index / total;
     fp = popen("stty size | cut -d\" \" -f2", "r");
+    if (fp == NULL) return;
     if (fgets(buffer, sizeof(buffer), fp) == NULL) return;
     pclose(fp);
     width = atoi(buffer);
