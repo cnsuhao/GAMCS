@@ -59,7 +59,7 @@ void Agent::setMode(Mode mode)
 }
 
 /**
- * @brief Get the learning mode of an agent.
+ * @brief Get the current learning mode of an agent.
  *
  * @return current learning mode
  */
@@ -82,8 +82,6 @@ OSpace Agent::constrain(Agent::State st, OSpace &acts) const
 		return maxPayoffRule(st, acts);
 	else if (learning_mode == EXPLORE)    // no constraint at all in EXPLORE mode
 		return acts;
-	else if (learning_mode == TEACH)	// teach mode
-	    return acts;    // return the demonstrated actions given by teach()
 	else
 	{
 		ERROR("Unknown learning mode: %d!\n", learning_mode);

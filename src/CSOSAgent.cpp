@@ -871,7 +871,7 @@ void CSOSAgent::updateMemory(float oripayoff)
 	// In EXPLORE/TEACH mode, maxPayoffRule() will not run, which leaves cur_mst unset, so we have to set cur_mst here
 	// otherwise, cur_mst will be set by maxPayoffRule().
 	// FIXME: this reduces time to search but is a bit ugly!
-	if (learning_mode == EXPLORE || learning_mode == TEACH)
+	if (learning_mode == EXPLORE)
 		cur_mst = searchState(cur_in);
 
 	if (pre_in == INVALID_STATE)    // previous state not exist, it's running for the first time

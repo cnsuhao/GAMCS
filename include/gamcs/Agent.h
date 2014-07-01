@@ -47,9 +47,8 @@ class Agent: public TSGIOM
 		 */
 		enum Mode
 		{
-			ONLINE = 0, /**< in this mode, an agent will learn as it acts, and uses what it has learned to guide its action, this is the default mode */
-			EXPLORE, /**< in this mode, an agent will learn as it acts, but not use what it has learned, instead it will act randomly */
-			TEACH
+			ONLINE = 0, /**< on this mode, agent will learn as it acts, and uses what it has learned to guide its action, this is the default mode */
+			EXPLORE /**< on this mode, agent will learn as it acts, but not use what it has learned, instead it will act randomly */
 		};
 
 		Agent(int id = 0, float discount_rate = 0.9, float accuracy = 0.01);
