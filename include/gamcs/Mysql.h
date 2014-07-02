@@ -16,13 +16,10 @@
 
 #ifndef MYSQL_H_
 #define MYSQL_H_
-#if defined( _WIN32)
-#include <mysql.h>
-#else
-#include <mysql/mysql.h>
-#endif
 #include <string>
 #include "gamcs/Storage.h"
+
+typedef class st_mysql MYSQL;	// FIXME: st_mysql may change
 
 namespace gamcs
 {

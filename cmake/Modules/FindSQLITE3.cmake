@@ -12,7 +12,7 @@ IF (WIN32)
         )
 
     FIND_LIBRARY(SQLITE3_LIBRARY 
-        NAMES mysqlclient mysql libmysql
+        NAMES sqlite3 libsqlite3
         PATHS
         $ENV{SQLITE3_LIBRARY}
         $ENV{SQLITE3_DIR}/lib
@@ -26,7 +26,7 @@ ELSE (WIN32)
         PATH_SUFFIXES sqlite)
 
     FIND_LIBRARY(SQLITE3_LIBRARY 
-        NAMES sqlite3
+        NAMES sqlite3 libsqlite3
         PATHS
         /usr/lib
         /usr/local/lib

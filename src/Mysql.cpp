@@ -10,6 +10,11 @@
 //
 // -----------------------------------------------------------------------------
 
+#if defined( _WIN32)
+#include <mysql.h>
+#else
+#include <mysql/mysql.h>
+#endif
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
