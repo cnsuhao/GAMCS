@@ -16,9 +16,10 @@
 
 #ifndef SQLITE_H_
 #define SQLITE_H_
-#include <sqlite3.h>
 #include <string>
 #include "gamcs/Storage.h"
+
+class sqlite3;
 
 namespace gamcs
 {

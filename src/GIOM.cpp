@@ -10,6 +10,7 @@
 //
 // -----------------------------------------------------------------------------
 
+#include <random>
 #include <stdlib.h>
 #include <cmath>
 #include "gamcs/debug.h"

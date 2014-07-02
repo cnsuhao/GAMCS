@@ -16,7 +16,6 @@
 
 #ifndef GIOM_H
 #define GIOM_H
-#include <random>
 #include <stddef.h>     // NULL
 #define __STDC_LIMIT_MACROS     // UINT64_MAX
 #include <cstdint>
@@ -25,10 +24,14 @@
 #if defined( __GNUC__) || defined(__linux)
 #include <inttypes.h>
 #endif
-
 #include "gamcs/config.h"
 #include "gamcs/debug.h"
 #include "gamcs/platforms.h"
+
+namespace std
+{
+class random_device;
+}
 
 namespace gamcs
 {
