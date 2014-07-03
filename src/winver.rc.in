@@ -5,7 +5,7 @@
 #define VER_PRODUCTVERSION          @GAMCS_MAJOR@,@GAMCS_MINOR@,0,0
 #define VER_PRODUCTVERSION_STR      "@GAMCS_MAJOR@.@GAMCS_MINOR@\0"
 
-#define VER_FILEDESCRIPTION_STR     "GAMCS is a description and implementation of GAM using computer\0"
+#define VER_FILEDESCRIPTION_STR     "GAMCS is a software library that implements the Generalized Agent Model (GAM) using computer\0"
 #define VER_FILEVERSION             @GAMCS_MAJOR@,@GAMCS_MINOR@,@GAMCS_BUILD@,0
 #define VER_FILEVERSION_STR         "@GAMCS_MAJOR@.@GAMCS_MINOR@.@GAMCS_BUILD@.0\0"
 #define VER_ORIGINALFILENAME_STR    "gamcs.dll\0"
