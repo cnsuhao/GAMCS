@@ -73,6 +73,7 @@ int Avatar::step()
  * @brief Teach avatar the effect of an action.
  *
  * @param [in] act the action to be taught
+ *
  * Note: 1. Although it also works on ONLINE mode, it's more efficient to put avatar on EXPLORE mode when teaching.
  * 2. Any real action performing stuff should be called after this function.
  * @see step()
