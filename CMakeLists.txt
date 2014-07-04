@@ -1,5 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(GAMCS CXX)   # Generalized Agent Model and Computer Simulation
+SET(PROJECT_NAME GAMCS)
+SET(PROJECT_BRIEF "GAMCS is a software library that implements the Generalized Agent Model (GAM) using computer")
 
 # version
 SET(GAMCS_MAJOR 1)
@@ -129,6 +131,7 @@ ENDIF()
 
 # configuration file
 CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/config.h.in ${PROJECT_SOURCE_DIR}/include/gamcs/config.h)
+CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/doc/doxygen.conf.in ${PROJECT_SOURCE_DIR}/doc/doxygen.conf)
 
 # install prefix
 SET(PREFIX  ${CMAKE_INSTALL_PREFIX})
