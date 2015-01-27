@@ -10,6 +10,7 @@
 //
 // -----------------------------------------------------------------------------
 
+#include <string.h>
 #include "gamcs/debug.h"
 #include "gamcs/Agent.h"
 
@@ -58,6 +59,57 @@ void printStateInfo(const struct State_Info_Header *sthd)
 	printf("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n");
 
 	return;
+}
+
+/**
+ * @brief Show a progress bar in console.
+ *
+ * @param [in] index current index
+ * @param [in] total the total amount
+ * @param [in] label the label used to show in the front of progress bar
+ */
+void consoleProgressBar(unsigned long index, unsigned long total, char *label)
+{
+#if defined(_WIN32)
+	printf("%3d %%\n", (int) (1.0 * index / total));
+	return;
+#else
+	double prcnt;
+	int num_of_dots;
+	char buffer[80] =
+	{ 0 };
+	int width;
+	/* get term width */
+	FILE *fp;
+	prcnt = 1.0 * index / total;
+	fp = popen("stty size | cut -d\" \" -f2", "r");
+	if (fp == NULL)
+		return;
+	if (fgets(buffer, sizeof(buffer), fp) == NULL)
+		return;
+	pclose(fp);
+	width = atoi(buffer);
+
+	if (width < 32)
+	{
+		printf("\e[1A%3d%% completed.\n", (int) (prcnt * 100));
+	}
+	else
+	{
+		num_of_dots = width - 20;
+
+		char *pline_to_print = (char *) malloc(sizeof(char) * width);
+		int dots = (int) (num_of_dots * prcnt);
+
+		memset(pline_to_print, 0, width);
+		memset(pline_to_print, '>', dots);
+		memset(pline_to_print + dots, ' ', num_of_dots - dots);
+		printf("\e[1A%s[%s] %3d%% \n", label, pline_to_print,
+				(int) (prcnt * 100));
+		free(pline_to_print);
+	}
+	return;
+#endif
 }
 
 }    // namespace gamcs

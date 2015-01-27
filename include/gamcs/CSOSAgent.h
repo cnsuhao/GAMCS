@@ -58,8 +58,9 @@ class CSOSAgent: public OSAgent
 		State nextState() const;
 		bool hasState(State state) const;
 
-		void loadMemoryFromStorage(Storage *specific_storage);
-		void dumpMemoryToStorage(Storage *specific_storage) const;
+		typedef void (*progbar_callback) (unsigned long index, unsigned total, char *label);
+		void loadMemoryFromStorage(Storage *specific_storage, progbar_callback progbar = NULL);
+		void dumpMemoryToStorage(Storage *specific_storage, progbar_callback progbar = NULL) const;
 
 	private:
 		unsigned long state_num; /**< total number of states in memory */

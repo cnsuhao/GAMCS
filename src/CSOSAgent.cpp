@@ -32,7 +32,7 @@ namespace gamcs
  */
 CSOSAgent::CSOSAgent(int i, float dr, float ac) :
 		OSAgent(i, dr, ac), state_num(0), lk_num(0), head(NULL), cur_mst(NULL), current_st_index(
-		NULL)
+				NULL)
 {
 	states_map.clear();
 	update_queue.clear();
@@ -75,8 +75,10 @@ void CSOSAgent::loadState(Storage *storage, Agent::State st)
  * @brief Load and initialize memory from a storage.
  *
  * @param [in] storage the storage where to load the memory
+ * @param [in] the callback function to show a loading progress
  */
-void CSOSAgent::loadMemoryFromStorage(Storage *storage)
+void CSOSAgent::loadMemoryFromStorage(Storage *storage,
+		progbar_callback progbar)
 {
 	if (storage == NULL)    // no database specified, do nothing
 		return;
@@ -86,7 +88,7 @@ void CSOSAgent::loadMemoryFromStorage(Storage *storage)
 	{
 		char label[10] = "Loading: ";
 		printf("Loading Memory from Storage... \n");
-		fflush(stdout);
+		fflush (stdout);
 
 		/* load memory information */
 		unsigned long saved_state_num = 0, saved_lk_num = 0;
@@ -112,7 +114,8 @@ void CSOSAgent::loadMemoryFromStorage(Storage *storage)
 
 			st = storage->nextState();
 			index++;
-			pi_progressBar(index, saved_state_num, label);
+			if (progbar)	// show progress bar if available
+				progbar(index, saved_state_num, label);
 		}
 
 		// do some check of numbers
@@ -140,8 +143,10 @@ void CSOSAgent::loadMemoryFromStorage(Storage *storage)
  * @brief Dump agent memory to a storage, including states information and memory-level statistics.
  *
  * @param [in] storage the storage where the memory is dumped to
+ * @param [in] the callback function to show a dumping progress
  */
-void CSOSAgent::dumpMemoryToStorage(Storage *storage) const
+void CSOSAgent::dumpMemoryToStorage(Storage *storage,
+		progbar_callback progbar) const
 {
 	if (storage == NULL)    // no database specified, no need to save
 		return;
@@ -189,7 +194,8 @@ void CSOSAgent::dumpMemoryToStorage(Storage *storage) const
 			}
 
 			index++;
-			pi_progressBar(index, state_num, label);
+			if (progbar)
+				progbar(index, state_num, label);
 			nmst = mst->next;
 		}
 	}
@@ -696,7 +702,7 @@ float CSOSAgent::calStatePayoff(const struct cs_State *mst) const
 	float u0 = mst->original_payoff;
 
 	if (mst->actlist == NULL)    // no any actions, return u0
-		return trimPayoff(u0);   // trim the payoff
+		return trimPayoff(u0);    // trim the payoff
 
 	// find the maximun action payoff
 	float payoff = 0;
@@ -715,7 +721,7 @@ float CSOSAgent::calStatePayoff(const struct cs_State *mst) const
 
 	payoff = u0 + discount_rate * max_pf;
 
-	return trimPayoff(payoff);  // trim the payoff
+	return trimPayoff(payoff);    // trim the payoff
 }
 
 /**
@@ -805,7 +811,7 @@ float CSOSAgent::_calActPayoff(const cs_Action *mac) const
 		nea = ea->next;
 	}
 
-	return trimPayoff(payoff);  // trim the payoff
+	return trimPayoff(payoff);    // trim the payoff
 }
 
 /**
@@ -816,14 +822,14 @@ float CSOSAgent::_calActPayoff(const cs_Action *mac) const
  */
 float CSOSAgent::trimPayoff(float pf) const
 {
-    if (accuracy == 0.0)
-    {
-        return pf;  // no trim when accuracy is 0, the accuracy of payoff is dertermined by the bits of float
-    }
-    else
-    {
-        return  floor(pf / accuracy) * accuracy;
-    }
+	if (accuracy == 0.0)
+	{
+		return pf;    // no trim when accuracy is 0, the accuracy of payoff is dertermined by the bits of float
+	}
+	else
+	{
+		return floor(pf / accuracy) * accuracy;
+	}
 }
 
 /**

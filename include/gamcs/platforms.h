@@ -46,7 +46,6 @@ namespace gamcs
 
 double pi_log2(double value);
 void pi_msleep(unsigned long ms);
-void pi_progressBar(unsigned long index, unsigned long total, char *label);
 
 }    // namespace gamcs
 

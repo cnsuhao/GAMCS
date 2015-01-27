@@ -42,6 +42,7 @@ namespace gamcs
 #define UNUSED(expr) do { (void)(expr); } while (0)
 
 void printStateInfo(const struct State_Info_Header *state_information_header);
+void consoleProgressBar(unsigned long index, unsigned long total, char *label);
 
 #ifdef __GNUC__
 #define DEPRECATED(MSG) __attribute__ ((deprecated (MSG)))

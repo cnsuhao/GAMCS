@@ -6,7 +6,7 @@ SET(PROJECT_BRIEF "GAMCS is a software library that implements the Generalized A
 # version
 SET(GAMCS_MAJOR 1)
 SET(GAMCS_MINOR 3)
-SET(GAMCS_BUILD 6)
+SET(GAMCS_BUILD 7)
 
 SET(GAMCS_NAME gamcs)   
 SET(GAMCS_STATIC_NAME gamcs_static)
